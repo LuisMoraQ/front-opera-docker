@@ -1,0 +1,100 @@
+<div class="page-body">
+    <div class="titulo-contenido">
+        <h2>Indice Unificado</h2>
+    </div>
+    <app-card class="card col-md-12 card-principal">
+        <div class="row justify-content-between p-r-15">
+            <!-- <div class="col-sm-5 col-md-5" style="margin-bottom: 10px;">
+                <input type="search" id="txt_busca" (keyup)="applyFilterPrinc($event)" class="form-control form-control-primary" autocomplete="off" placeholder="Buscar" #input (search)="limpiarfiltro()">
+            </div> -->
+
+            <div class="col-sm-5 col-md-7" style="margin-bottom: 10px;">
+                <mat-form-field class="mff-reduc w-100 alto-35 field-busqueda" appearance="outline">
+                    <mat-label>Buscar</mat-label>
+                    <input matInput type="text" [(ngModel)]="busqueda" (keyup)="applyFilterPrinc($event)"
+                        autocomplete="off">
+                    <button *ngIf="busqueda" matSuffix mat-icon-button aria-label="Clear" (click)="limpiarfiltro()">
+                        <mat-icon>close</mat-icon>
+                    </button>
+                </mat-form-field>
+            </div>
+
+            <div class="content">
+
+                <button type="button" class="btn btn-success btn-sm light ripple m-b-10 m-r-5" (click)="openModal()"
+                    (mouseup)="quitarfoco($event);">
+                    <i class="fa fa-plus"></i>Agregar Indice
+                </button>
+                <button type="button" class="btn btn-outline-secondary btn-sm light ripple  m-b-10 float-right"
+                    (mouseup)="quitarfoco($event);" [ngbTooltip]="maximizar ? 'Reducir' : 'Expandir'"
+                    (click)="expandir()" container="body">
+                    <i class="fa  mr-0"
+                        [ngClass]="{'fa-long-arrow-right': !maximizar,'fa-long-arrow-left': maximizar}"></i>
+                </button>
+            </div>
+        </div>
+        <div class="table-responsive" [style.height.px]="height">
+            <table #table1 class="tabla-general" mat-table [dataSource]="dataSource" matSort multiTemplateDataRows>
+                <ng-container matColumnDef="id_indice">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header appAnchocol [ancho]="55">ID</th>
+                    <td mat-cell *matCellDef="let row" appAnchocol [ancho]="55"> {{row.id_indice}} </td>
+                </ng-container>
+                <ng-container matColumnDef="desc_indice">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header appAnchocol [ancho]="200" [detalle]="true">
+                        Descripción</th>
+                    <td mat-cell *matCellDef="let row" class="text-left" appAnchocol [ancho]="200" [detalle]="true">
+                        <div class="recortatext" placement="top" ngbTooltip="{{row.desc_indice}}" container="body">
+                            {{row.desc_indice}}
+                        </div>
+                    </td>
+                </ng-container>
+                <ng-container matColumnDef="abrev">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header appAnchocol [ancho]="90">Abrev</th>
+                    <td mat-cell *matCellDef="let row" appAnchocol [ancho]="90"> {{row.abrev}} </td>
+                </ng-container>
+                <ng-container matColumnDef="activo">
+                    <th mat-header-cell *matHeaderCellDef appAnchocol [ancho]="68">Activo</th>
+                    <td mat-cell *matCellDef="let row" appAnchocol [ancho]="68">
+                        <div class="label-main" *ngIf="row.id_cargo!=''" style="margin: 1px;">
+                            <label *ngIf="row.activo=='1'" class="label label-success ancho-50p">Activo</label>
+                            <label *ngIf="row.activo=='0'" class="label label-danger">Inactivo</label>
+                        </div>
+                    </td>
+                </ng-container>
+                <ng-container matColumnDef="acciones">
+                    <th mat-header-cell *matHeaderCellDef class="acciones-tabla">Acciones</th>
+                    <td mat-cell *matCellDef="let row; let i = dataIndex;">
+                        <button class="btn btn-mini btn-info" placement="top" ngbTooltip="Ver" container="body"
+                            *ngIf="row.id_cargo!=''" (click)="openModal(row, false, true)"
+                            (mouseup)="quitarfoco($event);">
+                            <i class="fa fa-search icono-but"></i>
+                        </button>
+                        <button class="btn btn-mini btn-primary" placement="top" ngbTooltip="Editar" container="body"
+                            *ngIf="row.id_cargo!=''" (click)="openModal(row, true)" (mouseup)="quitarfoco($event);">
+                            <i class="fa fa-edit icono-but"></i>
+                        </button>
+                        <button class="btn btn-mini btn-danger" placement="top" ngbTooltip="Eliminar" container="body"
+                            *ngIf="row.id_cargo!=''" (click)="eliminar(row)" (mouseup)="quitarfoco($event);">
+                            <i class="fa fa-remove icono-but"></i>
+                        </button>
+                    </td>
+                </ng-container>
+
+                <tr mat-header-row class="header-custom" *matHeaderRowDef="displayedColumn; sticky: true"></tr>
+                <tr mat-row *matRowDef="let row; let i = dataIndex; columns: displayedColumn;"
+                    [ngClass]="{'highlight': fila_sel == i}" (click)="cambindicesel(i)"></tr>
+
+                <tr *matNoDataRow class="nodata">
+                    <td class="mat-cell text-center" colspan="11">
+                        <label *ngIf="!buscando">No se encontraron resultados</label>
+                        <div *ngIf="buscando" class="preloader3 loader-block">
+                            <div class="circ1"></div>
+                            <div class="circ2"></div>
+                            <div class="circ3"></div>
+                            <div class="circ4"></div>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </app-card>

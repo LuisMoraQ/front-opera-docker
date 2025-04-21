@@ -1,0 +1,90 @@
+// table {
+//     background-color: aqua !important;
+// }
+
+.table-deta thead th {
+  height: 21.25px !important;
+  font-size: 9px !important;
+  padding: 0 0.75rem;
+  //border: 1px solid #fafafa;
+}
+
+.table-deta tbody td {
+  height: 21.25px !important;
+  font-size: 9px !important;
+  padding: 0 0.75rem;
+  //border: 1px solid #fafafa;
+}
+
+.table-ind {
+  th, td {
+    font-size: 10px !important;
+    padding: 2px 0.5rem;
+  }
+}
+
+.bs-custom {
+  min-width: 370px !important;
+  overflow: auto;
+}
+
+.min-h-tabla2 {
+  height: 160px !important;
+  // background-color: #56707c;
+}
+
+.min-h-tabla1 {
+  height: 104px !important;
+  // background-color: #56707c;
+}
+
+.min-h-tabla3 {
+  height: 135px !important;
+  // background-color: #56707c;
+}
+
+.custom-detalle {
+  height: 21.25px !important;
+  max-height: 21.25px !important;
+  min-height: 21.25px !important;
+  width: 150px !important;
+  min-width: 93px !important;
+  max-width: 150px !important;
+  white-space: unset !important;
+  overflow-wrap: break-word !important;
+  line-height: unset !important;
+}
+
+.list-group-item {
+  border: 1px solid rgba(0, 0, 0, 0.125);
+  padding: 5px !important;
+}
+
+.custom-texto-list {
+  font-size: 10px;
+}
+
+.custom-label-list {
+  margin-bottom: 0 !important;
+  font-size: 11px;
+  font-weight: 700;
+  font-family: serif;
+}
+
+.tabla-partidas {
+  min-height: 200px;
+}
+
+@media only screen and (max-width: 1553px) {
+  .custom-detalle {
+    line-height: calc(1em + 1px) !important;
+  }
+}
+
+.cargasobre{
+  //top:80px;
+  position: absolute;
+  z-index: 1;
+  width: 90%;
+  height: 270px;
+}

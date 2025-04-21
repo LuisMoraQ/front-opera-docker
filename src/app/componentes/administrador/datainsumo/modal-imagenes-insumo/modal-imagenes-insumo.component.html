@@ -1,0 +1,86 @@
+<div class="modal-dialog-scrollable modal-lg">
+    <div class="modal-content">
+        <div class="app-modal-header  modal-header">
+            <!-- tipo modal es la accion de para el modal actualizar o guardar -->
+            <h4 class="modal-title tit-modal1">
+                <b>Registro de Imagenes</b>
+            </h4>
+            <button type="button" class="close basic-close" (click)="closeModal('click-close')">
+                <span aria-hidden="true" class="mt-2">&times;</span>
+            </button>
+        </div>
+        <div class="modal-body">
+            <ul ngbNav #nav="ngbNav" [(activeId)]="active" class="nav-tabs">
+                <li [ngbNavItem]="1">
+                    <a ngbNavLink>Imagenes Existentes</a>
+                    <ng-template ngbNavContent>
+                        <label class="espacios col-form-label">Lista de Imagenes del Insumo ({{dataarchver?.length}} -
+                            5)</label>
+                        <div class="row col-12 justify-content-center">
+                            <div class="p-2 d-flex flex-wrap" *ngIf="dataarchver?.length; else noData">
+                                <div class="card card-imagenes shadow-lg p-3 mb-5 bg-white rounded mr-2"
+                                    *ngFor="let imagens of dataarchver;let indice=index">
+                                    <span data-effect="fadeOut" style="cursor:pointer"><i
+                                            class="fa fa-times float-right" ngbTooltip="Eliminar Imagen"
+                                            (click)="EliminarImagen1(indice)"></i></span>
+                                    <img [src]="imagens.base" alt="" class="imagen-custom">
+                                    <div class=" recortatext1l" [ngbTooltip]="imagens?.nombre">
+                                        {{imagens?.nombre}}
+                                    </div>
+                                </div>
+                            </div>
+                            <ng-template #noData>
+                                <div class="alert alert-secondary col-sm-4 col-12 text-center ml-2" role="alert">
+                                    Ninguna Imagen almacenada.
+                                </div>
+                            </ng-template>
+                        </div>
+
+                    </ng-template>
+                </li>
+                <li [ngbNavItem]="2">
+                    <a ngbNavLink>Subir Imagenes</a>
+                    <ng-template ngbNavContent>
+                        <div class="row col-12 justify-content-between">
+                            <div class="col-2 d-flex">
+                                <label class="espacios col-form-label">Documento:</label>
+                                <label class="custom-file-upload d-flex ml-1" style="border-radius: 10px;">
+                                    <input type="file" id="fileUpload" name="fileUpload" accept="image/*"
+                                        (click)="SubirArchivo()" multiple />
+                                    <i class="icofont icofont-upload-alt icono-but mt-1 ml-1"
+                                        style="margin-right: 5px;"></i>
+                                    Seleccionar
+                                </label>
+                                <i class="fa fa-warning text-danger icono-but ml-2" style="margin-top: 9px;"
+                                    placement="top" ngbTooltip="Maximo 5 Imagenes"></i>
+                            </div>
+
+                        </div>
+                        <div class="row col-12 justify-content-center">
+                            <div class="p-2 d-flex flex-wrap" *ngFor="let imagens of dataarchb64;let indice=index">
+                                <div class="card card-imagenes shadow-lg p-3 mb-5 bg-white rounded">
+                                    <span data-effect="fadeOut" style="cursor:pointer"><i
+                                            class="fa fa-times float-right"
+                                            (click)="QuitarImagenSubir(indice)"></i></span>
+                                    <img [src]="imagens.base" alt="" class="imagen-custom">
+                                    <div class=" recortatext1l" [ngbTooltip]="imagens?.nombre">
+                                        {{imagens?.nombre}}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </ng-template>
+                </li>
+            </ul>
+
+            <div [ngbNavOutlet]="nav" class="mt-2"></div>
+        </div>
+        <div class="app-modal-footer modal-footer justify-content-between">
+            <button type="button" class="btn btn-danger btn-sm" (click)="closeModal('cancelar')"><i
+                    class="fa fa-times"></i>Cerrar</button>
+            <button type="button" *ngIf="(dataarchb64.length && active == 2)" class="btn btn-success btn-sm"
+                (click)="almacenarImagenes()"><i class="fa fa-check"></i>Guardar</button>
+        </div>
+    </div>
+</div>
+<app-cargando [bloquearTodo]="true" *ngIf="mostrar_carga_todo"></app-cargando>

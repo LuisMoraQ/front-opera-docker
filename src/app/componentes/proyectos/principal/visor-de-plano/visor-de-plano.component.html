@@ -1,0 +1,44 @@
+<div class="container-fluid px-0">
+    <div class="col-12 d-flex pr-0 justify-content-between" style="padding-left: 2rem;">
+        <div></div>
+        <div>
+            <h4 class="sub-title text-center p-b-0">VISOR DE PLANOS</h4>
+        </div>
+        <div>
+            <button class="btn btn-mini bg-success float-right" container="body" style="margin-left: 1px" 
+                  ngbTooltip="Guardar cambios realizados"
+                type="button" (mouseup)="quitarfoco($event)"><i class="fa fa-save icono-but"></i>
+            </button>
+        
+            <button class="btn btn-mini bg-danger float-right" container="body" style="margin-left: 1px" 
+                 ngbTooltip="Descartar todos los cambios realizados" type="button"
+                (mouseup)="quitarfoco($event)" ><i
+                    class="fa fa-power-off icono-but"></i>
+            </button>
+        </div>
+    </div>
+
+    <div class="row bg-info h-contenedor">
+        <div class="loading-window">
+            <div class="car">
+                <div class="strike"></div>
+                <div class="strike strike2"></div>
+                <div class="strike strike3"></div>
+                <div class="strike strike4"></div>
+                <div class="strike strike5"></div>
+                <div class="car-detail spoiler"></div>
+                <div class="car-detail back"></div>
+                <div class="car-detail center"></div>
+                <div class="car-detail center1"></div>
+                <div class="car-detail front"></div>
+                <div class="car-detail wheel"></div>
+                <div class="car-detail wheel wheel2"></div>
+            </div>
+        
+            <div class="text">
+                <span>Loading</span><span class = "dots">...</span>
+            </div>
+        </div>
+          
+    </div>
+</div>

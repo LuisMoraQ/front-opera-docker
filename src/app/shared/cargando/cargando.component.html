@@ -1,0 +1,14 @@
+<div [ngClass]="{'theme-loader': (bloquearTodo == true && contenido == false),
+                'fondo-loader': (bloquearTodo == false && contenido == false),
+                'fondo-contenido':(bloquearTodo == false && contenido == true)}">
+    <div *ngIf="!nointernet" class="loader-track">
+        <div class="loader-block">
+            <img id='imgr1' width="55" heigth="54" class="imgr" src='assets/images/engranaje1.png'>
+            <img id='imgr2' width="40" heigth="39" class="imgr" src='assets/images/engranaje3.svg'>
+        </div>
+    </div>
+    <div *ngIf="nointernet" class="noint-cont">
+        <img id='imgr3' width="40" heigth="39" src='assets/images/no-wifi.png'><br>
+        <span>Recuperando la Conexión a Internet.</span>
+    </div>
+</div>

@@ -1,0 +1,111 @@
+<div class="modal-dialog-scrollable">
+    <div class="modal-content">
+        <div class="app-modal-header  modal-header">
+            <!-- tipo modal es la accion de para el modal actualizar o guardar -->
+            <h4 class="modal-title tit-modal1">
+                <b>Lista Pesos Comerciales</b>
+            </h4>
+            <button type="button" class="close basic-close" (click)="closeModal()">
+                <span aria-hidden="true" class="mt-2">&times;</span>
+            </button>
+        </div>
+        <div class="modal-body">
+            <form [formGroup]="formPesoComercial">
+                <div class="row px-0 d-flex">
+                    <mat-form-field appearance="outline" class="mff-reduc col-6 mt-1">
+                        <mat-label>Medida</mat-label>
+                        <input matInput autocomplete="off" formControlName="medida" maxlength="350" class="mayuscula">
+                    </mat-form-field>
+                    <mat-form-field appearance="outline" class="mff-reduc  col-6 mt-1">
+                        <mat-label>Peso</mat-label>
+                        <input matInput autocomplete="off" formControlName="peso"
+                            [textMask]="this.formsService.maskUsAmountDecimal3" maxlength="350" class="mayuscula">
+                    </mat-form-field>
+                    <mat-radio-group aria-label="Select an option" class="mff-reduc col-8 mt-1 align-content-center" style="font-size: 10px;"  formControlName="tipoacero">
+                        <mat-radio-button value="CORRUGADO">CORRUGADO</mat-radio-button>
+                        <mat-radio-button value="LISO" class="ml-2">LISO</mat-radio-button>
+                      </mat-radio-group>
+                    <div class="col-4 mt-1">
+                        <button class="btn btn-sm btn-primary float-right" (mouseup)="quitarfoco($event);"
+                        type="button"
+                        *ngIf="!buscando"
+                        [ngClass]="{'btn-primary': itemSeleccionado == null, 'btn-warning': itemSeleccionado !== null}"
+                            (click)="itemSeleccionado !== null ? actualizarFila() : agregarPesoComercial()">
+                            <ng-container *ngIf="itemSeleccionado !== null">Actualizar</ng-container>
+                            <ng-container *ngIf="itemSeleccionado == null">Agregar</ng-container>
+                        </button>
+                    </div>
+
+                    <hr class="linea-separadora mx-3">
+
+                    <div class="col-12 h-tabla overflow-auto ">
+                        <table class=" table-bordered tab-10">
+                            <thead>
+                                <tr class="text-center pos-sticky">
+                                    <th appAnchocol [ancho]="80">Fuente</th>
+                                    <th>Medida</th>
+                                    <th>Peso</th>
+                                    <th>Tipo</th>
+                                    <th appAnchocol [ancho]="50">Activo</th>
+                                    <th appAnchocol [ancho]="50">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <ng-container *ngIf="listaPesos.length; else noData">
+                                    <tr *ngFor="let item of listaPesos; let i = index" class="text-center">
+                                        <td [ngClass]="{'row-seleccionado': itemSeleccionado == i}">
+                                            <span class="badge badge-pill badge-secondary"
+                                                *ngIf="item.fuente == 0">SISTEMA</span>
+                                            <span class="badge badge-pill badge-success"
+                                                *ngIf="item.fuente == 1">USUARIO</span>
+                                        </td>
+                                        <td [ngClass]="{'row-seleccionado': itemSeleccionado == i}">{{item.medida}}</td>
+                                        <td [ngClass]="{'row-seleccionado': itemSeleccionado == i}">{{item.peso}}</td>
+                                        <td [ngClass]="{'row-seleccionado': itemSeleccionado == i}">{{item.tipoacero}}</td>
+                                        <td [ngClass]="{'row-seleccionado': itemSeleccionado == i}">
+                                            <ng-container *ngIf="!item.bloqueado; else bloqueado">
+                                                <mat-checkbox (change)="cambioCheckbox($event.checked, i)" container="body" [disabled]="item.bloqueado" [ngbTooltip]="item.bloqueado ? 'peso utilizado en en el proyecto': ''"
+                                                    [checked]="item.estado ? true: false">
+                                                </mat-checkbox>
+                                            </ng-container>
+                                            <ng-template #bloqueado>
+                                                <i class="fa fa-check-square" style="font-size:17px" [ngbTooltip]="item.bloqueado ? 'Peso utilizado en un metrado en el proyecto': ''" container="body"></i>
+                                            </ng-template>
+                                        </td>
+                                        <td [ngClass]="{'row-seleccionado': itemSeleccionado == i}">
+                                            <button type="button" class="btn btn-mini2 btn-info" (click)="editarRow(item, i)" *ngIf="item.fuente">
+                                                <i class="fa fa-pencil-square-o icono-but"></i>
+                                            </button>
+                                            <button type="button" class="btn btn-mini2 btn-danger" *ngIf="item.fuente" (click)=" eliminarPesoComercial(i, item)">
+                                                <i class="fa fa-times icono-but"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </ng-container>
+                                <ng-template #noData>
+                                    <tr>
+                                        <td class="mat-cell text-center" colspan="15">
+                                            <label *ngIf="!buscando">No se encontraron resultados</label>
+                                            <div *ngIf="buscando" class="preloader3 loader-block">
+                                                <div class="circ1"></div>
+                                                <div class="circ2"></div>
+                                                <div class="circ3"></div>
+                                                <div class="circ4"></div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </ng-template>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="app-modal-footer modal-footer justify-content-between">
+            <button type="button" class="btn btn-danger btn-sm" (click)="closeModal()"><i
+                    class="fa fa-times"></i>Cerrar</button>
+            <button type="button" class="btn btn-success btn-sm" (click)="guardarTablaPesosMetrado()" *ngIf="!buscando"><i class="fa fa-check"></i>Guardar</button>
+        </div>
+    </div>
+</div>
+<app-cargando [bloquearTodo]="true" *ngIf="mostrar_cargar_todo"></app-cargando>

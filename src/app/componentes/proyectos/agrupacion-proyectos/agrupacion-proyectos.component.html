@@ -1,0 +1,121 @@
+<div class="modal-dialog-scrollable modal-md">
+    <div class="modal-content">
+        <div class="app-modal-header  modal-header">
+            <!-- tipo modal es la accion de para el modal actualizar o guardar -->
+            <h4 class="modal-title tit-modal1">Agrupacion de Proyectos</h4>
+            <button type="button" class="close basic-close" (click)="closeModal('click-close')">
+                <span aria-hidden="true" class="mt-2">&times;</span>
+            </button>
+        </div>
+        <div class="modal-body">
+            <form [formGroup]="formAgrupacion">
+                <!-- class="px-0" -->
+                <div class="borde-div col-12">
+                    <div class="col text-center">
+                        <h4 class="tit-modal1" *ngIf="editar">Editar Grupo</h4>
+                        <h4 class="tit-modal1" *ngIf="!editar">Nuevo Grupo</h4>
+                    </div>
+
+                    <div class="row col-12 pr-0 ml-lg-1">
+                        <div
+                            class=" custom-imputs col-lg-3  col-md-4 col-sm-12  px-md-0 justify-content-center align-content-center">
+                            <label>Activo :</label>
+                            <div class="switch  d-inline m-r-10" style="margin-left: 10px;">
+                                <input type="checkbox" id="switch-p-1" formControlName="activo">
+                                <label for="switch-p-1" class="cr"></label>
+                            </div>
+                        </div>
+                        <mat-form-field appearance="outline"
+                            class="custom-input mff-reduc custom-imputs col-lg-9 col-md-8 col-sm-12 ">
+                            <mat-label>Descripcion</mat-label>
+                            <input matInput type="text" class="mayuscula" autocomplete="off" formControlName="descripcion">
+                        </mat-form-field>
+                    </div>
+                    <div class="row col-12 ml-lg-1 justify-content-between">
+                        <!-- <div class="col justify-content-lg-end justify-content-md-between"> -->
+                        <button class="btn btn-sm btn-outline-secondary" (click)="limpiarFormulario()"
+                            (mouseup)="quitarfoco($event);">
+                            <span>Limpiar</span>
+                        </button>
+
+                        <button type="submit" class="btn btn-sm btn-success"
+                            [ngClass]="{'btn-success': !editar,'btn-info':editar}" (click)="almacenar()"
+                            (mouseup)="quitarfoco($event);">
+                            <span *ngIf="editar">Actualizar</span>
+                            <span *ngIf="!editar">Guardar</span>
+                        </button>
+                        <!-- </div> -->
+                    </div>
+                </div>
+            </form>
+            <div class="col text-center">
+                <h4 class="tit-modal1">Lista de Grupos</h4>
+            </div>
+
+            <div class="table-responsive" [style.max-height.px]="height">
+                <table #table1 class="tabla-general" mat-table [dataSource]="dataSource" matSort multiTemplateDataRows>
+                    <ng-container matColumnDef="descripcion">
+                        <th mat-header-cell *matHeaderCellDef mat-sort-header appAnchocol [ancho]="200"
+                            [detalle]="true">
+                            Descripción</th>
+                        <td mat-cell *matCellDef="let row" class="text-left" appAnchocol [ancho]="200" [detalle]="true">
+                            <div class="recortatext" placement="top" ngbTooltip="{{row.descripcion}}" container="body">
+                                {{row.descripcion}}
+                            </div>
+                        </td>
+                    </ng-container>
+                    <ng-container matColumnDef="activo">
+                        <th mat-header-cell *matHeaderCellDef appAnchocol [ancho]="68">Activo</th>
+                        <td mat-cell *matCellDef="let row" appAnchocol [ancho]="68">
+                            <div class="label-main" *ngIf="row.id_cargo!=''" style="margin: 1px;">
+                                <label *ngIf="row.activo=='1'" class="label label-success ancho-50p">Activo</label>
+                                <label *ngIf="row.activo=='0'" class="label label-danger ancho-50p">Inactivo</label>
+                            </div>
+                        </td>
+                    </ng-container>
+                    <ng-container matColumnDef="acciones">
+                        <th mat-header-cell *matHeaderCellDef class="acciones-tabla">Acciones</th>
+                        <td mat-cell *matCellDef="let row; let i = dataIndex;">
+                            <!-- <button class="btn btn-mini btn-info" placement="top" ngbTooltip="Ver" container="body" *ngIf="row.id_cargo!=''" (click)="openModal(row, false, true)" (mouseup)="quitarfoco($event);">
+                        <i class="fa fa-search icono-but"></i>
+                    </button> -->
+                            <button class="btn btn-mini btn-primary" placement="top" ngbTooltip="Editar"
+                                container="body" *ngIf="row.id_cargo!=''" (click)="recuperarValores(row)"
+                                (mouseup)="quitarfoco($event);">
+                                <i class="fa fa-edit icono-but"></i>
+                            </button>
+                            <button class="btn btn-mini btn-danger" placement="top" ngbTooltip="Eliminar"
+                                container="body" *ngIf="row.id_cargo!=''" (click)="eliminarAgrupacion(row)"
+                                (mouseup)="quitarfoco($event);">
+                                <i class="fa fa-remove icono-but"></i>
+                            </button>
+                        </td>
+                    </ng-container>
+
+                    <tr mat-header-row class="header-custom" *matHeaderRowDef="displayedColumn; sticky: true"></tr>
+                    <tr mat-row *matRowDef="let row; let i = dataIndex; columns: displayedColumn;"
+                        [ngClass]="{'highlight': fila_sel == i}" (click)="cambindicesel(i)"></tr>
+
+                    <tr *matNoDataRow class="nodata">
+                        <td class="mat-cell text-center" colspan="11">
+                            <label *ngIf="!buscando">No se encontraron resultados</label>
+                            <div *ngIf="buscando" class="preloader3 loader-block">
+                                <div class="circ1"></div>
+                                <div class="circ2"></div>
+                                <div class="circ3"></div>
+                                <div class="circ4"></div>
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        <div class="app-modal-footer modal-footer justify-content-between">
+            <button type="button" class="btn btn-danger btn-sm" (click)="closeModal('cancelar')"><i
+                    class="fa fa-times"></i>Cerrar</button>
+            <!-- <button type="button" *ngIf="!ver" class="btn btn-success btn-sm" (click)="almacenar()"><i
+                    class="fa fa-check"></i>Guardar</button> -->
+        </div>
+    </div>
+</div>
+<app-cargando [bloquearTodo]="true" *ngIf="mostrar_carga_todo"></app-cargando>

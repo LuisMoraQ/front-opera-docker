@@ -1,0 +1,322 @@
+<div class="modal-dialog-scrollable modal-md">
+  <div class="modal-content">
+    <div class="app-modal-header  modal-header">
+      <!-- agregar partidas catalogos -->
+      <h4 class="modal-title tit-modal1">
+        <b *ngIf="!duplicar">Agregar Partida</b>
+        <b *ngIf="duplicar">Duplicar Partida</b>
+      </h4>
+      <button type="button" class="close basic-close" (click)="closeModal()">
+        <span aria-hidden="true" class="mt-2">&times;</span>
+      </button>
+    </div>
+    <div class="modal-body">
+      <form [formGroup]="formDataPartida">
+        <div class="row">
+          <div class="col-12 col-sm-6 col-md-6 m-b-15">
+            <mat-form-field appearance="outline" class="mff-reduc w-100 alto-35">
+              <mat-label>Insertar</mat-label>
+              <select matNativeControl formControlName="formainsertar">
+                <option *ngIf="datos?.agrupacion.split('.').length>1 && sistema==0 && mismotipo" value="3">BAJO LA SELECCION</option>
+                <option *ngIf="datos?.agrupacion.split('.').length>1 && sistema==0 && mismotipo" value="2">SOBRE LA SELECCION</option>
+                <option *ngIf="opcfila" value="0">AL FINAL DEL GRUPO</option>
+                <option *ngIf="opcfila" value="1">AL INICIO DEL GRUPO</option>
+              </select>
+            </mat-form-field>
+          </div>
+          <div *ngIf="duplicar" class="col-12 col-sm-6 m-b-0">
+            <label>Duplicar <strong>Especificación y Ficha Técnica</strong>:</label>
+            <div class="switch d-inline m-r-10" style="margin-left: 10px;"
+                (change)="cambioDuplicar()">
+                <input type="checkbox" id="switch-p-2" formControlName="duparc">
+                <label for="switch-p-2" class="cr">
+                </label>
+            </div>
+            <!-- <span>{{this.duparc.value}}</span> -->
+            <span>{{textoDuplicar}}</span>
+          </div>
+          <mat-form-field appearance="outline" class="mff-reduc col-sm-12 col-12">
+            <mat-label>Descripción</mat-label>
+            <input matInput id="descrip" autocomplete="off" class="mayuscula" formControlName="descripcion"
+              maxlength="500">
+          </mat-form-field>
+          <!-- <mat-form-field appearance="outline" class="mff-reduc col-sm-3 col-12">
+                        <mat-label>Unidad (Abreviatura)</mat-label>
+                        <input matInput autocomplete="off" class="mayuscula" formControlName="unidad"
+                            [matAutocomplete]="auto" maxlength="5" (input)="cambiounidad()"
+                            (keyup)="enterunidad($event)">
+                        <mat-autocomplete #auto="matAutocomplete" [displayWith]="displayFn">
+                            <mat-option *ngFor="let option of filteredOptions | async" [value]="option"
+                                (click)="cambiounidad()">
+                                <b>{{option.id_unidad}}</b> ({{option.unidad}})
+                            </mat-option>
+                        </mat-autocomplete>
+                    </mat-form-field> -->
+          <div class="col-sm-3 col-12 d-flex">
+            <div class="custom-row" style="width: calc(100% - 36px);padding-bottom: 18px;">
+              <span class="span-sobre" [ngClass]="{'invalidspan':(unidad.invalid && unidad.touched)}">Unidad</span>
+              <ng-select [ngClass]="{'invalidsel':(unidad.invalid && unidad.touched)}" [appendTo]="'body'"
+                [clearable]="false" formControlName="unidad" (change)="cambUnidad()">
+                <!-- [loading]="true" -->
+                <ng-option value="">--Seleccionar--</ng-option>
+                <ng-option *ngFor="let medi of medidas" [value]="medi.id_unidad">
+                  <b>{{medi.unidad}}</b> ({{medi.descripcion}})
+                </ng-option>
+              </ng-select>
+            </div>
+            <div style="width: 36px; padding: 0;z-index: 999;" class="mff-reduc">
+              <button type="button" class="btn btn-mini btn-success w-100" style="height: 35px;" placement="top"
+                ngbTooltip="Ver Unidades" (click)="abrirmodalUnidades()" container="body">
+                <i class="fa fa-search icono-but"></i>
+              </button>
+            </div>
+          </div>
+          <mat-form-field appearance="outline" class="mff-reduc col-sm-3 col-12">
+            <mat-label>Rendimiento</mat-label>
+            <input matInput type="text" [textMask]="this.formsService.maskUsAmountDecimal2"
+              formControlName="rendimiento" autocomplete="off" class="text-right" maxlength="18"
+              (blur)="verificarDecimales()" (keyup)="presentertRendi($event)" onClick="this.select();">
+          </mat-form-field>
+          <mat-form-field appearance="outline" class="mff-reduc col-sm-3 col-12">
+            <mat-label>Unidad Rendimiento</mat-label>
+            <select matNativeControl formControlName="undrendimiento">
+              <!-- <option value="">--Seleccionar--</option> -->
+              <option value="DIA">{{undconcatrendi!=''?undconcatrendi +' / ':''}}DIA</option>
+              <option value="HORA">{{undconcatrendi!=''?undconcatrendi +' / ':''}}HORA</option>
+              <option value="GLOBAL">GLOBAL</option>
+            </select>
+          </mat-form-field>
+          <mat-form-field appearance="outline" class="mff-reduc col-sm-3 col-12">
+            <mat-label>Jornada</mat-label>
+            <input matInput type="text" [textMask]="this.formsService.maskUsAmountDecimal" formControlName="jornada"
+              autocomplete="off" maxlength="5" (blur)="verificarDecimalesJor()" (keyup)="presentertRendi($event)"
+              onClick="this.select();">
+          </mat-form-field>
+          <mat-form-field appearance="outline" class="mff-reduc col-sm-6 col-12"
+            [ngClass]="{'mat-form-field-disa': tipo_proy.disabled}">
+            <mat-label>Tipo Proyecto</mat-label>
+            <input *ngIf="!duplicar" matInput type="text" [value]="seltipo_proy.value?.descripcion" disabled>
+            <select *ngIf="duplicar" matNativeControl formControlName="tipo_proy" (change)="changeTipoProy()">
+              <option value="">--Seleccionar--</option>
+              <option *ngFor="let tipo of tipoProy" [value]="tipo.id_clasificacion">{{tipo.descripcion}}</option>
+            </select>
+          </mat-form-field>
+          <!-- <div class="p-0 col-12">
+                        <mat-form-field appearance="outline" class="mff-reduc mat-form-field-disa col-sm-6 col-12 float-right">
+                            <mat-label>Precio</mat-label>
+                            <input matInput type="text" autocomplete="off" formControlName="precio" mask="separator.2"
+                                thousandSeparator="," class="text-right" prefix="S/ " (blur)="verificarDecimales('0')" maxlength="18" readonly>
+                        </mat-form-field>
+                    </div> -->
+          <div *ngIf="duplicar" class="col-sm-6 col-12 d-flex">
+            <mat-form-field appearance="outline" class="mff-reduc mat-form-field-disa"
+              style="width: calc(100% - 36px);">
+              <mat-label>Titulo/Subtitulo</mat-label>
+              <input matInput type="text" autocomplete="off" formControlName="agrupacion" readonly>
+            </mat-form-field>
+            <div style="width: 36px; padding: 0;" class="mff-reduc">
+              <button type="button" class="btn btn-mini btn-success w-100" style="height: 35px;" placement="top"
+                ngbTooltip="Buscar Titulo/Subtitulo" (click)="abrirModalTitsubt()" container="body">
+                <i class="fa fa-search icono-but"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </form>
+      <div class="row m-r-10 m-l-10 mx-0">
+        <h4 class="sub-title text-center p-b-0">Analisis de Costos Unitarios</h4>&nbsp;
+      </div>
+      <div class="w-100 d-flex" style="margin-bottom: 3px;">
+        <button type="button" class="btn btn-mini btn-success m-r-0" [disabled]="!formDataPartida.enabled" (click)="AgregarFilaBut()"
+        [disableTooltip]="!minimbut" placement="top" ngbTooltip="Agregar" container="body"><!-- container="body" (click)="AgregarFilaIns()" (mouseup)="quitarfoco($event);" -->
+          <i class="fa fa-plus" [ngClass]="{'icono-but':minimbut}"></i><span [ngClass]="{'hide-ele':minimbut}">Agregar</span>
+        </button>
+        <div ngbDropdown container="body" class="sinflecha">
+          <button type="button" class="btn btn-mini btn-success btn-multiple h-100" id="dropdownAdd" ngbDropdownToggle [disabled]="!formDataPartida.enabled"
+            (mouseup)="quitarfoco($event);">
+            <i class="fa fa-caret-down icono-but"></i>
+          </button>
+          <div class="cust-ddm" ngbDropdownMenu aria-labelledby="dropdownAdd">
+            <button type="button" ngbDropdownItem class="btn-sm" (click)="AgregarFilaIns(0)">Al Inicio</button>
+            <div class="dropdown-divider"></div>
+            <button type="button" ngbDropdownItem class="btn-sm" (click)="AgregarFilaIns(1)">Al Final</button>
+            <div *ngIf="datasourcePri[this.fila_selacu]?.num_det!=0" class="dropdown-divider"></div>
+            <button *ngIf="datasourcePri[this.fila_selacu]?.num_det!=0" type="button" ngbDropdownItem class="btn-sm"
+              (click)="AgregarFilaIns(2)">Sobre Selección</button>
+            <div *ngIf="datasourcePri[this.fila_selacu]?.num_det!=0" class="dropdown-divider"></div>
+            <button *ngIf="datasourcePri[this.fila_selacu]?.num_det!=0" type="button" ngbDropdownItem class="btn-sm"
+              (click)="AgregarFilaIns(3)">Bajo Selección</button>
+          </div>
+        </div>
+        <button type="button" class="btn btn-mini btn-info" [disabled]="!formDataPartida.enabled" container="body" [disableTooltip]="!minimbut" placement="top" ngbTooltip="Reemplazar"
+          (click)="ReemplazarIns()" (mouseup)="quitarfoco($event);">
+          <i class="fa fa-retweet" [ngClass]="{'icono-but':minimbut}"></i><span [ngClass]="{'hide-ele':minimbut}">Reemplazar</span>
+        </button>
+        <button type="button" class="btn btn-mini btn-danger" [disabled]="!formDataPartida.enabled" container="body" [disableTooltip]="!minimbut" placement="top" ngbTooltip="Eliminar"
+          (click)="EliminarIns()" (mouseup)="quitarfoco($event);">
+          <i class="fa fa-remove" [ngClass]="{'icono-but':minimbut}"></i><span [ngClass]="{'hide-ele':minimbut}">Eliminar</span>
+        </button>
+        <button type="button" class="btn btn-mini btn-primary" [disabled]="!formDataPartida.enabled" container="body" [disableTooltip]="!minimbut" placement="top" ngbTooltip="Sel. Multiple"
+          (click)="HabSelAcu()" (mouseup)="quitarfoco($event);">
+          <i class="fa" [ngClass]="{'fa-check': !colselacu,'fa-ban': colselacu,'icono-but':minimbut}"></i><span [ngClass]="{'hide-ele':minimbut}">Sel. Multiple</span>
+        </button>
+        &nbsp;&nbsp;&nbsp;
+        <button type="button" class="btn btn-mini btn-inverse" [disabled]="!formDataPartida.enabled" container="body" [disableTooltip]="!minimbut" placement="top" ngbTooltip="Subir"
+          (click)="SubirFilaIns()" (mouseup)="quitarfoco($event);">
+          <i class="fa fa-level-up" [ngClass]="{'icono-but':minimbut}"></i><span [ngClass]="{'hide-ele':minimbut}">Subir</span>
+        </button>
+        <button type="button" class="btn btn-mini btn-inverse" [disabled]="!formDataPartida.enabled" container="body" [disableTooltip]="!minimbut" placement="top" ngbTooltip="Bajar" container="body"
+          (click)="BajarFilaIns()" (mouseup)="quitarfoco($event);">
+          <i class="fa fa-level-down" [ngClass]="{'icono-but':minimbut}"></i><span [ngClass]="{'hide-ele':minimbut}">Bajar</span>
+        </button>
+        <div ngbDropdown container="body">
+          <button type="button" class="btn btn-mini btn-primary" id="dropdownConfig" ngbDropdownToggle [disabled]="!formDataPartida.enabled"
+            [disableTooltip]="!minimbut" placement="top" ngbTooltip="Codigo" container="body">
+            <i class="icofont icofont-eye-alt" [ngClass]="{'icono-but':minimbut}"></i><span [ngClass]="{'hide-ele':minimbut}">Codigo</span>
+          </button>
+          <div class="cust-ddm" ngbDropdownMenu aria-labelledby="dropdownConfig">
+            <button type="button" ngbDropdownItem class="btn-sm" (click)="OpcCodigo(1)">Ver Codigo</button>
+            <div class="dropdown-divider"></div>
+            <button type="button" ngbDropdownItem class="btn-sm" (click)="OpcCodigo(2)">Ver Indice Unificado</button>
+            <div class="dropdown-divider"></div>
+            <button type="button" ngbDropdownItem class="btn-sm" (click)="OpcCodigo(3)">Ocultar</button>
+          </div>
+        </div>
+        <mat-checkbox class="chb-bot0" [(ngModel)]="editarpreins" placement="top"
+          ngbTooltip="Editar Precio de Insumo en Catalogo" container="body"
+          [disabled]="!formDataPartida.enabled">E.I.</mat-checkbox>
+      </div>
+      <div [style.height.px]="height-21" [style.margin-bottom.px]="-paddingscroll2" class="tabla-limp" id="tableBodyMdp" (scroll)="SyncScroll('tableBodyMdp')">
+        <table class="table-bordered tab-10">
+          <thead>
+            <tr class="headsticky header-custom">
+              <th appAnchocol [ancho]="30">N°</th>
+              <th appAnchocol [ancho]="50" [ngClass]="{'cust-col-20': codsoloiu, 'cust-col-50': !codsoloiu}"
+                [hidden]="!mcodigo">{{codsoloiu?'IU':'Codigo'}}</th>
+              <th appAnchocol [ancho]="100" [detalle]="true">Descripción</th>
+              <th appAnchocol [ancho]="44">Unidad</th>
+              <th appAnchocol [ancho]="90">Cuadrilla</th>
+              <th appAnchocol [ancho]="90">Cantidad</th>
+              <th appAnchocol [ancho]="90">Precio</th>
+              <th appAnchocol [ancho]="90">Parcial</th>
+              <!-- <th appAnchocol [ancho]="35"></th> -->
+            </tr>
+          </thead>
+          <tbody>
+            <ng-container *ngIf="datasourcePri.length>0">
+              <tr *ngFor="let row of datasourcePri;let indice=index;" [hidden]="row.mostrar == 0"
+                (click)="cambindiceselacu(indice)"
+                [ngClass]="{'highlight': fila_selacu == indice,'filagrupo':row.unidad==''}">
+                <td appAnchocol [ancho]="30" style="cursor: pointer;">
+                  <span *ngIf="row.unidad!='' && !colselacu">{{row.num_det}}</span>
+                  <mat-checkbox *ngIf="row.num_det>0 && colselacu" class="checktabla" [checked]="row.seleccion==0?false:true"
+                    (change)="$event ? Cambioseltacu(row) : null"></mat-checkbox>
+                  <a *ngIf="row.unidad=='' && row.icomost=='0'" style="color:#06bb06; width: 14px;"
+                    (click)="toggleOn(row.id_tipo_insumo,indice)">
+                    <i class="icofont icofont-caret-down"></i>
+                  </a>
+                  <a *ngIf="row.unidad=='' && row.icomost=='1'" style="color:red; width: 14px;"
+                    (click)="toggleOff(row.id_tipo_insumo,indice)">
+                    <i class="icofont icofont-caret-up"></i>
+                  </a>
+                </td>
+                <td class="cellsinpadding" appAnchocol [ancho]="50" style="font-size:9px !important"
+                  [ngClass]="{'cust-col-50': !codsoloiu,'cust-col-20': codsoloiu}" [hidden]="!mcodigo">
+                  {{row.codigo | recortacodigo : codsoloiu }}
+                </td>
+                <td class="cellsinpadding text-left" appAnchocol [ancho]="100" [detalle]="true">
+                  <div class="recortatext celdaadvcero" ngbTooltip="{{row.descripcion}}" #b="ngbTooltip" container="body"
+                    triggers="click:blur" (mouseout)="b.close()">
+                    {{row.descripcion}}
+                  </div><i *ngIf="row.esinsumo==0 && row.num_det!=0" class="fa fa-search" style="cursor: pointer;"
+                    ngbTooltip="Ver Subpartida" container="body" (click)="OpenSubpartida(row,indice)"></i>
+                </td>
+                <td class="cellsinpadding" appAnchocol [ancho]="44">
+                  {{row.unidad}}
+                </td>
+                <td class="cellsinpadding" appAnchocol [ancho]="90">
+                  <div *ngIf="((row.editar3??0)==0 || formDataPartida.disabled) && row.operador!='%' && row.afcuadrilla==1 && Anumero(rendimiento.value)!=0" style="cursor: pointer;"
+                    class="float-right w-100" (click)="editarceldat2(indice)">
+                    <span [ngClass]="{'celdaadvcero':row.cuadrilla==0,'celdanocero':row.cuadrilla!=0}">{{row.cuadrilla | formatoDec}}</span><i *ngIf="!(row.cuadrilla!=0)" class="fa fa-exclamation-triangle c-alert"></i>
+                  </div>
+                  <input *ngIf="((row.editar3??0)==1 && row.afcuadrilla==1 && row.operador!='%' && !formDataPartida.disabled)"
+                    [textMask]="this.formsService.maskUsAmountDecimal8" type="text"
+                    class="formcontrol w-100 d-flex text-center" autocomplete="off" value="{{row.cuadrilla}}" appAutoFocus
+                    (keyup)="presentert2($event,indice)" (blur)="caneditarceldat2($event.target.value,indice)">
+                </td>
+                <td class="cellsinpadding" appAnchocol [ancho]="90">
+                  <!-- <div *ngIf="row.afcuadrilla==1 && row.operador!='%'" class="float-right w-100"><span>{{row.cantidad | number: mask_cant}}<span *ngIf="row.operador=='%'"> % </span></span></div> -->
+                  <div *ngIf="(row.editar==0 || formDataPartida.disabled)" class="float-right w-100"
+                    (click)="editarceldat1(indice)" style="cursor: pointer;"><!--  && (row.afcuadrilla==0 || (row.afcuadrilla==1 && row.operador=='%')) -->
+                    <span [ngClass]="{'celdaadvcero':row.cuadrilla==0,'celdanocero':row.cuadrilla!=0}">{{row.cantidad |
+                      number: mask_cant}}<span *ngIf="row.operador=='%'"> % </span></span><i *ngIf="!(row.cantidad!=0)"
+                      class="fa fa-exclamation-triangle c-alert"></i>
+                  </div>
+                  <input *ngIf="(row.editar==1 && !formDataPartida.disabled)"
+                    [textMask]="this.dec_cant == 4? this.formsService.maskUsAmountDecimal4 : (this.dec_cant==3? this.formsService.maskUsAmountDecimal3:this.formsService.maskUsAmountDecimal2)"
+                    type="text" class="formcontrol w-100 d-flex text-center" autocomplete="off" value="{{row.cantidad}}"
+                    appAutoFocus (keyup)="presentert1($event,indice)" (blur)="caneditarceldat1($event.target.value,indice)"><!--  && (row.afcuadrilla==0 || (row.afcuadrilla==1 && row.operador=='%')) -->
+                </td>
+                <td class="cellsinpadding" appAnchocol [ancho]="90">
+                  <div *ngIf="(row.editar2==0 || formDataPartida.disabled)" style="cursor: pointer;"
+                    class="float-right w-100" (click)="editarceldat3(indice)">
+                    <span *ngIf="row.unidad!=''" class="float-left">S/</span>
+                    <span class="float-right">{{row.precio | number: mask_precio}}</span>
+                  </div>
+                  <input *ngIf="(row.editar2==1 && !formDataPartida.disabled)"
+                    [textMask]="this.dec_precio == 4? this.formsService.maskUsAmountDecimal4 : (this.dec_precio==3? this.formsService.maskUsAmountDecimal3:this.formsService.maskUsAmountDecimal2)"
+                    type="text" class="formcontrol w-100 d-flex text-center" autocomplete="off" value="{{row.precio}}" appAutoFocus
+                    (keyup)="presentert3($event,indice)" (blur)="caneditarceldat3($event.target.value,indice)">
+                </td>
+                <td class="cellsinpadding" appAnchocol [ancho]="90">
+                  <span class="float-left">S/</span>
+                  <span class="float-right">{{row.parcial | number: mask_precio}}</span>
+                </td>
+              </tr>
+            </ng-container>
+            <ng-container *ngIf="datasourcePri.length<=0">
+              <tr>
+                <td class="mat-cell text-center" colspan="8">
+                  <label *ngIf="!buscando">No se encontraron resultados</label>
+                  <div *ngIf="buscando" class="preloader3 loader-block">
+                    <div class="circ1"></div>
+                    <div class="circ2"></div>
+                    <div class="circ3"></div>
+                    <div class="circ4"></div>
+                  </div>
+                </td>
+              </tr>
+            </ng-container>
+          </tbody>
+        </table>
+      </div>
+      <div class="tare-footer footer-tabla tabla-limp m-b-5" [style.padding-right.px]="paddingscroll" id="tableFootMdp"
+        (scroll)="SyncScroll2('tableFootMdp')">
+        <table class="table-bordered tab-10" style="position: sticky; bottom: 1px;">
+          <tfoot>
+            <tr>
+              <th class="cellsinpadding" appAnchocol [ancho]="494" [detalle]="true"
+                [ngClass]="{'cust-foota': mcodigo && !codsoloiu,'cust-footb': mcodigo && codsoloiu, 'cust-footc': !mcodigo}">
+                Total
+              </th>
+              <th class="cellsinpadding" appAnchocol [ancho]="90">
+                <span class="float-left" *ngIf="precio.value">S/</span><span class="float-right font-weight-bolder"
+                  *ngIf="precio.value">{{precio.value | number : mask_precio}}</span>
+              </th>
+              <!-- <th class="cellsinpadding text-left" appAnchocol [ancho]="35"></th> -->
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+    <div class="app-modal-footer modal-footer justify-content-between">
+      <button type="button" class="btn btn-danger btn-sm" (click)="closeModal()" [disabled]="procesando"><i
+          class="fa fa-times"></i>Cerrar</button>
+      <i *ngIf="procesando" class="fa fa-spinner fa-pulse fa-lg fa-fw"></i>
+              <span class="sr-only">Loading...</span>
+      <button type="button" class="btn btn-success btn-sm" (click)="almacenar()" [disabled]="procesando"><i
+          class="fa fa-check"></i>{{duplicar?'Duplicar':'Guardar'}}</button>
+    </div>
+  </div>
+</div>
+<app-cargando [bloquearTodo]="true" *ngIf="mostrar_carga_todo"></app-cargando>

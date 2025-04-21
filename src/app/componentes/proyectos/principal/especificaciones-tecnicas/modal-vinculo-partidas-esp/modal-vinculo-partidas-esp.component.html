@@ -1,0 +1,294 @@
+<div class="modal-dialog-scrollable modal-xl">
+  <div class="modal-content">
+    <div class="app-modal-header  modal-header">
+      <h4 class="modal-title tit-modal1">
+        <b>Vincular Partidas</b>
+      </h4>
+      <button type="button" class="close basic-close" (click)="closeModal()">
+        <span aria-hidden="true" class="mt-2">&times;</span>
+      </button>
+    </div>
+    <div class="modal-body">
+      <form [formGroup]="formData">
+        <!-- <div class="w-100 d-flex justify-content-between"> -->
+        <div class="row px-3">
+          <div class="col-6 px-0">
+            <mat-form-field appearance="outline" class="mff-reduc my-form-field"
+              style="width: 170px;margin-right: 5px;">
+              <mat-label>% Minimo de Similitud(50-100)</mat-label>
+              <input matInput type="text" style="text-align: center;" [textMask]="{mask: maskUsAmountDecimal}"
+                (keydown.enter)="CambioPorc()" formControlName="numporc" (blur)="CambioPorc()" placeholder="50-100"
+                appMinmaxnum [min]="0" [max]="100">
+            </mat-form-field>
+            <button type="button" class="btn btn-mini btn-group-mini btn-outline-info" placement="top"
+              ngbTooltip="Actualizar busqueda" style="margin-top: -4px;" container="body"
+              (mouseup)="quitarfoco($event);" (click)="CambioPorc()">
+              <i class="fa fa-search icono-but"></i>
+            </button>
+          </div>
+          <div class="col-6 px-0 d-sm-flex " *ngIf="rowpasa && !mostrar_carga_todo2">
+            <!-- <div class="ml-3 mt-1"> -->
+            <mat-form-field appearance="outline" class="mff-reduc my-form-field opaIbput"
+              style="width: 100px;margin-right: 5px; height: 48px !important;">
+              <mat-label>Color de Vinculo</mat-label>
+              <input type="color" matInput autocomplete="off" formControlName="colorv" (input)="reasignarColor()">
+            </mat-form-field>
+            <!-- <button type="button" class="btn btn-mini btn-group-mini btn-outline-danger" placement="top"
+              ngbTooltip="Reiniciar Color" style="margin-top: -15px;" container="body" (mouseup)="quitarfoco($event);"
+              (click)="ReiniColor()">
+              <i class="fa fa-refresh icono-but"></i>
+            </button> -->
+            <!-- </div> -->
+            <div class="d-flex align-self-center ">
+              <div>
+                <button type="button" class="btn btn-mini btn-group-mini btn-primary d-flex" container="body"
+                  ngbTooltip="Seleccionar todo permitido" (click)="seleccionarTodos(true,true)" (mouseup)="quitarfoco($event);">
+                  <i class="fa mr-0 fa-check-square-o "></i>
+                  <!-- <span class="d-none  d-lg-block">Seleccionar
+                    Todo</span> -->
+                </button>
+              </div>
+              <div>
+                <button type="button" class="btn btn-mini btn-group-mini btn-info d-flex" container="body"
+                  ngbTooltip="Deseleccionar todo permitido" (click)="seleccionarTodos(false, true)" (mouseup)="quitarfoco($event);">
+                  <i class="fa mr-0 fa-square-o "></i>
+                  <!-- <span class="d-none  d-lg-block">Deseleccionar Todo</span> -->
+                </button>
+              </div>
+              <div>
+                <button type="button" class="btn btn-mini btn-group-mini btn-secondary d-flex" container="body"
+                  ngbTooltip="seleccionar iguales permitido" (click)="seleccionarIguales(true)" (mouseup)="quitarfoco($event);">
+                  <i class="fa mr-0 fa-list-ul "></i>
+                  <!-- <span class="d-none  d-lg-block">Seleccionar iguales</span> -->
+                </button>
+              </div>
+              <div class="ml-2">
+                <button type="button" class="btn btn-mini btn-group-mini btn-outline-primary d-flex" container="body"
+                  ngbTooltip="Selecionar todo" (click)="seleccionarTodos(true)" (mouseup)="quitarfoco($event);">
+                  <i class="fa mr-0 fa-check-square-o "></i>
+                  <!-- <span class="d-none  d-lg-block">Seleccionar
+                    Todo</span> -->
+                </button>
+              </div>
+              <div>
+                <button type="button" class="btn btn-mini btn-group-mini btn-outline-info d-flex" container="body"
+                  ngbTooltip="Deseleccionar todo" (click)="seleccionarTodos(false)" (mouseup)="quitarfoco($event);">
+                  <i class="fa mr-0 fa-square-o "></i>
+                  <!-- <span class="d-none  d-lg-block">Deseleccionar Todo</span> -->
+                </button>
+              </div>
+              <div>
+                <button type="button" class="btn btn-mini btn-group-mini btn-outline-secondary d-flex" container="body"
+                  ngbTooltip="seleccionar iguales" (click)="seleccionarIguales()" (mouseup)="quitarfoco($event);">
+                  <i class="fa mr-0 fa-list-ul "></i>
+                  <!-- <span class="d-none  d-lg-block">Seleccionar iguales</span> -->
+                </button>
+              </div>
+             
+            </div>
+            <!-- <button type="button" class="btn btn-mini" [ngClass]="{'btn-success':!verbloq,'btn-danger':verbloq}"
+              container="body" (click)="OcultaBloq()" (mouseup)="quitarfoco($event);">
+              <i class="fa f-12" [ngClass]="{'fa-eye':!verbloq,'fa-eye-slash':verbloq}"></i>{{verbloq?'Ocultar
+              Bloqueados':'Mostrar Bloqueados'}}
+            </button> -->
+
+
+          </div>
+
+        </div>
+        <!-- </div> -->
+
+        <div class="row px-3">
+          <div class="col-6 overflow-auto px-0" [style.height.px]="heightacu">
+            <table class="table-bordered tab-10 table-p">
+              <thead class="text-center headsticky">
+                <tr class="h-celda">
+                  <th appAnchocol [ancho]="20"></th>
+                  <th appAnchocol [ancho]="205" [detalle]="true" class="h-h-custom">Descripción</th>
+                  <th appAnchocol [ancho]="35" class="h-h-custom"> UND</th>
+                  <!-- <th appAnchocol [ancho]="100" class="h-h-custom"> % Similitud Partidas </th>
+                  <th appAnchocol [ancho]="60" class="h-h-custom"> Vinculo </th> -->
+                </tr>
+              </thead>
+              <tbody>
+                <ng-container *ngIf="tablaAux.length">
+                  <tr *ngFor="let row of tablaAux; let index = index" [ngClass]="{'h-celda':row.editable}"
+                    (click)="seleccionarFila(row)">
+                    <ng-container *ngIf="row.editable">
+                      <td 
+                        [ngStyle]="{'background-color': row.color_vincpart ? row.color_vincpart : '#FFFFFF'}"
+                        class="text-center opacity-06">
+                        <span style="font-weight: bolder;color:black">{{index + 1}}</span>
+                      </td>
+                      <td appAnchocol [ancho]="205" [detalle]="true" [ngClass]="{'highlight2': rowpasa?.ind == row.ind}"
+                        appPintarfilapre [tipo]="fondo" [color]="''" [letra]="letra" [item]="row.item" [separador]="'.'"
+                        [partida]="row.unidad!=''?true:false">
+                        <div class="recortatextlinea text-left"
+                          [style.padding-left.px]="((row.item?.toString().split('.').length-1)*5)+(row.unidad?17:0) + (!row.duracion && !row.unidad ? 13 : 0)"
+                          ngbTooltip="{{row.descripcion}}" #t="ngbTooltip" container="body" triggers="click:blur"
+                          (mouseout)="t.close()">
+                          <a *ngIf="!row.unidad && row.icomost=='0' && row.duracion"
+                            style="padding: 0px 2px;color:#06bb06;cursor: pointer;">
+                            <i class="icofont icofont-caret-down"></i>
+                          </a>
+                          <a *ngIf="!row.unidad && row.icomost=='1' && row.duracion" style="padding: 0px 2px;color:red">
+                            <i class="icofont icofont-caret-down"></i>
+                          </a><span
+                            style="font-weight: 700;">{{row.item}}</span>&nbsp;&nbsp;<span>{{row.descripcion}}</span>
+                        </div>
+                      </td>
+                      <td [ngClass]="{'highlight2': rowpasa?.ind == row.ind}" appPintarfilapre [tipo]="fondo"
+                        [color]="''" [letra]="letra" [item]="row.item" [separador]="'.'"
+                        [partida]="row.unidad!=''?true:false" class="text-center">
+                        <ng-container *ngIf="row.unidad">
+                          {{row.unidad}}
+                        </ng-container>
+                      </td>
+                    </ng-container>
+                    <!-- <td [ngClass]="{'highlight2': rowpasa.ind == row.ind}" appPintarfilapre [tipo]="titulo1"
+                      [color]="titulo1color" [letra]="titulo1letra" [item]="row.item" [separador]="'.'"
+                      [partida]="row.unidad!=''?true:false" class="text-center">
+                      <div class="barra-estado text-center">
+                        <div [style.width.px]="row.porcentaje == null ? 0 : row.porcentaje"
+                          class="barra-registro text-center tema">
+                        </div>
+                        <div class="porcentaje font-weight-bolder">{{row.porcentaje == null ? 0
+                          :
+                          row.porcentaje}}%</div>
+                      </div>
+                    </td>
+                    <td [ngClass]="{'highlight2': rowpasa.ind == row.ind}" appPintarfilapre [tipo]="titulo1"
+                      [color]="titulo1color" [letra]="titulo1letra" [item]="row.item" [separador]="'.'"
+                      [partida]="row.unidad!=''?true:false" class="text-center">
+                      <div class="label-main" style="margin: 1px;">
+                        <label class="label"
+                          [ngClass]="{'bg-success': row.tipo_vinc == 'SISTEMA', 
+                                                              'label-warning-oscuro': row.tipo_vinc == 'MANUAL',
+                                                              'bg-info': row.tipo_vinc == 'IDEM',
+                                                              'bg-orange':row.tipo_vinc == 'SIST/MAN',
+                                                              'bg-secondary': row.tipo_vinc == 'PENDIENTE' || row.tipo_vinc == null}">{{row.tipo_vinc
+                          ? row.tipo_vinc : 'PENDIENTE'}}</label>
+                      </div>
+                    </td> -->
+                  </tr>
+                </ng-container>
+              </tbody>
+            </table>
+          </div>
+          <div class="col-6 overflow-auto px-0" [style.height.px]="heightacu">
+
+            <div class="tabla-limp h-100" id="tableBodyri">
+              <table class="table-bordered tab-10">
+                <thead>
+                  <tr class="headsticky header-custom">
+                    <th appAnchocol [ancho]="28" class="h-h-custom2"></th>
+                    <th appAnchocol [ancho]="18" class="h-h-custom2">
+                      <!-- <mat-checkbox class="checktabla cb-cust-1"  formControlName="limpio"
+                      (change)="seleccionarTodos($event.checked)"
+                      ></mat-checkbox> -->
+                    </th>
+                    <th appAnchocol [ancho]="40" class="h-h-custom2">%</th>
+                    <th appAnchocol [ancho]="220" [detalle]="true" class="h-h-custom2">
+                      <div class="d-flex">
+                        <span style="width: calc(100% - 35px);">Descripción</span>
+                      </div>
+                    </th>
+                    <th appAnchocol [ancho]="44" class="h-h-custom2">Unidad</th>
+                    <th appAnchocol [ancho]="40" class="h-h-custom2">Espec.</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <ng-container *ngIf="tablapri.length>0">
+                    <tr *ngFor="let row of tablapri;let indice=index;" [hidden]="row.mostrar == 0 || row.verbloq==0"
+                      class="h-celda2" (click)="cambindiceselacu(indice)">
+                      <td class="cellsinpadding opacity-06" appAnchocol [ancho]="28"
+                        [ngStyle]="{'background-color': row.color_vincpart}">
+                        <span *ngIf="!colselpri && !colselpri2" style="font-weight: bolder;color:black">{{indice+1}}</span>
+                      </td>
+                      <td appAnchocol [ancho]="18">
+                        <!-- <mat-checkbox class="checktabla" *ngIf="row.seleccion!==2"
+                          [checked]="row.seleccion==0?false:true" (change)="cambioCheck(row, $event.checked, indice)"
+                          [disabled]="row.indice==vinculosel?.indice && row.vinculo==null"></mat-checkbox>
+                        <span *ngIf="row.seleccion==2" class="f-14"><i class="fa fa-ban"></i></span> -->
+                        <mat-checkbox  [checked]="!row.seleccion ?false:true" [ngClass]="{'f-asignado': row.indice == row.vinculo_part}"
+                          *ngIf="row.seleccion!==2" (change)="cambioCheck($event.checked, indice)"></mat-checkbox>
+                        <span *ngIf="row.seleccion==2" class="f-14" container="body"
+                          ngbTooltip="Principal de otro agrupamiento"><i class="fa fa-ban"></i></span>
+                      </td>
+                      <td class="cellsinpadding" appAnchocol [ancho]="60">
+                        <!-- <span *ngIf="row.porc">{{row.porc}}</span> -->
+                        <ng-container *ngIf="rowpasa.indice == row.indice; else barra">
+                          <label class="label highlight2" style="color: black !important;">SELECCION</label>
+                        </ng-container>
+                        <ng-template #barra>
+                          <div *ngIf="row.porc" class="progressj" style="width: 56px;font-size: 11px;">
+                            <span class="progressj-text">{{row.porc}}</span>
+                            <div class="progressj-fill"
+                              [ngStyle]="{'width': (((row.porc/50)-1)*100)+'%','background': row.porc>=40 && row.porc<100?'#11c15b':'#448aff' }">
+                            </div>
+                          </div>
+                        </ng-template>
+                      </td>
+                      <td class="text-left cellsinpadding" appAnchocol [ancho]="220" [detalle]="true" appPintarfilapre
+                        [tipo]="fondo" [color]="color" [letra]="letra" [item]="row.item" [separador]="'.'"
+                        [partida]="row.unidad!=''?true:false">
+                        <!-- [style.padding-left.px]="((row.item.toString().split('.').length-1)*5)+(row.unidad!=''?17:0)" -->
+                        <div class="recortatextlinea celdaadvcero" ngbTooltip="{{row.descripcion}}" #t="ngbTooltip"
+                          container="body" triggers="click:blur" (mouseout)="t.close()">
+                          <span style="font-weight: 700;">{{row.item}}</span>&nbsp;&nbsp;{{row.descripcion}}
+                        </div>
+                      </td>
+                      <td appAnchocol [ancho]="44" appPintarfilapre [tipo]="fondo" [color]="color" [letra]="letra"
+                        [item]="row.item" [separador]="'.'" [partida]="row.unidad!=''?true:false">
+                        {{row.unidad}}
+                      </td>
+                      <td appAnchocol [ancho]="40" appPintarfilapre [tipo]="fondo" [color]="color" [letra]="letra"
+                        [item]="row.item" [separador]="'.'" [partida]="row.unidad!=''?true:false">
+
+                        <ng-container *ngIf="row.unidad">
+                          <button type="button" class="btn btn-mini2 btn-outline-secondary ml-1"
+                            *ngIf="row.especificacion !== null" (mouseup)="quitarfoco($event);" container="body"
+                            ngbTooltip="Ver especificacion tecnica vinculada" (click)="especTecnXPartida(row)">
+                            <i class="fa fa-file-code-o icono-but"></i>
+                          </button>
+                        </ng-container>
+
+                      </td>
+
+                    </tr>
+                  </ng-container>
+                  <ng-container *ngIf="tablapri.length<=0">
+                    <tr>
+                      <td class="mat-cell text-center" colspan="8">
+                        <label *ngIf="!buscando">No se encontraron resultados</label>
+                        <div *ngIf="buscando" class="preloader3 loader-block">
+                          <div class="circ1"></div>
+                          <div class="circ2"></div>
+                          <div class="circ3"></div>
+                          <div class="circ4"></div>
+                        </div>
+                      </td>
+                    </tr>
+                  </ng-container>
+                </tbody>
+              </table>
+            </div>
+            <app-cargando [bloquearTodo]="false" *ngIf="mostrar_carga_todo2"></app-cargando>
+          </div>
+        </div>
+
+      </form>
+    </div>
+    <div class="app-modal-footer modal-footer justify-content-between">
+      <button type="button" class="btn btn-danger btn-sm" (click)="closeModal()"><i
+          class="fa fa-times"></i>Cerrar</button>
+
+
+
+      <button type="button" class="btn btn-success btn-sm" (click)="Vincular()"><i
+          class="fa fa-check"></i>Vincular</button>
+    </div>
+  </div>
+</div>
+
+<app-cargando [bloquearTodo]="true" *ngIf="mostrar_carga_todo"></app-cargando>

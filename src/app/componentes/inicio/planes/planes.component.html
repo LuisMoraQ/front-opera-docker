@@ -1,0 +1,517 @@
+    <html>
+      <body>
+        <main class="portada">
+          <div class="main-content full-width">
+            <div class="image-container">
+              <div class="container">
+                <div class="overlay">
+                  <div class="container-fluid" style="padding-left: 0;padding-right: 0;">
+                    <h1 style="background-color: white; color:black; text-align: center; padding-top: 10px;margin: 0;"><b>TIPOS DE LICENCIA</b></h1>
+                      <div class="container-planes">
+                        <!-- <div class="card-planes" style=" background: linear-gradient(#00742d,#008133,#008f3a,#00a142,#02be50,#04eb66);"> -->
+                          <div class="card-planes" [ngStyle]="{'background-image': 'url(' + imageUrl + ')', 'background-color': '#008133'}">
+                          <h2 style=" color:green;">VERSION PROFESIONAL</h2> 
+                            <div class="container-fluid" style="background-color: rgb(231, 224, 224,0.30);padding-top: 30px;">
+                              <u>Módulos Disponibles</u>
+                              <ol>
+                                <li>Costos y Presupuestos</li>
+                                <li>Metrado de Proyecto</li>
+                                <li>Formula Polinómica</li>
+                                <li>Programación de Obra</li>
+                                <li>Especificaciones Técnicas</li>
+                              </ol>
+                              <p><u>Tipo de Licencia</u></p>
+                              <p>01 Licencia Monousuario <br>(01 Usuario Principal)</p>
+                              <del><p style="text-align: center;font-size: 20px;">Precio: $95.00</p></del>
+                              <p style="text-align: center;color: gold;font-size: 20px;">Precio: $85.50</p>
+                              <p style="text-align: center;">Plazo de Licencia: 12 Meses</p> 
+                              <p style="text-align: center;">Cantidad de Proyectos: Limitado</p> 
+                              <div class="button-container">
+                                <button type="button" aria-selected="true" (click)="EnviarSolicitud('licestudiantil')">COMPRA YA</button>
+                              </div>
+                            </div>
+                        </div>
+                        <!-- <div class="card-planes"style=" background: linear-gradient(#d08206,#de9404,#eca703,#f3b002,#ffbf00,#fada49)"> -->
+                          <div class="card-planes" [ngStyle]="{'background-image': 'url(' + imageUr2 + ')', 'background-color': '#de9404'}">
+                          <h2 style="color:blue;">VERSION CONSULTOR</h2> 
+                          <div class="container-fluid" style="background-color: rgb(231, 224, 224,0.3);padding-top: 30px;">
+                              <u>Módulos Disponibles</u>
+                            <ol>
+                              <li>Costos y Presupuestos</li>
+                              <li>Metrado de Proyecto</li>
+                              <li>Formula Polinómica</li>
+                              <li>Programación de Obra</li>
+                              <li>Especificaciones Técnicas</li>
+                            </ol>
+                            <p><u>Tipo de Licencia</u></p>
+                            <p>01 Licencia Monousuario <br>(01 Usuario Principal)</p>
+                            <del><p style="text-align: center;font-size: 20px;">Precio: $170.00</p></del>
+                            <p style="text-align: center;color: gold;font-size: 20px;">Precio: $136.00</p>
+                            <p style="text-align: center;">Plazo de Licencia: 12 Meses</p>
+                            <p style="text-align: center;">Cantidad de Proyectos: Ilimitado</p> 
+                            <div class="button-container">
+                              <button type="button" aria-selected="true" (click)="EnviarSolicitud('licprofesional')">COMPRA YA</button>
+                            </div>
+                          </div>
+                        </div>
+                        <!-- <div class="card-planes" style="background:linear-gradient(#951717,#e33d3d,#ee3737,#f14b4b,#f98686);"> -->
+                        <div class="card-planes" [ngStyle]="{'background-image': 'url(' + imageUr3 + ')', 'background-color': '#e33d3d'}">
+                          <h2  style="color:red;">VERSION BIM</h2> 
+                          <div class="container-fluid" style="background-color: rgb(231, 224, 224,0.30);">
+                              <u>Módulos Disponibles</u>
+                              <ol>
+                                <li>Costos y Presupuestos</li>
+                                <li>Metrado de Proyecto</li>
+                                <li>Formula Polinómica</li>
+                                <li>Programación de Obra</li>
+                                <li>Especificaciones Técnicas</li>
+                              </ol>
+                              <p><u>Tipo de Licencia</u></p>
+                              <p>01 Licencia Multiusuario <br><ol>
+                                <li>01 Usuario Principal </li>
+                                <li>02 Usuario Secundarios</li>
+                              </ol></p>
+                              <del><p style="text-align: center;font-size: 20px;">Precio: $240.00</p></del>
+                              <p style="text-align: center;color: gold;font-size: 20px;">Precio: $192.00</p>
+                              <p style="text-align: center;">Plazo de Licencia: 12 Meses</p>
+                              <p style="text-align: center;">Cantidad de Proyectos: Ilimitado</p> 
+                              <div class="button-container">
+                                <button type="button" aria-selected="true" (click)="EnviarSolicitud('licbim')">COMPRA YA</button>
+                              </div>
+                            </div>
+                        </div>
+                        <!-- <div class="card-planes" style="background:linear-gradient(#56426e,#634c7e,#6e568c,#755b95,#7e629f,#a38fbc);"> -->
+                          <div class="card-planes" [ngStyle]="{'background-image': 'url(' + imageUr4 + ')', 'background-color': '#634c7e'}">
+                          <h2  style=" color:purple;">VERSION EMPRESARIAL</h2> 
+                          <div class="container-fluid" style="background-color: rgb(231, 224, 224,0.30);">
+                          <u>Módulos Disponibles</u>
+                          <ol>
+                            <li>Costos y Presupuestos</li>
+                            <li>Metrado de Proyecto</li>
+                            <li>Formula Polinómica</li>
+                            <li>Programación de Obra</li>
+                            <li>Especificaciones Técnicas</li>
+                          </ol>
+                          <p><u>Tipo de Licencia</u></p>
+                          <p>01 Licencia Multiusuario <br>
+                            05 Usuario Principales/Secundarios</p>
+                            <del><p style="text-align: center;font-size: 20px;">Precio: $600.00</p></del>
+                            <p style="text-align: center;color: gold;font-size: 20px;">Precio: $480.00</p>
+                            <p style="text-align: center;">Plazo de Licencia: 12 Meses</p>
+                            <p style="text-align: center;">Cantidad de Proyectos: Ilimitado</p> 
+                            <div class="button-container">
+                              <button type="button" aria-selected="true" (click)="EnviarSolicitud('licempresarial')">COMPRA YA</button>
+                            </div>
+                          </div>
+                        </div>
+                      </div><br>
+                      <div class="card-demo">
+                        <h2>Si desea realizar puebas al software, Solicite su demo!</h2>
+                        <div class="button-container">
+                          <button type="button" aria-selected="true" (click)="EnviarSolicitud('demo')">SOLICITAR DEMO</button>
+                        </div>
+                     </div>
+                  </div>
+                  <br>
+                    <div class="container-fluid">
+                      <table class="tablainfo">
+                        <tr>
+                        <th colspan="5">COMPARATIVO DE VERSION BIM PLANNER</th>
+                        </tr>
+                        <tr >
+                          <th>INFORMACION</th>
+                          <th>Version Estudiante</th>
+                          <th>Version Profesional</th>
+                          <th>Version BIM</th>
+                          <th>Version Corporativa</th>
+                        </tr>
+                        <tr>
+                        <td class="tabla-subtitulo" colspan="5" (click)="toggleModulos()">MODULOS DEL SISTEMA
+                          <i class="fa" [ngClass]="modulosVisible ? 'fa-minus' : 'fa-plus'" style="float: right;"></i>
+                        </td>
+                        </tr>
+                          <tr *ngIf="modulosVisible">
+                            <td class="dorado" colspan="5"  (click)="toggleSubmodulos()">PANEL DE USUARIO
+                              <i class="fa" [ngClass]="submodulosVisible ? 'fa-minus' : 'fa-plus'" style="float: right;"></i>
+                            </td>
+                          </tr>
+                          <tr *ngIf="submodulosVisible">
+                            <td class="tabla-titulo">Data del Sistema</td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                          </tr>
+                          <tr *ngIf="submodulosVisible">
+                            <td class="titulo-td">Bandeja de Proyectos (Data del Sistema, Usuario, Compartidos y Papelera)</td>
+                            <td><i class="icofont-check"></i></td>
+                            <td><i class="icofont-check"></i></td>
+                            <td><i class="icofont-check"></i></td>
+                            <td><i class="icofont-check"></i></td>
+                          </tr>
+                          <tr *ngIf="submodulosVisible">
+                            <td class="titulo-td">Catálogos de Partidas (Data de Partidas del Sistema y de usuario)</td>
+                            <td><i class="icofont-check"></i></td>
+                            <td><i class="icofont-check"></i></td>
+                            <td><i class="icofont-check"></i></td>
+                            <td><i class="icofont-check"></i></td>
+                          </tr>
+                          <tr *ngIf="submodulosVisible">
+                            <td class="titulo-td">Catálogo de insumos (Catalogo del Sistema y del usuario)</td>
+                            <td><i class="icofont-check"></i></td>
+                            <td><i class="icofont-check"></i></td>
+                            <td><i class="icofont-check"></i></td>
+                            <td><i class="icofont-check"></i></td>
+                          </tr>
+                          <tr *ngIf="submodulosVisible">
+                            <td class="tabla-titulo">Configuración</td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                          </tr>
+                          <tr *ngIf="submodulosVisible">
+                            <td class="titulo-td">Parámetros Generales (Configuración Decimales, Clasificación de Proyectos)</td>
+                            <td ><i class="icofont-check"></i></td>
+                            <td ><i class="icofont-check"></i></td>
+                            <td ><i class="icofont-check"></i></td>
+                            <td ><i class="icofont-check"></i></td>
+                          </tr>
+                          <tr *ngIf="submodulosVisible">
+                            <td class="titulo-td">Características de Insumos (Unidad de Medida, Clasificación Comercial)</td>
+                            <td ><i class="icofont-check"></i></td>
+                            <td ><i class="icofont-check"></i></td>
+                            <td ><i class="icofont-check"></i></td>
+                            <td ><i class="icofont-check"></i></td>
+                          </tr>
+                          <tr *ngIf="submodulosVisible">
+                            <td class="tabla-titulo">Usuario</td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                          </tr>
+                          <tr *ngIf="submodulosVisible">
+                            <td class="titulo-td">Perfil de Usuario (Edición de Login y contraseña)</td>
+                            <td ><i class="icofont-check"></i></td>
+                            <td ><i class="icofont-check"></i></td>
+                            <td ><i class="icofont-check"></i></td>
+                            <td ><i class="icofont-check"></i></td>
+                          </tr>
+                          <tr *ngIf="submodulosVisible">
+                            <td class="titulo-td">Manual de Usuario</td>
+                            <td ><i class="icofont-check"></i></td>
+                            <td ><i class="icofont-check"></i></td>
+                            <td ><i class="icofont-check"></i></td>
+                            <td ><i class="icofont-check"></i></td>
+                          </tr>
+                          <tr *ngIf="submodulosVisible">
+                            <td class="tabla-titulo">Parámetros fijos</td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                          </tr>
+                          <tr *ngIf="submodulosVisible">
+                            <td class="titulo-td">Índice Unificado</td>
+                            <td><i class="icofont-check"></i></td>
+                            <td><i class="icofont-check"></i></td>
+                            <td><i class="icofont-check"></i></td>
+                            <td><i class="icofont-check"></i></td>
+                          </tr>
+                          <tr *ngIf="modulosVisible">
+                            <td class="dorado" colspan="5"  (click)="toggleProyectos()">PANEL DE PROYECTOS
+                              <i class="fa" [ngClass]="proyectosVisible ? 'fa-minus' : 'fa-plus'" style="float: right;"></i>
+                            </td>
+                          </tr>
+                          <tr *ngIf="proyectosVisible">
+                            <td class="tabla-titulo">PRESUPUESTO DE OBRA</td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                          </tr>
+                          <tr *ngIf="proyectosVisible">
+                            <td class="titulo-td1">Aspectos Generales del Proyecto</td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                          </tr>
+                          <tr *ngIf="proyectosVisible">
+                            <td class="titulo-td">Edición de datos Generales del Proyecto</td>
+                            <td><i class="icofont-check"></i></td>
+                            <td><i class="icofont-check"></i></td>
+                            <td><i class="icofont-check"></i></td>
+                            <td><i class="icofont-check"></i></td>
+                          </tr>
+                          <tr *ngIf="proyectosVisible">
+                            <td class="titulo-td">Configuración Decimales del proyecto</td>
+                            <td><i class="icofont-check"></i></td>
+                            <td><i class="icofont-check"></i></td>
+                            <td><i class="icofont-check"></i></td>
+                            <td><i class="icofont-check"></i></td>
+                          </tr>
+                          <tr *ngIf="proyectosVisible">
+                            <td class="titulo-td1">Edición de Presupuesto</td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                          </tr>
+                          <tr *ngIf="proyectosVisible">
+                            <td class="titulo-td">Hoja de Presupuesto</td>
+                            <td><i class="icofont-check"></i></td>
+                            <td><i class="icofont-check"></i></td>
+                            <td><i class="icofont-check"></i></td>
+                            <td><i class="icofont-check"></i></td>
+                          </tr>
+                          <tr *ngIf="proyectosVisible">
+                            <td class="titulo-td">Análisis de Costos Unitarios</td>
+                            <td><i class="icofont-check"></i></td>
+                            <td><i class="icofont-check"></i></td>
+                            <td><i class="icofont-check"></i></td>
+                            <td><i class="icofont-check"></i></td>
+                          </tr>
+                          <tr *ngIf="proyectosVisible">
+                            <td class="titulo-td">Relación de Insumos</td>
+                            <td><i class="icofont-check"></i></td>
+                            <td><i class="icofont-check"></i></td>
+                            <td><i class="icofont-check"></i></td>
+                            <td><i class="icofont-check"></i></td>
+                          </tr>
+                          <tr *ngIf="proyectosVisible">
+                            <td class="titulo-td">Clasificación Comercial</td>
+                            <td><i class="icofont-check"></i></td>
+                            <td><i class="icofont-check"></i></td>
+                            <td><i class="icofont-check"></i></td>
+                            <td><i class="icofont-check"></i></td>
+                          </tr>
+                          <tr *ngIf="proyectosVisible">
+                            <td class="titulo-td1" >Edición de Pie de Presupuesto</td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                          </tr>
+                          <tr *ngIf="proyectosVisible">
+                            <td class="titulo-td">Edición de Pie de Presupuesto del Proyecto</td>
+                            <td><i class="icofont-check"></i></td>
+                            <td><i class="icofont-check"></i></td>
+                            <td><i class="icofont-check"></i></td>
+                            <td><i class="icofont-check"></i></td>
+                          </tr>
+                          <tr *ngIf="proyectosVisible">
+                            <td class="titulo-td">Edición de Pie de Presupuesto por Títulos - Sub Proyectos</td>
+                            <td><i class="icofont-check"></i></td>
+                            <td><i class="icofont-check"></i></td>
+                            <td><i class="icofont-check"></i></td>
+                            <td><i class="icofont-check"></i></td>
+                          </tr>
+                          <tr *ngIf="proyectosVisible">
+                            <td class="tabla-titulo">HOJA DE METRADOS</td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                          </tr>
+                          <tr *ngIf="proyectosVisible">
+                            <td class="titulo-td ">Resumen de Metrados (Clasificación del Registro Metrado)</td>
+                            <td><i class="icofont-check"></i></td>
+                            <td><i class="icofont-check"></i></td>
+                            <td><i class="icofont-check"></i></td>
+                            <td><i class="icofont-check"></i></td>
+                          </tr>
+                          <tr *ngIf="proyectosVisible">
+                            <td class="titulo-td">Hoja de Metrado Desagregado</td>
+                            <td><i class="icofont-check"></i></td>
+                            <td><i class="icofont-check"></i></td>
+                            <td><i class="icofont-check"></i></td>
+                            <td><i class="icofont-check"></i></td>
+                          </tr>
+                          <tr *ngIf="proyectosVisible">
+                            <td class="titulo-td ">Hoja de Metrado de Acero</td>
+                            <td><i class="icofont-check"></i></td>
+                            <td><i class="icofont-check"></i></td>
+                            <td><i class="icofont-check"></i></td>
+                            <td><i class="icofont-check"></i></td>
+                          </tr>
+                          <tr *ngIf="proyectosVisible">
+                            <td class="tabla-titulo">FORMULA POLINOMICA</td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                          </tr>
+                          <tr *ngIf="proyectosVisible">
+                            <td class="titulo-td ">Edición de Índice Unificado</td>
+                            <td><i class="icofont-check"></i></td>
+                            <td><i class="icofont-check"></i></td>
+                            <td><i class="icofont-check"></i></td>
+                            <td><i class="icofont-check"></i></td>
+                          </tr>
+                          <tr *ngIf="proyectosVisible">
+                            <td class="titulo-td ">Resumen General y Cuantificación de Formulas Polinómicas</td>
+                            <td><i class="icofont-check"></i></td>
+                            <td><i class="icofont-check"></i></td>
+                            <td><i class="icofont-check"></i></td>
+                            <td><i class="icofont-check"></i></td>
+                          </tr>
+                          <tr *ngIf="proyectosVisible">
+                            <td class="titulo-td">Agrupamiento preliminar de Monomios Formula Polinómica </td>
+                            <td><i class="icofont-check"></i></td>
+                            <td><i class="icofont-check"></i></td>
+                            <td><i class="icofont-check"></i></td>
+                            <td><i class="icofont-check"></i></td>
+                          </tr>
+                          <tr *ngIf="proyectosVisible">
+                          <td class="tabla-titulo">PROGRAMACION DE OBRA</td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                          </tr>
+                          <tr *ngIf="proyectosVisible">
+                            <td class="titulo-td1">Tiempo de Programación</td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                          </tr>
+                          <tr *ngIf="proyectosVisible">
+                            <td class="titulo-td">Datos Generales</td>
+                            <td><i class="icofont-minus"></i></td>
+                            <td><i class="icofont-check"></i></td>
+                            <td><i class="icofont-check"></i></td>
+                            <td><i class="icofont-check"></i></td>
+                          </tr>
+                          <tr *ngIf="proyectosVisible">
+                            <td class="titulo-td">Programación de Tiempos de Mano de Obra y Equipos</td>
+                            <td><i class="icofont-minus"></i></td>
+                            <td><i class="icofont-check"></i></td>
+                            <td><i class="icofont-check"></i></td>
+                            <td><i class="icofont-check"></i></td>
+                          </tr>
+                          <tr *ngIf="proyectosVisible">
+                            <td class="titulo-td1">Programación</td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                          </tr>
+                          <tr *ngIf="proyectosVisible">
+                            <td class="titulo-td">Diagrama Gantt - Diagrama de Barras</td>
+                            <td><i class="icofont-minus"></i></td>
+                            <td><i class="icofont-check"></i></td>
+                            <td><i class="icofont-check"></i></td>
+                            <td><i class="icofont-check"></i></td>
+                          </tr>
+                          <tr *ngIf="proyectosVisible">
+                            <td class="titulo-td">Cronograma Valorizado</td>
+                            <td><i class="icofont-minus"></i></td>
+                            <td><i class="icofont-check"></i></td>
+                            <td><i class="icofont-check"></i></td>
+                            <td><i class="icofont-check"></i></td>
+                          </tr>
+                          <tr *ngIf="proyectosVisible">
+                            <td class="titulo-td">Calendario desembolso de Materiales</td>
+                            <td><i class="icofont-minus"></i></td>
+                            <td><i class="icofont-check"></i></td>
+                            <td><i class="icofont-check"></i></td>
+                            <td><i class="icofont-check"></i></td>
+                          </tr>
+                          <tr *ngIf="proyectosVisible">
+                            <td class="tabla-titulo">ESPECIFICACIONES TECNICAS</td>
+                              <td></td>
+                              <td></td>
+                              <td></td>
+                              <td></td>
+                            </tr>
+                            <tr *ngIf="proyectosVisible">
+                              <td class="titulo-td1">Aspectos Generales</td>
+                              <td></td>
+                              <td></td>
+                              <td></td>
+                              <td></td>
+                            </tr>
+                            <tr *ngIf="proyectosVisible">
+                              <td class="titulo-td">Resumen General (Resumen y Plantilla)</td>
+                              <td><i class="icofont-minus"></i></td>
+                              <td><i class="icofont-check"></i></td>
+                              <td><i class="icofont-check"></i></td>
+                              <td><i class="icofont-check"></i></td>
+                            </tr>
+                            <tr *ngIf="proyectosVisible">
+                              <td class="titulo-td">Editor y Creador de Especificaciones Técnicas</td>
+                              <td><i class="icofont-minus"></i></td>
+                              <td><i class="icofont-check"></i></td>
+                              <td><i class="icofont-check"></i></td>
+                              <td><i class="icofont-check"></i></td>
+                            </tr>
+                            <tr *ngIf="proyectosVisible">
+                              <td class="titulo-td1" >Reporte Total</td>
+                              <td></td>
+                              <td></td>
+                              <td></td>
+                              <td></td>
+                            </tr>
+                            <tr *ngIf="proyectosVisible">
+                              <td class="titulo-td">Visualizador de las Especificaciones Técnicas</td>
+                              <td><i class="icofont-minus"></i></td>
+                              <td><i class="icofont-check"></i></td>
+                              <td><i class="icofont-check"></i></td>
+                              <td><i class="icofont-check"></i></td>
+                            </tr>
+                            <tr>
+                              <td class="tabla-subtitulo" colspan="5"  (click)="togglePanelAccesos()">PANEL DE ACCESOS DE USUARIO
+                                <i class="fa" [ngClass]="panelAccesosVisible ? 'fa-minus' : 'fa-plus'" style="float: right;"></i>
+                              </td>
+                            </tr>
+                            <tr *ngIf="panelAccesosVisible">
+                            <td class="titulo-td"><b>Usuario - Principal - Modulo Administrador</b><br>Acceso total al Sistema del Panel de usuario y Panel de Proyectos, Propietario de la base de datos realizada. Usuario que da permiso a los demás Usuarios de acuerdo al proyecto seleccionado.</td>
+                            <td>01 Usuario</td>
+                            <td>01 Usuario</td>
+                            <td>01 Usuario</td>
+                            <td>01 Usuario</td>
+                            </tr>
+                            <tr *ngIf="panelAccesosVisible">
+                              <td class="titulo-td"><b> Usuario - Principal - Modulo Especialista</b> <br>Acceso al Sistema del Panel de usuario (Acceso a data del Administrador) y Acceso al Panel del Proyecto (Edición y creación dentro de los 05 Módulos. ("Presupuesto", "Metrado", "Formula Polinómica", "Programación de Obra" y "Especificaciones Técnicas"). Los trabajos son realizados en la base de datos del Administrador</td>
+                              <td><i class="icofont-minus"></i></td>
+                              <td><i class="icofont-minus"></i></td>
+                              <td><i class="icofont-minus"></i></td>
+                              <td>02 Usuario</td>
+                            </tr>
+                            <tr *ngIf="panelAccesosVisible">
+                              <td class="titulo-td"><b>Usuario - Principal - Modulo Secundario</b><br>Acceso del Sistema del Panel de usuario (Acceso parcial a la data del Administrador) y Acceso Parcial al Panel del proyecto (Edición y creación dentro de los 04 Módulos: "Metrado", "Formula Polinómica", "Programación de Obra" y "Especificaciones Técnicas"). Los trabajos son realizados en la base de datos del Administrador</td>
+                              <td><i class="icofont-minus"></i></td>
+                              <td><i class="icofont-minus"></i></td>
+                              <td>02 Usuario</td>
+                              <td>02 Usuario</td>
+                            </tr>
+                            <tr  *ngIf="panelAccesosVisible">
+                              <td style="	text-align: left;font-weight: bold;background-color: rgb(247, 252, 200);">TOTAL DE USUARIOS POR LICENCIA</td>
+                              <td style="	text-align: center;font-weight: bold;background-color: rgb(247, 252, 200);">01 Usuario</td>
+                              <td style="	text-align: center;font-weight: bold;background-color: rgb(247, 252, 200);">01 Usuario</td>
+                              <td style="	text-align: center;font-weight: bold;background-color: rgb(247, 252, 200);">03 Usuarios</td>
+                              <td style="	text-align: center;font-weight: bold;background-color: rgb(247, 252, 200);">05 Usuarios</td>
+                            </tr>
+                      </table>   
+                    </div>
+                </div>
+              </div>
+            </div>
+            <div class="social">
+              <p>Biplan el Software que te hace ser mas eficiente en la elaboración de tus proyectos.</p>
+              <div class="redes">
+                <a style="margin-left:40px"href="https://www.facebook.com/profile.php?id=61568538622639" target="_blank"> <i class="icofont-facebook"></i></a>
+                <a href="https://www.youtube.com/@biplan.Costos-Presupuestos" target="_blank"><i class="icofont-youtube-play"></i></a>
+                <a href="https://www.instagram.com/biplan.pe/" target="_blank"><i class="icofont-instagram"></i></a>
+                <a href="https://www.tiktok.com/@eduarvq?_t=8rLJe8ro1Sh&_r=1" target="_blank" aria-label="TikTok"><i class="icofont-tiktok"></i></a>
+                <a href="https://wa.me/+51986566443" target="_blank" aria-label="WhatsApp"><i class="icofont-brand-whatsapp"></i></a>
+                <a href="https://linkedin.com" target="_blank" aria-label="LinkedIn"><i class="icofont-linkedin"></i> </a>
+              </div>
+            </div>
+          </div>
+        </main>
+      </body>
+    </html>

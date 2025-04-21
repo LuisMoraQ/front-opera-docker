@@ -1,0 +1,76 @@
+
+.mat-input-element:disabled {
+    cursor: not-allowed;
+    color: #434343
+}
+
+.width-grupo {
+    width: calc(100% - 36px);
+}
+
+.cust-ddm{
+    min-width: 7.5rem;
+    .btn-sm{
+      padding: 5px 5px;
+    }
+  
+    .dropdown-divider{
+      margin: 1px 0;
+    }
+  }
+  .cust-col-20{
+    width: 20px !important;
+    min-width: 20px !important;
+    max-width: 20px !important;
+  }
+  .cust-col-50{
+    width: 50px !important;
+    min-width: 50px !important;
+    max-width: 50px !important;
+  }
+  
+  .cust-foota{
+    /* width: 494px !important; */
+    min-width: 494px !important;
+    max-width: 494px !important;
+  }
+  .cust-footb{
+    /* width: 464px !important; */
+    min-width: 464px !important;
+    max-width: 464px !important;
+  }
+  .cust-footc{
+    /* width: 444px !important; */
+    min-width: 444px !important;
+    max-width: 444px !important;
+  }
+
+.ng-dropdown-panel{
+  width: 260px !important;
+}
+
+.custom-tabs .nav-link {
+  display: block;
+  padding: 0.1rem 0.6rem;
+}
+
+.custom-tabs a {
+  font-size: 8px;
+}
+
+.custom-texto-list {
+  font-size: 10px;
+}
+
+.custom-label-list {
+  margin-bottom: 0 !important;
+  font-size: 11px;
+  font-weight: 700;
+  font-family: serif;
+}
+
+.cargasobre{
+  position: absolute;
+  z-index: 1;
+  width: 100%;
+}

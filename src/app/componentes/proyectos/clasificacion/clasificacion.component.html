@@ -1,0 +1,202 @@
+<!-- <div class="page-body"> -->
+    <!-- <div class="titulo-contenido">
+        <h2>CLASIFICACION DE LOS PROYECTOS</h2>
+    </div> -->
+    <app-card class="card col-md-12 card-principal">
+        <div class="row justify-content-between p-r-15">
+            <!-- <div class="col-sm-5 col-md-5" style="margin-bottom: 10px;">
+                <input type="search" id="txt_busca" (keyup)="applyFilterPrinc($event)" class="form-control form-control-primary" autocomplete="off" placeholder="Buscar" #input (search)="limpiarfiltro()">
+            </div> -->
+            <div class="col-sm-5 col-md-5" style="margin-bottom: 10px;">
+                <mat-form-field class="mff-reduc w-100 alto-35 field-busqueda" appearance="outline">
+                    <mat-label>Buscar</mat-label>
+                    <input matInput type="text" [(ngModel)]="busqueda" (keyup)="applyFilterPrinc($event)" autocomplete="off">
+                    <button *ngIf="busqueda" matSuffix mat-icon-button aria-label="Clear" (click)="limpiarfiltro()">
+                        <mat-icon>close</mat-icon>
+                    </button>
+                </mat-form-field>
+            </div>
+            <div class="content">
+                &nbsp;&nbsp;
+                <button *ngIf="roleUser=='ADMIN'" type="button" class="btn btn-success btn-sm light ripple m-b-10" (click)="openModalGuardar()" (mouseup)="quitarfoco($event);">
+                    <i class="fa fa-plus"></i>Agregar Clasificacion
+                </button>
+            </div>
+        </div>
+        <div class="table-responsive" [style.height.px]="height" style="min-height:200px;">
+            <table #table1 class="tabla-general" mat-table [dataSource]="dataSource" matSort multiTemplateDataRows>
+                <ng-container matColumnDef="id_clasificacion">
+                    <th mat-header-cell *matHeaderCellDef >N°</th>
+                    <td mat-cell *matCellDef="let ind=dataIndex;" > {{ind+1}} </td>
+                </ng-container>
+                <ng-container matColumnDef="descripcion">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header>Descripción</th>
+                    <td mat-cell *matCellDef="let row" class="text-left" appAnchocol [ancho]="200" [detalle]="true" > {{row.descripcion}} </td>
+                </ng-container>
+                <ng-container matColumnDef="abr_clasi" >
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header>Abr</th>
+                    <td mat-cell *matCellDef="let row"> {{row.abr_clasi}}</td>
+                </ng-container>
+                <ng-container matColumnDef="icono" >
+                    <th mat-header-cell *matHeaderCellDef >Icono</th>
+                    <td mat-cell *matCellDef="let row">
+                        <i class="fa fa-2x" [ngClass]="row.icono?.toString().split('|')[1]"></i>
+                    </td>
+                </ng-container>
+                <ng-container matColumnDef="observacion">
+                    <th mat-header-cell *matHeaderCellDef  appAnchocol [ancho]="200" [detalle]="true">Observación</th>
+                    <td mat-cell *matCellDef="let row" class="text-left" appAnchocol [ancho]="200" [detalle]="true"> 
+                        <div class="recortatext" placement="top" ngbTooltip="{{row.observacion}}" container="body">
+                            {{row.observacion}}
+                        </div> 
+                    </td>
+                </ng-container>
+                <ng-container matColumnDef="activo">
+                    <th mat-header-cell *matHeaderCellDef appAnchocol [ancho]="68">Activo</th>
+                    <td mat-cell *matCellDef="let row" appAnchocol [ancho]="68">
+                        <div class="label-main" style="margin: 1px;">
+                            <label *ngIf="row.activo=='1'" class="label label-success ancho-50p">Activo</label>
+                            <label *ngIf="row.activo=='0'" class="label label-danger">Inactivo</label>
+                        </div>
+                    </td>
+                </ng-container>
+                <ng-container matColumnDef="acciones">
+                    <th mat-header-cell *matHeaderCellDef style="width: 20px; text-align: center;" >Acciones</th>
+                    <td mat-cell *matCellDef="let row; let i = dataIndex;" style="align-items: center;"> 
+                        <button class="btn btn-mini btn-info" placement="top" ngbTooltip="Ver" container="body" (click)="openModalVer(row)" (mouseup)="quitarfoco($event);">
+                            <i class="fa fa-search icono-but"></i>
+                        </button>
+                        <button *ngIf="roleUser=='ADMIN'" class="btn btn-mini btn-primary" placement="top" ngbTooltip="Editar" container="body" (click)="openModalEditar(row)" (mouseup)="quitarfoco($event);">
+                            <i class="fa fa-edit icono-but"></i>
+                        </button>
+                        <button *ngIf="roleUser=='ADMIN'" class="btn btn-mini btn-danger" placement="top" ngbTooltip="Eliminar" container="body" (click)="confirmAlert(row)" (mouseup)="quitarfoco($event);">
+                            <i class="fa fa-remove icono-but"></i>
+                        </button>
+                    </td>
+                </ng-container>
+                <tr mat-header-row class="header-custom" *matHeaderRowDef="displayedColumn; sticky: true"></tr>
+                <tr mat-row *matRowDef="let row; let i = dataIndex; columns: displayedColumn;" [ngClass]="{'highlight': fila_sel == i}" (click)="cambindicesel(i)"></tr>
+                <tr *matNoDataRow class="nodata">
+                    <td class="mat-cell" colspan="11">
+                        <label *ngIf="!buscando1">No se encontraron resultados</label>
+                        <div *ngIf="buscando1" class="preloader3 loader-block">
+                            <div class="circ1"></div>
+                            <div class="circ2"></div>
+                            <div class="circ3"></div>
+                            <div class="circ4"></div>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </app-card>
+    <app-modal-basic #modalAddClasi [dialogClass]="'modal-lg'">
+        <div class="app-modal-header">
+            <h4 class="modal-title tit-modal1"><b>{{titmodalcar}} de Clasificacion</b></h4>
+            <button type="button" class="close basic-close" (click)="cerrarModal()">
+            <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        <div class="app-modal-body">
+            <form [formGroup]='nuevoClasi' class="form-material" >
+                <div class="row">
+                    <div class="col-sm-6">
+                        <div class="row">
+                            <mat-form-field class="col-12 mff-reduc" appearance="outline">
+                                <mat-label>ID</mat-label>
+                                <input matInput type="text" formControlName="id_clasificacion" readonly>
+                            </mat-form-field>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <label>Activo :</label>
+                        <div class="switch  d-inline m-r-10" style="margin-left: 10px;">
+                            <input type="checkbox" id="switch-p-1" formControlName="activo">
+                            <label for="switch-p-1" class="cr"></label>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <mat-form-field class="col-12 mff-reduc" appearance="outline">
+                        <mat-label>Descripcion</mat-label>
+                        <input matInput type="text" class="mayuscula" autocomplete="off" formControlName="descripcion" maxlength="255">
+                    </mat-form-field>
+                </div>
+                <div class="row">
+                    <mat-form-field class="col-6 mff-reduc" appearance="outline">
+                        <mat-label>Abreviatura</mat-label>
+                        <input matInput type="text" class="mayuscula" autocomplete="off" formControlName="abr_clasi" maxlength="5">
+                    </mat-form-field>
+                </div>
+                <div class="row">
+                    <mat-form-field class="col-6 mff-reduc" appearance="outline">
+                        <mat-label>Icono</mat-label>
+                        <select matNativeControl formControlName="icono" style="font-family: 'FontAwesome';">
+                            <option value="">&nbsp;&nbsp;&nbsp;seleccionar</option>
+                            <option *ngFor="let icono of iconos" [value]="icono.id">&nbsp;&nbsp;<span  style="font-size: 20px;" class="coloitem">{{vericono(icono.id)}}</span> &nbsp;{{icono.nombre}}</option>
+                        </select>
+                    </mat-form-field>
+                </div>
+                <div class="row">
+                    <mat-form-field class="col-12 mff-reduc" appearance="outline">
+                        <mat-label>Observacion</mat-label>
+                        <input matInput type="text" autocomplete="off" formControlName="observacion" maxlength="500">
+                    </mat-form-field>
+                </div>
+            </form>
+        </div>
+        <div class="app-modal-footer w-100">
+            <div class="row px-3 justify-content-between">
+                <button type="button" style="margin-right: 5px;" class="btn btn-sm btn-danger ripple" (click)="cerrarModal()"><i class="fa fa-times"></i>Cerrar</button>
+                <button type="button" class="btn btn-sm btn-success ripple light" (click)="guardar()"><i class="fa fa-check"></i>Guardar</button>
+            </div>
+        </div>
+    </app-modal-basic>
+    <app-modal-basic #modalVerClasi>
+        <div class="app-modal-header">
+            <h4 class="modal-title tit-modal1"><b>Datos de la Clasificacion</b></h4>
+            <button type="button" class="close basic-close" (click)="cerrarModal2()">
+            <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        <div class="app-modal-body">
+            <div class="form-group row">
+                <label class="col-sm-3 col-form-label">ID :</label>
+                <div class="col-sm-9">
+                    <label id="tx_area2" class="col-sm-12 col-form-label"><b>{{id_clasi}}</b></label>
+                </div>
+            </div>
+            <div class="form-group row">    
+                <label class="col-sm-3 col-form-label">Descripción :</label>
+                <div class="col-sm-9">
+                    <label id="tx_area2" class="col-sm-12 col-form-label"><b>{{desc}}</b></label>
+                </div>
+            </div>
+            <div class="form-group row">
+                <label class="col-sm-3 col-form-label">Abreviatura :</label>
+                <div class="col-sm-4">
+                    <label id="tx_abr2" class="col-sm-12 col-form-label"><b>{{abr}}</b></label>
+                </div>
+            </div>
+            <div class="form-group row">
+                <label class="col-sm-3 col-form-label">Icono :</label>
+                <div class="col-sm-4">
+                    <i class="fa fa-2x" [ngClass]="iconover"></i>
+                </div>
+            </div>
+            <div class="form-group row">
+                <label class="col-sm-3 col-form-label">Observación :</label>
+                <div class="col-sm-9">
+                    <label id="tx_area2" class="col-sm-12 col-form-label"><b>{{obs}}</b></label>
+                </div>
+            </div>
+        </div>
+        <div class="app-modal-footer w-100">
+            <div class="row px-3">
+                <button type="button" style="margin-right: 5px;" class="btn btn-sm btn-danger ripple" (click)="cerrarModal2()">Salir</button>
+            </div>
+        </div>
+    </app-modal-basic>
+    <app-cargando [bloquearTodo]="true" *ngIf="mostrar_carga_todo"></app-cargando>
+    <app-cargando [bloquearTodo]="false" *ngIf="mostrar_carga"></app-cargando>
+<!-- </div> -->

@@ -1,0 +1,265 @@
+<div class="modal-dialog-scrollable modal-lg">
+    <div class="modal-content">
+        <div class="app-modal-header  modal-header">
+            <!-- tipo modal es la accion de para el modal actualizar o guardar -->
+            <h4 class="modal-title tit-modal1">
+                <b *ngIf="!editar && !opcver">Agregar Usuario</b>
+                <b *ngIf="editar && !opcver">Editar Usuario</b>
+                <b *ngIf="opcver">Ver Datos de Usuario</b>
+            </h4>
+            <button type="button" class="close basic-close" (click)="closeModal()">
+                <span aria-hidden="true" class="mt-2">&times;</span>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div class="row" *ngIf="!opcver">
+                <form [formGroup]="formUsuario">
+                    <h4 class="sub-title h4-grupo"><b>Datos Principales</b></h4>
+                    <mat-form-field appearance="outline" class="mff-reduc col-sm-12 col-12">
+                        <mat-label>Nombres</mat-label>
+                        <input matInput autocomplete="off" formControlName="nombres">
+                    </mat-form-field>
+                    <!-- <mat-form-field appearance="outline" class="mff-reduc col-sm-6 col-12">
+                <mat-label>Número Documento</mat-label>
+                <input matInput autocomplete="off" formControlName="nrodoc"
+                    (keydown)="this.formService.limitarSoloAlfanumericos($event)">
+            </mat-form-field> -->
+
+                    <mat-form-field appearance="outline" class="mff-reduc col-12">
+                        <mat-label>Correo</mat-label>
+                        <input matInput autocomplete="off" formControlName="correo" (keyup)="verificarCorreo()">
+                        <mat-error>{{errorcorreo}}</mat-error>
+                    </mat-form-field>
+                    <mat-form-field appearance="outline" class="mff-reduc col-sm-6 col-12">
+                        <mat-label>Teléfono</mat-label>
+                        <input matInput type="text" formControlName="telefono" [textMask]="{mask: this.formService.maskTelefono}" autocomplete="off" maxlength="9">
+                        <!-- onkeypress="return !(event.charCode > 31 && (event.charCode < 48 || event.charCode > 57))" -->
+                    </mat-form-field>
+                    <mat-form-field appearance="outline" class="mff-reduc col-sm-6 col-12">
+                        <mat-label>Estado</mat-label>
+                        <select matNativeControl formControlName="estado">
+                            <option *ngFor="let estado of tiposEstado" [value]="estado.id">
+                                {{estado.nombre}}
+                            </option>
+                        </select>
+                    </mat-form-field>
+                    <div class="col-12 sub-title m-b-10 p-b-0">
+                        <label class="m-b-0">El <b>Login</b> de usuario será el <b>Correo</b> y la <b>Clave</b> será
+                            enviada al <b>Correo</b> Ingresado.</label>
+                    </div>
+                    <div class="col-12 row" *ngIf="editar">
+                        <div class="col-sm-6 col-xl-6">
+                            <button type="button" class="btn btn-primary light ripple m-b-10" placement="top"
+                                ngbTooltip="La nueva Contraseña se enviará al correo del usuario."
+                                style="padding-bottom: 4px; padding-top: 4px; padding-left: 10px; padding-right: 10px;"
+                                (click)="RestaurarPassword()" (mouseup)="quitarfoco($event);">
+                                <i class="fa fa-edit"></i>Restaurar Contraseña
+                            </button>
+                        </div>
+                        <div class="col-sm-6 col-xl-6">
+                            <button type="button" class="btn btn-info light ripple m-b-10" placement="top"
+                                ngbTooltip="Los Datos de Acceso se enviarán al correo del usuario."
+                                style="padding-bottom: 4px; padding-top: 4px; padding-left: 10px; padding-right: 10px"
+                                (click)="RestaurarTodo()" (mouseup)="quitarfoco($event);">
+                                <i class="fa fa-edit"></i>Restaurar Acceso
+                            </button>
+                        </div>
+                    </div>
+                    <!-- <mat-form-field appearance="outline" class="mff-reduc col-sm-6 col-12">
+                <mat-label>Tipo Usuario</mat-label>
+                <select matNativeControl formControlName="tipoUser">
+                    <option value="">--Seleccionar--</option>
+                    <option *ngFor="let tipo of tiposUsuario" [value]="tipo.id_tipo">
+                        {{tipo.nom_tipo}}
+                    </option>
+                </select>
+            </mat-form-field> -->
+                    <mat-form-field *ngIf="!editar" appearance="outline" class="mff-reduc col-sm-6 col-12">
+                        <mat-label>Licencia</mat-label>
+                        <select matNativeControl formControlName="licencia" (change)="Licenciasel($event.target.value)">
+                            <option value="">--Seleccionar--</option>
+                            <option *ngFor="let licen of licencias" [value]="licen.id_licencia">
+                                {{licen.desc_licencia}}
+                            </option>
+                        </select>
+                    </mat-form-field>
+                    <mat-form-field *ngIf="!editar" appearance="outline" class="mff-reduc mat-form-field-disa col-12 col-sm-6">
+                        <mat-label>Tiempo</mat-label>
+                        <input matInput autocomplete="off" formControlName="tiempo" readonly>
+                    </mat-form-field>
+                    <mat-form-field *ngIf="!editar" appearance="outline" class="mff-reduc mat-form-field-disa col-sm-6 col-12">
+                        <mat-label>Fecha Asignación</mat-label>
+                        <input matInput type="date" formControlName="fechaasig" readonly>
+                        <!-- <input matInput [matDatepicker]="picker" formControlName="fechaasig">
+                <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+                <mat-datepicker #picker></mat-datepicker> -->
+                    </mat-form-field>
+                    <mat-form-field *ngIf="!editar && (tiempo.value!='Ilimitado')" appearance="outline"
+                        class="mff-reduc mat-form-field-disa col-sm-6 col-12">
+                        <mat-label>Fecha Culminación</mat-label>
+                        <input matInput type="date" formControlName="fechaCulminacion" readonly>
+                        <!-- <input matInput [matDatepicker]="picker1" formControlName="fechaCulminacion">
+                <mat-datepicker-toggle matSuffix [for]="picker1"></mat-datepicker-toggle>
+                <mat-datepicker #picker1></mat-datepicker> -->
+                    </mat-form-field>
+                    <h4 class="sub-title h4-grupo"><b>Datos Complementarios</b></h4>
+                    <mat-form-field appearance="outline" class="mff-reduc col-sm-6 col-12">
+                        <mat-label>Departamento</mat-label>
+                        <select matNativeControl formControlName="departamentoActual"
+                            (change)="listarProvincias($event.target.value)">
+                            <option value="">--Seleccionar--</option>
+                            <option *ngFor="let departamento of departamentos" [value]="departamento.id_depart">
+                                {{departamento.DEPARTAMENTO}}
+                            </option>
+                        </select>
+                    </mat-form-field>
+                    <mat-form-field appearance="outline" class="mff-reduc col-sm-6 col-12">
+                        <mat-label>Provincia Residencia</mat-label>
+                        <select matNativeControl formControlName="provinciaActual"
+                            (change)="listarDistritos($event.target.value)">
+                            <option value="">--Seleccionar--</option>
+                            <option *ngFor="let provincia of provincias" [value]="provincia.id_prov">
+                                {{provincia.PROVINCIA}}
+                            </option>
+                        </select>
+                    </mat-form-field>
+                    <mat-form-field appearance="outline" class="mff-reduc col-sm-6 col-12">
+                        <mat-label>Distrito Residencia</mat-label>
+                        <select matNativeControl formControlName="distritoActual">
+                            <option value="">--Seleccionar--</option>
+                            <option *ngFor="let distrito of distritos" [value]="distrito.id_distr">
+                                {{distrito.DISTRITO}}
+                            </option>
+                        </select>
+                    </mat-form-field>
+                    <!-- <mat-form-field appearance="outline" class="mff-reduc col-sm-6 col-12">
+                <mat-label>Nacionalidad</mat-label>
+                <select matNativeControl formControlName="nacionalidad">
+                    <option value="">--Seleccionar--</option>
+                    <option *ngFor="let nacionalidad of nacionalidades" [value]="nacionalidad.id">
+                        {{nacionalidad.nombre}}
+                    </option>
+                </select>
+            </mat-form-field> -->
+                    <mat-form-field appearance="outline" class="mff-reduc col-sm-6 col-12">
+                        <mat-label>Género</mat-label>
+                        <select matNativeControl formControlName="genero">
+                            <option value="">--Seleccionar--</option>
+                            <option *ngFor="let genero of generos" [value]="genero.id">
+                                {{genero.nombre}}
+                            </option>
+                        </select>
+                    </mat-form-field>
+                    <mat-form-field appearance="outline" class="mff-reduc col-12">
+                        <mat-label>Dirección</mat-label>
+                        <input matInput autocomplete="off" formControlName="direccion">
+                    </mat-form-field>
+                </form>
+            </div>
+            <div *ngIf="opcver">
+                <h4 class="sub-title h4-grupo"><b>Datos Principales</b></h4>
+                <div class="row">
+                    <div class="col-sm-4">
+                        <label>Activo :</label>
+                        <div class="switch switch-primary d-inline m-r-10" style="margin-left: 10px;">
+                            <input type="checkbox" id="switch-p-1" [(ngModel)]='datosUsuario.estado' disabled>
+                            <label for="switch-p-1" class="cr"></label>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <label class="col-sm-4 col-form-label">Nombre :</label>
+                    <div class="col-sm-8">
+                        <label id="tx_area2" class="col-sm-12 col-form-label"><b>{{datosUsuario?.nombres}}</b></label>
+                    </div>
+                </div>
+                <div class="row">
+                    <label class="col-sm-4 col-form-label">Correo :</label>
+                    <div class="col-sm-8">
+                        <label id="tx_abr2" class="col-sm-12 col-form-label"><b>{{datosUsuario?.correo}}</b></label>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <label class="col-sm-4 col-form-label">Telefono :</label>
+                    <div class="col-sm-8">
+                        <label id="tx_area2" class="col-sm-12 col-form-label"><b>{{datosUsuario?.telefono}}</b></label>
+                    </div>
+                </div>
+                <div class="row">
+                    <label class="col-sm-4 col-form-label">Licencia :</label>
+                    <div class="col-sm-8">
+                        <label id="tx_abr2"
+                            class="col-sm-12 col-form-label"><b>{{datosUsuarioDetalle?.desc_licencia}}</b></label>
+                    </div>
+                </div>
+                <div class="row">
+                    <label class="col-sm-4 col-form-label">Tiempo :</label>
+                    <div class="col-sm-8">
+                        <label id="tx_abr2"
+                            class="col-sm-12 col-form-label"><b>{{datosUsuarioDetalle?.limitado=='1'?datosUsuarioDetalle.tiempo:'Ilimitado'}}</b></label>
+                    </div>
+                </div>
+                <div class="row">
+                    <label class="col-sm-4 col-form-label">Fecha Asignación :</label>
+                    <div class="col-sm-8">
+                        <label id="tx_area2" class="col-sm-12 col-form-label"><b>{{datosUsuario?.fechaasig | date:
+                                'dd-MM-yyyy'}}</b></label>
+                    </div>
+                </div>
+                <div class="row">
+                    <label class="col-sm-4 col-form-label">Fecha Culminación :</label>
+                    <div class="col-sm-8">
+                        <label id="tx_abr2"
+                            class="col-sm-12 col-form-label"><b>{{datosUsuarioDetalle?.limitado=='1'?(datosUsuario.fechacul
+                                | date: 'dd-MM-yyyy'):''}}</b></label>
+                    </div>
+                </div>
+                <h4 class="sub-title h4-grupo"><b>Datos Complementarios</b></h4>
+                <div class="row">
+                    <label class="col-sm-4 col-form-label">Departamento :</label>
+                    <div class="col-sm-8">
+                        <label id="tx_area2"
+                            class="col-sm-12 col-form-label"><b>{{datosUsuarioDetalle?.deptact}}</b></label>
+                    </div>
+                </div>
+                <div class="row">
+                    <label class="col-sm-4 col-form-label">Provincia :</label>
+                    <div class="col-sm-8">
+                        <label id="tx_abr2"
+                            class="col-sm-12 col-form-label"><b>{{datosUsuarioDetalle?.provact}}</b></label>
+                    </div>
+                </div>
+                <div class="row">
+                    <label class="col-sm-4 col-form-label">Distrito :</label>
+                    <div class="col-sm-8">
+                        <label id="tx_area2"
+                            class="col-sm-12 col-form-label"><b>{{datosUsuarioDetalle?.distact}}</b></label>
+                    </div>
+                </div>
+                <div class="row">
+                    <label class="col-sm-4 col-form-label">Dirección :</label>
+                    <div class="col-sm-8">
+                        <label id="tx_abr2"
+                            class="col-sm-12 col-form-label"><b>{{datosUsuarioDetalle?.direccion}}</b></label>
+                    </div>
+                </div>
+                <div class="row">
+                    <label class="col-sm-4 col-form-label">Genero :</label>
+                    <div class="col-sm-8">
+                        <label id="tx_abr2"
+                            class="col-sm-12 col-form-label"><b>{{datosUsuarioDetalle?.genero}}</b></label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="app-modal-footer modal-footer justify-content-between px-sm-3">
+            <button type="button" class="btn btn-danger btn-sm" (click)="closeModal()"><i
+                    class="fa fa-times"></i>Cancelar</button>
+            <button type="button" class="btn btn-success btn-sm" (click)="almacenar()" *ngIf="!opcver"><i
+                    class="fa fa-check"></i>Guardar</button>
+        </div>
+    </div>
+</div>
+<app-cargando [bloquearTodo]="true" *ngIf="mostrar_carga_todo"></app-cargando>

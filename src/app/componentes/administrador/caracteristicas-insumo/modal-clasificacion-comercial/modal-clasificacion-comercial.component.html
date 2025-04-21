@@ -1,0 +1,78 @@
+<div class="modal-dialog-scrollable modal-lg">
+    <div class="modal-content">
+        <div class="app-modal-header  modal-header">
+            <!-- tipo modal es la accion de para el modal actualizar o guardar -->
+            <h4 class="modal-title tit-modal1">
+                <b *ngIf="!editar && !ver">Agregar Clasificacíon Comercial</b>
+                <b *ngIf="editar && !ver">Editar Clasificacíon Comercial</b>
+                <b *ngIf="ver">Datos Clasificacíon Comercial</b>
+            </h4>
+            <button type="button" class="close basic-close" (click)="closeModal()">
+                <span aria-hidden="true" class="mt-2">&times;</span>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div class="row" *ngIf="ver; else editarGuardar">
+                <div class="col-12">
+                    <label>Activo :</label>
+                    <div class="switch switch-primary d-inline m-r-10" style="margin-left: 10px;">
+                        <input type="checkbox" id="switch-p-1" [(ngModel)]='valactivo' disabled>
+                        <label for="switch-p-1" class="cr"></label>
+                    </div>
+                </div>
+                <label class="col-sm-3 col-form-label">Descripción :</label>
+                <div class="col-sm-9">
+                    <label id="tx_area2" class="col-sm-12 col-form-label"><b>{{datos?.desc_clasi}}</b></label>
+                </div>
+                <label class="col-sm-3 col-form-label">Abreviatura :</label>
+                <div class="col-sm-9">
+                    <label id="tx_abr2" class="col-sm-12 col-form-label"><b>{{datos?.abrev}}</b></label>
+                </div>
+                <label class="col-sm-3 col-form-label">Tipo Insumo :</label>
+                <div class="col-sm-9">
+                    <label id="tx_abr2" class="col-sm-12 col-form-label"><b>{{datos?.desc_tipo_insumo}}</b></label>
+                </div>
+                <!-- </div> -->
+            </div>
+            <ng-template #editarGuardar>
+                <form [formGroup]="formClasificacionComercial">
+                    <div class="row ">
+                        <div class="col-12 form-group">
+                            <label>Activo :</label>
+                            <div class="switch  d-inline m-r-10" style="margin-left: 10px;">
+                                <input type="checkbox" id="switch-p-1" formControlName="activo">
+                                <label for="switch-p-1" class="cr"></label>
+                            </div>
+                        </div>
+                        <mat-form-field appearance="outline" class="mff-reduc col-sm-12 col-12">
+                            <mat-label>Descripcíon</mat-label>
+                            <input matInput type="text" class="mayuscula" autocomplete="off" maxlength="255" formControlName="descripcion"
+                                [maxLength]="150">
+                        </mat-form-field>
+                        <mat-form-field appearance="outline" class="mff-reduc col-sm-12 col-12">
+                            <mat-label>Abreviatura</mat-label>
+                            <input matInput type="text" class="mayuscula" autocomplete="off" maxlength="20" formControlName="abrev"
+                                class="mayuscula">
+                        </mat-form-field>
+                        <mat-form-field appearance="outline" class="mff-reduc col-sm-12 col-12">
+                            <mat-label>Tipo Insumo</mat-label>
+                            <select matNativeControl formControlName="id_tipo">
+                                <option value="">--Seleccionar--</option>
+                                <option *ngFor="let tipo of tipoInsumos" [value]="tipo.id_tipo_insumo">
+                                    {{tipo.desc_tipo_insumo}}
+                                </option>
+                            </select>
+                        </mat-form-field>
+                    </div>
+                </form>
+            </ng-template>
+        </div>
+        <div class="app-modal-footer modal-footer justify-content-between">
+            <button type="button" class="btn btn-danger btn-sm" (click)="closeModal()"><i
+                    class="fa fa-times"></i>Cerrar</button>
+            <button type="button" *ngIf="!ver" class="btn btn-success btn-sm" (click)="almacenar()"><i
+                    class="fa fa-check"></i>Guardar</button>
+        </div>
+    </div>
+</div>
+<app-cargando [bloquearTodo]="true" *ngIf="mostrar_carga_todo"></app-cargando>

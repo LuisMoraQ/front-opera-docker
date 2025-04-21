@@ -1,0 +1,52 @@
+.popover-body {
+  padding: 0px;
+}
+
+.bs-popover-top>.arrow::after {
+  /* border-top-color:#896df1; */
+}
+
+$conf-color: #896df1;
+
+.btn-conf {
+  color: #fff;
+  background-color: $conf-color;
+  border-color: $conf-color;
+
+  &:hover {
+    color: #fff;
+    background-color: lighten($conf-color, 10%);
+    border-color: lighten($conf-color, 10%);
+  }
+
+  &:focus {
+    color: #fff;
+    background-color: lighten($conf-color, 10%);
+    border-color: lighten($conf-color, 10%);
+  }
+
+  &:active {
+    color: #fff;
+    background-color: darken($conf-color, 12%);
+    border-color: darken($conf-color, 12%);
+  }
+
+  .disabled {
+    color: #fff;
+    /* background-color: transparentize(aquamarine, 12%);
+    border-color: transparentize(aquamarine, 12%); */
+    background-color: transparentize($conf-color, 0.12);
+    border-color: transparentize($conf-color, 0.12);
+  }
+
+
+}
+.table-bordered thead th {
+  border-bottom-width: 0px !important;
+}
+table th, table td{
+  min-height: 22px !important;
+  height: 22px !important;
+  max-height: 22px !important;
+  padding: 0 1px !important;
+}

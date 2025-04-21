@@ -1,0 +1,14 @@
+.h-dates .mat-form-field-appearance-outline .mat-form-field-flex {
+    height: 38.75px !important; /* Ajusta la altura de todo el contenedor que contiene el input */
+  }
+  
+ .h-dates .mat-form-field-appearance-outline .mat-form-field-flex input {
+    height: 38.75px !important; /* Ajusta la altura del input */
+    font-size: 14px !important;  /* Ajusta el tamaño de la fuente (opcional) */
+    padding: 0 8px !important;   /* Ajuste del relleno para que no quede desajustado */
+  }
+
+  .mat-input-element[type=date]::after {
+    content: "" !important;
+  }
+  

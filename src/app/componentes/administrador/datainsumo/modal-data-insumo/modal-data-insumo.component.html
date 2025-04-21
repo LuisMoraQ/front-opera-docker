@@ -1,0 +1,204 @@
+<div class="modal-dialog-scrollable modal-lg">
+    <div class="modal-content">
+        <div class="app-modal-header  modal-header">
+            <!-- tipo modal es la accion de para el modal actualizar o guardar -->
+            <h4 class="modal-title tit-modal1">
+                <b *ngIf="!editar && !ver">Agregar Insumo</b>
+                <b *ngIf="editar && !ver">Editar Insumo</b>
+                <b *ngIf="ver">Duplicar Insumo</b>
+            </h4>
+            <button type="button" class="close basic-close" (click)="closeModal('click-close')">
+                <span aria-hidden="true" class="mt-2">&times;</span>
+            </button>
+        </div>
+        <div class="modal-body">
+            <!-- <div class="row" *ngIf="ver; else editarGuardar">
+               
+            </div> -->
+
+            <ng-container>
+                <form [formGroup]="formDataInsumo">
+                    <div class="row ">
+                        <div class="col-12 form-group">
+                            <label>Activo :</label>
+                            <div class="switch  d-inline m-r-10" style="margin-left: 10px;">
+                                <input type="checkbox" id="switch-p-1" formControlName="activo">
+                                <label for="switch-p-1" class="cr"></label>
+                            </div>
+                        </div>
+                        <mat-form-field appearance="outline" class="mff-reduc col-sm-12 col-12">
+                            <mat-label>Descripión</mat-label>
+                            <input matInput autocomplete="off" formControlName="descripcion" maxlength="350"
+                                class="mayuscula">
+                        </mat-form-field>
+                        <div class="col-sm-12 col-12 d-flex">
+                            <!-- <mat-form-field appearance="outline" class="mff-reduc " style="width: calc(100% - 36px);">
+                                <mat-label>Indice</mat-label>
+                                <input matInput type="search" name="indice" formControlName="nombre_indice" readonly>
+                            </mat-form-field> -->
+                            <div class="custom-row">
+                                <span class="span-sobre"
+                                    [ngClass]="{'invalidspan':(id_indice.invalid && id_indice.touched)}">Indice
+                                    Unificado</span>
+                                <ng-select [ngClass]="{'invalidsel':(id_indice.invalid && id_indice.touched)}"
+                                    [appendTo]="'body'" [clearable]="false" formControlName="id_indice">
+                                    <!-- [loading]="true" -->
+                                    <ng-option value="">--Seleccionar--</ng-option>
+                                    <ng-option *ngFor="let car of tipoIndice" [value]="car.id_indice">
+                                        {{car.id_indice+' '+car.desc_indice}}</ng-option>
+                                </ng-select>
+                            </div>
+                            <div style="width: 36px; padding: 0;" class="mff-reduc">
+                                <button type="button" class="btn btn-mini btn-success w-100" style="height: 35px;"
+                                    placement="top" ngbTooltip="Ver Indices" (click)="abrirmodalIndices()"
+                                    container="body">
+                                    <i class="fa fa-search icono-but"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <mat-form-field appearance="outline" class="mff-reduc col-sm-12 col-12">
+                            <mat-label>Tipo Insumo</mat-label>
+                            <select matNativeControl formControlName="id_tipo" (change)="cambioTipoInsumo()">
+                                <option value="">--Seleccionar--</option>
+                                <option *ngFor="let tipo of tipoInsumos" [value]="tipo.id_tipo_insumo">
+                                    {{tipo.desc_tipo_insumo}}
+                                </option>
+                            </select>
+                        </mat-form-field>
+                        <!-- <mat-form-field appearance="outline" class="mff-reduc col-sm-6 col-12"> -->
+                            <!-- <mat-label>Unidad (Abreviatura)</mat-label>
+                            <input matInput autocomplete="off" class="mayuscula" formControlName="unidad"
+                                [matAutocomplete]="auto" maxlength="5">
+                            <mat-autocomplete #auto="matAutocomplete" [displayWith]="displayFn">
+                                <mat-option *ngFor="let option of filteredOptions | async" [value]="option">
+                                    <b>{{option.unidad}}</b> ({{option.descripcion}})
+                                </mat-option>
+                            </mat-autocomplete> -->
+                            <div class="col-sm-7 col-7 d-flex">
+                                <div class="custom-row">
+                                    <span class="span-sobre" [ngClass]="{'invalidspan':(unidad.invalid && unidad.touched)}">Unidad (Abreviatura)</span>
+                                    <ng-select [ngClass]="{'invalidsel':(unidad.invalid && unidad.touched)}"
+                                        [appendTo]="'body'" [clearable]="false" formControlName="unidad" (change)="cambUnidad()">
+                                        <!-- [loading]="true" -->
+                                        <ng-option value="">--Seleccionar--</ng-option>
+                                        <ng-option *ngFor="let medi of medidas" [value]="medi.id_unidad">
+                                            <b>{{medi.unidad}}</b> ({{medi.descripcion}})
+                                        </ng-option>
+                                    </ng-select>
+                                </div>
+                                <div style="width: 36px; padding: 0;" class="mff-reduc">
+                                    <button type="button" class="btn btn-mini btn-success w-100" style="height: 35px;"
+                                        placement="top" ngbTooltip="Ver Unidades" (click)="abrirmodalUnidades()"
+                                        container="body">
+                                        <i class="fa fa-search icono-but"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        <!-- </mat-form-field> -->
+                        <mat-form-field appearance="outline" class="mff-reduc col-sm-5 col-12">
+                            <mat-label>Precio</mat-label>
+                            <input matInput type="text" [textMask]="this.formsService.maskUsAmountDecimal2"
+                                class="text-right" autocomplete="off" formControlName="precio"
+                                (blur)="verificarDecimales()" onClick="this.select();" maxlength="18">
+                        </mat-form-field>
+                        <div class="col-sm-12 col-12 d-flex">
+                            <div class="custom-row">
+                                <span class="span-sobre"
+                                    [ngClass]="{'invalidspan':(id_clasi.invalid && id_clasi.touched)}">Clasificación
+                                    Comercial</span>
+                                <ng-select [ngClass]="{'invalidsel':(id_clasi.invalid && id_clasi.touched)}"
+                                    [appendTo]="'body'" [clearable]="false" formControlName="id_clasi">
+                                    <!-- [loading]="true" -->
+                                    <ng-option value="">--Seleccionar--</ng-option>
+                                    <ng-option *ngFor="let car of clasiInsumosFiltrado" [value]="car.id_clasificacion">
+                                        {{car.desc_clasi}}</ng-option>
+                                </ng-select>
+                            </div>
+                            <div style="width: 36px; padding: 0;" class="mff-reduc">
+                                <button type="button" class="btn btn-mini btn-success w-100" style="height: 35px;"
+                                      placement="top"
+                                    ngbTooltip="Ver Clasificaciones" (click)="abrirModalClasificacion()"
+                                    container="body">
+                                    <i class="fa fa-search"></i>
+                                </button><!-- *ngIf="fuente == 1" -->
+                                <!-- <button type="button" class="btn btn-mini btn-success w-100" style="height: 35px;"
+                                    *ngIf="fuente == 0"  placement="top"
+                                    ngbTooltip="Ver Clasificaciones" (click)="abrirModalClasificacionAdministrador()"
+                                    container="body">
+                                    <i class="fa fa-search icono-but"></i>
+                                </button> -->
+                            </div>
+                        </div>
+                        <!-- <mat-form-field appearance="outline" class="mff-reduc col-sm-12 col-12">
+                            <mat-label>Marcas</mat-label>
+                            <input matInput autocomplete="off" formControlName="marcas" maxlength="300">
+                        </mat-form-field> -->
+                        <ng-container *ngIf="(!ver); else duplicar">
+                            <!-- <div class="col-12 mff-reduc d-flex">
+                                <div class="col-7 px-0 d-flex">
+                                    <label
+                                        class="espacios col-form-label col-md-4 col-sm-4 col-4 pl-0">Catálogos:</label>
+                                    <div class="col-md-7 col-sm-7 col-7 pl-0">
+                                        <label class="custom-file-upload d-flex w-100" style="border-radius: 10px;">
+                                            <input type="file" id="fileUpload" name="fileUpload"
+                                                accept="application/pdf,.doc, .docx" (click)="seleccionArchivo()"
+                                                multiple [ngClass]="{'control': catalogos.invalid}" />
+                                            <i class="icofont icofont-upload-alt icono-but mt-1 ml-1"
+                                                style="margin-right: 5px;"></i>
+                                            <span class="texto-inputfile">Seleccionar</span>
+                                        </label>
+                                    </div>
+                                    <div class="col-1 text-center pl-0">
+                                        <i class="fa fa-info-circle text-primary alert-cutom" placement="top"
+                                            ngbTooltip="Máximo {{3 - arrayArchivos?.length}} pdf's."></i>
+                                    </div>
+                                </div>
+                                <div class="col-md-5 col-sm-5 col-5 pr-0">
+                                    <button type="button" class="btn btn-outline-secondary btn-sm float-right"
+                                        (click)="asociarCatalogos()"><i class="fa fa-clipboard"></i>Asociar
+                                        Catálogos</button>
+                                </div>
+                            </div>
+                            <div class="row mff-reduc col-12 col-sm-12 mb-3" *ngIf="arrayArchivos.length">
+                                <label class="espacios col-form-label col-12 text-center"><u>Catalogos Seleccionados</u></label>
+                                <mat-chip-list #chipList aria-label="Fruit selection" class="ml-md-3">
+                                    <mat-chip *ngFor="let documento of arrayArchivos; let i = index"
+                                        [selectable]="selectable" [removable]="removable" [ngClass]="{'bg-primary text-white': documento.nuevo, 
+                                                    'bg-success text-white':(!documento.asociado && !documento.nuevo),
+                                                    'bg-custom text-white': (documento.asociado && !documento.nuevo)}"
+                                        (removed)="removearc(i, documento)">
+                                        {{documento.nombre_documento}}
+                                        <mat-icon matChipRemove>cancel</mat-icon>
+                                    </mat-chip>
+                                </mat-chip-list>
+                            </div> -->
+                        </ng-container>
+                        <ng-template #duplicar>
+                            <div class="col-12 form-group">
+                                <label>Duplicar <strong>Catalogos,Imagenes y Ficha tecnica</strong>:</label>
+                                <div class="switch  d-inline m-r-10" style="margin-left: 10px;"
+                                    (change)="cambioDuplicar()">
+                                    <input type="checkbox" id="switch-p-2" formControlName="duplicar">
+                                    <label for="switch-p-2" class="cr">
+                                    </label>
+                                </div>
+                                <span>{{this.duplicar.value}}</span>
+                                <span>{{textoDuplicar}}</span>
+                            </div>
+                        </ng-template>
+
+                    </div>
+
+                </form>
+            </ng-container>
+
+        </div>
+        <div class="app-modal-footer modal-footer justify-content-between">
+            <button type="button" class="btn btn-danger btn-sm" (click)="closeModal('cancelar')"><i
+                    class="fa fa-times"></i>Cerrar</button>
+            <button type="button" class="btn btn-success btn-sm" (click)="almacenar()"><i
+                    class="fa fa-check"></i>Guardar</button>
+        </div>
+    </div>
+</div>
+<app-cargando [bloquearTodo]="true" *ngIf="mostrar_carga_todo"></app-cargando>

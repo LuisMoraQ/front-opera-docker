@@ -1,0 +1,78 @@
+<div class="modal-dialog-scrollable modal-md">
+    <div class="modal-content">
+        <div class="app-modal-header  modal-header">
+            <span class="text-white">Hito</span>
+            <button type="button" class="close basic-close" (click)="closeModal()">
+                <span aria-hidden="true" class="mt-2">&times;</span>
+            </button>
+        </div>
+        <div class="modal-body">
+            <form [formGroup]="formHito">
+                <div class="col-12" style="font-size: smaller;" *ngIf="ubicacionFinal.value == 2 || ubicacionFinal.value == 3">
+                    <!-- <span>
+                        Partida Referencia :
+                    </span> -->
+                    <span style="font-weight: 800;">
+                        <!-- {{partidaSeleccionada?.idgantt}} &#10230;  -->
+                        {{partidaSeleccionada?.item}} -
+                        {{partidaSeleccionada?.descripcion}}
+                    </span>
+
+                </div>
+                <div class="mff-reduc col-12 mb-1" *ngIf="partidaSeleccionada.unidad">
+                    <!-- <label>Al Final del Grupo:</label>
+                    <div class="switch switch-primary d-inline m-r-10" style="margin-left: 10px;" (change)="cambioPosicionCreacionPartida()">
+                        <input type="checkbox" id="switch-p-1" formControlName="ubicacionFinal">
+                        <label for="switch-p-1" class="cr"></label>
+                    </div> -->
+                    <mat-form-field appearance="outline" class="mff-reduc col-12 alto-35 px-0">
+                        <mat-label>Tipo Hito</mat-label>
+                        <select matNativeControl formControlName="ubicacionFinal"
+                            (change)="cambioUbicacion()">
+                            <option *ngFor="let tipo of ubicaciones"
+                                [value]="tipo.id">
+                                {{tipo.descripcion}}
+                            </option>
+                        </select>
+                    </mat-form-field>
+                </div>
+                <mat-form-field appearance="outline" class="mff-reduc col-8">
+                    <mat-label>Descripción</mat-label>
+                    <input matInput type="text" class="mayuscula" formControlName="descripcion" autocomplete="off"
+                        maxlength="100" onClick="this.select();">
+                </mat-form-field>
+                <mat-form-field appearance="outline" class="mff-reduc col-4">
+                    <mat-label>Fecha Fecha</mat-label>
+                    <input matInput type="date" formControlName="fechaInicio">
+                </mat-form-field>
+
+                <table  class="table-bordered tab-10">
+                    <thead class="text-center">
+                        <tr>
+                            <th appAnchocol [ancho]="30" [detalle]="true">Descripcion</th>
+                            <th appAnchocol [ancho]="70">Fecha Inicio</th>
+                            <th appAnchocol [ancho]="70">Fecha Fin</th>
+                            <th appAnchocol [ancho]="55">Predecesor</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-center">
+                        <tr>
+                            <td>{{descripcion.value | uppercase}}</td>
+                            <td>{{fechaInicio.value | date:'dd-MM-yyy'}}</td>
+                            <td>{{fechaInicio.value | date:'dd-MM-yyy'}}</td>
+                            <td><span *ngIf="!predecesor"><i class="fa fa-ellipsis-h"></i></span><span *ngIf="predecesor">{{predecesor}}</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </form>
+        </div>
+        <div class="app-modal-footer modal-footer justify-content-between">
+            <button type="button" class="btn btn-danger btn-sm" (click)="closeModal()"><i
+                    class="fa fa-times"></i>Cerrar</button>
+            <!-- <button type="button" class="btn btn-secondary btn-sm" (click)="limpiarTablas()" *ngIf="vista !== 0"><i
+                    class="fa fa-arrow-left"></i>Anterior</button> -->
+            <button type="button" class="btn btn-success btn-sm" (click)="guardarHito()"><i
+                    class="fa fa-calendar-check-o"></i>Guardar</button>
+        </div>
+    </div>
+</div>

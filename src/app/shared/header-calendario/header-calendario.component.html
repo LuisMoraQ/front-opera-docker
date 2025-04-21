@@ -1,0 +1,31 @@
+<div class="container-fluid   h-100 px-0 ">
+    <ul class="list-group list-group-horizontal" id="tablaCalendario">
+        <li class="list-group-item p-0 bg-li text-center bor-cust h-calendario" [lineHeight]="true"
+            [ngStyle]="{'width.px':mes.width, 'max-width.px':mes.width, 'min-width.px':mes.width}"
+            style="height: 26.01px;font-size: 10px;" *ngFor="let mes of meses">
+            <ng-container *ngIf="mes.cantidad > 2">
+                {{mes.nombre}}
+            </ng-container>
+        </li>
+    </ul>
+    <!-- [ngClass]="{'diaActual text-secondary': fecha.diaActual && view_mode == 'Day', 'feriado text-secondary': fecha.feriado && view_mode == 'Day', 'noFeriado text-secondary': fecha.nolabor && view_mode == 'Day'}" -->
+
+    <ul class="list-group list-group-horizontal text-center">
+        <li class="list-group-item p-0 bg-li custom-cel"
+            [ngStyle]="{'width.px':fecha.width, 'max-width.px':fecha.width, 'min-width.px':fecha.width}"
+            style="height: 24px; font-size: 8px;" *ngFor="let fecha of data"
+            [class]="fecha.class"
+            >
+            <ng-container *ngIf="view_mode !== 'Week'; else name">
+                {{fecha.nom_dia}} <br>
+                {{fecha.dia}}
+            </ng-container>
+            <ng-template #name>
+                <div class="diaCustom">
+                    {{fecha.nom_dia}} <br>
+                    {{fecha.dia}}
+                </div>
+            </ng-template>
+        </li>
+    </ul>
+</div>

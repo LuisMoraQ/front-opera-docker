@@ -1,0 +1,27 @@
+.list-group-item {
+  position: relative;
+  display: block;
+  padding: 0.25rem 0.25rem !important;
+  background-color: #fff;
+  border: 1px solid #6c757d !important;
+  cursor: pointer;
+}
+
+.list-group-item:hover {
+  background-color: #6c757d !important;
+  color: #fff !important;
+}
+
+.list-activo {
+  background-color: #37474f !important;
+  color: #fff !important;
+}
+
+.list-group-flush{
+  max-height: 340px;
+  overflow: auto;
+}
+.list-itemsel {
+  background-color: #6c757d !important;
+  color: #fff !important;
+}

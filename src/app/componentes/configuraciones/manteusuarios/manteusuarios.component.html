@@ -1,0 +1,206 @@
+<div class="page-body">
+  <div class="titulo-contenido">
+      <h2>MANTENIMIENTO DE USUARIO</h2>
+  </div>
+  <app-card class="card pl-0 col-md-12 card-principal">
+      <div class="row justify-content-between p-r-15 ">
+          <!-- <div class="col-sm-5 col-md-5">
+              <input type="search" id="txt_busca" (keyup)="applyFilterPrinc($event)" class="form-control"
+                placeholder="Buscar" #input (search)="limpiarfiltro()">
+          </div> -->
+          <div class="col-sm-5 col-md-5" style="margin-bottom: 10px;">
+            <mat-form-field class="mff-reduc w-100 alto-35 field-busqueda" appearance="outline">
+              <mat-label>Buscar</mat-label>
+              <input matInput type="text" [(ngModel)]="busqueda" (keyup)="applyFilter($event)" autocomplete="off">
+              <button *ngIf="busqueda" matSuffix mat-icon-button aria-label="Clear" (click)="limpiarfiltro()">
+                <mat-icon>close</mat-icon>
+              </button>
+            </mat-form-field>
+          </div>
+
+          <div class="content">
+            &nbsp;&nbsp;
+            <button type="button" class="btn btn-danger btn-sm light ripple m-b-10" (click)="ActualizaSistem()"
+                (mouseup)="quitarfoco($event);">
+                <i class="fa fa-refresh"></i>Recargar Sistema
+            </button>
+        </div>
+          <div class="content">
+              &nbsp;&nbsp;
+              <button type="button" class="btn btn-success btn-sm light ripple m-b-10" (click)="openModal()"
+                  (mouseup)="quitarfoco($event);">
+                  <i class="fa fa-plus"></i>Agregar Usuario
+              </button>
+          </div>
+      </div>
+
+      <div class="table-responsive" [style.height.px]="height" style="min-height: 200px;">
+          <table #table1 class="tabla-general" mat-table [dataSource]="dataSourceorg" matSort multiTemplateDataRows>
+              <ng-container matColumnDef="id_usuario">
+                  <th mat-header-cell *matHeaderCellDef appAnchocol [ancho]="43">
+                    <a style="padding: 0px 4px;cursor: pointer;"  (click)="maxtodo()"><i class="icofont icofont-caret-down"></i></a><!-- ngbTooltip="Expandir Todo" container="body" -->
+                    <a style="padding: 0px 4px;cursor: pointer;"  (click)="mintodo()"><i class="icofont icofont-caret-up"></i></a><!-- ngbTooltip="Contraer Todo" container="body" -->
+                  </th><!-- mat-sort-header  -->
+                  <td mat-cell *matCellDef="let row ; let i = dataIndex" style="cursor: pointer;" appAnchocol [ancho]="43" (click)="row.principal=='1' && row.icomost=='0'?toggleOn(row.id_admin):row.principal=='1' && row.icomost=='1'?toggleOff(row.id_admin):false">
+                    <a  *ngIf="row.principal=='1' && row.icomost=='0'" style="color:#06bb06; width: 14px;">
+                        <i class="icofont icofont-caret-down"></i>
+                    </a>
+                    <a  *ngIf="row.principal=='1' && row.icomost=='1'" style="color:red; width: 14px;">
+                        <i class="icofont icofont-caret-up"></i>
+                    </a>&nbsp;
+                  </td>
+              </ng-container>
+              <ng-container matColumnDef="nombres">
+                  <th mat-header-cell *matHeaderCellDef>Nombres y Apellidos</th>
+                  <td mat-cell *matCellDef="let row" class="text-left"> {{row.nombres | titlecase}} </td>
+              </ng-container>
+              <ng-container matColumnDef="telefono">
+                  <th mat-header-cell *matHeaderCellDef>Telefono</th>
+                  <td mat-cell *matCellDef="let row"> {{row.telefono}} </td>
+              </ng-container>
+              <ng-container matColumnDef="correo">
+                  <th mat-header-cell *matHeaderCellDef>Correo</th>
+                  <td mat-cell *matCellDef="let row" class="text-left"> {{row.correo}} </td>
+              </ng-container>
+              <ng-container matColumnDef="fechaasig">
+                  <th mat-header-cell *matHeaderCellDef>Fecha Asignación</th>
+                  <td mat-cell *matCellDef="let row"> {{row.fechaasig | date: 'dd-MM-yyyy'}} </td>
+              </ng-container>
+              <ng-container matColumnDef="fechacul">
+                  <th mat-header-cell *matHeaderCellDef>Fecha Culminación</th>
+                  <td mat-cell *matCellDef="let row"> {{row.fechacul| date: 'dd-MM-yyyy'}} </td>
+              </ng-container>
+              <ng-container matColumnDef="estado">
+                  <th mat-header-cell *matHeaderCellDef>Estado</th>
+                  <td mat-cell *matCellDef="let row"> 
+                    <div class="label-main" *ngIf="row.id_cargo!=''" style="margin: 1px;">
+                        <label *ngIf="row.estado=='1'" class="label label-success ancho-50p">Activo</label>
+                        <label *ngIf="row.estado=='0'" class="label label-danger ancho-50p">Inactivo</label>
+                        <label *ngIf="row.estado=='2'" class="label label-inverse ancho-50p">Suspendido</label>
+                    </div>
+                </td>
+              </ng-container>
+              <ng-container matColumnDef="licencia">
+                <th mat-header-cell *matHeaderCellDef>Licencia</th>
+                <td mat-cell *matCellDef="let row"> {{row.desc_licencia}} </td>
+            </ng-container>
+              <ng-container matColumnDef="id_tipo">
+                  <th mat-header-cell *matHeaderCellDef>Tipo</th>
+                  <td mat-cell *matCellDef="let row"> {{row.nom_tipo}} </td>
+              </ng-container>
+              <ng-container matColumnDef="acciones">
+                  <th mat-header-cell *matHeaderCellDef style="width: 20px;">Acciones</th>
+                  <td mat-cell *matCellDef="let row; let i = dataIndex;" style="align-items: center;">
+                    <button class="btn btn-mini btn-info" placement="top" ngbTooltip="Ver" container="body"
+                        (click)="openModal(row,false)" (mouseup)="quitarfoco($event);">
+                        <i class="fa fa-search icono-but"></i>
+                    </button>
+                    <button *ngIf="row.principal=='1'" class="btn btn-mini btn-success" placement="top" ngbTooltip="Renovar Licencia" container="body"
+                        (click)="openModRenovar(row)" (mouseup)="quitarfoco($event);">
+                        <i class="icofont icofont-ui-calendar icono-but"></i>
+                    </button>
+                    <button *ngIf="row.principal!='1'" class="btn btn-mini btn-success" disabled>
+                        <i class="icofont icofont-ui-calendar icono-but"></i>
+                    </button>
+                    <button class="btn btn-mini btn-primary" placement="top" ngbTooltip="Editar" container="body"
+                        (click)="openModal(row,true)" (mouseup)="quitarfoco($event);">
+                        <i class="fa fa-edit icono-but"></i>
+                    </button>
+                    <button class="btn btn-mini btn-danger" placement="top" ngbTooltip="Eliminar" container="body"
+                        (click)="eliminarUsuario(row)" (mouseup)="quitarfoco($event);">
+                        <i class="fa fa-remove icono-but"></i>
+                    </button>
+                    <button class="btn btn-mini btn-inverse" placement="top" ngbTooltip="Liberar" container="body"
+                        (click)="liberauser(row)" (mouseup)="quitarfoco($event);">
+                        <i class="icofont icofont-logout icono-but"></i>
+                    </button>
+                  </td>
+              </ng-container>
+
+              <tr mat-header-row class="header-custom" *matHeaderRowDef="displayedColumnorg; sticky: true"></tr>
+              <tr mat-row *matRowDef="let row; let i = dataIndex; columns: displayedColumnorg;" [hidden]="row.mostrar==0" [ngClass]="{'highlight': filaorg_sel == i,'filagrupo':row.principal=='1'}" (click)="cambindicesel(i)"></tr>
+
+              <tr *matNoDataRow class="nodata">
+                  <td class="mat-cell" colspan="11">
+                      <label *ngIf="!buscando1">No se encontraron resultados</label>
+                      <div *ngIf="buscando1" class="preloader3 loader-block">
+                          <div class="circ1"></div>
+                          <div class="circ2"></div>
+                          <div class="circ3"></div>
+                          <div class="circ4"></div>
+                      </div>
+                  </td>
+              </tr>
+          </table>
+      </div>
+  </app-card>
+  <app-cargando [bloquearTodo]="true" *ngIf="mostrar_carga_todo"></app-cargando>
+  <app-cargando [bloquearTodo]="false" *ngIf="mostrar_carga"></app-cargando>
+</div>
+<app-modal-basic #modalRenovaLic>
+    <div class="app-modal-header">
+        <h4 class="modal-title tit-modal1"><b>Renovar Membresia</b></h4>
+        <button type="button" class="close basic-close" (click)="cerrarModal2()">
+        <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+    <div class="app-modal-body">
+        <form [formGroup]="formUsuario">
+            <mat-form-field appearance="outline" class="mff-reduc mat-form-field-disa col-sm-12 col-12">
+                <mat-label>Nombres</mat-label>
+                <input matInput autocomplete="off" formControlName="nombres" readonly>
+            </mat-form-field>
+            <mat-form-field  appearance="outline" class="mff-reduc mat-form-field-disa col-sm-6 col-12">
+                <mat-label>Fecha Asignación</mat-label>
+                <input matInput type="date" formControlName="fechaasig" readonly>
+            </mat-form-field>
+            <mat-form-field appearance="outline" class="mff-reduc mat-form-field-disa col-sm-6 col-12">
+                <mat-label>Fecha Culminación</mat-label>
+                <input matInput type="date" formControlName="fechaculm" readonly>
+            </mat-form-field>
+            <mat-form-field *ngIf="mlimitado.value==1" appearance="outline" class="mff-reduc mat-form-field-disa col-12 col-sm-6">
+                <mat-label>Tiempo Restante</mat-label>
+                <input type="text" matInput autocomplete="off" formControlName="restante" readonly>
+            </mat-form-field>
+            <mat-form-field appearance="outline" class="mff-reduc col-sm-6 col-12">
+                <mat-label>Licencia</mat-label>
+                <select matNativeControl formControlName="id_licencia" (change)="Licenciasel($event.target.value)">
+                    <option value="">--Seleccionar--</option>
+                    <option *ngFor="let licen of licencias" [value]="licen.id_licencia">
+                        {{licen.desc_licencia}}
+                    </option>
+                </select>
+            </mat-form-field>
+            <mat-form-field *ngIf="mlimitado.value==1" appearance="outline" class="mff-reduc mat-form-field-disa col-12 col-sm-6">
+                <mat-label>Tiempo Licencia</mat-label>
+                <input type="text" matInput autocomplete="off" formControlName="tiempolic" readonly>
+            </mat-form-field>
+            <mat-form-field *ngIf="mlimitado.value==1" appearance="outline" class="mff-reduc col-12 col-sm-6">
+                <mat-label>Tiempo a Agregar</mat-label>
+                <input type="text" matInput autocomplete="off" formControlName="tiempo" (blur)="calcularFin()" (keyup)="EnterTiempo($event)" 
+                [textMask]="{mask: this.formsService.maskTelefono}" autocomplete="off" maxlength="7">
+            </mat-form-field>
+            <mat-form-field *ngIf="mlimitado.value==0" appearance="outline" class="mff-reduc mat-form-field-disa col-12 col-sm-6">
+                <mat-label>Tiempo</mat-label>
+                <input type="text" matInput autocomplete="off" value="Ilimitado" readonly>
+            </mat-form-field>
+            <mat-form-field *ngIf="mlimitado.value==1" appearance="outline" class="mff-reduc mat-form-field-disa col-sm-6 col-12">
+                <mat-label>Nueva Fecha Asignación</mat-label>
+                <input matInput type="date" formControlName="nuevaasig" readonly>
+            </mat-form-field>
+            <mat-form-field *ngIf="mlimitado.value==1" appearance="outline"
+                class="mff-reduc mat-form-field-disa col-sm-6 col-12">
+                <mat-label>Nueva Fecha Culminación</mat-label>
+                <input matInput type="date" formControlName="nuevaculm" readonly>
+            </mat-form-field>
+            <span class="text-danger font-weight-bolder">Si se cambia a una licencia con menor cantidad de usuarios secundarios, 
+                se eliminarán los cambios temporales existentes de los usuarios que quedarián de más.</span>
+        </form>
+    </div>
+    <div class="app-modal-footer w-100">
+        <div class="row px-3 justify-content-between d-flex">
+            <button type="button" style="margin-right: 5px;" class="btn btn-sm btn-danger ripple" (click)="cerrarModal2()">Cerrar</button>
+            <button type="button" style="margin-right: 5px;" class="btn btn-sm btn-success ripple" (click)="GuardarRenov()">Guardar</button>
+        </div>
+    </div>
+</app-modal-basic>

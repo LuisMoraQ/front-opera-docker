@@ -1,0 +1,604 @@
+<html>
+    <body>
+      <main class="portada">
+        <div class="main-content full-width">
+          <div class="image-container">
+                <div class="container">
+                    <div class="overlay">
+                      <div class="containter-fluid container-pasarela">
+                        <div class="steps">
+                          <div class="step" [class.completed]="step >= 1" (click)="goToStep(1)">
+                            <div class="circle">1</div>
+                            <div class="label-circle">Paso 1</div>
+                          </div>
+                          <div class="line" [class.completed]="step >= 2"></div>
+                          <div class="step" [class.completed]="step >= 2" (click)="goToStep(2)">
+                            <div class="circle">2</div>
+                            <div class="label-circle">Paso 2</div>
+                          </div>
+                          <div class="line" [class.completed]="step >= 3"></div>
+                          <div class="step" [class.completed]="step >= 3" (click)="goToStep(3)">
+                            <div class="circle">3</div>
+                            <div class="label-circle">Paso 3</div>
+                          </div>
+                          <div class="line" [class.completed]="step >= 4"></div>
+                          <div class="step" [class.completed]="step >= 4" (click)="goToStep(4)">
+                            <div class="circle">4</div>
+                            <div class="label-circle">Paso 4</div>
+                          </div>
+                        </div>
+                          <form [formGroup]="myGroup" (ngSubmit)="EnviarMensaje()">
+                          <ng-container *ngIf="step === 1">
+                            <h2>DATOS PERSONALES</h2>
+                            <div class="mt-3 row">
+                                <div class="col-sm-12 col-md-12 col-lg-6 mt-2">
+                                  <mat-form-field appearance="outline" class="mff-reduc  w-100 alto-35">
+                                    <mat-label >Tipo Compra</mat-label>
+                                    <select matNativeControl formControlName="tipo_compra" style="width: 100%;" (change)="MostrarCampo($event.target.value)">
+                                        <option value="Licencia Nueva">Licencia Nueva</option>
+                                        <option value="Renovacion">Renovacion</option>
+                                        <option value="Demo">Demo</option>
+                                    </select>
+                                </mat-form-field>
+                                </div>
+                                <div *ngIf="MostrarCodigo" class="col-sm-12 col-md-12 col-lg-6 mt-2">
+                                  <mat-form-field class="mff-reduc w-80 alto-35" appearance="outline">
+                                  <mat-label>Codigo : </mat-label>
+                                  <input matInput  style="width: 98%;" formControlName="codigo" >
+                                  </mat-form-field>
+                                  <button class="btn btn-mini btn-primary"  style="margin-bottom: 5px; margin-left: 10px;" ngbTooltip="Buscar" container="body" (click)="BuscarXCodigo()"> 
+                                    <i class="fa fa-search icono-but"></i>
+                                  </button>
+                                </div>
+                            </div>
+                            <div class="mt-3">
+                              <mat-form-field class="mff-reduc w-100 alto-35" appearance="outline">
+                                <mat-label>Nombre Completo</mat-label>
+                                <input matInput  style="width: 98%;" formControlName="nombre" >
+                              </mat-form-field>
+                            </div>
+                            <div class="mt-3">
+                              <mat-form-field class="mff-reduc w-100 alto-35" appearance="outline">
+                                <mat-label>Correo Electronico</mat-label>
+                                <input matInput  style="width: 98%;" formControlName="correo_electronico" placeholder="example@hotmail.com"/>
+                              </mat-form-field>
+                            </div>
+                            <div class="mt-3 row">
+                              <div class="col-sm-6 col-12 mt-2">
+                                <mat-form-field class="mff-reduc w-100 alto-35"  appearance="outline">
+                                  <mat-label>Celular</mat-label>
+                                  <input matInput  style="width: 93%;" formControlName="celular"/>
+                                </mat-form-field>
+                              </div>
+                            </div>       
+                            <div class="mt-3">
+                              <mat-form-field appearance="outline" class="mff-reduc col-sm-6 col-12">
+                                <mat-label >País</mat-label>
+                                <select matNativeControl formControlName="cod_pais" (change)="CambiarPais()">
+                                    <option value="0">--OTROS--</option>
+                                    <option *ngFor="let pais of paises" [value]="pais.id">
+                                        {{pais.nombre}}
+                                    </option>
+                                </select>
+                            </mat-form-field>
+                            <ng-container *ngIf="!MostrarCampos">
+                              <mat-form-field appearance="outline" class="mff-reduc col-sm-6 col-12">
+                                <mat-label>Departamento</mat-label>
+                                <select matNativeControl formControlName="departamento" (change)="listarProvincias($event.target.value)">
+                                    <option value="">--Seleccionar--</option>
+                                    <option *ngFor="let departamento of departamentos" [value]="departamento.id_depart">
+                                        {{departamento.DEPARTAMENTO}}
+                                    </option>
+                                </select>
+                            </mat-form-field>
+                              <mat-form-field appearance="outline" class="mff-reduc col-sm-6 col-12">
+                                  <mat-label>Provincia </mat-label>
+                                  <select matNativeControl formControlName="provincia"
+                                      (change)="listarDistritos($event.target.value)">
+                                      <option value="">--Seleccionar--</option>
+                                      <option *ngFor="let provincia of provincias" [value]="provincia.id_prov">
+                                          {{provincia.PROVINCIA}}
+                                      </option>
+                                  </select>
+                              </mat-form-field>
+                              <mat-form-field appearance="outline" class="mff-reduc col-sm-6 col-12">
+                                  <mat-label>Distrito</mat-label>
+                                  <select matNativeControl formControlName="distrito">
+                                      <option value="">--Seleccionar--</option>
+                                      <option *ngFor="let distrito of distritos" [value]="distrito.DISTRITO">
+                                          {{distrito.DISTRITO}}
+                                      </option>
+                                  </select>
+                              </mat-form-field>
+                            </ng-container>
+                            <div *ngIf="MostrarCampos">
+                              <mat-form-field appearance="outline" class="mff-reduc col-sm-6 col-12">
+                                <mat-label>Pais</mat-label>
+                                <input matInput formControlName="otrocod_pais" />
+                              </mat-form-field>
+                              <mat-form-field appearance="outline" class="mff-reduc col-sm-6 col-12">
+                                <mat-label>Departamento Distrital</mat-label>
+                                <input matInput formControlName="otrodepartamento" />
+                              </mat-form-field>
+                            </div>
+                            </div> 
+                            <div class="form-group mt-3" style="text-align: center;">
+                              <button class="nextto" (click)="nextStep()"><span class="fa fa-arrow-right"> Siguiente</span></button>
+                            </div>
+                          </ng-container>
+                          <ng-container *ngIf="step === 2">
+                                <h1 style="color:black; text-align: center;padding: 0;margin: 0;"><b>Confirmar Compra</b></h1>
+                                <ng-container *ngIf="this.myGroup.get('tipo_compra').value!=='Demo'">
+                                  <div class="container-planes">
+                                    <div class="card-planes" [ngStyle]="{'background-image': 'url(' + imageUrl + ')', 'background-color': '#008133'}">
+                                      <h2 style=" color:green;">VERSION PROFESIONAL</h2> 
+                                        <div class="container-fluid" style="background-color: rgb(231, 224, 224,0.30);padding-top: 30px;">
+                                          <u>Módulos Disponibles</u>
+                                          <ol>
+                                            <li>Costos y Presupuestos</li>
+                                            <li>Metrado de Proyecto</li>
+                                            <li>Formula Polinómica</li>
+                                            <li>Programación de Obra</li>
+                                            <li>Especificaciones Técnicas</li>
+                                          </ol>
+                                          <p><u>Tipo de Licencia</u></p>
+                                          <p>01 Licencia Monousuario <br>(01 Usuario Principal)</p>
+                                          <del><p style="text-align: center;font-size: 20px;">Precio: $95.00</p></del>
+                                          <p style="text-align: center;color: gold;font-size: 20px;">Precio: $85.50</p>
+                                          <p style="text-align: center;">Plazo de Licencia: 12 Meses</p> 
+                                          <p style="text-align: center;">Cantidad de Proyectos: Limitado</p> 
+                                          <div class="container-fluid">
+                                            <mat-form-field class="mff-reduc w-100 alto-35" appearance="outline">
+                                              <mat-label style="color: white;">Cantidad</mat-label>
+                                              <input matInput style="background-color: white;color: black;width: 90%;height: 30px;padding-left: 15px;font-size:18px;" type="number" min="0" formControlName="licestudiantil" (change)="updateCart()"/>
+                                            </mat-form-field>
+                                          </div>
+                                        </div>
+                                    </div>
+                                    <div class="card-planes" [ngStyle]="{'background-image': 'url(' + imageUr2 + ')', 'background-color': '##de9404'}">
+                                      <h2 style="color:blue;">VERSION CONSULTOR</h2> 
+                                      <div class="container-fluid" style="background-color: rgb(231, 224, 224,0.3);padding-top: 30px;">
+                                        <u>Módulos Disponibles</u>
+                                        <ol>
+                                          <li>Costos y Presupuestos</li>
+                                          <li>Metrado de Proyecto</li>
+                                          <li>Formula Polinómica</li>
+                                          <li>Programación de Obra</li>
+                                          <li>Especificaciones Técnicas</li>
+                                        </ol>
+                                        <p><u>Tipo de Licencia</u></p>
+                                        <p>01 Licencia Monousuario <br>(01 Usuario Principal)</p>
+                                        <del><p style="text-align: center;font-size: 20px;">Precio: $170.00</p></del>
+                                        <p style="text-align: center;color: gold;font-size: 20px;">Precio: $136.00</p>
+                                        <p style="text-align: center;">Plazo de Licencia: 12 Meses</p>
+                                        <p style="text-align: center;">Cantidad de Proyectos: Ilimitado</p> 
+                                        <div class="container-fluid">
+                                          <mat-form-field class="mff-reduc w-100 alto-35" appearance="outline">
+                                            <mat-label style="color: white;">Cantidad</mat-label>
+                                            <input matInput style="background-color: white;color: black;width: 90%;height: 30px;padding-left: 15px;font-size:18px;" type="number" min="0" formControlName="licprofesional" (change)="updateCart()"/>
+                                          </mat-form-field>
+                                        </div>
+                                      </div>
+                                    </div>
+                                    <div class="card-planes" [ngStyle]="{'background-image': 'url(' + imageUr3 + ')', 'background-color': '#e33d3d'}">
+                                      <h2  style="color:red;">VERSION BIM</h2> 
+                                      <div class="container-fluid" style="background-color: rgb(231, 224, 224,0.30);">
+                                        <u>Módulos Disponibles</u>
+                                        <ol>
+                                          <li>Costos y Presupuestos</li>
+                                          <li>Metrado de Proyecto</li>
+                                          <li>Formula Polinómica</li>
+                                          <li>Programación de Obra</li>
+                                          <li>Especificaciones Técnicas</li>
+                                        </ol>
+                                        <p><u>Tipo de Licencia</u></p>
+                                        <p>01 Licencia Multiusuario <br><ol>
+                                          <li>01 Usuario Principal </li>
+                                          <li>02 Usuario Secundarios</li>
+                                        </ol></p>
+                                        <del><p style="text-align: center;font-size: 20px;">Precio: $240.00</p></del>
+                                        <p style="text-align: center;color: gold;font-size: 20px;">Precio: $192.00</p>
+                                        <p style="text-align: center;">Plazo de Licencia: 12 Meses</p>
+                                        <p style="text-align: center;">Cantidad de Proyectos: Ilimitado</p> 
+                                        <div class="container-fluid">
+                                          <mat-form-field class="mff-reduc w-100 alto-35" appearance="outline">
+                                            <mat-label style="color: white;">Cantidad</mat-label>
+                                            <input matInput style="background-color: white;color: black;width: 90%;height: 30px;padding-left: 15px;font-size:18px;" type="number" min="0" formControlName="licbim" (change)="updateCart()"/>
+                                          </mat-form-field>
+                                        </div>
+                                        </div>
+                                    </div>
+                                    <div class="card-planes" [ngStyle]="{'background-image': 'url(' + imageUr4 + ')', 'background-color': '#634c7e'}">
+                                      <h2  style=" color:purple;">VERSION EMPRESARIAL</h2> 
+                                      <div class="container-fluid" style="background-color: rgb(231, 224, 224,0.30)">
+                                        <u>Módulos Disponibles</u>
+                                        <ol>
+                                          <li>Costos y Presupuestos</li>
+                                          <li>Metrado de Proyecto</li>
+                                          <li>Formula Polinómica</li>
+                                          <li>Programación de Obra</li>
+                                          <li>Especificaciones Técnicas</li>
+                                        </ol>
+                                        <p><u>Tipo de Licencia</u></p>
+                                        <p>01 Licencia Multiusuario <br>
+                                          05 Usuario Principales/Secundarios</p>
+                                          <del><p style="text-align: center;font-size: 20px;">Precio: $600.00</p></del>
+                                          <p style="text-align: center;color: gold;font-size: 20px;">Precio: $480.00</p>
+                                          <p style="text-align: center;">Plazo de Licencia: 12 Meses</p>
+                                          <p style="text-align: center;">Cantidad de Proyectos: Ilimitado</p> 
+                                        <div class="container-fluid">
+                                          <mat-form-field class="mff-reduc w-100 alto-35" appearance="outline">
+                                            <mat-label style="color: white;">Cantidad</mat-label>
+                                            <input matInput style="background-color: white;color: black;width: 90%;height: 30px;padding-left: 15px;font-size:18px;" type="number" min="0" formControlName="licempresarial" (change)="updateCart()"/>
+                                          </mat-form-field>
+                                        </div>
+                                      </div>
+                                    </div>
+                                    <!-- <div *ngIf="TotalCompras>=3" class="container-fluid" style="color:red;	background-color:  rgb(255, 255, 255);padding: 10px 50PX;">
+                                      <h2 style="text-align: center;">Al adquirir 3 o más licencias. Usted cuenta con un descuento de 15%. ¡Felicidades y Muchas Gracias!</h2>
+                                    </div> -->
+                                  </div>
+                                    <div class="form-group" style="text-align: center;font-weight: bold;background-color:  rgb(255, 255, 255);">
+                                      <!-- <ng-container *ngIf="myGroup.get('total').value>0 && TotalCompras>=3">
+                                        <label style="font-size: 20px;margin-right: 20px;margin-right: 20px;">Subtotal: ${{Subtotal| number: '1.2-2' }}</label>
+                                        <label style="font-size: 20px;margin-right: 20px;margin-right: 20px;">Cambio Dólar: {{cambiodolar}}</label>
+                                        <label style="font-size: 20px;margin-right: 20px;margin-right: 20px;">Descuento: ${{descuento | number: '1.2-2'}}</label>
+                                        <label style="font-size: 20px;margin-right: 20px;margin-right: 20px;">Total Dólares: ${{myGroup.value.total | number: '1.2-2'}}</label>
+                                        <label style="font-size: 20px;"> Total Soles: S/.{{myGroup.value.total*cambiodolar | number: '1.2-2'}}</label>
+                                      </ng-container> -->
+                                      <!-- <ng-container *ngIf="myGroup.get('total').value>0 &&TotalCompras<3">
+                                        <label style="font-size: 20px;margin-right: 20px;">Total: ${{myGroup.value.total | number: '1.2-2' }}</label>
+                                        <label style="font-size: 20px;margin-right: 20px;">Cambio Dólar: {{cambiodolar}}</label>
+                                        <label style="font-size: 20px;">Total Soles : S/.{{myGroup.value.total*cambiodolar | number: '1.2-2'}}</label>
+                                      </ng-container> -->
+                                      <ng-container *ngIf="myGroup.get('total').value>0">
+                                        <label style="font-size: 20px;margin-right: 20px;">Total: ${{myGroup.value.total | number: '1.2-2' }}</label>
+                                        <label style="font-size: 20px;margin-right: 20px;">Cambio Dólar: {{cambiodolar}}</label>
+                                        <label style="font-size: 20px;">Total Soles : S/.{{myGroup.value.total*cambiodolar | number: '1.2-2'}}</label>
+                                      </ng-container>
+                                    </div>
+                                </ng-container>
+                                <ng-container *ngIf="this.myGroup.get('tipo_compra').value==='Demo'">
+                                  <div class="container-planes" style="background: rgba(251, 249, 249, 0.338);">
+                                    <div class="card-planes" [ngStyle]="{'background-image': 'url(' + imageUr3 + ')', 'background-color': '#e33d3d'}">
+                                      <h2  style="color:red;">VERSION DEMO</h2> 
+                                      <div class="container-fluid" style="background-color: rgb(231, 224, 224,0.30);">
+                                          <u>Módulos Disponibles</u>
+                                          <ol>
+                                            <li>Costos y Presupuestos</li>
+                                            <li>Metrado de Proyecto</li>
+                                            <li>Formula Polinómica</li>
+                                            <li>Programación de Obra</li>
+                                            <li>Especificaciones Técnicas</li>
+                                          </ol>
+                                          <p><u>Tipo de Licencia</u></p>
+                                          <p>01 Licencia Multiusuario <br><ol>
+                                            <li>01 Usuario Principal </li>
+                                            <li>02 Usuario Secundarios</li>
+                                          </ol></p>
+                                          <p style="text-align: center;color: gold;font-size: 20px;">Precio: $0.00</p>
+                                          <p style="text-align: center;">Plazo de Licencia: 1 semana</p>
+                                        </div>
+                                    </div>
+                                  </div>
+                                    <!-- <div class="form-group" style="text-align: center;font-weight: bold;background-color:  rgb(255, 255, 255);">
+                                        <label style="font-size: 20px;margin-right: 20px;">Total: $ 0.00</label>
+                                        <label style="font-size: 20px;margin-right: 20px;">Cambio Dólar: {{cambiodolar}}</label>
+                                        <label style="font-size: 20px;">Total Soles : S/. 0.00</label>
+                                    </div> -->
+                                </ng-container>
+                                  <div class="form-group mt-3" style="text-align: center;">
+                                    <button class="nextto"  (click)="previousStep()"><span class="fa fa-arrow-left"> Anterior</span></button>
+                                    <button class="nextto" (click)="nextStep()"><span class="fa fa-arrow-right"> Siguiente</span></button>
+                                  </div>
+                          </ng-container>
+                          <ng-container *ngIf="step === 3">
+                            <div class="container-fluid">
+                              <div class="row mt-2">
+                                <div class="col-sm-12 col-md-12 col-lg-3">
+                                  <div class="informacion-1" >
+                                    <h2 style="text-align: center;">INFORMACION DE LA  SOLICITUD</h2>
+                                    <p> SOLICITANTE :</p>
+                                    <label>Nombre:  {{myGroup.value.nombre}}</label><br>
+                                    <label>Correo:  {{myGroup.value.correo_electronico}}</label><br>
+                                    <label>Celular: {{myGroup.value.celular}}</label><br>
+                                    <label>Dirección: {{direcciontotal}}</label>
+                                    <p>INFORMACION DEL PEDIDO</p>
+                                    <p>Tipo de Licencia Solicitada</p>
+                                    <ng-container *ngIf="this.myGroup.get('tipo_compra').value!=='Demo'">
+                                      <b><label>Cabmio Dolar : {{cambiodolar}}</label></b><br>
+                                      <div class="ml-2" *ngIf="myGroup.value.licestudiantil>0">
+                                        <label style="font-weight: bold;">"Versión Profesional":  {{myGroup.value.licestudiantil}} Unidades</label> <br>
+                                        <label >Monto Total Soles    : S/.{{myGroup.value.licestudiantil*cambiodolar*85.50 | number: '1.2-2' }}</label><br>
+                                        <label >Monto Total Dólares  : $ {{myGroup.value.licestudiantil*85.50 | number: '1.2-2' }}</label>
+                                      </div>
+                                      <div class="ml-2" *ngIf="myGroup.value.licprofesional>0">
+                                        <label style="font-weight: bold;">"Versión Consultor":  {{myGroup.value.licprofesional}} Unidades</label> <br>
+                                        <label >Monto Total Soles    : S/.{{myGroup.value.licprofesional*cambiodolar*136 | number: '1.2-2' }}</label><br>
+                                        <label >Monto Total Dólares  : $ {{myGroup.value.licprofesional*136 | number: '1.2-2' }}</label>
+                                      </div>
+                                      <div class="ml-2" *ngIf="myGroup.value.licbim>0">
+                                        <label style="font-weight: bold;">"Versión BIM":  {{myGroup.value.licbim}} Unidades</label> <br>
+                                        <label >Monto Total Soles    : S/.{{myGroup.value.licbim*cambiodolar*192 | number: '1.2-2' }}</label><br>
+                                        <label >Monto Total Dólares  : $ {{myGroup.value.licbim*192 | number: '1.2-2' }}</label>
+                                      </div>
+                                      <div class="ml-2" *ngIf="myGroup.value.licempresarial>0">
+                                        <label style="font-weight: bold;">"Versión Empresarial":  {{myGroup.value.licempresarial}} Unidades</label> <br>
+                                        <label >Monto Total Soles    : S/.{{myGroup.value.licempresarial*cambiodolar*480| number: '1.2-2' }}</label><br>
+                                        <label >Monto Total Dólares  : $ {{myGroup.value.licempresarial*480| number: '1.2-2' }}</label>
+                                      </div>
+                                      <!-- <div class="ml-2" *ngIf="myGroup.get('total').value>0 && TotalCompras>=3">
+                                        <label style="font-weight: bold;">Subtotal    :    ${{this.Subtotal| number: '1.2-2' }}</label> 
+                                        <label style="font-weight: bold;">Descuento   :    ${{this.descuento| number: '1.2-2' }}</label> 
+                                      </div> -->
+                                      <div class="ml-2" *ngIf="myGroup.value.total>0">
+                                        <label style="font-weight: bold;">TOTAL      :    ${{myGroup.value.total| number: '1.2-2' }}</label>  <br>
+                                        <label style="font-weight: bold;">TOTAL SOLES:   S/.{{(myGroup.value.total)*cambiodolar| number: '1.2-2' }}</label> 
+                                      </div>
+                                      <p>INFORMACION DE LA LICENCIA</p>
+                                        <p>Plazo de Licencia : 12 Meses</p>
+                                        <label>Licencia solicitada : {{myGroup.value.tipo_compra}}</label><br>
+                                        <i>Una vez realizado el depósito hacer clic en siguiente. para así subir la copia o copias de Boucher del Deposito realizado.</i>        
+                                    </ng-container>  
+                                    <ng-container *ngIf="this.myGroup.get('tipo_compra').value==='Demo'">
+                                      <div >
+                                        <label style="font-weight: bold;">"Versión Demo":  1 Unidad</label> <br>
+                                        <label >Monto Total Soles    : S/.0.00</label><br>
+                                        <label >Monto Total Dólares  : $0.00</label>
+                                      </div>
+                                      <p>INFORMACION DE LA LICENCIA</p>
+                                        <p>Plazo de Licencia : 1 Semana</p>
+                                        <label>Licencia solicitada : {{myGroup.value.tipo_compra}}</label><br>
+                                    </ng-container>  
+                                  </div>
+                                  <div class="terminos" *ngIf="!isMobile">
+                                    <mat-checkbox formControlName="aceptarterminos">
+                                      Acepto los términos y condiciones 
+                                    </mat-checkbox>
+                                    <label style="cursor: pointer;padding: 1px 5px;color:#6f1521;" (click)="abrirModal()">VER</label>
+                                  </div>
+                                </div>
+                                <div class="col-sm-12 col-md-12 col-lg-9">
+                                  <h1 style="color: red;text-align:center;text-decoration: underline;">FORMAS DE PAGO N° 01 - DEPOSITO A CUENTA INTERBANCARIA</h1>
+                                  <div class="informacion-2">
+                                    <div class="info-bancos" style="border: 2px solid orange;">
+                                      <h3  >BANCO DE CREDITO DE PERU</h3>
+                                      <div style=" display: flex;justify-content: center; align-items: center;">
+                                        <img [src]="safeUrl3" alt="BCP">
+                                      </div>
+                                      <p style="color: rgb(152, 150, 150);text-align: center;">  Deposito a Cuenta Interbancaria Cuenta Soles :</p>
+                                      <p>N° de Cuenta : 285-02184137-0-65</p>
+                                      <p>CCI : 002-28510218413706558</p>
+                                      <p style="color: blue;">A nombre de : Eduar Vargas Quispe</p>
+                                    </div>
+                                    <div class="info-bancos" style="border: 2px solid green;">
+                                      <h3 >INTERBANK</h3>
+                                      <div style=" display: flex;justify-content: center; align-items: center;">
+                                      <img [src]="safeUrl1" alt="INTERBANK">
+                                      </div> 
+                                      <p style="color: rgb(152, 150, 150);text-align: center;">  Deposito a Cuenta Interbancaria:</p>
+                                      <p>Cuenta SOLES : 8983442527743</p>
+                                      <p>CCI : 003 89801344252774348</p>
+                                      <p>Cuenta DOLARES : 8983442527750</p>
+                                      <p>CCI : 00389801344252775043</p>
+                                      <p style="color: green;">A nombre de : Eduar Vargas Quispe</p>
+                                    </div>
+                                    <div class="info-bancos" style="border: 2px solid red;">
+                                      <h3 >BANCO DE LA NACION - PERU</h3>
+                                      <div style=" display: flex;justify-content: center; align-items: center;">
+                                      <img [src]="safeUrl5" alt="NACION">
+                                      </div>
+                                      <p style="color: rgb(152, 150, 150);text-align: center;">  Deposito a Cuenta Interbancaria Cuenta Soles :</p>
+                                      <p>Cuenta SOLES : 04-167-0124805</p>
+                                      <p>CCI : 018-167-004167012480-7</p>
+                                      <p style="color: red;">A nombre de : Eduar Vargas Quispe</p>
+                                    </div>
+                                  </div>
+                                  <h1 style="color: red;text-align:center;text-decoration: underline;">FORMAS DE PAGO N° 02 - TRANSFERENCIA POR YAPE O PLIN</h1>
+                                  <div class="informacion-2">
+                                    <div class="info-bancos" style="border: 2px solid purple;">
+                                      <h3 >TRANSFERENCIA POR YAPE</h3>
+                                        <div style=" display: flex;justify-content: center; align-items: center;">
+                                          <img [src]="safeUrl4" alt="YAPE">
+                                        </div>
+                                      <p>N° de Telefono : + 51 989 182177</p>
+                                      <p style="color: blue;">A nombre de : Eduar Vargas Quispe</p>
+                                    </div>
+                                    <div class="info-bancos" style="border: 2px solid skyblue;">
+                                      <h3 >TRANSFERENCIA POR PLIN</h3>
+                                        <div style=" display: flex;justify-content: center; align-items: center;">
+                                          <img [src]="safeUrl2" alt="PLIN">
+                                        </div>
+                                      <p>N° de Telefono : + 51 989 182177</p>
+                                      <p style="color: blue;">A nombre de : Eduar Vargas Quispe</p>
+                                    </div>
+                                    <div class="info-bancos" style="align-items: center;justify-content: center;"> 
+                                      <p>*** En caso que exista comision por  la transferencia Interbancaria. se Debe Adicionar el costo</p>
+                                    </div>
+                                  </div>
+                                </div>
+                              
+                              </div>
+                            </div>
+                            <div class="terminos" *ngIf="isMobile">
+                              <mat-checkbox formControlName="aceptarterminos">
+                                Acepto los términos y condiciones 
+                              </mat-checkbox>
+                              <label style="cursor: pointer;padding: 1px 5px;color:#6f1521;" (click)="abrirModal()">VER</label>
+                            </div>
+                            <div class="form-group mt-3" style="text-align: center;">
+                              <button class="nextto"  (click)="previousStep()"><span class="fa fa-arrow-left"> Anterior</span></button>
+                              <button class="nextto" (click)="nextStep()"><span class="fa fa-arrow-right"> Siguiente</span></button>
+                            </div>
+                          </ng-container>
+                          <ng-container *ngIf="step === 4">
+                            <h2>Paso 4 - Resumen</h2>
+                            <div class="row">
+                              <div class="col-sm-12 col-md-12 col-lg-6">
+                                <div class="informacion-4" >
+                                  <input type="hidden" formControlName="captcha" />
+                                  <h2 style="text-align: center;">INFORMACION DE LA SOLICITUD</h2>
+                                  <p> SOLICITANTE :</p>
+                                  <label>Nombre:  {{myGroup.value.nombre}}</label><br>
+                                  <label>Correo:  {{myGroup.value.correo_electronico}}</label><br>
+                                  <label>Celular: {{myGroup.value.celular}}</label><br>
+                                  <label>Dirección: {{direcciontotal}}</label>
+                                  <p>INFORMACION DEL PEDIDO</p>
+                                  <p>Tipo de Licencia Solicitada</p>
+                                  <ng-container *ngIf="this.myGroup.get('tipo_compra').value!=='Demo'">
+                                    <b><label>Cabmio Dolar : {{cambiodolar}}</label></b><br>
+                                    <div class="ml-2" *ngIf="myGroup.value.licestudiantil>0">
+                                      <label style="font-weight: bold;">"Versión Empresarial:  {{myGroup.value.licestudiantil}} Unidades</label> <br>
+                                      <label >Monto Total Soles    : S/.{{myGroup.value.licestudiantil*cambiodolar*85.50 | number: '1.2-2' }}</label><br>
+                                      <label >Monto Total Dólares  : $ {{myGroup.value.licestudiantil*85.50 | number: '1.2-2' }}</label>
+                                    </div>
+                                    <div class="ml-2" *ngIf="myGroup.value.licprofesional>0">
+                                      <label style="font-weight: bold;">"Versión Consultor":  {{myGroup.value.licprofesional}} Unidades</label> <br>
+                                      <label >Monto Total Soles    : S/.{{myGroup.value.licprofesional*cambiodolar*136 | number: '1.2-2' }}</label><br>
+                                      <label >Monto Total Dólares  : $ {{myGroup.value.licprofesional*136 | number: '1.2-2' }}</label>
+                                    </div>
+                                    <div class="ml-2" *ngIf="myGroup.value.licbim>0">
+                                      <label style="font-weight: bold;">"Versión BIM":  {{myGroup.value.licbim}} Unidades</label> <br>
+                                      <label >Monto Total Soles    : S/.{{myGroup.value.licbim*cambiodolar*192 | number: '1.2-2' }}</label><br>
+                                      <label >Monto Total Dólares  : $ {{myGroup.value.licbim*192 | number: '1.2-2' }}</label>
+                                    </div>
+                                    <div class="ml-2" *ngIf="myGroup.value.licempresarial>0">
+                                      <label style="font-weight: bold;">"Versión Empresarial":  {{myGroup.value.licempresarial}} Unidades</label> <br>
+                                      <label >Monto Total Soles    : S/.{{myGroup.value.licempresarial*cambiodolar*480| number: '1.2-2' }}</label><br>
+                                      <label >Monto Total Dólares  : $ {{myGroup.value.licempresarial*480| number: '1.2-2' }}</label>
+                                    </div>
+                                    <!-- <div class="ml-2" *ngIf="myGroup.get('total').value>0 && TotalCompras>=3">
+                                      <label style="font-weight: bold;">Subtotal    :    ${{this.Subtotal| number: '1.2-2' }}</label> 
+                                      <label style="font-weight: bold;">Descuento   :    ${{this.descuento| number: '1.2-2' }}</label> 
+                                    </div> -->
+                                    <div class="ml-2" *ngIf="myGroup.value.total>0">
+                                      <label style="font-weight: bold;">TOTAL      :    ${{myGroup.value.total| number: '1.2-2' }}</label>  <br>
+                                      <label style="font-weight: bold;">TOTAL SOLES:   S/.{{(myGroup.value.total)*cambiodolar| number: '1.2-2' }}</label> 
+                                    </div>
+                                    <p>INFORMACION DE LA LICENCIA</p>
+                                      <p>Plazo de Licencia : 12 Meses</p>
+                                      <label>Licencia solicitada : {{myGroup.value.tipo_compra}}</label><br>
+                                      <i>Una vez realizado el depósito hacer clic en siguiente. para así subir la copia o copias de Boucher del Deposito realizado.</i>        
+                                  </ng-container>  
+                                  <ng-container *ngIf="this.myGroup.get('tipo_compra').value==='Demo'">
+                                    <div >
+                                      <label style="font-weight: bold;">"Versión Demo":  1 Unidad</label> <br>
+                                      <label >Monto Total Soles    : S/.0.00</label><br>
+                                      <label >Monto Total Dólares  : $0.00</label>
+                                    </div>
+                                    <p>INFORMACION DE LA LICENCIA</p>
+                                      <p>Plazo de Licencia : 1 Semana</p>
+                                      <p>Licencia solicitada : {{myGroup.value.tipo_compra}}</p>
+                                      <b><p style="color: red;">Para seguir creciendo junto contigo, y seguir conectados, apóyanos con un like y compartiendo nuestro servicio. Biplan.pe Seguirá innovando para que personas como tú, puedan realizar sus trabajos de la mejor forma y sean mas eficientes.</p></b>
+                                  </ng-container>  
+                                </div>
+                              </div>
+                              <div class="col-sm-12 col-md-12 col-lg-6">
+                                <ng-container *ngIf="this.myGroup.get('tipo_compra').value!=='Demo'">
+                                  <h2>Por favor envié su comprobante por medio de PDF o imagen.</h2>
+                                </ng-container>
+                                <ng-container  *ngIf="this.myGroup.get('tipo_compra').value==='Demo'">
+                                  <h2>De manera opcional, Registre la captura de la informacion compartida.</h2>
+                                </ng-container>
+                                <div class="mt-2 bm-3" style="border: 1px solid grey; padding: 10px;">
+                                  <label class="custom-file-upload d-flex">
+                                    <input type="file" #fileInput (change)="onFileVoucher($event)" multiple />
+                                    <i class="icofont icofont-upload-alt icono-but mt-1 ml-1"></i>
+                                    <span class="texto-inputfile">Seleccionar</span>
+                                  </label>
+                                  <mat-form-field class="mff-reduc w-100 alto-35 mt-2 mb-1" appearance="outline">
+                                    <mat-label>Archivo Adjunto</mat-label>
+                                    <input matInput type="text" formControlName="archivoadjunto"  readonly/>
+                                  </mat-form-field>
+                                  <mat-tab-group>
+                                    <mat-tab *ngFor="let file of files; let i = index" [active]="i === selectedTab">
+                                      <ng-template mat-tab-label>
+                                        <span (click)="selectTab(i)">{{ file.name }}</span>
+                                      </ng-template>
+                                      <iframe *ngIf="isPdf(file)&&IframeOr" 
+                                              [src]="sanitizer.bypassSecurityTrustResourceUrl(file.url)" 
+                                              style="width: 100%; height: calc(100vh - 500px);">
+                                      </iframe>
+                                      <app-visualizador-pdf *ngIf="isPdf(file)&&!IframeOr" [urlReport]="file.url"></app-visualizador-pdf>
+                                      <img *ngIf="!isPdf(file)" 
+                                           [src]="sanitizer.bypassSecurityTrustResourceUrl(file.url)" 
+                                           style="width: 100%; max-height: calc(100vh - 285px);" />
+                                    </mat-tab>
+                                  </mat-tab-group>
+                                </div>
+                              </div>
+                            </div>
+                            <div class="form-group mt-3" style="text-align: center;">
+                              <button class="nextto"  (click)="previousStep()"><span class="fa fa-arrow-left"> Anterior</span></button>
+                              <button class="nextto" ><span class="fa fa-arrow-right" type="submit"> Enviar</span></button>
+                            </div>
+                          </ng-container>
+                          </form>
+                      </div>
+                    </div>
+                </div>
+          </div>
+          <div class="social">
+            <p>Biplan el Software que te hace ser mas eficiente en la elaboración de tus proyectos.</p>
+            <div class="redes">
+              <a style="margin-left:40px"href="https://www.facebook.com/profile.php?id=61568538622639" target="_blank"> <i class="icofont-facebook"></i></a>
+              <a href="https://www.youtube.com/@biplan.Costos-Presupuestos" target="_blank"><i class="icofont-youtube-play"></i></a>
+              <a href="https://www.instagram.com/biplan.pe/" target="_blank"><i class="icofont-instagram"></i></a>
+              <a href="https://www.tiktok.com/@eduarvq?_t=8rLJe8ro1Sh&_r=1" target="_blank" aria-label="TikTok"><i class="icofont-tiktok"></i></a>
+              <a href="https://wa.me/+51986566443" target="_blank" aria-label="WhatsApp"><i class="icofont-brand-whatsapp"></i></a>
+              <a href="https://linkedin.com" target="_blank" aria-label="LinkedIn"><i class="icofont-linkedin"></i> </a>
+            </div>
+          </div>
+        </div>
+      </main>
+    </body>
+  </html>
+  
+  <app-modal-basic [dialogClass]="'modal-dialog-scrollable modal-lg'"  #modalAceptar>
+    <div class="app-modal-header">
+      <h4 class="modal-title tit-modal1"><b>Terminos y Condiciones</b></h4>
+    </div>
+    <div class="app-modal-body">
+      <div class="container-fluid">
+        <h1> CONTRATO DE LICENCIA BIPLAN.PE </h1>
+        <p><b>DEDIQUE SU ATENCIÓN Y LEA CUIDADOSAMENTE : </b>Este Documento de Contrato de Licencia del Software Biplan.pe otorgado por el propietario del Software A favor de usted, para su uso Exclusivo, el Usuario ACEPTA los siguientes Términos y Condiciones: </p>
+        <p><b>CLAUSULA 1. ADQUISICIÓN : </b><br>
+          Al Iniciar la Adquisición del Software <b>“Biplan”</b> es imperativo que acepte los términos y Condiciones presentes en este acuerdo. En caso de optar por la declinación, se verá imposibilitado de continuar con la Adquisición de la licencia de uso del software. </p>
+        <p><b>CLAUSULA 2. PROPIEDAD : </b><br>
+          Es esencial comprender que este software es propiedad exclusiva de nuestra empresa y este acuerdo no otorga ni transfiere ningún derecho de propiedad sobre el software. La cual se encuentra protegido por la legislación sobre derechos de autor Y derechos patrimoniales.  </p>
+          <p><b>CLAUSULA 3. OTORGAMIENTO DE LA LICENCIA : </b> <br>
+          El licenciamiento de uso del Software <b>“Biplan” </b> es otorgado y vinculado a un correo electrónico. El tipo de otorgamiento de la licencia es del tipo de alquiler. De acuerdo al tiempo Solicitado. El tiempo mínimo de otorgamiento de la licencia es de 12 Meses, la cual puede renovarse de forma anual. </p>
+          <p><b>CLAUSULA 4. OTRAS RESTRICCIONES: </b></p>
+        <ol class="ultimo">
+          <li>Se encuentra expresamente prohibido realizar cualquier acción que incluya la modificación del Diseño, descompilar o desensamblar el software, Utilizar ingeniería inversa, o la transformación del software.</li>
+          <li>Las actualizaciones brindadas por el sistema, son de forma obligatoria, la cual estas sirven para mejorar y seguir optimizando algunos procesos. Cabe indicar que las actualizaciones se ejecutaran antes de iniciar cesión en el sistema.</li>
+        </ol>
+        <p><b>CLAUSULA 5. GARANTÍAS </b> <br>
+          La garantía se limita exclusivamente a la calidad del software propuesto, cualquier modificación de diseño, no autorizada, descompilacion del Software, hace que pierdas las garantías de un buen funcionamiento del Software. Y estará sujeta a evaluación de pérdida temporal o total de la licencia adquirida. <br>
+          El buen funcionamiento del Software <b>Biplan.pe</b> por ser un sistema de Web está sujeto a la conexión de internet, la cual tiene que ser estable y continua.  </p>
+        <p><b>CLAUSULA 6. CONFIDENCIALIDAD DEL CONTENIDO DESARROLLADO</b> <br>
+          La Información obtenida, compartida, desarrollada y utilizada por cada usuario es responsabilidad, de cada uno. Ya que el sistema da distintas opciones de creación, edición y de compartido, eso no implica que otorgue autoría de cada trabajo realizado. Sin en caso existe quejas, reclamos sustentados presentados por derecho de autoría del contenido desarrollado, por otros usuarios, estas serán responsabilidad de cada uno. </p>
+        <p><b> CLAUSULA 7. SOPORTE</b> <br>
+          Para el buen funcionamiento  <b>“Biplan”</b> dará soporte técnico de la Aplicación. Siendo este soporte, brindado para la corrección de posibles errores. la asistencia se realizará de forma remota a usuarios, la cual estará activa durante toda la vigencia del contrato. </p>
+        <p><b>CLAUSULA 8. RESPONSABILIDAD POR DAÑOS DE FORMA INDIRECTA.</b> <br>
+          En ningún caso el titular del software será responsable por daños secundarios que se deriven de pérdidas en fallos o negligencias de los cálculos realizados, lo que esto pueda generar, daños de Cualquier Naturaleza, ya sea como agravio, garantía u otros motivos legales o de equidad, incluyendo la pérdida de ganancias, pérdida de ahorros u otros daños que puedan surgir del uso o la imposibilidad de usar el software. <br>
+          La empresa se reserva el derecho exclusivo de ofrecer a los clientes la opción de reembolsar el precio pagado por el software dentro de un período máximo de 5 días o de suministrar/reemplazar dicho software. En ningún caso, la responsabilidad de la empresa superará el precio del software. </p>
+
+        <form [formGroup]="formularioAceptar">
+        <div class="row px-3">
+          <mat-checkbox formControlName="aceptarterminos">
+            <b> Acepto los términos y condiciones</b>
+          </mat-checkbox>
+        </div>
+        </form>
+      </div>
+    </div>
+    <div class="app-modal-footer w-100">
+      <div class="row px-3">
+        <button type="button" style="margin-right: 5px"   [disabled]="!formularioAceptar.value.aceptarterminos" class="btn btn-sm btn-primary ripple" (click)="cerrarModal()">
+          Aceptar
+        </button>
+      </div>
+    </div>
+  </app-modal-basic>
+  <app-cargando [bloquearTodo]="true" *ngIf="mostrar_carga_todo"></app-cargando>

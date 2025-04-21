@@ -1,0 +1,780 @@
+<div class="modal-dialog-scrollable modal-xl">
+  <div class="modal-content">
+      <div class="app-modal-header  modal-header">
+          <!-- tipo modal es la accion de para el modal actualizar o guardar -->
+          <h4 class="modal-title tit-modal1">
+              <b>Importar Presupuesto</b>
+          </h4>
+          <button type="button" class="close basic-close" (click)="closeModal('click-close')">
+              <span aria-hidden="true" class="mt-2">&times;</span>
+          </button>
+      </div>
+      <div class="modal-body">
+        <ul ngbNav #nav="ngbNav" [(activeId)]="activetab" class="custom-tabs nav-tabs">
+          <li [ngbNavItem]="1" [disabled]="true">
+            <a ngbNavLink>1 - Selecciona Archivos</a>
+            <ng-template ngbNavContent>
+              <div class="col-12">
+                <h4><b>Fuente :</b></h4>
+                <mat-radio-group color="primary" [(ngModel)]="opcfuente">
+                  <mat-radio-button class="ml-2 m-r-15" value="3" >
+                        <b>BIPLAN</b>
+                    </mat-radio-button>
+                    <mat-radio-button class="ml-2 m-r-15" value="0" >
+                        <b>FORM S10</b>
+                    </mat-radio-button>
+                    <mat-radio-button class="ml-2" value="1">
+                        <b>FORM D360</b>
+                    </mat-radio-button>
+                    <mat-radio-button class="ml-2" value="2">
+                        <b>AVANZADO</b>
+                    </mat-radio-button>
+                </mat-radio-group>
+                <div class="col-12" *ngIf="opcfuente!=2">
+                  <label>Asignar Columnas Manualmente :</label>
+                  <div class="switch switch-primary d-inline m-r-10" style="margin-left: 10px;">
+                      <input type="checkbox" id="switch-p-1" [(ngModel)]='confav'>
+                      <label for="switch-p-1" class="cr"></label>
+                  </div>
+              </div>
+              </div>
+              <h4 class="col-12 sub-title h4-grupo"><b>Cargar Archivos</b></h4>
+              <div class="col-12">
+                <div class="table-responsive tabla-limp m-b-10" [style.height.px]="heighttmodal2">
+                  <table class="table-bordered tab-10">
+                    <thead>
+                      <tr class="headsticky header-custom">
+                        <th appAnchocol [ancho]="90">Data</th>
+                        <th appAnchocol [ancho]="35"></th>
+                        <th appAnchocol [ancho]="90">Archivo</th>
+                        <th appAnchocol [ancho]="22"></th>
+                        <th appAnchocol [ancho]="90">Hojas</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                          <td class="cellsinpadding" appAnchocol [ancho]="90">
+                            PRESUPUESTO
+                          </td>
+                          <td appAnchocol [ancho]="35">
+                            <label class="custfileup2" style="border-radius: 10px;" placement="top" ngbTooltip="Cargar Archivo" container="body">
+                              <input type="file" id="file1" name="file" (change)="onFileChange($event)" accept=".xls ,.xlsx"/>
+                              <i class="icofont icofont-upload-alt icono-but"></i>
+                            </label>
+                          </td>
+                          <td appAnchocol [ancho]="35">
+                              {{filapresu?.nombre}}
+                          </td>
+                          <td appAnchocol [ancho]="22">
+                            <button *ngIf="filapresu" type="button" class="btn btn-mini2 btn-danger" placement="top" ngbTooltip="Eliminar Archivo" container="body" (click)="EliminaArchivo(1,null)">
+                              <i class="fa fa-times icono-but"></i> 
+                            </button>
+                          </td>
+                          <td class="text-left cellsinpadding" appAnchocol [ancho]="220" [detalle]="true">
+                              <ng-container *ngFor="let item of filapresu?.hojas">
+                                  <div class="w-100">
+                                      <mat-checkbox class="checktabla m-l-10 m-r-10" [checked]="item.selec==0?false:true" (change)="$event ? Cambiosel1(item) : null"></mat-checkbox>{{item.nombre}}<!--  -->
+                                  </div>
+                              </ng-container>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td class="cellsinpadding" appAnchocol [ancho]="28" [attr.rowspan]="filasacu.length==0?1:filasacu.length+1">
+                            COSTOS UNITARIOS
+                          </td>
+                          <td appAnchocol [ancho]="35" [attr.rowspan]="filasacu.length==0?1:filasacu.length+1">
+                            <label class="custfileup2" style="border-radius: 10px;" placement="top" ngbTooltip="Cargar Archivo" container="body">
+                              <input id="file2" name="file" type="file" (change)="onFileChange2($event)"  accept=".xls ,.xlsx" hidden multiple/>
+                              <i class="icofont icofont-upload-alt icono-but"></i>
+                            </label>
+                          </td>
+                          <td *ngIf="filasacu.length==0" appAnchocol [ancho]="35"></td>
+                          <td *ngIf="filasacu.length==0" appAnchocol [ancho]="22"></td>
+                          <td *ngIf="filasacu.length==0" class="text-left cellsinpadding" appAnchocol [ancho]="220" [detalle]="true"></td>
+                        </tr>
+                        <ng-container *ngFor="let item of filasacu;let ind=index">
+                          <tr>
+                            <td appAnchocol [ancho]="35">
+                              {{item?.nombre}}
+                            </td>
+                            <td appAnchocol [ancho]="22">
+                              <button type="button" class="btn btn-mini2 btn-danger" placement="top" ngbTooltip="Eliminar Archivo" container="body" (click)="EliminaArchivo(0,ind)">
+                                <i class="fa fa-times icono-but"></i> 
+                              </button>
+                            </td>
+                            <td class="text-left cellsinpadding" appAnchocol [ancho]="220" [detalle]="true">
+                              <ng-container *ngFor="let subitem of item?.hojas">
+                                <div class="w-100">
+                                    <mat-checkbox class="checktabla m-l-10 m-r-10" [checked]="subitem.selec==0?false:true" (change)="$event ? Cambiosel1(subitem,1) : null"></mat-checkbox>{{subitem.nombre}}<!--  -->
+                                </div>
+                            </ng-container>
+                            </td>
+                          </tr>
+                        </ng-container>
+                        <tr>
+                          <td class="cellsinpadding" appAnchocol [ancho]="28" [attr.rowspan]="filassubp.length==0?1:filassubp.length+1">
+                            SUB PARTIDAS
+                          </td>
+                          <td appAnchocol [ancho]="35" [attr.rowspan]="filassubp.length==0?1:filassubp.length+1">
+                            <label class="custfileup2" style="border-radius: 10px;" placement="top" ngbTooltip="Cargar Archivo" container="body">
+                              <input id="file3" name="file" type="file" (change)="onFileChange3($event)"  accept=".xls ,.xlsx" hidden multiple/>
+                              <i class="icofont icofont-upload-alt icono-but"></i>
+                            </label>
+                          </td>
+                          <td *ngIf="filassubp.length==0" appAnchocol [ancho]="35"></td>
+                          <td *ngIf="filassubp.length==0" appAnchocol [ancho]="22"></td>
+                          <td *ngIf="filassubp.length==0" class="text-left cellsinpadding" appAnchocol [ancho]="220" [detalle]="true"></td>
+                        </tr>
+                        <ng-container *ngFor="let item of filassubp;let ind=index">
+                          <tr>
+                            <td appAnchocol [ancho]="35">
+                              {{item?.nombre}}
+                            </td>
+                            <td appAnchocol [ancho]="22">
+                              <button type="button" class="btn btn-mini2 btn-danger" placement="top" ngbTooltip="Eliminar Archivo" container="body" (click)="EliminaArchivo(2,ind)">
+                                <i class="fa fa-times icono-but"></i> 
+                              </button>
+                            </td>
+                            <td class="text-left cellsinpadding" appAnchocol [ancho]="220" [detalle]="true">
+                              <ng-container *ngFor="let subitem of item?.hojas">
+                                <div class="w-100">
+                                    <mat-checkbox class="checktabla m-l-10 m-r-10" [checked]="subitem.selec==0?false:true" (change)="$event ? Cambiosel1(subitem,2) : null"></mat-checkbox>{{subitem.nombre}}<!--  -->
+                                </div>
+                            </ng-container>
+                            </td>
+                          </tr>
+                        </ng-container>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              <form [formGroup]='Frmdecimales'>
+                <mat-form-field class="mff-reduc my-form-field w-100 col-sm-3" appearance="outline">
+                  <mat-label>Decimales Metrado</mat-label>
+                  <select matNativeControl formControlName="metrado">
+                    <option value="2">2&nbsp;&nbsp;-->&nbsp;&nbsp;#,###.00</option>
+                    <option value="3">3&nbsp;&nbsp;-->&nbsp;&nbsp;#,###.000</option>
+                    <option value="4">4&nbsp;&nbsp;-->&nbsp;&nbsp;#,###.0000</option>
+                  </select>
+                </mat-form-field>
+                <mat-form-field class="mff-reduc my-form-field w-100 col-sm-3" appearance="outline">
+                  <mat-label>Decimales Precio</mat-label>
+                  <select matNativeControl formControlName="precio">
+                    <option value="2">2&nbsp;&nbsp;-->&nbsp;&nbsp;#,###.00</option>
+                    <option value="3">3&nbsp;&nbsp;-->&nbsp;&nbsp;#,###.000</option>
+                    <option value="4">4&nbsp;&nbsp;-->&nbsp;&nbsp;#,###.0000</option>
+                  </select>
+                </mat-form-field>
+                <mat-form-field class="mff-reduc my-form-field w-100 col-sm-3" appearance="outline">
+                  <mat-label>Decimales Total Presupuesto</mat-label>
+                  <select matNativeControl formControlName="parcial">
+                    <option value="2">2&nbsp;&nbsp;-->&nbsp;&nbsp;#,###.00</option>
+                    <option value="3">3&nbsp;&nbsp;-->&nbsp;&nbsp;#,###.000</option>
+                    <option value="4">4&nbsp;&nbsp;-->&nbsp;&nbsp;#,###.0000</option>
+                  </select>
+                </mat-form-field>
+                <mat-form-field class="mff-reduc my-form-field w-100 col-sm-3" appearance="outline">
+                  <mat-label>Decimales Cantidad Costos Unitarios</mat-label>
+                  <select matNativeControl formControlName="cantidad">
+                    <option value="2">2&nbsp;&nbsp;-->&nbsp;&nbsp;#,###.00</option>
+                    <option value="3">3&nbsp;&nbsp;-->&nbsp;&nbsp;#,###.000</option>
+                    <option value="4">4&nbsp;&nbsp;-->&nbsp;&nbsp;#,###.0000</option>
+                  </select>
+                </mat-form-field>
+              </form>
+              <br>
+              <div style="font-size: 11px;">
+                <span><b>INDICACIONES</b></span><br>
+                <span>-(PRESUPUESTO) El orden de los items es numerico empezando en 1.</span><br>
+                <span>-(PRESUPUESTO) Si solo agrega presupuesto, los costos unitarios se crearan vacios.</span><br>
+                <span>-(PRESUPUESTO) Evitar numeros en la misma columna de item.</span><br>
+                <span>-(ACU-SUBPARTIDAS) Codigo de Subpartida, debe ser igual en Costos Unitarios para asignar sus detalles correctamente.</span><br>
+                <span>-(ACU-SUBPARTIDAS) Si las Subpartidas estan en la mismo Hoja de Cálculo de los Costos Unitarios, agregar el mismo archivo en la fila de Subpartidas(Es mejor si la Hoja de Cálculo solo contiene Subpartidas).</span><br>
+                <span>-(AVANZADO) Las Subpartidas deben estar en otro archivo.</span><br>
+                <span>-(AVANZADO) Los valores deben coincidir con el tipo de las columnas correspondientes y debe estar en columnas diferentes, sin texto adicional.</span><br>
+                <span>-(BIPLAN) Si exporta con items alternos debe Asignar Columnas Manualmente.</span><br>
+                <span class="text-danger">-La version de las Hojas de Calculo para importar debe ser <strong>97-2003 ó Superior</strong>.</span>
+              </div>
+            </ng-template>
+          </li>
+          <li [ngbNavItem]="2" [disabled]="true">
+            <a ngbNavLink>2 -Configuracion Avanzada</a>
+            <ng-template ngbNavContent>
+              <ul ngbNav #nav2="ngbNav" [(activeId)]="activetab2" class="custom-tabs nav-tabs justify-content-center">
+                <li [ngbNavItem]="11">
+                  <a ngbNavLink><b>Presupuesto</b></a>
+                  <ng-template ngbNavContent>
+                    <div class="table-responsive tabla-limp m-b-10" [style.height.px]="heighttm">
+                      <table class="table-bordered tab-10">
+                        <thead>
+                          <tr class="headsticky header-custom">
+                            <th style="position: sticky;"></th>
+                            <ng-container *ngFor="let column of columnsadd1">
+                              <th>
+                                {{column}}
+                              </th>
+                            </ng-container>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <ng-container *ngIf="datadis1.length>0">
+                            <tr *ngFor="let row of datadis1;let indice=index;">
+                              <td class="celda-head" style="color: #fff; padding-left: 2px !important;padding-right: 2px !important;" appAnchocol [ancho]="20">
+                                {{indice}}
+                              </td>
+                              <ng-container *ngFor="let column of columnsadd1;">
+                                <td class="cust-col-import">
+                                  {{row[column]}}
+                                </td>
+                              </ng-container>
+                            </tr>
+                          </ng-container>
+                          <ng-container *ngIf="datadis1.length<=0">
+                            <tr>
+                              <td class="mat-cell text-center" colspan="6">
+                                  <label>No se encontraron resultados</label>
+                              </td>
+                            </tr>
+                          </ng-container>
+                        </tbody>
+                      </table>
+                    </div>
+                    <div class="tabla-limp">
+                      <table class="table-bordered tab-10">
+                        <thead>
+                          <tr class="headsticky header-custom">
+                            <th appAnchocol [ancho]="120">Item</th>
+                            <th appAnchocol [ancho]="120">Descripción</th>
+                            <th appAnchocol [ancho]="150">Unidad</th>
+                            <th appAnchocol [ancho]="28">Metrado</th>
+                            <th appAnchocol [ancho]="100">Precio</th>
+                            <th appAnchocol [ancho]="100">Parcial</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <ng-container>
+                            <tr>
+                              <td appAnchocol [ancho]="90">
+                                <select class="select-celda" [(ngModel)]="dataselcol[0]" (change)="cambiarindice1(0,$event.target.value,dataselcol)">
+                                  <option value="">Obligatorio</option>
+                                  <option *ngFor="let _id of columnsadd1" value="{{_id}}">{{_id}}</option>
+                                </select>
+                              </td>
+                              <td appAnchocol [ancho]="90">
+                                <select class="select-celda" [(ngModel)]="dataselcol[1]" (change)="cambiarindice1(1,$event.target.value,dataselcol)">
+                                  <option value="">Obligatorio</option>
+                                  <option *ngFor="let _id of columnsadd1" value="{{_id}}">{{_id}}</option>
+                              </select>
+                              </td>
+                              <td appAnchocol [ancho]="90">
+                                <select class="select-celda" [(ngModel)]="dataselcol[2]" (change)="cambiarindice1(2,$event.target.value,dataselcol)">
+                                  <option value="">Obligatorio</option>
+                                  <option *ngFor="let _id of columnsadd1" value="{{_id}}">{{_id}}</option>
+                              </select>
+                              </td>
+                              <td appAnchocol [ancho]="90">
+                                <select class="select-celda" [(ngModel)]="dataselcol[3]" (change)="cambiarindice1(3,$event.target.value,dataselcol)">
+                                  <option value="">Obligatorio</option>
+                                  <option *ngFor="let _id of columnsadd1" value="{{_id}}">{{_id}}</option>
+                              </select>
+                              </td>
+                              <td appAnchocol [ancho]="90">
+                                <select class="select-celda" [(ngModel)]="dataselcol[4]" (change)="cambiarindice1(4,$event.target.value,dataselcol)">
+                                  <option value="">Obligatorio</option>
+                                  <option *ngFor="let _id of columnsadd1" value="{{_id}}">{{_id}}</option>
+                              </select>
+                              </td>
+                              <td appAnchocol [ancho]="90">
+                                <select class="select-celda" [(ngModel)]="dataselcol[5]" (change)="cambiarindice1(5,$event.target.value,dataselcol)">
+                                  <option value="">Obligatorio</option>
+                                  <option *ngFor="let _id of columnsadd1" value="{{_id}}">{{_id}}</option>
+                              </select>
+                              </td>
+                            </tr>
+                          </ng-container>
+                        </tbody>
+                      </table>
+                    </div>
+                  </ng-template>
+                </li>
+                <li [ngbNavItem]="12" *ngIf="exisacu">
+                  <a ngbNavLink><b>Costos Unitarios</b></a>
+                  <ng-template ngbNavContent>
+                    <div class="table-responsive tabla-limp m-b-10" [style.height.px]="heighttm">
+                      <table class="table-bordered tab-10">
+                        <thead>
+                          <tr class="headsticky header-custom">
+                            <th style="position: sticky;"></th>
+                            <ng-container *ngFor="let column of columnsadd2">
+                              <th>
+                                {{column}}
+                              </th>
+                            </ng-container>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <ng-container *ngIf="datadis2.length>0">
+                            <tr *ngFor="let row of datadis2;let indice=index;">
+                              <td class="celda-head" style="color: #fff; padding-left: 2px !important;padding-right: 2px !important;" appAnchocol [ancho]="20">
+                                {{indice}}
+                              </td>
+                              <ng-container *ngFor="let column of columnsadd2;">
+                                <td class="cust-col-import">
+                                  {{row[column]}}
+                                </td>
+                              </ng-container>
+                            </tr>
+                          </ng-container>
+                          <ng-container *ngIf="datadis2.length<=0">
+                            <tr>
+                              <td class="mat-cell text-center" colspan="6">
+                                  <label>No se encontraron resultados</label>
+                              </td>
+                            </tr>
+                          </ng-container>
+                        </tbody>
+                      </table>
+                    </div>
+                    <div class="tabla-limp">
+                      <table class="table-bordered tab-10">
+                        <thead>
+                          <tr class="headsticky header-custom">
+                            <!-- <th appAnchocol [ancho]="90">Texto Partida</th> -->
+                            <th appAnchocol [ancho]="90">Item Partida</th>
+                            <!-- <th appAnchocol [ancho]="90">Texto Rendimiento</th> -->
+                            <th appAnchocol [ancho]="90">Valor Rendimiento</th>
+                            <th appAnchocol [ancho]="90">Unidad Rendimiento</th>
+                            <th appAnchocol [ancho]="90">Tipo Insumo (*)</th>
+                            <th appAnchocol [ancho]="90">Codigo Insumo</th>
+                            <th appAnchocol [ancho]="90">Descripcion Insumo</th>
+                            <th appAnchocol [ancho]="90">Unidad Insumo</th>
+                            <th appAnchocol [ancho]="90">Cuadrilla Insumo</th>
+                            <th appAnchocol [ancho]="90">Cantidad Insumo</th>
+                            <th appAnchocol [ancho]="90">Precio Insumo</th>
+                            <th appAnchocol [ancho]="90">Parcial Insumo</th>
+                            <!-- <th appAnchocol [ancho]="90">Codigo Subpartida</th> --> <!-- para subpartidas en vez de item , para avanzado 3 , para avsolo col usar lo mimso de acu -->
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <ng-container>
+                            <tr>
+                              <!-- <td appAnchocol [ancho]="90">
+                                <select class="select-celda" [(ngModel)]="dataselcol2[0]" (change)="cambiarindice1(0,$event.target.value,dataselcol2)">
+                                  <option value="">Obligatorio</option>
+                                  <option *ngFor="let _id of columnsadd2"  value="{{_id}}">{{_id}}</option>
+                                </select>
+                              </td> -->
+                              <td appAnchocol [ancho]="90">
+                                <select class="select-celda" [(ngModel)]="dataselcol2[1]" (change)="cambiarindice1(1,$event.target.value,dataselcol2)">
+                                  <option value="">Obligatorio</option>
+                                  <option *ngFor="let _id of columnsadd2" value="{{_id}}">{{_id}}</option>
+                                </select>
+                              </td>
+                              <!-- <td appAnchocol [ancho]="90">
+                                <select class="select-celda" [(ngModel)]="dataselcol2[2]" (change)="cambiarindice1(2,$event.target.value,dataselcol2)">
+                                  <option value="">Obligatorio</option>
+                                  <option *ngFor="let _id of columnsadd2" value="{{_id}}">{{_id}}</option>
+                                </select>
+                              </td> -->
+                              <td appAnchocol [ancho]="90">
+                                <select class="select-celda" [(ngModel)]="dataselcol2[3]" (change)="cambiarindice1(3,$event.target.value,dataselcol2)">
+                                  <option value="">Obligatorio</option>
+                                  <option *ngFor="let _id of columnsadd2" value="{{_id}}">{{_id}}</option>
+                                </select>
+                              </td>
+                              <td appAnchocol [ancho]="90">
+                                <select class="select-celda" [(ngModel)]="dataselcol2[4]" (change)="cambiarindice1(4,$event.target.value,dataselcol2)">
+                                  <option value="">Obligatorio</option>
+                                  <option *ngFor="let _id of columnsadd2" value="{{_id}}">{{_id}}</option>
+                                </select>
+                              </td>
+                              <td appAnchocol [ancho]="90">
+                                <select class="select-celda" [(ngModel)]="dataselcol2[5]" (change)="cambiarindice1(5,$event.target.value,dataselcol2)">
+                                  <option value="">Obligatorio</option>
+                                  <option *ngFor="let _id of columnsadd2" value="{{_id}}">{{_id}}</option>
+                                </select>
+                              </td>
+                              <td appAnchocol [ancho]="90">
+                                <select class="select-celda" [(ngModel)]="dataselcol2[6]" (change)="cambiarindice1(6,$event.target.value,dataselcol2)">
+                                  <option value="">Obligatorio</option>
+                                  <option *ngFor="let _id of columnsadd2" value="{{_id}}">{{_id}}</option>
+                                </select>
+                              </td>
+                              <td appAnchocol [ancho]="90">
+                                <select class="select-celda" [(ngModel)]="dataselcol2[7]" (change)="cambiarindice1(7,$event.target.value,dataselcol2)">
+                                  <option value="">Obligatorio</option>
+                                  <option *ngFor="let _id of columnsadd2" value="{{_id}}">{{_id}}</option>
+                                </select>
+                              </td>
+                              <td appAnchocol [ancho]="90">
+                                <select class="select-celda" [(ngModel)]="dataselcol2[8]" (change)="cambiarindice1(8,$event.target.value,dataselcol2)">
+                                  <option value="">Obligatorio</option>
+                                  <option *ngFor="let _id of columnsadd2" value="{{_id}}">{{_id}}</option>
+                                </select>
+                              </td>
+                              <td appAnchocol [ancho]="90">
+                                <select class="select-celda" [(ngModel)]="dataselcol2[9]" (change)="cambiarindice1(9,$event.target.value,dataselcol2)">
+                                  <option value="">Obligatorio</option>
+                                  <option *ngFor="let _id of columnsadd2" value="{{_id}}">{{_id}}</option>
+                                </select>
+                              </td>
+                              <td appAnchocol [ancho]="90">
+                                <select class="select-celda" [(ngModel)]="dataselcol2[10]" (change)="cambiarindice1(10,$event.target.value,dataselcol2)">
+                                  <option value="">Obligatorio</option>
+                                  <option *ngFor="let _id of columnsadd2" value="{{_id}}">{{_id}}</option>
+                                </select>
+                              </td>
+                              <td appAnchocol [ancho]="90">
+                                <select class="select-celda" [(ngModel)]="dataselcol2[11]" (change)="cambiarindice1(11,$event.target.value,dataselcol2)">
+                                  <option value="">Obligatorio</option>
+                                  <option *ngFor="let _id of columnsadd2" value="{{_id}}">{{_id}}</option>
+                                </select>
+                              </td>
+                              <td appAnchocol [ancho]="90">
+                                <select class="select-celda" [(ngModel)]="dataselcol2[12]" (change)="cambiarindice1(12,$event.target.value,dataselcol2)">
+                                  <option value="">Obligatorio</option>
+                                  <option *ngFor="let _id of columnsadd2" value="{{_id}}">{{_id}}</option>
+                                </select>
+                              </td>
+                            </tr>
+                          </ng-container>
+                        </tbody>
+                      </table>
+                    </div>
+                  </ng-template>
+                </li>
+                <li [ngbNavItem]="13" *ngIf="exissubp">
+                  <a ngbNavLink><b>Subpartidas</b></a>
+                  <ng-template ngbNavContent>
+                    <div class="table-responsive tabla-limp m-b-10" [style.height.px]="heighttm">
+                      <table class="table-bordered tab-10">
+                        <thead>
+                          <tr class="headsticky header-custom">
+                            <th style="position: sticky;"></th>
+                            <ng-container *ngFor="let column of columnsadd3">
+                              <th>
+                                {{column}}
+                              </th>
+                            </ng-container>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <ng-container *ngIf="datadis3.length>0">
+                            <tr *ngFor="let row of datadis3;let indice=index;">
+                              <td class="celda-head" style="color: #fff; padding-left: 2px !important;padding-right: 2px !important;" appAnchocol [ancho]="20">
+                                {{indice}}
+                              </td>
+                              <ng-container *ngFor="let column of columnsadd3;">
+                                <td class="cust-col-import">
+                                  {{row[column]}}
+                                </td>
+                              </ng-container>
+                            </tr>
+                          </ng-container>
+                          <ng-container *ngIf="datadis3.length<=0">
+                            <tr>
+                              <td class="mat-cell text-center" colspan="6">
+                                  <label>No se encontraron resultados</label>
+                              </td>
+                            </tr>
+                          </ng-container>
+                        </tbody>
+                      </table>
+                    </div>
+                    <button type="button" style="margin-right: 5px;" class="btn btn-sm btn-info ripple m-b-5"
+                      (click)="CopiarConfig()">Copiar Configuracion de Costos</button>
+                    <div class="tabla-limp">
+                      <table class="table-bordered tab-10">
+                        <thead>
+                          <tr class="headsticky header-custom">
+                            <!-- <th appAnchocol [ancho]="90">Texto Partida</th> -->
+                            <th appAnchocol [ancho]="90">Codigo SubPartida</th>
+                            <!-- <th appAnchocol [ancho]="90">Texto Rendimiento</th> -->
+                            <th appAnchocol [ancho]="90">Valor Rendimiento</th>
+                            <th appAnchocol [ancho]="90">Unidad Rendimiento</th>
+                            <th appAnchocol [ancho]="90">Tipo Insumo (*)</th>
+                            <th appAnchocol [ancho]="90">Codigo Insumo</th>
+                            <th appAnchocol [ancho]="90">Descripcion Insumo</th>
+                            <th appAnchocol [ancho]="90">Unidad Insumo</th>
+                            <th appAnchocol [ancho]="90">Cuadrilla Insumo</th>
+                            <th appAnchocol [ancho]="90">Cantidad Insumo</th>
+                            <th appAnchocol [ancho]="90">Precio Insumo</th>
+                            <th appAnchocol [ancho]="90">Parcial Insumo</th>
+                            <!-- <th appAnchocol [ancho]="90">Codigo Subpartida</th> --> <!-- para subpartidas en vez de item , para avanzado 3 , para avsolo col usar lo mimso de acu -->
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <ng-container>
+                            <tr>
+                              <!-- <td appAnchocol [ancho]="90">
+                                <select class="select-celda" [(ngModel)]="dataselcol3[0]" (change)="cambiarindice1(0,$event.target.value,dataselcol3)">
+                                  <option value="">Obligatorio</option>
+                                  <option *ngFor="let _id of columnsadd3"  value="{{_id}}">{{_id}}</option>
+                                </select>
+                              </td> -->
+                              <td appAnchocol [ancho]="90">
+                                <select class="select-celda" [(ngModel)]="dataselcol3[13]" (change)="cambiarindice1(13,$event.target.value,dataselcol3)"><!-- ojo revisar -->
+                                  <option value="">Obligatorio</option>
+                                  <option *ngFor="let _id of columnsadd3" value="{{_id}}">{{_id}}</option>
+                                </select>
+                              </td>
+                              <!-- <td appAnchocol [ancho]="90">
+                                <select class="select-celda" [(ngModel)]="dataselcol3[2]" (change)="cambiarindice1(2,$event.target.value,dataselcol3)">
+                                  <option value="">Obligatorio</option>
+                                  <option *ngFor="let _id of columnsadd3" value="{{_id}}">{{_id}}</option>
+                                </select>
+                              </td> -->
+                              <td appAnchocol [ancho]="90">
+                                <select class="select-celda" [(ngModel)]="dataselcol3[3]" (change)="cambiarindice1(3,$event.target.value,dataselcol3)">
+                                  <option value="">Obligatorio</option>
+                                  <option *ngFor="let _id of columnsadd3" value="{{_id}}">{{_id}}</option>
+                                </select>
+                              </td>
+                              <td appAnchocol [ancho]="90">
+                                <select class="select-celda" [(ngModel)]="dataselcol3[4]" (change)="cambiarindice1(4,$event.target.value,dataselcol3)">
+                                  <option value="">Obligatorio</option>
+                                  <option *ngFor="let _id of columnsadd3" value="{{_id}}">{{_id}}</option>
+                                </select>
+                              </td>
+                              <td appAnchocol [ancho]="90">
+                                <select class="select-celda" [(ngModel)]="dataselcol3[5]" (change)="cambiarindice1(5,$event.target.value,dataselcol3)">
+                                  <option value="">Obligatorio</option>
+                                  <option *ngFor="let _id of columnsadd3" value="{{_id}}">{{_id}}</option>
+                                </select>
+                              </td>
+                              <td appAnchocol [ancho]="90">
+                                <select class="select-celda" [(ngModel)]="dataselcol3[6]" (change)="cambiarindice1(6,$event.target.value,dataselcol3)">
+                                  <option value="">Obligatorio</option>
+                                  <option *ngFor="let _id of columnsadd3" value="{{_id}}">{{_id}}</option>
+                                </select>
+                              </td>
+                              <td appAnchocol [ancho]="90">
+                                <select class="select-celda" [(ngModel)]="dataselcol3[7]" (change)="cambiarindice1(7,$event.target.value,dataselcol3)">
+                                  <option value="">Obligatorio</option>
+                                  <option *ngFor="let _id of columnsadd3" value="{{_id}}">{{_id}}</option>
+                                </select>
+                              </td>
+                              <td appAnchocol [ancho]="90">
+                                <select class="select-celda" [(ngModel)]="dataselcol3[8]" (change)="cambiarindice1(8,$event.target.value,dataselcol3)">
+                                  <option value="">Obligatorio</option>
+                                  <option *ngFor="let _id of columnsadd3" value="{{_id}}">{{_id}}</option>
+                                </select>
+                              </td>
+                              <td appAnchocol [ancho]="90">
+                                <select class="select-celda" [(ngModel)]="dataselcol3[9]" (change)="cambiarindice1(9,$event.target.value,dataselcol3)">
+                                  <option value="">Obligatorio</option>
+                                  <option *ngFor="let _id of columnsadd3" value="{{_id}}">{{_id}}</option>
+                                </select>
+                              </td>
+                              <td appAnchocol [ancho]="90">
+                                <select class="select-celda" [(ngModel)]="dataselcol3[10]" (change)="cambiarindice1(10,$event.target.value,dataselcol3)">
+                                  <option value="">Obligatorio</option>
+                                  <option *ngFor="let _id of columnsadd3" value="{{_id}}">{{_id}}</option>
+                                </select>
+                              </td>
+                              <td appAnchocol [ancho]="90">
+                                <select class="select-celda" [(ngModel)]="dataselcol3[11]" (change)="cambiarindice1(11,$event.target.value,dataselcol3)">
+                                  <option value="">Obligatorio</option>
+                                  <option *ngFor="let _id of columnsadd3" value="{{_id}}">{{_id}}</option>
+                                </select>
+                              </td>
+                              <td appAnchocol [ancho]="90">
+                                <select class="select-celda" [(ngModel)]="dataselcol3[12]" (change)="cambiarindice1(12,$event.target.value,dataselcol3)">
+                                  <option value="">Obligatorio</option>
+                                  <option *ngFor="let _id of columnsadd3" value="{{_id}}">{{_id}}</option>
+                                </select>
+                              </td>
+                            </tr>
+                          </ng-container>
+                        </tbody>
+                      </table>
+                    </div>
+                  </ng-template>
+                </li>
+              </ul>
+              <div [ngbNavOutlet]="nav2" class="mt-2"></div>
+              <div *ngIf="(exisacu || exissubp) && opcfuente=='2'" class="m-t-5">
+                <h4><b>Configurar Tipos de Insumo (* Agrupamiento de Insumos)</b></h4>
+                <div class="tabla-limp">
+                  <table class="table-bordered tab-10">
+                    <thead>
+                      <tr class="headsticky header-custom">
+                        <th appAnchocol [ancho]="90">MANO DE OBRA</th>
+                        <th appAnchocol [ancho]="90">MATERIALES</th>
+                        <th appAnchocol [ancho]="90">EQUIPO</th>
+                        <th appAnchocol [ancho]="90">SUBCONTRATOS</th>
+                        <th appAnchocol [ancho]="90">SUBPARTIDAS</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <ng-container>
+                        <tr>
+                          <td appAnchocol [ancho]="90">
+                            <input type="text" class="formcontrol w-100 d-flex mayuscula" [(ngModel)]="arrtipins[0]" autocomplete="off"
+                              appAutoFocus><!-- (keyup)="presenterDesc($event,indice)" (blur)="caneditarDesc($event.target.value,indice)" -->
+                          </td>
+                          <td appAnchocol [ancho]="90">
+                            <input type="text" class="formcontrol w-100 d-flex mayuscula" [(ngModel)]="arrtipins[1]" autocomplete="off"
+                              appAutoFocus>
+                          </td>
+                          <td appAnchocol [ancho]="90">
+                            <input type="text" class="formcontrol w-100 d-flex mayuscula" [(ngModel)]="arrtipins[2]" autocomplete="off"
+                              appAutoFocus>
+                          </td>
+                          <td appAnchocol [ancho]="90">
+                            <input type="text" class="formcontrol w-100 d-flex mayuscula" [(ngModel)]="arrtipins[3]" autocomplete="off"
+                              appAutoFocus>
+                          </td>
+                          <td appAnchocol [ancho]="90">
+                            <input type="text" class="formcontrol w-100 d-flex mayuscula" [(ngModel)]="arrtipins[4]" autocomplete="off"
+                              appAutoFocus>
+                            <!-- <select class="select-celda" [(ngModel)]="dataselcol2[6]" (change)="cambiarindice1(6,$event.target.value,dataselcol2)">
+                              <option value="">Obligatorio</option>
+                              <option *ngFor="let _id of columnsadd2" value="{{_id}}">{{_id}}</option>
+                            </select> -->
+                          </td>
+                        </tr>
+                      </ng-container>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </ng-template>
+          </li>
+          <li [ngbNavItem]="3" [disabled]="true">
+            <a ngbNavLink>3 - Vincular Unidades</a>
+            <ng-template ngbNavContent>
+              <h4 class="col-12 sub-title h4-grupo"><b>Observaciones</b></h4>
+              <div>
+                <div class="table-responsive tabla-limp" [style.height.px]="heighttmodal2">
+                  <table class="table-bordered tab-10">
+                    <thead>
+                      <tr class="headsticky header-custom">
+                        <th appAnchocol [ancho]="120">Archivo</th>
+                        <th appAnchocol [ancho]="120">Hojas</th>
+                        <th appAnchocol [ancho]="150" [detalle]="true">Observacion</th>
+                        <th appAnchocol [ancho]="28">Fila</th>
+                        <th appAnchocol [ancho]="100">Valor</th>
+                        <th appAnchocol [ancho]="100">Valor Auxiliar</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <ng-container *ngIf="erracu.length>0">
+                        <tr (click)="cambindiceselobs(indice)" *ngFor="let row of erracu;let indice=index;" [ngClass]="{'highlight': filaSelobs == indice}" [hidden]="!mostrarund && row.unidad2!=null">
+                          <td appAnchocol [ancho]="60">
+                            {{row.archivo}}
+                          </td>
+                          <td appAnchocol [ancho]="60">
+                            {{row.hoja}}
+                          </td>
+                          <td appAnchocol [ancho]="150" [detalle]="true">
+                            {{row.error}}
+                          </td>
+                          <td appAnchocol [ancho]="28" class="text-left">
+                            {{row.fila}}
+                          </td>
+                          <td appAnchocol [ancho]="100" [detalle]="true" class="text-left">
+                            {{row.valor}}
+                          </td>
+                          <td appAnchocol [ancho]="100">
+                            {{row.valor2}}
+                          </td>
+                        </tr>
+                      </ng-container>
+                      <ng-container *ngIf="erracu.length<=0">
+                        <tr>
+                          <td class="mat-cell text-center" colspan="6">
+                              <label>No se encontraron resultados</label>
+                          </td>
+                        </tr>
+                      </ng-container>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              <h4 class="col-12 sub-title h4-grupo"><b>Unidades de Medida Encontradas</b></h4>
+              <button type="button" style="margin-right: 5px;" class="btn btn-sm btn-primary ripple m-b-5"
+                (click)="VinculaUnd()">Vincular Todo</button>
+              <label class="m-l-10">Mostrar Unidades Vinculadas :</label>
+              <div class="switch switch-primary d-inline m-r-10" style="margin-left: 10px;">
+                  <input type="checkbox" id="switch-p-1" [(ngModel)]='mostrarund'>
+                  <label for="switch-p-1" class="cr"></label>
+              </div>
+              <div class="table-responsive tabla-limp" [style.height.px]="heighttmodal2">
+                <table class="table-bordered tab-10">
+                  <thead>
+                    <tr class="headsticky header-custom">
+                      <th appAnchocol [ancho]="60">Unidad Importado</th>
+                      <th appAnchocol [ancho]="60">Unidad Sistema</th>
+                      <th appAnchocol [ancho]="150" [detalle]="true">Descripcion</th>
+                      <th appAnchocol [ancho]="32"></th>
+                      <th appAnchocol [ancho]="150" [detalle]="true">Observacion</th>
+                      <th appAnchocol [ancho]="54"></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <ng-container *ngIf="arrund.length>0">
+                      <tr (click)="cambindiceselund(indice)" *ngFor="let row of arrund;let indice=index;" [ngClass]="{'highlight': filaSelund == indice}" [hidden]="(!mostrarund && (row.unidad2!=null && !row.unidad1.includes('%')))">
+                        <td appAnchocol [ancho]="60">
+                          {{row.unidad1}}
+                        </td>
+                        <td appAnchocol [ancho]="60">
+                          {{row.unidad2}}
+                        </td>
+                        <td appAnchocol [ancho]="150" [detalle]="true">
+                          {{row.descripcion}}
+                        </td>
+                        <td appAnchocol [ancho]="32" class="text-left">
+                          <span *ngIf="row.unidad2" class="numberCircle backg-success"></span>
+                          <span *ngIf="!row.unidad2" class="numberCircle backg-warning"></span>
+                          <span *ngIf="row.unidad1.includes('%') && row.observacion!=''" placement="top" class="text-danger" style="font-size: 14px;" ngbTooltip="Se detecto una Unidad de Calculo que no esta asignada correctamente a una Unidad del sistema." container="body"><i class="icofont icofont-warning"></i></span>
+                          <!-- <span *ngIf="row.unidad1.includes('%')" placement="top" class="text-info" style="font-size: 14px;" ngbTooltip="Se detecto una Unidad Factor Porcentual." container="body"><i class="icofont icofont-info-circle"></i></span> -->
+                        </td>
+                        <td appAnchocol [ancho]="150" [detalle]="true" class="text-left">
+                          {{row.observacion}}
+                        </td>
+                        <td appAnchocol [ancho]="54">
+                          <button type="button" class="btn btn-mini2 btn-info" placement="top" ngbTooltip="Vincular Unidad" container="body" (click)="VinculaUno(indice)">
+                            <i class="fa fa-search icono-but"></i>
+                          </button>
+                          <button type="button" class="btn btn-mini2 btn-danger" placement="top" ngbTooltip="DesVincular Unidad" container="body" (click)="DesVinculaUno(indice)">
+                            <i class="fa fa-times icono-but"></i>
+                          </button>
+                        </td>
+                      </tr>
+                    </ng-container>
+                    <ng-container *ngIf="arrund.length<=0">
+                      <tr>
+                        <td class="mat-cell text-center" colspan="5">
+                            <label>No se encontraron resultados</label>
+                        </td>
+                      </tr>
+                    </ng-container>
+                  </tbody>
+                </table>
+              </div>
+            </ng-template>
+          </li>
+        </ul>
+        <div [ngbNavOutlet]="nav" class="mt-2"></div>
+    </div>
+    <div class="app-modal-footer modal-footer justify-content-between">
+      <button *ngIf="activetab==1" type="button" class="btn btn-danger btn-sm" (click)="closeModal('cancelar')"><i
+        class="fa fa-times"></i>Cerrar</button>
+      <button *ngIf="activetab!=1" type="button" style="margin-right: 5px;" class="btn btn-sm btn-primary ripple m-b-5"
+      (click)="Regresar()"><i class="icofont icofont-arrow-left"></i>Regresar
+      </button>
+      <button *ngIf="activetab==2" type="button" style="margin-right: 5px;" class="btn btn-sm btn-success ripple m-b-5"
+      (click)="Procesar(1)"><i class="icofont icofont-arrow-right"></i>Procesar
+      </button>
+      <button *ngIf="activetab==1" type="button" style="margin-right: 5px;" class="btn btn-sm ripple m-b-5" [ngClass]="{'btn-success': !confav,'btn-info':confav || opcfuente==2}"
+      (click)="Siguiente()"><i class="icofont icofont-arrow-right"></i>{{confav || opcfuente==2?'Siguiente':'Procesar'}}
+      </button>
+
+      <button *ngIf="activetab==3" type="button" class="btn btn-success btn-sm" (click)="guardar()" [disabled]="datapresu.length==0"><i
+              class="fa fa-check"></i>Guardar</button>
+    </div>
+  </div>
+</div>
+
+<app-cargando [bloquearTodo]="true" *ngIf="mostrar_carga_todo"></app-cargando>

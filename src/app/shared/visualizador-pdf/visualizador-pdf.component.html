@@ -1,0 +1,31 @@
+<div *ngIf="fullUrl" class="modal-body">
+    <div class="options">
+        <button class="option_item" (click)="zoomIn()" title="Aumentar">
+            <i class="fa fa-search-plus" aria-hidden="true"></i>
+        </button>
+
+        <button class="option_item" (click)="zoomOut()" title="Disminuir">
+            <i class="fa fa-search-minus" aria-hidden="true"></i>
+        </button>
+        <button class="option_item"  (click)="previousPage()" [disabled]="page === 1" title="Pagina anterior">
+            <i class="fa fa-angle-left" aria-hidden="true"></i>
+        </button>
+
+        <button class="option_item"  (click)="nextPage()" [disabled]="totalPages === 1 || page === totalPages" title="Pagina siguiente">
+            <i class="fa fa-angle-right" aria-hidden="true"></i>
+        </button>
+        <div class="pagina-number">{{ page }} / {{ totalPages }}</div>
+    </div>
+    <pdf-viewer [src]="fullUrl" [show-all]="false" [page]="page" [zoom]="zoom" [show-borders]="true" style="display:block !important;height: 80vh;" (after-load-complete)="afterLoadComplete($event)"
+    [original-size]="false" [render-text]="true">
+    </pdf-viewer>
+</div>
+
+<!-- <pdf-viewer [src]="fullUrl" [show-all]="false" [page]="page" (after-load-complete)="afterLoadComplete($event)"
+    [original-size]="false" [render-text]="true" style="height: 90vh;"></pdf-viewer>
+
+<button (click)="previousPage()" [disabled]="page === 1"></button>
+
+<button (click)="nextPage()" [disabled]="totalPages === 1 || page === totalPages"></button>
+
+<p>{{ page }} / {{ totalPages }}</p> -->

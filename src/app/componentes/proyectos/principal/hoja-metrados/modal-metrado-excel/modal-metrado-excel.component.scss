@@ -1,0 +1,236 @@
+.custom-file-upload {
+    border-radius: 10px !important;
+    padding: 0px 12px !important;
+    font-size: 11px !important;
+    width: 100px !important;
+}
+
+.custom-file-upload:hover {
+    padding: 0px 12px !important;
+    font-size: 11px !important;
+}
+
+label {
+    margin-bottom: 0px !important;
+}
+
+/* .ng-select .ng-select-container {
+    padding-top: 10px !important;
+}
+
+
+.ng-select .ng-select-single .ng-select-container .ng-value-container .ng-value {
+    margin-top: 10px !important;
+} */
+
+.heigth-tabla-excel {
+    height: calc(100vh - 300px);
+}
+
+// table tbody td:first-child {
+//     position: sticky;
+//     left: 0;
+//     z-index: 1;
+// }
+
+td,
+th {
+    font-family: Verdana, Arial, Helvetica, sans-serif !important;
+    font-size: 10px !important;
+}
+
+.contenedor-tabla {
+    position: relative !important;
+    margin-top: -15px !important;
+}
+
+.width-header-vacio {
+    width: 100vw;
+}
+
+.filainicio {
+    background-color: #fd7070 !important;
+}
+
+.existePresupuesto {
+    background-color: yellow !important;
+}
+
+.table-custom {
+    table-layout: fixed !important;
+}
+
+.ocultar-columnna {
+    display: none !important
+}
+
+.width-celda {
+    max-width: 700px !important;
+    // min-width: 100px !important;
+}
+
+.header-vacio {
+    width: 100%;
+    height: 23.5px;
+}
+
+.columna-vacio {
+    height: 10vh;
+    width: 19.69px;
+}
+
+.columna-vacio2 {
+    width: calc(100% - 19.69px);
+    border: 1px solid #acacac;
+}
+
+.borde {
+    border-bottom: 1px solid #eeecea;
+}
+
+.height-structurada {
+    height: calc(100vh - 180px);
+}
+
+.height-tabla-presu {
+    height: calc(100vh - 175px);
+}
+
+.bg-noExisteExcel {
+    background-color: #e2ff00 !important;
+}
+.bg-duplicadoExcel {
+    background-color: #e22309 !important;
+    color: #fff !important;
+}
+
+
+.leyenda-inicio {
+    background-color: #fd7070 !important;
+    height: 20px;
+    width: 30px;
+    border-radius: 5px;
+    margin-left: 5px;
+}
+
+.letra-leyenda {
+    font-size: 11px;
+    font-family: fangsong;
+}
+
+.margenes-badge {
+    height: 15px !important;
+    margin-top: 10px !important;
+    margin-left: 5px !important;
+}
+
+.height-tabla-v3 {
+    height: calc(100vh - 215px);
+}
+
+.bg-noExistePresu {
+    background-color: #e2ff00 !important;
+}
+
+.bg-seRepiteItem {
+    background-color: #e22309 !important;
+    color: #fff !important;
+}
+
+.bg-casiParecido {
+    background-color: #9df1a1 !important;
+}
+
+.bg-descripcion-diferente {
+    background-color: #fba359 !important;
+}
+
+.leyenda-noExiste {
+    height: 14px;
+    width: 25px;
+    border-radius: 5px;
+    margin-top: 2px;
+    margin-right: 5px;
+}
+
+.leyendas-text {
+    margin-right: 5px;
+    font-size: 9px;
+    font-family: ui-monospace;
+}
+
+.border-top-sepador {
+    border-top: 3px solid black !important;
+}
+
+.margen-tabla-presu {
+    max-width: 49% !important;
+    margin-right: 1% !important;
+}
+
+.es-titulo {
+    // color: #881616 !important;
+    font-weight: 900 !important;
+    font-family: 'icofont' !important;
+    text-decoration: underline !important;
+    text-align: center !important;
+    color: brown !important;
+}
+
+
+.es-metrado {
+    // color: #881616 !important;
+    font-weight: 700 !important;
+    font-family: 'icofont' !important;
+    color: #03015a !important;
+}
+
+.height-tabla-final {
+    height: calc(100vh - 195px) !important;
+    overflow: auto !important;
+}
+
+.tr1-sticky {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+}
+
+.tr2-sticky {
+    position: sticky;
+    top: 22px;
+    z-index: 2;
+}
+
+.width-descripcion {
+    min-width: 400px !important;
+    max-width: 500px !important;
+}
+
+.h-plantillas {
+    height: calc(100vh - 350px);
+    overflow: auto;
+}
+.mat-checkbox-inner-container {
+    top: 3px !important;
+}
+
+.h-container {
+    // height: calc(100vh - 200px);
+    overflow: auto;
+}
+
+.mb-custom ::ng-deep .mat-checkbox-layout {
+    margin-bottom: 0 !important;
+}
+
+.filaEliminada {
+    opacity: 0.5 !important;
+    text-decoration:line-through !important;
+}
+.h-22 {
+    height: 22px !important;
+}
+.bg-w-smoke {
+    background-color: whitesmoke !important;
+}

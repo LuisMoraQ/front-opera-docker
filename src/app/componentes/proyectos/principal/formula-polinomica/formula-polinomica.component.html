@@ -1,0 +1,1055 @@
+<div class="container-fluid px-0">
+    <div class="col-12 d-flex pr-0 justify-content-between" style="padding-left: 2rem;">
+
+        <div class="btn-group" role="group" data-toggle="tooltip" data-placement="top" title=""
+            data-original-title=".btn-xlg">
+            <button type="button" class="btn-custom" placement="top" [ngClass]="{'btn-custom-active': vista == 1}"
+                ngbTooltip="Menu Principal" (mouseup)="quitarfoco($event);" container="body"
+                *ngIf="(vista == 2 || vista == 3) && titulos.length" (click)="cambioVista(1, tituloSeleccionado)">
+                Menu Principal
+            </button>
+            <button type="button" class="btn-custom" placement="top" ngbTooltip="Agrupamiento"
+                [disabled]="!this.titulos.length" *ngIf="vista == 3"
+                [ngClass]="{'btn-custom-active': vista == 2, 'disab-button':!this.titulos.length}"
+                (mouseup)="quitarfoco($event);" container="body" (click)="cambioVista(2, tituloSeleccionado)">
+                Edición Agrupamiento y Monomios
+            </button>
+            <button type="button" class="btn-custom" placement="top" [disabled]="!this.titulos.length"
+                (mouseup)="quitarfoco($event);" *ngIf="vista == 2"
+                [ngClass]="{'btn-custom-active': vista == 3, 'disab-button': (!tituloSeleccionado?.arr_fp || !this.titulos.length)}"
+                [disabled]="tituloSeleccionado?.arr_fp ? false : true" ngbTooltip="Formula Polinomica" container="body"
+                (click)="cambioVista(3, tituloSeleccionado)">
+                Formula Polinómica resultante
+            </button>
+        </div>
+        <div>
+            <h4 class="sub-title text-center p-b-0">Fórmula Polinómica</h4>
+        </div>
+        <div>
+            <button class="btn btn-mini bg-success float-right" container="body" style="margin-left: 1px" *ngIf="!solover"
+                [disabled]="disabAcciones || existTempCI" (click)="guardarCambios()" ngbTooltip="Guardar cambios realizados"
+                type="button" (mouseup)="quitarfoco($event)"><i class="fa fa-save icono-but"><span *ngIf="existeTempFP"
+                        class="badge ballalert balert-danger"></span></i>
+            </button>
+            <button class="btn btn-mini bg-danger float-right" container="body" style="margin-left: 1px" *ngIf="!solover"
+                [disabled]="disabAcciones || existTempCI" ngbTooltip="Descartar todos los cambios realizados" type="button"
+                (mouseup)="quitarfoco($event)" (click)="descartarTodosLoscambios()"><i
+                    class="fa fa-power-off icono-but"></i>
+            </button>
+        </div>
+    </div>
+
+    <div class="col-12 px-0 height-cont-tab">
+        <ng-container *ngIf="vista == 1">
+            <div class="col-12 px-0">
+                <button class="btn btn-sm btn-outline-secondary" type="button" (mouseup)="quitarfoco($event);"
+                    style="padding: 4px 8px;" (click)="openModalPrincipal()"
+                    [ngClass]="{'btn-custom-active': subvista == 2}">
+                    <i class="fa fa-list"></i> Edición Ind. Unif.
+                </button>
+                <button class="btn btn-sm btn-outline-secondary ml-2" style="padding: 4px 4px;" type="button"
+                ngbTooltip="reiniciar completamente formula polinomica del proyecto" container="body" *ngIf="!this.solover"
+                    [disabled]="!this.titulos.length || existTempCI || disabAcciones" (mouseup)="quitarfoco($event);"
+                    (click)="eliminarDataAlmacenadaProyecto()" [ngClass]="{'disab-button':!this.titulos.length}"
+                    [ngClass]="{'btn-custom-active': subvista == 2}">
+                    <i class="fa fa-trash icono-but"></i>
+                </button>
+                <button class="btn btn-sm btn-outline-secondary" style="padding: 4px 4px;" type="button"
+                container="body" ngbTooltip="Reporte detalle de titulos"
+                    [disabled]="!this.titulos.length" (mouseup)="quitarfoco($event);" (click)="generarReporte(0)"
+                    [ngClass]="{'disab-button':!this.titulos.length}">
+                    <i class="fa fa-print icono-but"></i>
+                </button>
+                <div class="alert alert-warning float-right" role="alert" *ngIf="alertaMaxFormulas()">
+                    <i class="fa fa-ban icon-alert"></i> Máximo 4 fórmulas polinómicas.
+                </div>
+                <div class="alert alert-danger float-right" role="alert" *ngIf="disabAcciones && !existTempCI">
+                    <i class="fa fa-ban icon-alert"></i> Edicion bloqueada! — Cambios sin guardar en presupuesto.
+                </div>
+                <div class="alert alert-danger float-right" role="alert" *ngIf="existTempCI && !disabAcciones">
+                    <i class="fa fa-ban icon-alert"></i> Cambios sin guardar en costo indirecto.
+                </div>
+                <div class="alert alert-danger float-right" role="alert" *ngIf="existTempCI && disabAcciones">
+                    <i class="fa fa-ban icon-alert"></i> Edicion bloqueada! — Cambios sin guardar en presupuesto y costo
+                    indirecto.
+                </div>
+                <div class="float-right" *ngIf="titulosActualizado">
+                    <span class="badge bg-info" style="position: relative;top: 3px;">Tabla Titulos Actualizado</span>
+                </div>
+            </div>
+            <div class="col-12 px-0 overflow-auto mt-3 h-titulos">
+                <table class="table-bordered tab-10">
+                    <thead class="text-center">
+                        <tr class="headsticky">
+                            <th rowspan="2" appAnchocol [ancho]="250" [detalle]="true">Detalle de Estructura por Titulo</th>
+                            <th colspan="4" appAnchocol [ancho]="270">
+                                Estructura Inicial
+                            </th>
+                            <th colspan="2" appAnchocol [ancho]="80" *ngIf="!this.solover">Edicion</th>
+                            <th colspan="4" appAnchocol [ancho]="110">Estructura Modificada</th>
+                            <th rowspan="2" appAnchocol [ancho]="100">Estado FP</th>
+                        </tr>
+                        <tr>
+                            <th appAnchocol [ancho]="80">T. CD</th>
+                            <th appAnchocol [ancho]="80">T. CI</th>
+                            <th appAnchocol [ancho]="80">Total Costos</th>
+                            <th appAnchocol [ancho]="30">FP</th>
+                            <th appAnchocol [ancho]="40" *ngIf="!this.solover">Seleción</th>
+                            <th appAnchocol [ancho]="45" *ngIf="!this.solover">Vincular</th>
+                            <th appAnchocol [ancho]="80">Monto</th>
+                            <th appAnchocol [ancho]="30">FP</th>
+                            <th appAnchocol [ancho]="120">Agrupamiento FP</th>
+                            <th appAnchocol [ancho]="150">Denominación</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <ng-container *ngIf="titulos.length; else NoData">
+                            <tr *ngFor="let titulo of this.titulos; let idx = index">
+                                <td appAnchocol [ancho]="250" [detalle]="true" [ngClass]="{'highlight2': this.tituloSlider == titulo}">
+                                    <div class="d-flex "
+                                        [ngClass]="{'ml-3': titulo.vinculo !== null, 'font-weight-bolder' : titulo.vinculo == null }">
+                                        <div>{{titulo.item}}</div>
+                                        &nbsp;
+                                        <div class="recortatextlinea">{{titulo.descripcion}}</div>
+                                    </div>
+                                </td>
+                                <td [ngClass]="{'highlight2': this.tituloSlider == titulo}">
+                                    <div class="d-flex justify-content-between">
+                                        <div>{{simbolo}}</div>
+                                        <div>{{titulo.parcial| number:'0.2-2'}}</div>
+                                    </div>
+                                </td>
+                                <td [ngClass]="{'highlight2': this.tituloSlider == titulo}">
+                                    <div class="d-flex justify-content-between">
+                                        <div>{{simbolo}}</div>
+                                        <div>{{titulo.ci_total| number: '0.2-2'}}</div>
+                                    </div>
+                                </td>
+                                <td [ngClass]="{'highlight2': this.tituloSlider == titulo}">
+                                    <div class="d-flex justify-content-between">
+                                        <div>{{simbolo}}</div>
+                                        <div>{{titulo.total_costos| number: '0.2-2'}}</div>
+                                    </div>
+                                </td>
+                                <td class="text-center" [ngClass]="{'highlight2': this.tituloSlider == titulo}">
+                                    {{titulo.itemfp}}
+                                </td>
+                                <td [ngClass]="{'highlight2': this.tituloSlider == titulo}" *ngIf="!this.solover">
+                                    <ng-container *ngIf="!titulo.vinculo; else ocultar">
+                                        <div class="switch switch-primary d-inline m-r-10" style="margin-left: 10px;">
+                                            <input type="checkbox" [id]="idx"
+                                                [disabled]="disabAcciones || bloquearEdicion || existTempCI"
+                                                [checked]="titulo.seleccion"
+                                                (change)="cambioSeleccion($event.target.checked, idx)">
+                                            <label [for]="idx" class="cr"></label>
+                                        </div>
+                                    </ng-container>
+                                    <ng-template #ocultar>
+                                        -
+                                    </ng-template>
+                                </td>
+                                <td class="text-center" [ngClass]="{'highlight2': this.tituloSlider == titulo}" *ngIf="!this.solover">
+                                    <mat-checkbox
+                                        *ngIf="(!titulo.seleccion && (titulo.vinculo == null || tituloSlider?.indice == titulo.vinculo)) && longitudTit(titulo.agrupamiento) < 2"
+                                        [checked]="titulo.vinculo ? true : false" [disabled]="!tituloSlider"
+                                        (change)="cambioVinculo($event.checked, idx)">
+                                    </mat-checkbox>
+                                    <i *ngIf="!titulo.seleccion  && titulo.vinculo && tituloSlider?.indice != titulo.vinculo"
+                                        ngbTooltip="Vinculo registrado" container="body"
+                                        class="fa fa-check-square icono-but  mat-custom"></i>
+                                </td>
+                                <td [ngClass]="{'highlight2': this.tituloSlider == titulo}">
+                                    <ng-container *ngIf="!titulo.vinculo; else ocultar1">
+                                        <div class="d-flex justify-content-between">
+
+                                            <div>{{simbolo}} <i class="fa fa-exclamation-triangle c-alert"
+                                                    *ngIf="!titulo.monto_gru"></i></div>
+                                            <div>{{titulo.monto_gru| number: '0.2-2'}}</div>
+                                        </div>
+                                    </ng-container>
+                                    <ng-template #ocultar1>
+                                        -
+                                    </ng-template>
+                                </td>
+                                <td class="text-center" [ngClass]="{'highlight2': this.tituloSlider == titulo}">
+                                    <ng-container *ngIf="!titulo.vinculo; else ocultar2">
+                                        {{titulo.itformula}}
+                                    </ng-container>
+                                    <ng-template #ocultar2>
+                                        -
+                                    </ng-template>
+                                </td>
+                                <td appAnchocol [ancho]="120" class="text-center recortatextlinea"
+                                    [ngClass]="{'highlight2': this.tituloSlider == titulo}" [ngbTooltip]="longitudTit(titulo.agrupamiento) > 0 ?
+                                    joinTit(titulo.agrupamiento) :
+                                    titulo.itemfp" container="body">
+                                    <ng-container *ngIf="!titulo.vinculo; else ocultar3">
+                                        {{longitudTit(titulo.agrupamiento) > 0 ?
+                                        joinTit(titulo.agrupamiento) :
+                                        titulo.itemfp}}
+                                    </ng-container>
+                                    <ng-template #ocultar3>
+                                        -
+                                    </ng-template>
+                                </td>
+                                <td appAnchocol [ancho]="200" (click)="editarDenominacion(idx)"
+                                    [ngClass]="{'highlight2': this.tituloSlider == titulo}">
+                                    <ng-container *ngIf="!titulo.vinculo; else ocultar4">
+                                        <div class="d-flex" *ngIf="!titulo.editar_denominacion"
+                                            [ngbTooltip]="titulo.denominacion" container="body">
+                                            <div class="recortatextlinea">
+                                                {{titulo.denominacion}}
+                                            </div>
+                                            <i *ngIf="titulo.editar_denominacion==0  && !disabAcciones &&  !bloquearEdicion && !solover"
+                                                class="fa fa-pencil" style="cursor: pointer;" ngbTooltip="{{Editar}}"
+                                                container="body" (click)="editarDenominacion(idx)"></i>
+                                        </div>
+
+                                        <div *ngIf="titulo.editar_denominacion">
+                                            <input #inputDenominacion type="text" [value]="titulo.denominacion"
+                                                appAutoFocus class="w-100 mayuscula"
+                                                (select)="inputDenominacion.select()" autocomplete="off"
+                                                (keydown.enter)="blurDenominacion($event, idx)"
+                                                (blur)="blurDenominacion($event, idx)" />
+                                        </div>
+                                    </ng-container>
+                                    <ng-template #ocultar4>
+                                        -
+                                    </ng-template>
+                                </td>
+                                <td class="text-center" [ngClass]="{'highlight2': this.tituloSlider == titulo}">
+                                    <ng-container *ngIf="!titulo.vinculo; else ocultar5">
+                                        <div class="d-flex">
+                                            <div>
+                                                <span class="badge bg-danger pos-badge"
+                                                    style="width: 80px; border: 1px solid #bfbfbf;"
+                                                    *ngIf="titulo.estado == 0">NO
+                                                    REALIZADO</span>
+                                                <span class="badge bg-warning pos-badge text-dark" style="width: 80px"
+                                                    *ngIf="titulo.estado == 2">INCOMPLETO</span>
+                                                <span class="badge bg-success pos-badge" style="width: 80px"
+                                                    *ngIf="titulo.estado == 1">
+                                                    APROBADO</span>
+                                                <span class="badge bg-orange pos-badge" style="width: 80px"
+                                                    *ngIf="titulo.estado == 3">
+                                                    DESACTUALIZADO</span>
+                                            </div>
+
+                                            <button class="btn btn-mini2 bg-info ml-2" type="button"
+                                                ngbTooltip="Ver tablas agrupamiento" container="body"
+                                                (mouseup)="quitarfoco($event);" (click)="cambioVista(2, titulo)">
+                                                <i class="fa fa-search icono-but"></i>
+                                            </button> 
+                                            <button class="btn btn-mini2 bg-danger" type="button" *ngIf="!this.solover"
+                                                [disabled]="disabAcciones || existTempCI" ngbTooltip="Limpiar tablas agrupamiento"
+                                                container="body" (mouseup)="quitarfoco($event);"
+                                                (click)="eliminarTablasPorTitulo(titulo, idx)">
+                                                <i class="fa fa-trash icono-but"></i>
+                                            </button>
+                                        </div>
+                                    </ng-container>
+                                    <ng-template #ocultar5>
+                                        -
+                                    </ng-template>
+                                </td>
+                            </tr>
+                        </ng-container>
+                        <ng-template #NoData>
+                            <tr>
+                                <td class="mat-cell text-center" colspan="8">
+                                    <label *ngIf="!buscando">No se encontraron resultados</label>
+                                    <div *ngIf="buscando" class="preloader3 loader-block">
+                                        <div class="circ1"></div>
+                                        <div class="circ2"></div>
+                                        <div class="circ3"></div>
+                                        <div class="circ4"></div>
+                                    </div>
+                                </td>
+                            </tr>
+                        </ng-template>
+                    </tbody>
+                </table>
+            </div>
+        </ng-container>
+        <ng-container *ngIf="vista == 2 || vista == 3">
+            <div class="row px-3">
+                <div class="col-sm-6 col-md-4 col-lg-4 px-0 d-flex">
+                    <mat-form-field appearance="outline" class="mff-reduc w-100 alto-35">
+                        <mat-label>Formula Polinómica</mat-label>
+                        <select matNativeControl [ngModel]="tituloSeleccionado?.indice"
+                            (change)="cambioTitulo($event.target.value)">
+                            <option *ngFor="let titulo of titulosFiltrados; let index = index" [value]="titulo.indice"
+                                [disabled]="titulo.monto_gru <=0">
+                                {{titulo.denominacion}} <span class="text-danger" *ngIf="titulo.monto_gru <=0">
+                                    (MONTO NO VALIDO)</span>
+                            </option>
+                        </select>
+                    </mat-form-field>
+                    <button class="btn btn-sm btn-outline-secondary ml-2" container="body"
+                    (mouseup)="quitarfoco($event);"
+                        ngbTooltip="Reporte formula detalle por titulo" type="button" (click)="reporteFormulaXTitulo()">
+                        <i class="fa fa-print icono-but"></i> </button>
+                </div>
+                <div class="col-sm-6 col-md-8 col-lg-8 pr-0">
+                    <!-- <button class="btn btn-sm btn-success  float-right" *ngIf="tituloSeleccionado?.cambios"
+                        type="button" (mouseup)="quitarfoco($event);" style="padding: 4px 8px;"
+                        (click)="corregirTablas()">
+                        <i class="fa fa-check"></i>Actualizar Tabla Agrupamiento
+                    </button>
+                    <div class="alert alert-danger float-right" role="alert" *ngIf="cambiosAgruCI || cambiosAgruCD">
+                        <i class="fa fa-ban icon-alert"></i> Tabla actualizada con cambios de : <span
+                            *ngIf="cambiosAgruCI">Costo Indirecto</span><span
+                            *ngIf="cambiosAgruCI && cambiosAgruCD">&nbsp;&nbsp;y&nbsp;&nbsp;</span><span
+                            *ngIf="cambiosAgruCD">Costo Directo</span>.
+                    </div> -->
+                </div>
+                <ng-container *ngIf="vista == 2">
+                    <div class="col-7 px-0 height-tabla-insumo overflow-auto">
+                        <table class="table-bordered tab-10">
+                            <thead class="text-center headsticky">
+                                <tr>
+                                    <th colspan="10">AGRUPAMIENTO</th>
+                                </tr>
+                                <tr class="headsticky">
+                                    <th appAnchocol [ancho]="30">
+                                        <div class="d-flex">
+                                            <a style="cursor: pointer;" ngbTooltip="Expandir Todo" container="body"
+                                                (click)="maxtodoAgrup()"><i class="icofont icofont-caret-up"></i></a>
+                                            <a style="cursor: pointer;" ngbTooltip="Contraer Todo" container="body"
+                                                (click)="mintodoAgrup()"><i class="icofont icofont-caret-down"></i></a>
+                                        </div>
+                                    </th>
+
+                                    <th appAnchocol [ancho]="30">IND.</th>
+                                    <th appAnchocol [ancho]="250" [detalle]="true">DESCRIPCION DE I.U.</th>
+                                    <th appAnchocol [ancho]="30">TIPO</th>
+                                    <th appAnchocol [ancho]="66" *ngIf="!solover">SELECCION PRELIMINAR MONOMIOS</th>
+                                    <th appAnchocol [ancho]="50" *ngIf="!solover">VINCULO</th>
+                                    <th appAnchocol [ancho]="60">% INDICE INICIAL</th>
+                                    <th appAnchocol [ancho]="71">INDICE MODIFICADO</th>
+                                    <th appAnchocol [ancho]="120" id="h-agrupamiento">AGRUPAMIENTO</th>
+                                    <th appAnchocol [ancho]="50"> > AL %5</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <ng-container *ngIf="listaAgrupamiento.length; else noAgrupamiento">
+                                    <tr *ngFor="let row of listaAgrupamiento; let idx = index">
+                                        <ng-container *ngIf="row.mostrar == 1">
+                                            <ng-container *ngIf="row.id_indice !== null && row.id_indice !== 0">
+                                                <td appAnchocol [ancho]="30" class="text-center"
+                                                    [ngClass]="{'highlight2': agrupamientoSeleccionado == row}">
+                                                    <ng-container *ngIf="!row.vinculo">
+                                                        <a *ngIf="!row.icomost" style="
+                                                  padding: 0px 2px;
+                                                  color: #06bb06;
+                                                  cursor: pointer;
+                                                " (click)="toggleOnAgrup(idx)">
+                                                            <i class="icofont icofont-caret-down"></i>
+                                                        </a>
+                                                        <a *ngIf="row.icomost == 1" (click)="toggleOffAgrup(idx)"
+                                                            style="padding: 0px 2px; color: red; cursor: pointer">
+                                                            <i class="icofont icofont-caret-up"></i> </a>
+                                                    </ng-container>
+                                                </td>
+                                                <td class="text-center"
+                                                    [ngClass]="{'row-nuevo': row.considerar == 4, 'row-eliminar': row.considerar == 0, 'row-modificado': row.considerar == 2, 'highlight2': agrupamientoSeleccionado == row}">
+                                                    <span [ngClass]="{'font-weight-bolder' : row.vinculo == null}">
+                                                        {{row.id_indice}}
+                                                    </span>
+                                                </td>
+                                                <td appAnchocol [ancho]="250" [detalle]="true"
+                                                    [ngClass]="{'row-nuevo': row.considerar == 4, 'row-eliminar': row.considerar == 0, 'row-modificado': row.considerar == 2, 'highlight2': agrupamientoSeleccionado == row}">
+                                                    <div class="recortatext1l" [ngbTooltip]="row.desc_indice"
+                                                        [ngClass]="{'ml-3': row.vinculo !== null, 'font-weight-bolder' : row.vinculo == null}">
+                                                        {{row.desc_indice}}
+                                                    </div>
+                                                </td>
+                                                <td class="text-center"
+                                                    [ngClass]="{'row-nuevo': row.considerar == 4, 'row-eliminar': row.considerar == 0, 'row-modificado': row.considerar == 2, 'highlight2': agrupamientoSeleccionado == row}">
+                                                    <!-- <span [ngClass]="{'font-weight-bolder' : row.vinculo == null}">
+                                                        {{row.tipo}}
+                                                    </span> -->
+                                                    <span class="badge "
+                                                        [ngbTooltip]="row.tipo == 'CI' ? 'COSTO INDIRECTO' : 'COSTO DIRECTO'"
+                                                        [ngClass]="{'bg-info' : row.tipo == 'CI', 'bg-secondary text-white': row.tipo == 'CD'}">
+                                                        {{row.tipo}}
+                                                    </span>
+                                                </td>
+                                                <td class="text-center" *ngIf="!solover"
+                                                    [ngClass]="{'row-nuevo': row.considerar == 4, 'row-eliminar': row.considerar == 0, 'row-modificado': row.considerar == 2, 'highlight2': agrupamientoSeleccionado == row}">
+                                                    <ng-container *ngIf="!row.vinculo; else ocultar">
+                                                        <div class="switch switch-primary d-inline m-r-10"
+                                                            style="margin-left: 10px;">
+                                                            <input type="checkbox" [id]="idx + 'b'"
+                                                                [disabled]="disabAcciones || bloquearEdicion || existTempCI"
+                                                                [checked]="row.seleccion"
+                                                                (change)="cambioSeleccionAgrupamiento($event.target.checked, idx)">
+                                                            <label [for]="idx + 'b'" class="cr"></label>
+                                                        </div>
+                                                    </ng-container>
+                                                    <ng-template #ocultar>
+                                                        -
+                                                    </ng-template>
+                                                </td>
+                                                <td class="text-center" *ngIf="!solover"
+                                                    [ngClass]="{'row-nuevo': row.considerar == 4, 'row-eliminar': row.considerar == 0, 'row-modificado': row.considerar == 2, 'highlight2': agrupamientoSeleccionado == row}">
+                                                    <mat-checkbox
+                                                        *ngIf="!row.seleccion && (row.vinculo == null || (agrupamientoSeleccionado?.id_indice == (row.vinculo)?.split('+')[0] && agrupamientoSeleccionado?.tipo == (row.vinculo)?.split('+')[1]))"
+                                                        [checked]="row.vinculo ? true : false"
+                                                        [disabled]="!agrupamientoSeleccionado || disabAcciones || bloquearEdicion ||  existTempCI"
+                                                        (change)="cambioVinculoAgru($event.checked, idx)">
+                                                    </mat-checkbox>
+                                                    <i *ngIf="!row.seleccion  && row.vinculo && (agrupamientoSeleccionado?.id_indice !== (row.vinculo)?.split('+')[0] || agrupamientoSeleccionado?.id_indice == (row.vinculo)?.split('+')[0] && agrupamientoSeleccionado?.tipo !== (row.vinculo)?.split('+')[1])"
+                                                        ngbTooltip="Vinculo registrado" container="body"
+                                                        class="fa fa-check-square icono-but mat-custom"></i>
+                                                </td>
+                                                <td
+                                                    [ngClass]="{'celda-mayor': row.indice_inicial > 5, 'row-nuevo': row.considerar == 4, 'row-eliminar': row.considerar == 0, 'row-modificado': row.considerar == 2}">
+                                                    <div class="d-flex justify-content-between">
+                                                        <div *ngIf="row.indice_inicial !== 0">
+                                                            &nbsp;
+                                                        </div>
+                                                        <i class="fa fa-exclamation-triangle"
+                                                            style="padding-top: 4px; color: #bfbf2d;"
+                                                            *ngIf="row.indice_inicial == 0"></i>
+                                                        <div class="float-right"
+                                                            [ngClass]="{'font-weight-bolder' : row.vinculo == null}">
+                                                            {{row.indice_inicial | number:'0.3'}}
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td class="text-right"
+                                                    [ngClass]="{'font-weight-bolder' : row.vinculo == null, 'row-nuevo': row.considerar == 4, 'row-eliminar': row.considerar == 0, 'row-modificado': row.considerar == 2, 'highlight2': agrupamientoSeleccionado == row}">
+                                                    <ng-container *ngIf="!row.vinculo; else noMostrar2">
+                                                        {{row.indice_modificado | number:'0.3'}}
+                                                    </ng-container>
+                                                    <ng-template #noMostrar2>
+                                                        0.000
+                                                    </ng-template>
+                                                </td>
+                                                <td class="text-center" appAnchocol [ancho]="120"
+                                                    [ngClass]="{'font-weight-bolder' : row.vinculo == null, 'row-nuevo': row.considerar == 4, 'row-eliminar': row.considerar == 0, 'row-modificado': row.considerar == 2, 'highlight2': agrupamientoSeleccionado == row}">
+
+                                                    <ng-container *ngIf="!row.vinculo; else noMostrar3">
+                                                        {{joinAgrup(row.agrupamiento)}}
+                                                    </ng-container>
+                                                    <ng-template #noMostrar3>
+                                                        -
+                                                    </ng-template>
+                                                </td>
+                                                <td
+                                                    [ngClass]="{'row-nuevo': row.considerar == 4, 'row-eliminar': row.considerar == 0, 'row-modificado': row.considerar == 2, 'highlight2': agrupamientoSeleccionado == row}">
+                                                    <ng-container *ngIf="!row.vinculo; else noMostrar4">
+                                                        <div class="d-flex justify-content-center">
+                                                            <span class="badge"
+                                                                [ngClass]="{'badge-outline': row.menor5, 'bg-success': !row.menor5}">
+                                                                {{
+                                                                !row.menor5 ? 'SI' : 'NO'}}</span>
+                                                        </div>
+                                                    </ng-container>
+                                                    <ng-template #noMostrar4>
+                                                        -
+                                                    </ng-template>
+                                                </td>
+
+                                            </ng-container>
+                                        </ng-container>
+                                    </tr>
+                                </ng-container>
+                                <ng-template #noAgrupamiento>
+                                    <tr>
+                                        <td class="mat-cell text-center" colspan="8">
+                                            <label *ngIf="!buscando3">No se encontraron resultados</label>
+                                            <div *ngIf="buscando3" class="preloader3 loader-block">
+                                                <div class="circ1"></div>
+                                                <div class="circ2"></div>
+                                                <div class="circ3"></div>
+                                                <div class="circ4"></div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </ng-template>
+                            </tbody>
+                        </table>
+                        <table class="table-bordered tab-10 custom-total"
+                            *ngIf="!buscando3 && listaAgrupamiento.length">
+                            <tbody class="text-center">
+                                <tr>
+                                    <th appAnchocol [ancho]="30" class="celda-excel font-weight-bolder">
+                                    </th>
+                                    <td appAnchocol [ancho]="30" class="celda-excel font-weight-bolder"></td>
+                                    <td appAnchocol [ancho]="250" [detalle]="true"
+                                        class="celda-excel font-weight-bolder">
+                                        Total</td>
+                                    <td appAnchocol [ancho]="30" *ngIf="!solover" class="celda-excel font-weight-bolder"></td>
+                                    <td appAnchocol [ancho]="66" *ngIf="!solover" class="celda-excel font-weight-bolder"></td>
+                                    <td appAnchocol [ancho]="50" class="celda-excel font-weight-bolder"></td>
+                                    <td appAnchocol [ancho]="60" class="celda-excel font-weight-bolder text-right">
+                                        {{'100.000'}}
+                                    </td>
+                                    <td appAnchocol [ancho]="71" class="celda-excel font-weight-bolder text-right">
+                                        {{sumaIndMod}}
+                                    </td>
+                                    <td [style.width.px]="w_agrup" [style.max-width.px]="w_agrup"
+                                        [style.min-width.px]="w_agrup" class="celda-excel font-weight-bolder"></td>
+                                    <td appAnchocol [ancho]="50" class="celda-excel font-weight-bolder">
+                                        <ng-container *ngIf="!agrupValido"><span class="text-danger">NO
+                                                CUMPLE</span></ng-container>
+                                        <ng-container *ngIf="agrupValido">CUMPLE</ng-container>
+                                    </td>
+
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="col-5 px-0 pl-1 height-tabla-insumo overflow-auto">
+                        <table class="table-bordered tab-10">
+                            <thead class="text-center headsticky">
+                                <tr>
+                                    <th colspan="9">MONOMIOS</th>
+                                </tr>
+                                <tr>
+                                    <th appAnchocol [ancho]="70" colspan="2" class="h-th" *ngIf="!solover">VINCULAR MONOMIOS</th>
+                                    <th appAnchocol [ancho]="60" class="h-th">MONOMIO</th>
+                                    <th appAnchocol [ancho]="63" class="h-th">FACTOR(%)</th>
+                                    <th appAnchocol [ancho]="60" class="h-th">% ACUM.</th>
+                                    <th appAnchocol [ancho]="51" class="h-th">SIMBOLO</th>
+                                    <th appAnchocol [ancho]="30" class="h-th"> IU</th>
+                                    <th appAnchocol [ancho]="30" class="h-th">Tipo</th>
+                                    <th appAnchocol [ancho]="150" [detalle]="true" class="h-th" s>AGRUPAMIENTO</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <ng-container *ngIf="agrupPrelMonomios.length && !buscando4">
+                                    <tr *ngFor="let item of agrupPrelMonomios; let idx = index">
+                                        <td appAnchocol [ancho]="50" class="text-center" *ngIf="!solover"
+                                            [ngClass]="{'font-weight-bolder' : item.vinculo == null, 'highlight2': monomioSeleccionado == item}">
+                                            <ng-container *ngIf="!item.vinculo; else nomost">
+                                                <div class="switch switch-primary d-inline"
+                                                    style="position: relative; bottom: 3px;">
+                                                    <input type="checkbox" [id]="idx + 'c'"
+                                                        [disabled]="disabAcciones || bloquearEdicion || existTempCI"
+                                                        [checked]="item.seleccion"
+                                                        (change)="cambioSelMonomio($event.target.checked, idx)">
+                                                    <label [for]="idx + 'c'" class="cr"></label>
+                                                </div>
+                                            </ng-container>
+                                            <ng-template #nomost>
+                                                -
+                                            </ng-template>
+                                        </td>
+                                        <td appAnchocol [ancho]="20" *ngIf="!solover"
+                                            [ngClass]="{'font-weight-bolder' : item.vinculo == null, 'highlight2': monomioSeleccionado == item}"
+                                            (click)="msjAgrupMonomio(item)">
+
+                                            <!-- *ngIf="!item.seleccion && (item.vinculo == null || (monomioSeleccionado?.id_indice == (item.vinculo)?.split('+')[0] && monomioSeleccionado?.tipo == (item.vinculo)?.split('+')[1])) && longitudTit(item.agrupamiento) < 2" -->
+                                            <ng-container *ngIf="item !== monomioSeleccionado">
+                                                <mat-checkbox
+                                                    *ngIf="!item.vinculo
+                                                 || (monomioSeleccionado?.id_indice == (item.vinculo)?.split('+')[0] && monomioSeleccionado?.tipo == (item.vinculo)?.split('+')[1])"
+                                                    [checked]="item.vinculo ? true : false"
+                                                    [disabled]=" verificarAgrupValidoXMon(item)"
+                                                    (change)="cambioVinculoMonomio($event.checked, idx)">
+                                                </mat-checkbox>
+                                                <i *ngIf=" item.vinculo && (monomioSeleccionado?.id_indice !== (item.vinculo)?.split('+')[0] || monomioSeleccionado?.id_indice == (item.vinculo)?.split('+')[0] && monomioSeleccionado?.tipo !== (item.vinculo)?.split('+')[1]) "
+                                                    ngbTooltip="Vinculo registrado" container="body"
+                                                    class="fa fa-check-square icono-but  mat-custom"></i>
+                                            </ng-container>
+                                        </td>
+                                        <td (click)="editarMonomio(idx)"
+                                            [ngClass]="{'font-weight-bolder' : item.vinculo == null, 'highlight2': monomioSeleccionado == item}">
+                                            <ng-container *ngIf="!item.vinculo; else ocultar4">
+                                                <div class="d-flex" *ngIf="!item.editar_monomio"
+                                                    [ngbTooltip]="item.monomio" container="body">
+                                                    <div class="recortatextlinea text-center">
+                                                        {{item.monomio}}
+                                                    </div>
+                                                    <i *ngIf="item.editar_monomio==0  && !disabAcciones && !bloquearEdicion && !solover"
+                                                        class="fa fa-pencil" style="cursor: pointer;;padding-top: 4px;"
+                                                        ngbTooltip="{{Editar}}" container="body"
+                                                        (click)="editarMonomio(idx)"></i>
+                                                </div>
+                                                <div *ngIf="item.editar_monomio">
+                                                    <input #inputMonomio type="text" [value]="item.monomio" appAutoFocus
+                                                        class="w-100 mayuscula" style="height: 20px;"
+                                                        (select)="inputMonomio.select()" autocomplete="off"
+                                                        (blur)="blurMonomio($event, idx)" />
+                                                </div>
+                                            </ng-container>
+                                            <ng-template #ocultar4>
+                                                -
+                                            </ng-template>
+                                        </td>
+                                        <td class="text-right"
+                                            [ngClass]="{'font-weight-bolder' : item.vinculo == null, 'highlight2': monomioSeleccionado == item}">
+                                            <ng-container *ngIf="!item.vinculo; else nomost1">
+                                                {{(item.factor | number: '0.3')}}
+                                            </ng-container>
+                                            <ng-template #nomost1>
+                                                -
+                                            </ng-template>
+                                        </td>
+                                        <td class="text-right"
+                                            [ngClass]="{'font-weight-bolder' : item.vinculo == null, 'highlight2': monomioSeleccionado == item}">
+                                            {{item.acumulado}} <span style="opacity: 0.6;">%</span>
+                                        </td>
+                                        <td class="text-center" (click)="editarSimbolo(idx)"
+                                            [ngClass]="{'font-weight-bolder' : item.vinculo == null, 'highlight2': monomioSeleccionado == item}">
+
+                                            <!-- <ng-container *ngIf="!item.vinculo; else nomost2">
+                                                {{item.simbolo}}
+                                            </ng-container>
+                                            <ng-template #nomost2>
+                                                -
+                                            </ng-template> -->
+                                            <ng-container *ngIf="!item.vinculo; else ocultar5">
+                                                <div class="d-flex" *ngIf="!item.editar_simbolo" container="body">
+                                                    <div class="text-center" style="width: calc(100% - 10px);">
+                                                        {{item.simbolo}}
+                                                    </div>
+                                                    <i *ngIf="!item.editar_simbolo && !disabAcciones && !bloquearEdicion && !solover"
+                                                        class="fa fa-pencil" style="cursor: pointer;padding-top: 3px;"
+                                                        ngbTooltip="{{Editar}}" container="body"
+                                                        (click)="editarSimbolo(idx)"></i>
+                                                </div>
+                                                <div *ngIf="item.editar_simbolo">
+                                                    <input #inputSimbolo type="text" [value]="item.simbolo" appAutoFocus
+                                                        class="w-100 mayuscula" style="height: 20px;"
+                                                        (select)="inputSimbolo.select()" autocomplete="off"
+                                                        (keydown.enter)="blurSimbolo($event, idx)"
+                                                        (blur)="blurSimbolo($event, idx)" />
+                                                </div>
+                                            </ng-container>
+                                            <ng-template #ocultar5>
+                                                -
+                                            </ng-template>
+                                        </td>
+                                        <td class="text-center"
+                                            [ngClass]="{'font-weight-bolder' : item.vinculo == null, 'highlight2': monomioSeleccionado == item}">
+                                            {{item.id_indice}}</td>
+                                        <td class="text-center"
+                                            [ngClass]="{'font-weight-bolder' : item.vinculo == null, 'highlight2': monomioSeleccionado == item}">
+                                            <span class="badge "
+                                                [ngbTooltip]="item.tipo == 'CI' ? 'COSTO INDIRECTO' : 'COSTO DIRECTO'"
+                                                [ngClass]="{'bg-info' : item.tipo == 'CI', 'bg-secondary text-white': item.tipo == 'CD'}">
+                                                {{item.tipo}}
+                                            </span>
+                                        </td>
+                                        <td appAnchocol [ancho]="150" [detalle]="true"
+                                            [ngClass]="{'font-weight-bolder' : item.vinculo == null, 'highlight2': monomioSeleccionado == item}">
+                                            <div class="recortatextlinea" [ngbTooltip]="item.desc_indice">
+                                                {{item.desc_indice}}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </ng-container>
+                                <ng-container *ngIf="!agrupPrelMonomios.length">
+                                    <tr>
+                                        <td class="mat-cell text-center" colspan="8">
+                                            <label *ngIf="!buscando4">No se encontraron resultados</label>
+
+                                        </td>
+                                    </tr>
+                                </ng-container>
+
+                                <ng-container *ngIf="buscando4">
+                                    <tr>
+                                        <td class="mat-cell text-center" colspan="8">
+                                            <div *ngIf="buscando4" class="preloader3 loader-block">
+                                                <div class="circ1"></div>
+                                                <div class="circ2"></div>
+                                                <div class="circ3"></div>
+                                                <div class="circ4"></div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </ng-container>
+
+
+                            </tbody>
+                        </table>
+                        <table class="table-bordered tab-10 custom-total"
+                            *ngIf="!buscando4 && agrupPrelMonomios.length">
+                            <tbody class="text-center">
+                                <tr>
+                                    <td appAnchocol [ancho]="70" class="celda-excel font-weight-bolder" *ngIf="!solover">&nbsp;</td>
+                                    <td appAnchocol [ancho]="60" class="celda-excel font-weight-bolder">&nbsp;
+                                    </td>
+                                    <td appAnchocol [ancho]="63" class="celda-excel font-weight-bolder text-right">
+                                        {{sumaFactor | number: '0.3'}}
+                                    </td>
+                                    <td appAnchocol [ancho]="60" class="celda-excel font-weight-bolder" >
+                                        &nbsp;
+                                    </td>
+                                    <td appAnchocol [ancho]="51" class="celda-excel font-weight-bolder">&nbsp;</td>
+                                    <td appAnchocol [ancho]="30" class="celda-excel font-weight-bolder">&nbsp;</td>
+                                    <td appAnchocol [ancho]="30" class="celda-excel font-weight-bolder">&nbsp;</td>
+                                    <td appAnchocol [ancho]="150" [detalle]="true"
+                                        class="celda-excel font-weight-bolder">
+                                        &nbsp;</td>
+
+                        </table>
+                        <span class="text-danger font-weight-bolder">{{msjValidezTablaMono()}}</span>
+
+                        <ng-container *ngIf="agrupPrelMonomios.length">
+                            <div >
+                                <div class="mt-4">
+                                    <div class="d-flex">
+                                        <h4 class="font-weight-bolder">Formula Polinomica Inicial, Sin agrupamiento de
+                                            Monomios
+                                        </h4>
+                                        <!-- <h5 class="text-danger font-weight-bolder" *ngIf="!agrupValido">&nbsp;No
+                                            Conforme
+                                        </h5>
+                                        <h5 class="text-success font-weight-bolder" *ngIf="agrupValido">&nbsp;Conforme
+                                        </h5> -->
+                                    </div>
+
+                                    <!-- <div>
+                                    K = <span class="stilo-formula">{{this.formulaPolinomicaInicial}}</span>
+                                </div> -->
+                                    <div class="col-12 d-flex px-0">
+                                        <div class="d-flex" style="font-size: 25px;padding-top: 11px;">
+                                            <div>&#312;</div>
+                                            <div style="padding-top: 2px;">&#61;</div>
+                                        </div>
+                                        <div class="d-flex" style="flex-flow: wrap;">
+                                            <ng-container *ngFor="let item of arrayFPInicial ; let idx =index">
+                                                <div class="d-flex ml-2">
+                                                    <div class="coeficiente ">
+                                                        {{item.coeficiente  | number:'0.3-3'}}</div>
+                                                    <div style="display: inline-block;" class="ml-1">
+                                                        <div class="letra-stilo">{{item.variacion_iu}}</div>
+                                                        <hr>
+                                                        <div class="letra-stilo">{{item.monomio}}</div>
+                                                    </div>
+                                                    <div class="ml-2 mr-2 coeficiente"
+                                                        *ngIf="idx < arrayFPInicial.length - 1">+
+                                                    </div>
+                                                </div>
+                                            </ng-container>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="mt-2">
+                                    <div class="d-flex align-content-center">
+                                        <h4 class="font-weight-bolder">Formula Polinomica Definida</h4>
+                                        <h5 class="font-weight-bolder"
+                                            [ngClass]="{'text-danger':!tablaMonomioValido , 'text-success': tablaMonomioValido}">
+                                            &nbsp;{{tablaMonomioValido ? 'Conforme' : 'No Conforme'}}</h5>
+                                        <!-- <h5 class="text-success font-weight-bolder" *ngIf="evaluarConformMon().valido ">
+                                        &nbsp; Conforme</h5> -->
+                                    </div>
+
+                                    <div class="d-flex"  id="text-formula">
+                                        <div class="d-flex" style="font-size: 25px;padding-top: 11px;">
+                                            <div>&#312;</div>
+                                            <div style="padding-top: 2px;">&#61;</div>
+                                        </div>
+                                        <div class="d-flex" style="flex-flow: wrap;"  id="formula-elementos">
+                                            <ng-container *ngFor="let item of arrayFP ; let idx =index">
+                                                <div class="d-flex ml-2">
+                                                    <div class="coeficiente ">
+                                                        {{item.coeficiente | number:'0.3-3'}}</div>
+                                                    <div style="display: inline-block;" class="ml-1">
+                                                        <div class="letra-stilo">{{item.variacion_iu}}</div>
+                                                        <hr>
+                                                        <div class="letra-stilo">{{item.monomio}}</div>
+                                                    </div>
+                                                    <div class="ml-2 mr-2 coeficiente" *ngIf="idx < arrayFP.length - 1">
+                                                        +
+                                                    </div>
+                                                </div>
+                                            </ng-container>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </ng-container>
+                    </div>
+                </ng-container>
+                <ng-container *ngIf="vista == 3">
+                    <div class="col-12 ">
+                        <div class="mt-2">
+                            <div class="d-flex">
+                                <h4 class="font-weight-bolder">Formula Polinomica Definida</h4>
+                                <h5 class="font-weight-bolder"
+                                    [ngClass]="{'text-danger':!tablaMonomioValido , 'text-success': tablaMonomioValido}">
+                                    &nbsp;{{tablaMonomioValido ? 'Conforme' : 'No Conforme'}}</h5>
+                            </div>
+                            <div class="d-flex justify-content-center">
+                                <div class="d-flex" style="font-size: 25px;padding-top: 5px;">
+                                    <div>&#312;</div>
+                                    <div style="padding-top: 2px;">&#61;</div>
+                                </div>
+                                <div class="d-flex contenedor-fp">
+                                    <ng-container *ngFor="let item of arrayFP ; let idx =index">
+                                        <div class="d-flex ml-2">
+                                            <div class="coeficiente " style="position: relative;bottom: 5px;">
+                                                {{item.coeficiente}}</div>
+                                            <div style="display: inline-block;" class="ml-1">
+                                                <div class="letra-stilo">{{item.variacion_iu}}</div>
+                                                <hr>
+                                                <div class="letra-stilo">{{item.monomio}}</div>
+                                            </div>
+                                            <div class="ml-2 mr-2 coeficiente" *ngIf="idx < arrayFP.length - 1">+</div>
+                                        </div>
+                                    </ng-container>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 d-flex px-0 mt-3">
+                        <div class="col-7 px-0 height-tabla-insumo2 overflow-auto">
+                            <table class="table-bordered tab-10">
+                                <thead class="text-center headsticky">
+                                    <tr class="headsticky">
+                                        <th appAnchocol [ancho]="40">INDICE</th>
+                                        <th appAnchocol [ancho]="250" [detalle]="true">DESCRIPCION DE I.U.</th>
+                                        <th appAnchocol [ancho]="30">TIPO</th>
+                                        <th appAnchocol [ancho]="60">% INDICE INICIAL</th>
+                                        <th appAnchocol [ancho]="70">INDICE MODIFICADO</th>
+                                        <th appAnchocol [ancho]="120">AGRUPAMIENTO</th>
+                                        <th appAnchocol [ancho]="50"> > AL %5</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <ng-container *ngIf="listaAgrupamiento.length; else noAgrupamiento">
+                                        <tr *ngFor="let row of listaAgrupamiento; let idx = index">
+                                            <ng-container *ngIf="row.id_indice !== null && row.id_indice !== 0">
+                                                <td class="text-center">
+                                                    <span [ngClass]="{'font-weight-bolder' : row.vinculo == null}">
+                                                        {{row.id_indice}}
+                                                    </span>
+
+                                                </td>
+                                                <td appAnchocol [ancho]="250" [detalle]="true">
+                                                    <div class="recortatext1l" [ngbTooltip]="row.desc_indice"
+                                                        [ngClass]="{'ml-3': row.vinculo !== null, 'font-weight-bolder' : row.vinculo == null}">
+                                                        {{row.desc_indice}}
+                                                    </div>
+                                                </td>
+                                                <td class="text-center"
+                                                    [ngClass]="{'row-nuevo': row.considerar == 4, 'row-eliminar': row.considerar == 0, 'row-modificado': row.considerar == 2}">
+
+                                                    <span class="badge "
+                                                        [ngbTooltip]="row.tipo == 'CI' ? 'COSTO INDIRECTO' : 'COSTO DIRECTO'"
+                                                        [ngClass]="{'bg-info' : row.tipo == 'CI'}">
+                                                        {{row.tipo}}
+                                                    </span>
+                                                </td>
+                                                <td [ngClass]="{'celda-mayor': row.indice_inicial > 5}">
+                                                    <div class="d-flex justify-content-between">
+                                                        <div *ngIf="row.indice_inicial !== 0">
+                                                            &nbsp;
+                                                        </div>
+                                                        <i class="fa fa-exclamation-triangle"
+                                                            style="padding-top: 4px; color: #bfbf2d;"
+                                                            *ngIf="row.indice_inicial == 0"></i>
+                                                        <div class="float-right"
+                                                            [ngClass]="{'font-weight-bolder' : row.vinculo == null}">
+                                                            {{row.indice_inicial | number:'0.3'}}
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td class="text-right"
+                                                    [ngClass]="{'font-weight-bolder' : row.vinculo == null}">
+                                                    <ng-container *ngIf="!row.vinculo; else noMostrar2">
+                                                        {{row.indice_modificado | number:'0.3'}}
+                                                    </ng-container>
+                                                    <ng-template #noMostrar2>
+                                                        0.000
+                                                    </ng-template>
+                                                </td>
+                                                <td class="text-center"
+                                                    [ngClass]="{'font-weight-bolder' : row.vinculo == null}">
+
+                                                    <ng-container *ngIf="!row.vinculo; else noMostrar3">
+                                                        {{joinTit(row.agrupamiento)}}
+                                                    </ng-container>
+                                                    <ng-template #noMostrar3>
+                                                        -
+                                                    </ng-template>
+                                                </td>
+                                                <td>
+                                                    <ng-container *ngIf="!row.vinculo; else noMostrar4">
+                                                        <div class="d-flex justify-content-center">
+                                                            <span class="badge"
+                                                                [ngClass]="{'badge-outline': row.menor5, 'bg-success': !row.menor5}">
+                                                                {{
+                                                                !row.menor5 ? 'SI' : 'NO'}}</span>
+                                                        </div>
+                                                    </ng-container>
+                                                    <ng-template #noMostrar4>
+                                                        -
+                                                    </ng-template>
+                                                </td>
+
+                                            </ng-container>
+                                        </tr>
+                                    </ng-container>
+                                    <ng-template #noAgrupamiento>
+                                        <tr>
+                                            <td class="mat-cell text-center" colspan="8">
+                                                <label *ngIf="!buscando3">No se encontraron resultados</label>
+                                                <div *ngIf="buscando3" class="preloader3 loader-block">
+                                                    <div class="circ1"></div>
+                                                    <div class="circ2"></div>
+                                                    <div class="circ3"></div>
+                                                    <div class="circ4"></div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </ng-template>
+                                </tbody>
+                            </table>
+                            <table class="table-bordered tab-10 custom-total"
+                                *ngIf="!buscando3 && listaAgrupamiento.length">
+                                <tbody class="text-center">
+                                    <tr>
+                                        <td appAnchocol [ancho]="40" class="celda-excel font-weight-bolder"></td>
+                                        <td appAnchocol [ancho]="250" [detalle]="true"
+                                            class="celda-excel font-weight-bolder">
+                                            Total</td>
+                                        <td appAnchocol [ancho]="30" class="celda-excel font-weight-bolder"></td>
+                                        <td appAnchocol [ancho]="60" class="celda-excel font-weight-bolder text-right">
+                                            {{'100.000'}}
+                                        </td>
+                                        <td appAnchocol [ancho]="70" class="celda-excel font-weight-bolder text-right">
+                                            {{sumaIndMod}}
+                                        </td>
+                                        <td [style.width.px]="w_agrup" [style.max-width.px]="w_agrup"
+                                            [style.min-width.px]="w_agrup" class="celda-excel font-weight-bolder"></td>
+                                        <td appAnchocol [ancho]="50" class="celda-excel font-weight-bolder">
+                                            <ng-container *ngIf="!agrupValido">NO CUMPLE</ng-container>
+                                            <ng-container *ngIf="agrupValido">CUMPLE</ng-container>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="col-5 px-0 pl-1 height-tabla-insumo2 overflow-auto">
+                            <table class="table-bordered tab-10">
+                                <thead class="text-center headsticky">
+                                    <tr class="headsticky">
+                                        <th appAnchocol [ancho]="60">MONOMIO</th>
+                                        <th appAnchocol [ancho]="60">FACTOR(%)</th>
+                                        <th appAnchocol [ancho]="60">% ACUM.</th>
+                                        <th appAnchocol [ancho]="50">SIMBOLO</th>
+                                        <th appAnchocol [ancho]="30"> IU</th>
+                                        <th appAnchocol [ancho]="150" [detalle]="true">AGRUPAMIENTO</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <ng-container *ngIf="agrupPrelMonomios.length && !buscando4">
+                                        <tr *ngFor="let item of agrupPrelMonomios; let idx = index">
+                                            <td>
+                                                <ng-container *ngIf="!item.vinculo; else ocultar4">
+                                                    <div class="d-flex" *ngIf="!item.editar_monomio"
+                                                        [ngbTooltip]="item.monomio" container="body">
+                                                        <div class="recortatextlinea text-center">
+                                                            {{item.monomio}}
+                                                        </div>
+
+                                                    </div>
+
+                                                    <div *ngIf="item.editar_monomio">
+                                                        <input #inputMonomio type="text" [value]="item.monomio"
+                                                            appAutoFocus class="w-100 mayuscula" style="height: 22px;"
+                                                            (select)="inputMonomio.select()" autocomplete="off"
+                                                            (keydown.enter)="blurMonomio($event, idx)"
+                                                            (blur)="blurMonomio($event, idx)" />
+                                                    </div>
+                                                </ng-container>
+                                                <ng-template #ocultar4>
+                                                    -
+                                                </ng-template>
+                                            </td>
+                                            <td class="text-right">
+                                                <ng-container *ngIf="!item.vinculo; else nomost1">
+                                                    {{item.factor}}
+                                                </ng-container>
+                                                <ng-template #nomost1>
+                                                    -
+                                                </ng-template>
+                                            </td>
+                                            <td class="text-right">{{item.acumulado}} <span
+                                                    style="opacity: 0.6;">%</span>
+                                            </td>
+                                            <td class="text-center">
+
+                                                <ng-container *ngIf="!item.vinculo; else nomost2">
+                                                    {{item.simbolo}}
+                                                </ng-container>
+                                                <ng-template #nomost2>
+                                                    -
+                                                </ng-template>
+
+                                            </td>
+                                            <td class="text-center">{{item.id_indice}}</td>
+                                            <td appAnchocol [ancho]="150" [detalle]="true">
+                                                <div class="recortatextlinea" [ngbTooltip]="item.desc_indice">
+                                                    {{item.desc_indice}}
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </ng-container>
+                                    <ng-container *ngIf="!agrupPrelMonomios.length">
+                                        <tr>
+                                            <td class="mat-cell text-center" colspan="8">
+                                                <label *ngIf="!buscando4">No se encontraron resultados</label>
+                                            </td>
+                                        </tr>
+                                    </ng-container>
+
+                                    <ng-container *ngIf="buscando4">
+                                        <tr>
+                                            <td class="mat-cell text-center" colspan="8">
+                                                <div *ngIf="buscando4" class="preloader3 loader-block">
+                                                    <div class="circ1"></div>
+                                                    <div class="circ2"></div>
+                                                    <div class="circ3"></div>
+                                                    <div class="circ4"></div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </ng-container>
+                                </tbody>
+                            </table>
+                            <table class="table-bordered tab-10 custom-total"
+                                *ngIf="!buscando4 && agrupPrelMonomios.length">
+                                <tbody class="text-center">
+                                    <tr>
+                                        <td appAnchocol [ancho]="60" class="celda-excel font-weight-bolder">&nbsp;
+                                        </td>
+                                        <td appAnchocol [ancho]="60" class="celda-excel font-weight-bolder text-right">
+                                            {{sumaFactor}}
+                                        </td>
+                                        <td appAnchocol [ancho]="60" class="celda-excel font-weight-bolder">
+                                            &nbsp;
+                                        </td>
+                                        <td appAnchocol [ancho]="50" class="celda-excel font-weight-bolder">&nbsp;
+                                        </td>
+                                        <td appAnchocol [ancho]="30" class="celda-excel font-weight-bolder">&nbsp;
+                                        </td>
+                                        <td appAnchocol [ancho]="150" [detalle]="true"
+                                            class="celda-excel font-weight-bolder">
+                                            &nbsp;</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+
+                        </div>
+
+                    </div>
+                </ng-container>
+
+            </div>
+        </ng-container>
+
+    </div>
+    <app-cargando [bloquearTodo]="false" *ngIf="mostrar_carga_todo2"></app-cargando>
+</div>
+
+<app-cargando [bloquearTodo]="true" *ngIf="mostrar_carga_todo"></app-cargando>

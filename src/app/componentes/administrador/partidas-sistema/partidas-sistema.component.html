@@ -1,0 +1,607 @@
+<div class="page-body">
+  <div class="titulo-contenido">
+    <h2>PARTIDAS SISTEMA</h2>
+  </div>
+  <div class="row">
+    <div [ngClass]="{'col-md-6 col-sm-12': !expanded, 'col-md-12 col-sm-12': expanded}">
+      <app-card class="card card-principal">
+        <ul ngbNav #nav="ngbNav" [(activeId)]="tabSeleccionado" class="nav-tabs" (navChange)="onNavChange($event)">
+          <li [ngbNavItem]="1">
+            <a ngbNavLink>Partidas Sistema</a>
+            <ng-template ngbNavContent>
+              <div class="row  p-r-15">
+                <div class="col-sm-5 col-md-5" style="margin-bottom: 10px;">
+                  <mat-form-field class="mff-reduc w-100 alto-35 field-busqueda" appearance="outline">
+                    <mat-label>Buscar</mat-label>
+                    <input matInput type="text" [(ngModel)]="busqueda" autocomplete="off">
+                    <button *ngIf="busqueda" matSuffix mat-icon-button aria-label="Clear" (click)="limpiarfiltro()">
+                      <mat-icon>close</mat-icon>
+                    </button>
+                  </mat-form-field>
+                </div>
+
+                <div class="col-sm-4 col-md-4 px-0">
+                  <mat-form-field appearance="outline" class="mff-reduc col-12 alto-35  px-md-0">
+                    <mat-label>Tipo de Proyecto</mat-label>
+                    <select matNativeControl (change)="cambiarTipoProy($event.target.value)" [(ngModel)]="tipoProysel">
+                      <option *ngFor="let tipo of tipoProy" [value]="tipo.id_clasificacion">
+                        {{tipo.descripcion}}
+                      </option>
+                    </select>
+                  </mat-form-field>
+                </div>
+
+                <div class="col-md-3 col-sm-3  pr-0 pl-1">
+                  <button type="button"
+                    class="btn btn-success btn-mini light ripple float-right mr-md-0 mr-sm-0 mr-3 my-md-0 my-sm-0 my-1"
+                    (click)="openModalGrupo(0)" (mouseup)="quitarfoco($event);" placement="top"
+                    ngbTooltip="Agregar Titulos" container="body">
+                    <i class="fa fa-plus icono-but"></i>
+                  </button>
+                  <button class="btn btn-mini btn-inverse float-right" placement="top" ngbTooltip="Bajar"
+                    container="body" (click)="BajarFila()" (mouseup)="quitarfoco($event);">
+                    <i class="fa fa-level-down icono-but"></i>
+                  </button>
+                  <button class="btn btn-mini btn-inverse float-right" placement="top" ngbTooltip="Subir"
+                    container="body" (click)="SubirFila()" (mouseup)="quitarfoco($event);">
+                    <i class="fa fa-level-up icono-but"></i>
+                  </button>
+                  <button class="btn btn-mini btn-secondary float-right" placement="top" ngbTooltip="Derecha"
+                    container="body" (click)="MovDerec(i)" (mouseup)="quitarfoco($event);">
+                    <i class="icofont icofont-arrow-right icono-but"></i>
+                  </button>
+                  <button class="btn btn-mini btn-secondary float-right" placement="top" ngbTooltip="Izquierda"
+                    container="body" (click)="MovIzqui(i)" (mouseup)="quitarfoco($event);">
+                    <i class="icofont icofont-arrow-left icono-but"></i>
+                  </button>
+                </div>
+              </div>
+              <div [style.height.px]="height-66" class="overflow-auto table-responsive">
+                <table class="table-bordered tab-10">
+                  <thead class="text-center">
+                    <tr class="headsticky header-custom">
+                      <th appAnchocol [ancho]="300" [detalle]="true">
+                        <div class="d-flex">
+                          <a style="padding: 0px 2px;cursor: pointer;" ngbTooltip="Expandir Todo" container="body"
+                            (click)="maxtodo()"><i class="icofont icofont-caret-down"></i></a>
+                          <a style="padding: 0px 2px;cursor: pointer;" ngbTooltip="Contraer Todo" container="body"
+                            (click)="mintodo()"><i class="icofont icofont-caret-up"></i></a>
+                          <span style="width: calc(100% - 35px);">Descripción</span>
+                        </div>
+                      </th>
+                      <th appAnchocol [ancho]="44">Unidad</th>
+                      <th appAnchocol [ancho]="90">Precio</th>
+                      <th appAnchocol [ancho]="55">Archivos</th>
+                      <th class="acciones-tabla" appAnchocol [ancho]="34"></th>
+                    </tr>
+                  </thead>
+                  <tbody class="text-center">
+                    <ng-container *ngIf="datasourcePri.length>0">
+                      <tr *ngFor="let row of datasourcePri | filtroTabla: busqueda;" [ngClass]="{'filagrupo':row.esgrupo==0}"
+                      (click)="cambindicesel(row,row.ind)" [hidden]="!row.mostrar">
+                        <td class="text-left" appAnchocol [ancho]="300" [ngClass]="{'highlight': fila_sel == row.ind}"
+                          [detalle]="true" appPintarfilapre [tipo]="titulo1" [color]="titulo1color" [letra]="titulo1letra"
+                          [item]="row.agrupacion" [separador]="'.'" [partida]="row.esgrupo==1?true:false">
+                          <div class="recortatextlinea"
+                            [ngClass]="{'celdaadvcero':row.advceros==1,'celdanocero':row.advceros==0}"
+                            [style.padding-left.px]="((row.agrupacion?.toString().split('.').length-1)*7)+(row.esgrupo!=0?17:0)"
+                            ngbTooltip="{{row.descripcion}}" #t="ngbTooltip" container="body" triggers="click:blur"
+                            (mouseout)="t.close()">
+                            <a *ngIf="row.esgrupo==0 && row.icomost=='0'"
+                              style="padding: 0px 2px;color:#06bb06;cursor: pointer;"
+                              (click)="toggleOn(row.agrupacion,row.ind)">
+                              <i class="icofont icofont-caret-down"></i>
+                            </a>
+                            <a *ngIf="row.esgrupo==0 && row.icomost=='1'"
+                              style="padding: 0px 2px;color:red;cursor: pointer;"
+                              (click)="toggleOff(row.agrupacion,row.ind)">
+                              <i class="icofont icofont-caret-up"></i>
+                            </a>{{row.agrupacion}}&nbsp;&nbsp;{{row.descripcion}}
+                          </div><i *ngIf="row.advceros==1" class="fa fa-exclamation-triangle c-alert"></i>
+                        </td>
+                        <td appAnchocol [ancho]="44" [ngClass]="{'highlight': fila_sel == row.ind}" appPintarfilapre
+                          [tipo]="titulo1" [color]="titulo1color" [letra]="titulo1letra" [item]="row.agrupacion"
+                          [separador]="'.'" [partida]="row.esgrupo==1?true:false">
+                          <ng-container *ngIf="row.esgrupo==1">
+                            {{row.unidad}}
+                          </ng-container>
+                        </td>
+                        <td appAnchocol [ancho]="90" [ngClass]="{'highlight': fila_sel == row.ind}" appPintarfilapre
+                          [tipo]="titulo1" [color]="titulo1color" [letra]="titulo1letra" [item]="row.agrupacion"
+                          [separador]="'.'" [partida]="row.esgrupo==1?true:false">
+                          <ng-container *ngIf="row.esgrupo==1">
+                            <span class="float-left">S/</span>
+                            <span class="float-right">{{row.precio | number: '0.2'}}</span>
+                          </ng-container>
+                        </td>
+                        <td class="text-left" appAnchocol [ancho]="55" [ngClass]="{'highlight': fila_sel2 == row.ind}" appPintarfilapre
+                          [tipo]="titulo1" [color]="titulo1color" [letra]="titulo1letra"
+                          [item]="row.agrupacion" [separador]="'.'"
+                          [partida]="row.esgrupo==1?true:false">
+                          <ng-container *ngIf="row.esgrupo==1">
+                              <div class="d-flex" style="height: 17px;">
+                                  <div class="badge-custom text-center label-morado " ngbTooltip="Especificación Técnica" container="body"
+                                      [ngClass]="{'bg-morado': (row.espec_tec?row.espec_tec:'')!='', 'borde-no-mostrar': (row.espec_tec?row.espec_tec:'')==''}">
+                                      <span class *ngIf="(row.espec_tec?row.espec_tec:'')!=''">ET</span>
+                                  </div>
+                                  <div class="badge-custom text-center label-marron" ngbTooltip="Ficha Técnica" container="body"
+                                      [ngClass]="{'bg-marron': (row.ficha_tec?row.ficha_tec:'')!='', 'borde-no-mostrar': (row.ficha_tec?row.ficha_tec:'')==''}">
+                                      <span class *ngIf="(row.ficha_tec?row.ficha_tec:'')!=''">FT</span>
+                                  </div>
+                              </div>
+                          </ng-container>
+                      </td>
+                        <td appAnchocol [ancho]="34" [ngClass]="{'highlight': fila_sel == row.ind}" appPintarfilapre
+                          [tipo]="titulo1" [color]="titulo1color" [letra]="titulo1letra" [item]="row.agrupacion"
+                          [separador]="'.'" [partida]="row.esgrupo==1?true:false">
+                          <button class="btn btn-mini2 btn-conf" [ngbPopover]="popOptions" [placement]="['left', 'auto']"
+                            container="body" (click)="confrow(row)" (mouseup)="quitarfoco($event);">
+                            <i class="fa fa-cog icono-but"></i>
+                          </button>
+                        </td>
+                      </tr>
+                    </ng-container>
+                    <ng-container *ngIf="datasourcePri.length<=0">
+                      <tr>
+                        <td class="mat-cell text-center" colspan="8">
+                            <label *ngIf="!buscando">No se encontraron resultados</label>
+                            <div *ngIf="buscando" class="preloader3 loader-block">
+                                <div class="circ1"></div>
+                                <div class="circ2"></div>
+                                <div class="circ3"></div>
+                                <div class="circ4"></div>
+                            </div>
+                        </td>
+                      </tr>
+                    </ng-container>
+                  </tbody>
+                </table>
+              </div>
+            </ng-template>
+          </li>
+          <li [ngbNavItem]="2">
+            <a ngbNavLink>Partidas Usuario</a>
+            <ng-template ngbNavContent>
+              <div class="row  p-r-15">
+                <div class="col-sm-4 col-md-4" style="margin-bottom: 10px;">
+                  <mat-form-field class="mff-reduc w-100 alto-35 field-busqueda" appearance="outline">
+                    <mat-label>Buscar</mat-label>
+                    <input matInput type="text" [(ngModel)]="busqueda2" autocomplete="off">
+                    <button *ngIf="busqueda2" matSuffix mat-icon-button aria-label="Clear" (click)="limpiarfiltro2()">
+                      <mat-icon>close</mat-icon>
+                    </button>
+                  </mat-form-field>
+                </div>
+
+                <div class="col-sm-4 col-md-4 px-0">
+                  <mat-form-field appearance="outline" class="mff-reduc col-12 alto-35   px-md-0">
+                    <mat-label>Tipo de Proyecto</mat-label>
+                    <select matNativeControl (change)="cambiarTipoProy($event.target.value)" [(ngModel)]="tipoProysel2">
+                      <!-- <option value="">--Todos--</option> -->
+                      <option *ngFor="let tipo of tipoProy" [value]="tipo.id_clasificacion">
+                        {{tipo.descripcion}}
+                      </option>
+                    </select>
+                  </mat-form-field>
+                </div>
+
+                <div class="col-md-4 col-sm-4 px-0">
+                  <mat-form-field appearance="outline" class="mff-reduc col-12 alto-35   px-md-0">
+                    <mat-label>Usuarios</mat-label>
+                    <select matNativeControl (change)="cambiarUsuario()" [(ngModel)]="idUsuario">
+                      <option value="">--Todos--</option>
+                      <option *ngFor="let usuario of listaUsuariosSistema" [value]="usuario.id_usuario">
+                        {{usuario.nombres}}
+                      </option>
+                    </select>
+                  </mat-form-field>
+                </div>
+              </div>
+              <div [style.height.px]="height-66" class="overflow-auto table-responsive">
+                <table class="table-bordered tab-10">
+                  <thead class="text-center">
+                    <tr class="headsticky header-custom">
+                      <th appAnchocol [ancho]="300" [detalle]="true">
+                        <div class="d-flex">
+                          <a style="padding: 0px 2px;cursor: pointer;" ngbTooltip="Expandir Todo" container="body"
+                            (click)="maxtodo()"><i class="icofont icofont-caret-down"></i></a>
+                          <a style="padding: 0px 2px;cursor: pointer;" ngbTooltip="Contraer Todo" container="body"
+                            (click)="mintodo()"><i class="icofont icofont-caret-up"></i></a>
+                          <span style="width: calc(100% - 35px);">Descripción</span>
+                        </div>
+                      </th>
+                      <th appAnchocol [ancho]="44">Unidad</th>
+                      <th appAnchocol [ancho]="90">Precio</th>
+                      <th appAnchocol [ancho]="55">Archivos</th>
+                      <th class="acciones-tabla" appAnchocol [ancho]="65">Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody class="text-center">
+                    <tr *ngFor="let row of datasourcePri2 | filtroTabla: busqueda2;" [ngClass]="{'filagrupo':row.esgrupo==0}"
+                      (click)="cambindicesel2(row,row.ind)" [hidden]="!row.mostrar">
+                      <td class="text-left" appAnchocol [ancho]="220" [ngClass]="{'highlight': fila_sel2 == row.ind}"
+                        [detalle]="true" appPintarfilapre [tipo]="titulo1" [color]="titulo1color" [letra]="titulo1letra"
+                        [item]="row.agrupacion" [separador]="'.'" [partida]="row.esgrupo==1?true:false">
+                        <div class="recortatextlinea"
+                          [style.padding-left.px]="((row.agrupacion?.toString().split('.').length-1)*7)+(row.esgrupo!=0?17:0)"
+                          ngbTooltip="{{row.descripcion}}" #t="ngbTooltip" container="body" triggers="click:blur"
+                          (mouseout)="t.close()">
+                          <a *ngIf="row.esgrupo==0 && row.icomost=='0'"
+                            style="padding: 0px 2px;color:#06bb06;cursor: pointer;"
+                            (click)="toggleOn(row.agrupacion,row.ind)">
+                            <i class="icofont icofont-caret-down"></i>
+                          </a>
+                          <a *ngIf="row.esgrupo==0 && row.icomost=='1'"
+                            style="padding: 0px 2px;color:red;cursor: pointer;"
+                            (click)="toggleOff(row.agrupacion,row.ind)">
+                            <i class="icofont icofont-caret-up"></i>
+                          </a>{{row.agrupacion}}&nbsp;&nbsp;{{row.descripcion}}
+                        </div>
+                      </td>
+                      <td appAnchocol [ancho]="44" [ngClass]="{'highlight': fila_sel2 == row.ind}" appPintarfilapre
+                        [tipo]="titulo1" [color]="titulo1color" [letra]="titulo1letra" [item]="row.agrupacion"
+                        [separador]="'.'" [partida]="row.esgrupo==1?true:false">
+                        <ng-container *ngIf="row.esgrupo==1">
+                          {{row.unidad}}
+                        </ng-container>
+                      </td>
+                      <td appAnchocol [ancho]="90" [ngClass]="{'highlight': fila_sel2 == row.ind}" appPintarfilapre
+                        [tipo]="titulo1" [color]="titulo1color" [letra]="titulo1letra" [item]="row.agrupacion"
+                        [separador]="'.'" [partida]="row.esgrupo==1?true:false">
+                        <ng-container *ngIf="row.esgrupo==1">
+                          <span class="float-left">S/</span>
+                          <span class="float-right">{{row.precio | number: '0.2'}}</span>
+                        </ng-container>
+                      </td>
+                      <td class="text-left" appAnchocol [ancho]="55" [ngClass]="{'highlight': fila_sel2 == row.ind}" appPintarfilapre
+                        [tipo]="titulo1" [color]="titulo1color" [letra]="titulo1letra"
+                        [item]="row.agrupacion" [separador]="'.'"
+                        [partida]="row.esgrupo==1?true:false">
+                        <ng-container *ngIf="row.esgrupo==1">
+                            <div class="d-flex" style="height: 17px;">
+                                <div class="badge-custom text-center label-morado " placement="top" ngbTooltip="Especificación Técnica" container="body"
+                                    [ngClass]="{'bg-morado': (row.espec_tec?row.espec_tec:'')!='', 'borde-no-mostrar': (row.espec_tec?row.espec_tec:'')==''}">
+                                    <span class *ngIf="(row.espec_tec?row.espec_tec:'')!=''">ET</span>
+                                </div>
+                                <div class="badge-custom text-center label-marron" placement="top" ngbTooltip="Ficha Técnica" container="body"
+                                    [ngClass]="{'bg-marron': (row.ficha_tec?row.ficha_tec:'')!='', 'borde-no-mostrar': (row.ficha_tec?row.ficha_tec:'')==''}">
+                                    <span class *ngIf="(row.ficha_tec?row.ficha_tec:'')!=''">FT</span>
+                                </div>
+                            </div>
+                        </ng-container>
+                    </td>
+                      <td appAnchocol [ancho]="65" [ngClass]="{'highlight': fila_sel2 == row.ind}" appPintarfilapre
+                        [tipo]="titulo1" [color]="titulo1color" [letra]="titulo1letra" [item]="row.agrupacion"
+                        [separador]="'.'" [partida]="row.esgrupo==1?true:false">
+                        <ng-container *ngIf="row.esgrupo==1">
+                          <div class="d-flex justify-content-center">
+                            <button class="btn btn-mini2 btn-info" placement="top" ngbTooltip="Duplicar"
+                              container="body" (click)="duplicar2(row)" (mouseup)="quitarfoco($event);">
+                              <i class="fa fa-copy icono-but"></i>
+                            </button>
+                            <button type="button" *ngIf="mostrarModal || rowconfig?.esgrupo==0" class="btn btn-inverse btn-mini"
+                              placement="top" ngbTooltip="Ver" container="body" (click)="VerPartida(row)">
+                              <i class="fa fa-search icono-but"></i>
+                            </button>
+                            <div>
+                              <i class="fa fa-lock fa-2x" style="color: red;margin-top: 1px;margin-left: 2px;"></i>
+                            </div>
+                          </div>
+                        </ng-container>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </ng-template>
+          </li>
+          <button *ngIf="vistagrande" type="button" class="btn btn-outline-secondary btn-sm light ripple  float-right"
+            (mouseup)="quitarfoco($event);" [ngbTooltip]="expanded ? 'Reducir' : 'Expandir'" (click)="cambioExpande()"
+            container="body" style="position: absolute; right: 10px;">
+            <i class="fa  mr-0" [ngClass]="{'fa-long-arrow-right': !expanded,'fa-long-arrow-left': expanded}"></i>
+          </button>
+        </ul>
+        <div [ngbNavOutlet]="nav" class="mt-2">
+        </div>
+      </app-card>
+    </div>
+    <div *ngIf="!mostrarModal" [ngClass]="{'col-lg-6 col-md-6 pl-0': !expanded, 'd-none': expanded}">
+      <app-card class="card">
+        <!-- <app-detallepartida [partidaSeleccionado]="partidaSeleccionada" [tabladetalle]="detallepart"
+                    [tipoProy]="tipoProy" [medidas]="umedidas" [cargatabla]="buscandotabla" (cargar)="cargar($event)" [rowSistema] ="rowSistema"></app-detallepartida> -->
+        <!-- <ng-container *ngTemplateOutlet="popContent"></ng-container> -->
+        <div *ngIf="mostrarModal;else popContent"></div>
+      </app-card>
+    </div>
+  </div>
+  <app-modal-basic #modalDetalles [dialogClass]="'modal-lg'">
+    <div class="app-modal-header">
+      <h4 class="modal-title tit-modal1"><b>Datos </b></h4>
+      <button type="button" class="close basic-close" (click)="cerrarModal()">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    <div class="app-modal-body">
+      <!-- <ng-container *ngTemplateOutlet="popContent"></ng-container> -->
+      <div *ngIf="!mostrarModal;else popContent"></div>
+    </div>
+    <div class="app-modal-footer w-100">
+      <div class="row px-3">
+        <button type="button" style="margin-right: 5px;" class="btn btn-sm btn-danger ripple"
+          (click)="cerrarModal()">Cerrar</button>
+      </div>
+    </div>
+  </app-modal-basic>
+  <ng-template #popContent>
+    <app-detallepartida [partidaSeleccionado]="partidaSeleccionada" [tabladetalle]="detallepart" [edicionacu]="edicionacu"
+      [rowSistema]="rowSistema" [tipoProy]="tipoProy" [medidas]="umedidas" [cargatabla]="buscandotabla" [expanded]="expanded"
+      [fondo]="titulo1" [color]="titulo1color" [letra]="titulo1letra" (cargar)="cargar($event)">
+    </app-detallepartida>
+  </ng-template>
+
+  <ng-template #popOptions>
+    <div class="btn-group" role="group" data-toggle="tooltip" data-placement="top" title=""
+      data-original-title=".btn-xlg">
+      <button type="button" class="btn btn-info btn-mini" placement="top" ngbTooltip="Agregar Partida" container="body"
+        (click)="openModal(0,1,rowconfig,false,false,false)">
+        <!-- *ngIf="rowconfig?.esgrupo==0"  -->
+        <i class="icofont icofont-pandora icono-but"></i>
+      </button>
+      <button type="button" *ngIf="rowconfig?.esgrupo==0" class="btn btn-inverse btn-mini" placement="top"
+        ngbTooltip="Duplicar Varias Partidas" container="body" (click)="Addvarios(rowconfig, 0)">
+        <i class="icofont icofont-sub-listing icono-but"></i>
+      </button>
+      <button type="button" *ngIf="rowconfig?.esgrupo==0" class="btn btn-success btn-mini" placement="top"
+        ngbTooltip="Sub Titulo Dependiente" container="body" (click)="openModalSubgrupo(rowconfig, 0)">
+        <i class="fa fa-plus icono-but"></i>
+      </button>
+      <button type="button" *ngIf="mostrarModal || rowconfig?.esgrupo==0" class="btn btn-inverse btn-mini"
+        placement="top" ngbTooltip="Editar" container="body" (click)="openModal(0,rowconfig.esgrupo,rowconfig,true)">
+        <i class="fa fa-pencil icono-but"></i>
+      </button>
+      <button type="button" class="btn btn-primary btn-mini" placement="top" ngbTooltip="Duplicar" container="body"
+        *ngIf="rowconfig?.esgrupo==1" (click)="openModal(0,1,rowconfig, false, true,true)"
+        (mouseup)="quitarfoco($event);">
+        <i class="fa fa-copy icono-but"></i>
+      </button>
+      <button type="button" class="btn btn-danger btn-mini" placement="top" ngbTooltip="Eliminar" container="body"
+        (click)="eliminarDataInsumo(rowconfig,0)">
+        <i class="fa fa-remove icono-but"></i>
+      </button>
+
+    </div>
+  </ng-template>
+  <app-modal-basic #modalAddvarios [dialogClass]="'modal-lg'">
+    <div class="app-modal-header">
+      <h4 class="modal-title tit-modal1"><b>Duplicar Multiples Partidas</b></h4>
+      <button type="button" class="close basic-close" (click)="cerrarModalmp()">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    <div class="app-modal-body">
+      <div class="p-t-10">
+        <div class="row justify-content-between p-r-15">
+          <div class="col-sm-4" style="margin-bottom: 10px;">
+            <mat-form-field class="mff-reduc w-100 alto-35 field-busqueda" appearance="outline">
+              <mat-label>Buscar</mat-label>
+              <input matInput type="text" [(ngModel)]="busqmul" autocomplete="off" id="inpbusq">
+              <button *ngIf="busqmul" matSuffix mat-icon-button aria-label="Clear" (click)="limpiarfiltrolmp()">
+                <mat-icon>close</mat-icon>
+              </button>
+            </mat-form-field>
+          </div>
+          <div class="col-sm-4">
+            <form [formGroup]="FormConf">
+              <mat-form-field appearance="outline" class="mff-reduc w-100 alto-35">
+                <mat-label>Tipo de Proyecto</mat-label>
+                <select matNativeControl (change)="cambiarTipoProymul($event.target.value)"
+                  formControlName="seltipoproy">
+                  <option *ngFor="let tipo of tipoProy" [value]="tipo.id_clasificacion">
+                    {{tipo.descripcion}}
+                  </option>
+                </select>
+              </mat-form-field>
+            </form>
+          </div>
+          <div class="col-sm-4">
+            <mat-form-field appearance="outline" class="mff-reduc w-100 alto-35">
+              <mat-label>Fuente</mat-label>
+              <select id="fuenteselect" matNativeControl (change)="cambiarFuentemul($event.target.value)">
+                <option value="0">Partidas del Sistema</option>
+                <option value="1">Partidas del Usuario</option>
+              </select>
+            </mat-form-field>
+          </div>
+        </div>
+        <div [style.height.px]="(height-60)/2" style="min-height: 150px;" class="overflow-auto">
+          <table class="table-bordered tab-10">
+              <thead class="text-center">
+                  <tr class="headsticky header-custom">
+                    <th appAnchocol [ancho]="25">S</th>
+                    <th appAnchocol [ancho]="220" [detalle]="true">
+                      <div class="d-flex">
+                        <a style="padding: 0px 2px;cursor: pointer;" ngbTooltip="Expandir Todo" container="body"
+                          (click)="maxtodo()"><i class="icofont icofont-caret-down"></i></a>
+                        <a style="padding: 0px 2px;cursor: pointer;" ngbTooltip="Contraer Todo" container="body"
+                          (click)="mintodo()"><i class="icofont icofont-caret-up"></i></a>
+                        <span style="width: calc(100% - 35px);">Descripción</span>
+                      </div>
+                    </th>
+                    <th appAnchocol [ancho]="44">Unidad</th>
+                    <th appAnchocol [ancho]="90">Precio</th>
+                    <th appAnchocol [ancho]="30"></th>
+                    <th appAnchocol [ancho]="70"></th>
+                  </tr>
+              </thead>
+              <tbody class="text-center">
+                  <ng-container *ngIf="databusq.length>0">
+                      <tr *ngFor="let row of databusq | filtroTabla: busqmul;"
+                          [ngClass]="{'filagrupo':row.esgrupo==0}"
+                          (click)="cambindicesellmp(row.ind)" [hidden]="!row.mostrar">
+                          <td appAnchocol [ancho]="25" style="cursor: pointer;"
+                          [ngClass]="{'highlight': filasellmp == row.ind2}" appPintarfilapre [tipo]="titulo1" [color]="titulo1color" 
+                          [letra]="titulo1letra" [item]="row.agrupacion" [separador]="'.'" [partida]="row.esgrupo==1?true:false">
+                            <div class="w-100">
+                              <mat-checkbox class="checktabla" [checked]="row.seleccion==0?false:true"
+                                (change)="$event ? cambioselt1(row) : null"></mat-checkbox>
+                            </div>
+                          </td>
+                          <td class="text-left" appAnchocol [ancho]="220" [detalle]="true"
+                          [ngClass]="{'highlight': filasellmp == row.ind2}" appPintarfilapre [tipo]="titulo1" [color]="titulo1color" 
+                          [letra]="titulo1letra" [item]="row.agrupacion" [separador]="'.'" [partida]="row.esgrupo==1?true:false">
+                            <div class="recortatextlinea"
+                            [style.padding-left.px]="((row.agrupacion?.toString().split('.').length-1)*7)+(row.esgrupo!=0?17:0)"
+                            ngbTooltip="{{row.descripcion}}" #t="ngbTooltip" container="body" triggers="click:blur"
+                            (mouseout)="t.close()">
+                              <a *ngIf="row.esgrupo==0 && row.icomost=='0'"
+                                style="padding: 0px 2px;color:#06bb06;cursor: pointer;"
+                                (click)="toggleOn(row.agrupacion,row.ind2)">
+                                <i class="icofont icofont-caret-down"></i>
+                              </a>
+                              <a *ngIf="row.esgrupo==0 && row.icomost=='1'"
+                                style="padding: 0px 2px;color:red;cursor: pointer;"
+                                (click)="toggleOff(row.agrupacion,row.ind2)">
+                                <i class="icofont icofont-caret-up"></i>
+                              </a>{{row.agrupacion}}&nbsp;&nbsp;{{row.descripcion}}
+                            </div>
+                          </td>
+                          <td appAnchocol [ancho]="44"
+                          [ngClass]="{'highlight': filasellmp == row.ind2}" appPintarfilapre [tipo]="titulo1" [color]="titulo1color" 
+                          [letra]="titulo1letra" [item]="row.agrupacion" [separador]="'.'" [partida]="row.esgrupo==1?true:false">
+                              <ng-container *ngIf="row.esgrupo==1">
+                                  {{row.unidad}}
+                              </ng-container>
+                          </td>
+                          <td appAnchocol [ancho]="90"
+                          [ngClass]="{'highlight': filasellmp == row.ind2}" appPintarfilapre [tipo]="titulo1" [color]="titulo1color" 
+                          [letra]="titulo1letra" [item]="row.agrupacion" [separador]="'.'" [partida]="row.esgrupo==1?true:false">
+                            <span *ngIf="row.esgrupo==1" class="float-left">S/</span>
+                            <span class="float-right">{{row.precio | number: '0.2'}}</span>
+                          </td>
+                          <td appAnchocol [ancho]="30"
+                          [ngClass]="{'highlight': filasellmp == row.ind2}" appPintarfilapre [tipo]="titulo1" [color]="titulo1color" 
+                          [letra]="titulo1letra" [item]="row.agrupacion" [separador]="'.'" [partida]="row.esgrupo==1?true:false">
+                            <button *ngIf="row.unidad!=''" type="button" class="btn btn-mini btn-info btn-mini-cust" ngbTooltip="Duplicar" 
+                              container="body" (click)="duplicafila(row)" (mouseup)="quitarfoco($event);">
+                              <i class="icofont icofont-ui-copy icono-but"></i>
+                            </button>
+                          </td>
+                          <td appAnchocol [ancho]="70"
+                          [ngClass]="{'highlight': filasellmp == row.ind2}" appPintarfilapre [tipo]="titulo1" [color]="titulo1color" 
+                          [letra]="titulo1letra" [item]="row.agrupacion" [separador]="'.'" [partida]="row.esgrupo==1?true:false">
+                            <div class="row mx-0" *ngIf="row.unidad!=''">
+                              <ng-container *ngIf="row.esgrupo==1">
+                                <div class="d-flex" style="height: 17px;">
+                                    <div class="badge-custom text-center label-morado " ngbTooltip="Especificación Técnica" container="body"
+                                        [ngClass]="{'bg-morado': (row.espec_tec?row.espec_tec:'')!='', 'borde-no-mostrar': (row.espec_tec?row.espec_tec:'')==''}">
+                                        <span class *ngIf="(row.espec_tec?row.espec_tec:'')!=''">ET</span>
+                                    </div>
+                                    <div class="badge-custom text-center label-marron" ngbTooltip="Ficha Técnica" container="body"
+                                        [ngClass]="{'bg-marron': (row.ficha_tec?row.ficha_tec:'')!='', 'borde-no-mostrar': (row.ficha_tec?row.ficha_tec:'')==''}">
+                                        <span class *ngIf="(row.ficha_tec?row.ficha_tec:'')!=''">FT</span>
+                                    </div>
+                                </div>
+                            </ng-container>
+                              <i *ngIf="row.fuente==0" class="fa fa-lock fa-2x" style="color: red;"></i>
+                            </div>
+                          </td>
+                      </tr>
+                  </ng-container>
+                  <ng-container *ngIf="databusq.length<=0">
+                      <tr>
+                          <td class="mat-cell text-center" colspan="8">
+                              <label *ngIf="!buscando">No se encontraron resultados</label>
+                              <div *ngIf="buscando" class="preloader3 loader-block">
+                                  <div class="circ1"></div>
+                                  <div class="circ2"></div>
+                                  <div class="circ3"></div>
+                                  <div class="circ4"></div>
+                              </div>
+                          </td>
+                      </tr>
+                  </ng-container>
+              </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="m-b-5 m-t-5">
+        <form [formGroup]="formDataPartida">
+          {{'Registro Preliminar'}}
+          <button type="button" class="btn btn-info btn-mini" (click)="addtoTabla()"><i class="fa fa-plus"></i>Agregar
+          </button>&nbsp;
+          <button type="button" class="btn btn-inverse btn-mini" (click)="subirpresel()"><i
+              class="icofont icofont-arrow-up"></i>Subir
+          </button>&nbsp;
+          <button type="button" class="btn btn-inverse btn-mini" (click)="bajarpresel()"><i
+              class="icofont icofont-arrow-down"></i>Bajar
+          </button>&nbsp;
+          <button type="button" class="btn btn-danger btn-mini" (click)="EliminarSel()"><i
+            class="fa fa-times"></i>Eliminar Todo
+          </button>
+          <label>Duplicar <strong>Especificación y Ficha Técnica</strong>:</label>
+          <div class="switch  d-inline m-r-10" style="margin-left: 10px;"
+            (change)="cambioDuplicar()">
+            <input type="checkbox" id="switch-p-3" formControlName="duparc">
+            <label for="switch-p-3" class="cr">
+            </label>
+          </div>
+          <span>{{textoDuplicar}}</span>
+        </form>
+      </div>
+      <div [style.height.px]="((height-100)/2)-15" style="min-height: 150px;" class="tabla-limp">
+        <table class="table-bordered tab-10">
+          <thead>
+            <tr class="headsticky header-custom">
+              <th appAnchocol [ancho]="28"></th>
+              <th appAnchocol [ancho]="220" [detalle]="true">Descripción</th>
+              <th appAnchocol [ancho]="44">Unidad</th>
+              <th appAnchocol [ancho]="90">Precio</th>
+              <th appAnchocol [ancho]="20"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <ng-container *ngIf="arregloseleccion.length>0">
+              <tr (click)="cambindiceArrsel(indice,row)" *ngFor="let row of arregloseleccion;let indice=index;" [ngClass]="{'highlight': filaArrSel == indice}">
+                <td class="cellsinpadding" appAnchocol [ancho]="28">{{indice+1}}</td>
+                <td class="text-left cellsinpadding" appAnchocol [ancho]="220" [detalle]="true">
+                  <div class="recortatextlinea celdaadvcero" ngbTooltip="{{row.descripcion}}" #t="ngbTooltip"
+                    container="body" triggers="click:blur" (mouseout)="t.close()">
+                    <span>{{row.descripcion}}</span>
+                  </div>
+                </td>
+                <td appAnchocol [ancho]="44">{{row.unidad}}</td>
+                <td appAnchocol [ancho]="90">
+                  <span *ngIf="row.unidad!=''" class="float-left">S/</span>
+                  <span class="float-right">{{row.precio | number: '0.2'}}</span>
+                </td>
+                <td appAnchocol [ancho]="90">
+                  <button class="btn btn-danger btn-mini2" ngbTooltip="Eliminar" container="body"
+                    (click)="eliminarfila(indice)">
+                    <i class="fa fa-remove icono-but"></i>
+                  </button>
+                </td>
+              </tr>
+            </ng-container>
+            <ng-container *ngIf="arregloseleccion.length<=0">
+              <tr>
+                <td class="mat-cell text-center" colspan="8">
+                  <label>No se encontraron resultados</label>
+                </td>
+              </tr>
+            </ng-container>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="app-modal-footer w-100">
+      <div class="row px-3 justify-content-between d-flex">
+        <button type="button" style="margin-right: 5px;" class="btn btn-sm btn-danger ripple"
+          (click)="cerrarModalmp()">Cerrar</button>
+        <button type="button" style="margin-right: 5px;" class="btn btn-sm btn-success ripple"
+        (click)="AgregarMult()">Agregar Partidas</button>
+      </div>
+    </div>
+  </app-modal-basic>
+  <app-cargando [bloquearTodo]="true" *ngIf="mostrar_carga_todo"></app-cargando>
+  <app-cargando [bloquearTodo]="false" *ngIf="mostrar_carga"></app-cargando>
+</div>

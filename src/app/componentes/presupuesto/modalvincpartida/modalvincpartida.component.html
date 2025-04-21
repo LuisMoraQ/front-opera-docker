@@ -1,0 +1,189 @@
+<div class="modal-dialog-scrollable modal-xl">
+  <div class="modal-content">
+    <div class="app-modal-header  modal-header">
+      <h4 class="modal-title tit-modal1">
+        <b>Vincular Partidas</b>
+      </h4>
+      <button type="button" class="close basic-close" (click)="closeModal()">
+        <span aria-hidden="true" class="mt-2">&times;</span>
+      </button>
+    </div>
+    <div class="modal-body">
+      <form [formGroup]="formData">
+          <div class="row">
+            <div class="col-sm-2 col-6">
+              <mat-form-field appearance="outline" class="mff-reduc my-form-field w-100"
+                  [ngClass]="{'mat-form-field-disa': itempri.disabled}">
+                  <mat-label>Item</mat-label>
+                  <input matInput autocomplete="off" class="mayuscula" formControlName="itempri">
+              </mat-form-field>
+            </div>
+            <div class="col-12 col-sm-10">
+              <mat-form-field appearance="outline" class="mff-reduc my-form-field w-100"
+                [floatLabel]="formData.disabled ? 'always' : 'auto'"
+                [ngClass]="{'mat-form-field-disa': descripcionpri.disabled}">
+                <mat-label>Descripción</mat-label>
+                <textarea matInput type="text" autocomplete="off"
+                  formControlName="descripcionpri"></textarea>
+              </mat-form-field>
+            </div>
+          </div>
+          <div class="w-100 d-flex justify-content-between" style="margin-bottom: 3px;">
+            <div style="padding-top: 15px;">
+              <button type="button" class="btn btn-mini btn-primary" [disableTooltip]="!minimbut" placement="top" ngbTooltip="Seleccionar Todo"
+              container="body" (click)="Seltodo()" (mouseup)="quitarfoco($event);">
+                <i class="fa fa-check-square-o" [ngClass]="{'icono-but':minimbut}"></i><span [ngClass]="{'hide-ele':minimbut}">Seleccionar Todo</span>
+              </button>
+              <button type="button" class="btn btn-mini btn-info" [disableTooltip]="!minimbut" placement="top" ngbTooltip="Deseleccionar Todo"
+                container="body" (click)="Deseltodo()" (mouseup)="quitarfoco($event);">
+                <i class="fa fa-square-o" [ngClass]="{'icono-but':minimbut}"></i><span [ngClass]="{'hide-ele':minimbut}">Deseleccionar Todo</span>
+              </button>
+              <button type="button" class="btn btn-mini btn-inverse" [disableTooltip]="!minimbut" placement="top" ngbTooltip="Selecciona Iguales"
+                container="body" (click)="Resigual()" (mouseup)="quitarfoco($event);">
+                <i class="fa fa-percent" [ngClass]="{'icono-but':minimbut}"></i><span [ngClass]="{'hide-ele':minimbut}">Selecciona Iguales</span>
+              </button>
+              <button type="button" class="btn btn-mini" [ngClass]="{'btn-success':!verbloq,'btn-orange':verbloq}" [disableTooltip]="!minimbut" placement="top" [ngbTooltip]="verbloq?'Ocultar Bloqueados':'Mostrar Bloqueados'"
+                container="body" (click)="OcultaBloq()" (mouseup)="quitarfoco($event);">
+                <i class="fa f-12" [ngClass]="{'fa-eye':!verbloq,'fa-eye-slash':verbloq,'icono-but':minimbut}"></i><span [ngClass]="{'hide-ele':minimbut}">{{verbloq?'Ocultar Bloqueados':'Mostrar Bloqueados'}}</span>
+              </button>
+            </div>
+            <div>
+              <button type="button" class="btn btn-mini btn-danger" [disableTooltip]="!minimbut" placement="top" ngbTooltip="Quitar Todos los Vinculos"
+                container="body" (click)="QuitaVinc()" (mouseup)="quitarfoco($event);">
+                <i class="icofont icofont-trash" [ngClass]="{'icono-but':minimbut}"></i><span [ngClass]="{'hide-ele':minimbut}">Quitar Todos los Vinculos</span>
+              </button>
+              <mat-form-field appearance="outline" class="mff-reduc my-form-field" style="width: 100px;margin-right: 5px;">
+                  <mat-label>Color de Vinculo</mat-label>
+                  <input type="color" matInput autocomplete="off" formControlName="colorv">
+              </mat-form-field>
+              <button type="button" class="btn btn-mini btn-group-mini btn-outline-danger" placement="top" ngbTooltip="Reiniciar Color" style="margin-top: -15px;"
+              container="body"  (mouseup)="quitarfoco($event);" (click)="ReiniColor()">
+                  <i class="fa fa-refresh icono-but"></i>
+              </button>
+            </div>
+          </div>
+      </form>
+      <div [style.height.px]="heightacu" class="tabla-limp" id="tableBodyri">
+        <table class="table-bordered tab-10">
+          <thead>
+            <tr class="headsticky header-custom">
+              <th appAnchocol [ancho]="28"></th>
+              <th appAnchocol [ancho]="18">S</th>
+              <th appAnchocol [ancho]="40">%</th>
+              <th appAnchocol [ancho]="220" [detalle]="true">
+                <div class="d-flex">
+                  <a style="padding: 0px 2px;cursor: pointer;" ngbTooltip="Expandir Todo"
+                      container="body" (click)="maxtodo()"><i
+                          class="icofont icofont-caret-down"></i></a>
+                  <a style="padding: 0px 2px;cursor: pointer;" ngbTooltip="Contraer Todo"
+                      container="body" (click)="mintodo()"><i
+                          class="icofont icofont-caret-up"></i></a>
+                  <span style="width: calc(100% - 35px);">Descripción</span>
+                </div>
+              </th>
+              <th appAnchocol [ancho]="44">Unidad</th>
+              <th appAnchocol [ancho]="90">Metrado</th>
+              <th appAnchocol [ancho]="90">Precio</th>
+              <th appAnchocol [ancho]="100">Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            <ng-container *ngIf="tablapri.length>0">
+              <tr *ngFor="let row of tablapri;let indice=index;" [hidden]="row.mostrar == 0 || row.verbloq==0" (click)="cambindiceselacu(indice)">
+                <td class="cellsinpadding" appAnchocol [ancho]="28" [ngStyle]="{'background-color': row.seleccion==2? '#ff8686' : 'none'}"
+                [ngClass]="{'row-princ':vinculosel?.indice==row.indice}">
+                  <span *ngIf="!colselpri && !colselpri2">{{indice+1}}</span>
+                </td>
+                <td appAnchocol [ancho]="18" [ngClass]="{'row-princ':vinculosel?.indice==row.indice}" [ngStyle]="{'background-color': row.seleccion==2? '#ff8686' : 'none'}">
+                  <mat-checkbox *ngIf="row.unidad!='' && row.seleccion!=2" class="checktabla" [checked]="row.seleccion==0?false:true" (change)="$event ? cambioseltpri(row) : null"
+                  [disabled]="row.indice==vinculosel?.indice && row.vinculo==null"></mat-checkbox>
+                  <span *ngIf="row.seleccion==2" class="f-14"><i class="fa fa-ban"></i></span>
+                  <!-- <mat-checkbox *ngIf="row.unidad!=''" class="checktabla f-asignado" [checked]="true" disabled></mat-checkbox> -->
+                </td>
+                <td class="cellsinpadding" appAnchocol [ancho]="60" [ngStyle]="{'background-color': row.seleccion==2? '#ff8686' : 'none'}"
+                [ngClass]="{'row-princ':vinculosel?.indice==row.indice}">
+                  <!-- <span *ngIf="row.porc">{{row.porc}}</span> -->
+                  <div *ngIf="row.porc" class="progressj" style="width: 56px;font-size: 11px;">
+                    <span class="progressj-text">{{row.porc}}</span>
+                    <div class="progressj-fill" [ngStyle]="{'width': (((row.porc/50)-1)*100)+'%','background': row.porc>=40 && row.porc<100?'#11c15b':'#448aff' }"></div>
+                  </div>
+                </td>
+                <td class="text-left cellsinpadding" appAnchocol [ancho]="220" [detalle]="true" [ngClass]="{'highlight': filaSel == indice,'row-princ':vinculosel?.indice==row.indice}"
+                appPintarfilapre [tipo]="fondo" [color]="color" [letra]="letra" [item]="row.item" [separador]="'.'" [partida]="row.unidad!=''?true:false">
+                  <div *ngIf="row.editar1==0" class="recortatextlinea celdaadvcero" [style.padding-left.px]="((row.item.toString().split('.').length-1)*5)+(row.unidad!=''?17:0)"
+                  ngbTooltip="{{row.descripcion}}" #t="ngbTooltip" container="body"
+                  triggers="click:blur" (mouseout)="t.close()">
+                    <a *ngIf="row.unidad=='' && row.icomost=='0'"
+                      style="padding: 0px 2px;color:#06bb06;cursor: pointer;"
+                      (click)="toggleOn(row.item,indice)">
+                      <i class="icofont icofont-caret-down"></i>
+                    </a>
+                    <a *ngIf="row.unidad=='' && row.icomost=='1'"
+                      style="padding: 0px 2px;color:red;cursor: pointer;"
+                      (click)="toggleOff(row.item,indice)">
+                      <i class="icofont icofont-caret-up"></i>
+                    </a><span
+                      style="font-weight: 700;">{{row.item}}</span>&nbsp;&nbsp;{{row.descripcion}}
+                  </div>
+                </td>
+                <td appAnchocol [ancho]="44" [ngClass]="{'highlight': filaSel == indice,'row-princ':vinculosel?.indice==row.indice}"
+                appPintarfilapre [tipo]="fondo" [color]="color" [letra]="letra" [item]="row.item" [separador]="'.'" [partida]="row.unidad!=''?true:false">
+                  {{row.unidad}}
+                </td>
+                <td appAnchocol [ancho]="90" [ngClass]="{'highlight': filaSel == indice,'row-princ':vinculosel?.indice==row.indice}"
+                appPintarfilapre [tipo]="fondo" [color]="color" [letra]="letra" [item]="row.item" [separador]="'.'" [partida]="row.unidad!=''?true:false">
+                  <span *ngIf="row.editar2==0" class="float-right" [ngClass]="{'celdaadvcero':row.cantidad==0,'celdanocero':row.cantidad!=0}">{{row.cantidad | number: mask_metrado }}</span><i *ngIf="row.cantidad===0 && row.editar2==0" class="fa fa-exclamation-triangle c-alert"></i>
+                </td>
+                <td appAnchocol [ancho]="90" [ngClass]="{'highlight': filaSel == indice,'row-princ':vinculosel?.indice==row.indice}"
+                appPintarfilapre [tipo]="fondo" [color]="color" [letra]="letra" [item]="row.item" [separador]="'.'" [partida]="row.unidad!=''?true:false">
+                <span *ngIf="row.unidad!=''" class="float-left">{{moneda}}<i *ngIf="(row.advceros===1 || row.precio==0) && row.unidad!=''" class="fa fa-exclamation-triangle c-alert"></i></span>
+                  <span class="float-right">{{row.precio | number: mask_precio}}</span>
+                </td>
+                <td appAnchocol [ancho]="100" [ngClass]="{'highlight': filaSel == indice,'row-princ':vinculosel?.indice==row.indice}"
+                appPintarfilapre [tipo]="fondo" [color]="color" [letra]="letra" [item]="row.item" [separador]="'.'" [partida]="row.unidad!=''?true:false">
+                  <span class="float-left">{{moneda}}</span>
+                  <span class="float-right">{{row.parcial | number: mask_parcial}}</span>
+                </td>
+              </tr>
+            </ng-container>
+            <ng-container *ngIf="tablapri.length<=0">
+              <tr>
+                <td class="mat-cell text-center" colspan="8">
+                    <label *ngIf="!buscando">No se encontraron resultados</label>
+                    <div *ngIf="buscando" class="preloader3 loader-block">
+                        <div class="circ1"></div>
+                        <div class="circ2"></div>
+                        <div class="circ3"></div>
+                        <div class="circ4"></div>
+                    </div>
+                </td>
+              </tr>
+            </ng-container>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="app-modal-footer modal-footer justify-content-between">
+      <button type="button" class="btn btn-danger btn-sm" (click)="closeModal()"><i
+          class="fa fa-times"></i>Cerrar</button>
+
+      <div>
+        <form [formGroup]="formfoot">
+          <mat-form-field appearance="outline" class="mff-reduc my-form-field" style="width: 170px;margin-right: 5px;">
+            <mat-label>% Minimo de Similitud(50-100)</mat-label>
+            <input matInput type="text" style="text-align: center;" [textMask]="{mask: maskUsAmountDecimal}" formControlName="numporc" placeholder="50-100" appMinmaxnum [menor]="0" [mayor]="100">
+          </mat-form-field>
+          <button type="button" class="btn btn-mini btn-group-mini btn-outline-info" placement="top" ngbTooltip="Actualizar Tabla" style="margin-top: -4px;"
+          container="body"  (mouseup)="quitarfoco($event);" (click)="CambioPorc()">
+              <i class="fa fa-check icono-but"></i>
+          </button>
+        </form>
+      </div>
+      
+      <button type="button" class="btn btn-success btn-sm" (click)="Vincular()"><i
+        class="fa fa-check"></i>Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- <app-cargando [bloquearTodo]="true" *ngIf="mostrar_carga_todo"></app-cargando> -->

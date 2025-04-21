@@ -1,0 +1,420 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="content-language" content="en" />
+  <meta name="google" content="notranslate" />
+  <title>BIPLAN - Presupuestos</title>
+  <base href="/">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="description"
+    content="Biplan o Bimplanner es un Software inteligente que tiene la función de gestionar tus Proyectos de forma más eficiente y productiva, reducirás horas empleadas en la elaboración de estos mismos. Con Biplan podrás reducir hasta un 60 a 70% del tiempo empleado en la elaboración de tus proyectos." />
+  <meta name="keywords"
+    content="biplan,biplan.pe, biplan pe, bimplanner.pe, bimplanner pe, bimplanner, bim planner, presupuestos, programacion, metrados, formula polinomica, especificaciones tecnicas" />
+  <meta name="author" content="biplan.pe" />
+
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #ccc;
+    }
+
+    .container {
+      width: 80%;
+      margin: 0 auto;
+    }
+
+    /* custom class */
+    .gantt .bar-milestone .bar {
+      fill: rgb(226 99 99);
+    }
+
+    .gantt .bar-milestone2 .bar {
+      fill: #444446;
+    }
+
+    .gantt .bar-hito .bar {
+      fill: #81b444;
+      -webkit-clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+      clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+    }
+
+    .gantt .bar-milestoneEta .bar {
+      fill: #c4cd69
+    }
+
+    .gantt .bar-milestoneUni .bar {
+      fill: #20c399;
+    }
+
+    .gantt .bar-milestoneSol .bar {
+      fill: #439cd4;
+    }
+
+    .gantt .bar-milestoneMul .bar {
+      fill: #6666e6;
+    }
+
+    .gantt .bar-milestoneMulH .bar {
+      fill: #6666e6a1;
+    }
+
+    .gantt .grid-background {
+      fill: none;
+    }
+
+    .gantt .grid-header {
+      fill: #ffffff;
+      stroke: #e0e0e0;
+      stroke-width: 1.4;
+    }
+
+    .gantt .grid-row {
+      fill: #ffffff;
+    }
+
+    .gantt .grid-row:nth-child(even) {
+      /* fill: #e7e6e680; */
+      fill: #ffffff;
+    }
+
+    .gantt .row-line {
+      stroke: #ebeff2;
+    }
+
+    .gantt .tick {
+      stroke: #666464;
+      stroke-width: 0.3;
+    }
+
+    .gantt .tick.thick {
+      stroke: #a6ee9d;
+      stroke-width: 1;
+    }
+
+    .gantt .tick.thick2 {
+      stroke: #ff0101;
+      stroke-width: 3;
+    }
+
+    .gantt .tick.thick3 {
+      stroke: #f34444;
+      stroke-width: 1;
+    }
+
+    .gantt .tick.thick1 {
+      stroke: #0109ff;
+      stroke-width: 1;
+    }
+
+    .gantt .today-highlight {
+      fill: #86e541;
+      opacity: 0.5;
+    }
+
+    .gantt .feriado {
+      fill: #eea026;
+      opacity: 0.5;
+    }
+
+    .gantt .noFeriado {
+      fill: #ccc3a9;
+      opacity: 0.5;
+    }
+
+    .gantt .today-highlight-t {
+      fill: #e4040482;
+      opacity: 0.5;
+    }
+
+    .gantt .today-highlight-f {
+      fill: #e4040482;
+      opacity: 0.5;
+    }
+
+    .gantt .color_1 {
+      fill: #dfd8c3;
+      opacity: 0.5;
+    }
+
+    .gantt .color_2 {
+      fill: #ebbcf1;
+      opacity: 0.5;
+    }
+
+    .gantt .color_3 {
+      fill: #d4e4f4;
+      opacity: 0.5;
+    }
+
+    .gantt .color_4 {
+      fill: #ffd8d8;
+      opacity: 0.5;
+    }
+
+    .gantt .color_5 {
+      fill: #d5f9ba;
+      opacity: 0.5;
+    }
+
+    .gantt .color_6 {
+      fill: #ffdba3;
+      opacity: 0.5;
+    }
+
+    .gantt .color_0 {
+      fill: #f3f3f3;
+      opacity: 0.5;
+    }
+
+    .gantt .arrow {
+      fill: none;
+      stroke: #666;
+      stroke-width: 1.4;
+    }
+
+    .gantt .arrow2 {
+      stroke-width: 1.1 !important;
+    }
+
+    .gantt .arrow3 {
+      stroke-width: 0.9 !important;
+    }
+
+
+    .gantt .bar {
+      fill: #3ca8ff;
+      stroke: #8D99A6;
+      stroke-width: 0;
+      transition: stroke-width .3s ease;
+      user-select: none;
+    }
+
+    .gantt .bar-progress {
+      fill: #a3a3ff;
+    }
+
+    .gantt .bar-invalid {
+      fill: transparent;
+      stroke: #8D99A6;
+      stroke-width: 1;
+      stroke-dasharray: 5;
+    }
+
+    .gantt .bar-invalid~.bar-label {
+      fill: #555;
+    }
+
+    .gantt .bar-label {
+      fill: rgb(255, 255, 255);
+      dominant-baseline: central;
+      text-anchor: middle;
+      font-size: 8px;
+      font-weight: bolder;
+    }
+
+    .gantt .bar-label.big {
+      fill: #555;
+      text-anchor: start;
+    }
+
+    .gantt .handle {
+      fill: #ddd;
+      cursor: ew-resize;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity .3s ease;
+    }
+
+    .gantt .bar-wrapper {
+      cursor: pointer;
+      outline: none;
+    }
+
+    .gantt .bar-wrapper:hover .bar {
+      /* fill: #a9b5c1; */
+    }
+
+    .gantt .bar-wrapper:hover .bar-progress {
+      /* fill: #8a8aff; */
+    }
+
+    .gantt .bar-wrapper:hover .handle {
+      visibility: visible;
+      opacity: 1;
+    }
+
+    .gantt .bar-wrapper.active .bar {
+      /* fill: #a9b5c1; */
+    }
+
+    .gantt .bar-wrapper.active .bar-progress {
+      /* fill: #8a8aff; */
+    }
+
+    .gantt .lower-text,
+    .gantt .upper-text {
+      font-size: 9px;
+      text-anchor: middle;
+    }
+
+    .gantt .upper-text {
+      fill: #555 !important;
+      font-size: 15px !important;
+    }
+
+    .gantt .lower-text {
+      fill: #333 !important;
+    }
+
+    .gantt .hide {
+      display: none;
+    }
+
+    .gantt-container {
+      position: absolute;
+      top: 5px;
+      /* overflow: auto; //quitar overflow: libreria; */
+      font-size: 9px;
+    }
+
+    .gantt-container .popup-wrapper {
+      position: absolute;
+      top: 0;
+      left: 0;
+      background: rgb(40 35 35 / 91%);
+      padding: 0;
+      color: rgb(239, 245, 247);
+      border-radius: 3px;
+    }
+
+    .gantt-container .popup-wrapper .title {
+      border-bottom: 3px solid #ccd0d7;
+      padding: 5px;
+      font-weight: bolder;
+      font-family: system-ui;
+    }
+
+    .gantt-container .popup-wrapper .subtitle {
+      padding: 6px;
+      color: rgb(239, 245, 247);
+    }
+
+    .gantt-container .popup-wrapper .pointer {
+      position: absolute;
+      height: 5px;
+      margin: 0 0 0 -5px;
+      border: 5px solid transparent;
+      border-top-color: rgba(0, 0, 0, 0.8);
+    }
+
+    .contenido-principal-login {
+      display: block;
+      content: '';
+      width: 40%;
+      height: 100vh;
+      background-color: #444446;
+    }
+
+    .contenido-principal-login::before {
+      content: '';
+      width: 60%;
+      height: 100vh;
+      background-color: #1212af;
+    }
+  </style>
+
+  <link rel="icon" type="image/x-icon" href="assets/images/auth/biplanic2.ico">
+  <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+
+</head>
+
+<body class="mat-typography">
+  <app-root class="app-root-class" allow="clipboard-read; clipboard-write">
+    <div class="theme-loader">
+      <div class="loader-track">
+        <div class="loader-block">
+          <img id='imgr1' width="55" heigth="54" class="imgr" src='assets/images/engranaje1.png'>
+          <img id='imgr2' width="40" heigth="39" class="imgr" src='assets/images/engranaje3.svg'>
+        </div>
+      </div>
+    </div>
+    <!-- <div class="theme-loader">
+      <div class="loader-track">
+        <div class="preloader-wrapper">
+          <div class="spinner-layer spinner-blue">
+            <div class="circle-clipper left">
+              <div class="circle"></div>
+            </div>
+            <div class="gap-patch">
+              <div class="circle"></div>
+            </div>
+            <div class="circle-clipper right">
+              <div class="circle"></div>
+            </div>
+          </div>
+          <div class="spinner-layer spinner-red">
+            <div class="circle-clipper left">
+              <div class="circle"></div>
+            </div>
+            <div class="gap-patch">
+              <div class="circle"></div>
+            </div>
+            <div class="circle-clipper right">
+              <div class="circle"></div>
+            </div>
+          </div>
+
+          <div class="spinner-layer spinner-yellow">
+            <div class="circle-clipper left">
+              <div class="circle"></div>
+            </div>
+            <div class="gap-patch">
+              <div class="circle"></div>
+            </div>
+            <div class="circle-clipper right">
+              <div class="circle"></div>
+            </div>
+          </div>
+
+          <div class="spinner-layer spinner-green">
+            <div class="circle-clipper left">
+              <div class="circle"></div>
+            </div>
+            <div class="gap-patch">
+              <div class="circle"></div>
+            </div>
+            <div class="circle-clipper right">
+              <div class="circle"></div>
+            </div>
+          </div>
+        </div>
+      </div>  
+    </div>-->
+  </app-root>
+  <!-- <script type="text/javascript">
+    var areYouReallySure = false;
+    function areYouSure() {
+        if(allowPrompt){
+            if (!areYouReallySure && true) {
+                areYouReallySure = true;
+                var confMessage = "***************************************nn E S P E R A !!! nnAntes de abandonar nuestra web, síguenos en nuestras redes sociales como Facebook, Twitter o Instagram.nnnYA PUEDES HACER CLIC EN EL BOTÓN CANCELAR SI QUIERES...nn***************************************";
+                return confMessage;
+            }
+        }else{
+            allowPrompt = true;
+        }
+    }
+    
+    var allowPrompt = true;
+    window.onbeforeunload = areYouSure;
+    </script> -->
+</body>
+
+</html>

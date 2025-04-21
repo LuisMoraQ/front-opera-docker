@@ -1,0 +1,769 @@
+<app-cargando [bloquearTodo]="true" *ngIf="mostrar_carga_todo"></app-cargando>
+<div class="modal-dialog-scrollable p-2">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12 d-flex justify-content-between">
+                <div class="d-flex" style=" align-items: baseline">
+                    <h4 class="sub-title text-left p-b-0">IMPORTAR HOJAS DE METRADO</h4>
+                    <span style="font-weight: bolder; margin-left: 10px;" class="text-primary"> {{titulo?.item}} -
+                        {{titulo?.descripcion}} </span>
+                </div>
+
+                <div>
+                    <button type="button" class="btn btn-danger btn-mini" (click)="closeModal()"
+                        (mouseup)="quitarfoco($event);"><i class="fa fa-times"></i>Cerrar</button>
+                    <button type="button" class="btn btn-secondary btn-mini" *ngIf="vista > 0"
+                        (mouseup)="quitarfoco($event);" (click)="accionRegresarBoton()">
+                        <i class="fa fa-arrow-left"></i>Anterior
+                    </button>
+                    <button type="button" class="btn  btn-mini" (mouseup)="quitarfoco($event);"
+                        [ngClass]="{'btn-success': vista == 3, 'btn-primary': vista !==3}"
+                        (click)="vista == 3 ? guardarTablaFinal():  accionSiguienteBoton()"><i class=" fa"
+                            [ngClass]="{'fa-save': vista == 3, 'fa-arrow-right': vista !== 4}"></i>
+                        <span *ngIf="vista < 3">Siguiente</span>
+                        <span *ngIf="vista == 3">Guardar</span>
+                    </button>
+                </div>
+            </div>
+            <div class="col-12 px-0 d-flex justify-content-between" style="min-height: 35px;">
+                <div class="mb-0 col-10" *ngIf="wbExcel"> <span>Documento:</span>
+                    <span class="nombre-documento ml-2">{{nombreArchivo}}</span>
+                </div>
+                <div class="col-2">
+
+                </div>
+            </div>
+            <mat-horizontal-stepper [linear]="false" #stepper class="col-12 px-0">
+                <mat-step label="0">
+                    <ng-template matStepLabel>Plantilla y hojas validas</ng-template>
+                    <div class="col-12 px-0 h-plantillas">
+                        <table class="tabla-general tabla-10 table-bordered">
+                            <thead class="text-center headsticky">
+                                <th>Hoja Excel</th>
+                                <th appAnchocol [ancho]="150">Importar</th>
+                            </thead>
+                            <tbody>
+                                <tr *ngFor="let hoja of listaTablas; let i = index">
+                                    <td>{{hoja.nombre}}</td>
+                                    <td class="text-center">
+                                        <ng-container *ngIf="!hoja.filasNoValidas?.length; else errorHoja">
+                                            <mat-checkbox class="example-margin mb-custom"
+                                                (change)="considerarHoja($event, i)"
+                                                [checked]="hoja.considerar"></mat-checkbox>
+                                        </ng-container>
+                                        <ng-template #errorHoja>
+                                            <i class="fa fa-exclamation-triangle text-danger" [ngbTooltip]="htmlContent"
+                                                container="body"></i>
+                                            <ng-template #htmlContent>
+                                                Filas superiores a 80 columnas :
+                                                <ul style="list-style: circle;">
+                                                    <li *ngFor="let indice of hoja.filasNoValidas">
+                                                         {{indice}}
+                                                    </li>
+                                                </ul>
+
+                                            </ng-template>
+                                        </ng-template>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                    </div>
+                    <div class="col-12 mt-3 px-0">
+                        <div>
+                            Lista Plantillas Usuario
+                        </div>
+                        <div class="col-12 mt-2 px-0 d-flex justify-content-between">
+                            <mat-form-field appearance="outline" class="mff-reduc col-4 alto-35 px-0">
+                                <mat-label>Plantilla</mat-label>
+                                <select matNativeControl (change)="cambioVistaPlantillas($event.target.value)">
+                                    <option value="">--Ninguno--</option>
+                                    <option *ngFor="let plantilla of listaPlantillas" [value]="plantilla.nom_plantilla">
+                                        {{plantilla.nom_plantilla}}
+                                    </option>
+                                </select>
+                            </mat-form-field>
+                            <div class="col-4  pr-0">
+                                <button class="btn btn-mini btn-outline-secondary float-right"
+                                    *ngIf="plantillaSeleccionada?.id_plantilla" (click)="eliminarPlantilla()"
+                                    (mouseup)="quitarfoco($event);" ngbTooltip="Eliminar plantilla Seleccionada"
+                                    container="body"> <i class="fa fa-trash"></i> Eliminar</button>
+                                <button class="btn btn-outline-secondary btn-mini float-right"
+                                    (mouseup)="quitarfoco($event);" (click)="modalPlantilla()"
+                                    ngbTooltip="Agregar plantilla nueva" container="body">
+                                    <i class="fa fa-plus"></i> Plantilla
+                                </button>
+                                <button class="btn btn-outline-secondary btn-mini float-right"
+                                    (mouseup)="quitarfoco($event);" *ngIf="plantillaSeleccionada?.id_plantilla"
+                                    (click)="editarNombrePlantillas()" ngbTooltip="Modificar nombre plantilla"
+                                    container="body">
+                                    <i class="fa fa-edit"></i> Editar
+                                </button>
+                            </div>
+                        </div>
+                        <table class="tabla-general tabla-10 table-bordered mt-2" *ngIf="plantillaSeleccionada">
+                            <thead class="text-center">
+                                <tr>
+                                    <th [attr.colspan]="icols" *ngIf="icols"></th>
+                                    <th [attr.colspan]="gcols" *ngIf="gcols">Geometria</th>
+                                    <th [attr.colspan]="dcols" *ngIf="dcols">Descuentos</th>
+                                    <th [attr.colspan]="fcols" *ngIf="fcols"></th>
+                                </tr>
+                                <tr>
+                                    <th *ngFor="let celda of headerTabla">
+                                        {{celda}}
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-center">
+                                <td *ngFor="let item of headerTabla"><i class="fa fa-ellipsis-h"></i></td>
+                            </tbody>
+                        </table>
+                    </div>
+                </mat-step>
+                <mat-step label="1">
+                    <ng-template matStepLabel>Asignar Columnas</ng-template>
+                    <div class="col-12 mt-1 d-flex justify-content-between ">
+                        <div class="col-4 px-0 d-flex">
+                            <mat-form-field appearance="outline" class="mff-reduc  alto-35 ">
+                                <mat-label>Hojas Documento</mat-label>
+                                <select matNativeControl (change)="opcionHojasValidas($event.target.value)"
+                                    [ngClass]="{'text-danger': !hojaSeleccionada?.columnas_completas}">
+                                    <option *ngFor="let hoja of listaHojasSeleccionadas; let i=index" [value]="i"
+                                        [ngClass]="{'text-dark': hoja.columnas_completas, 'text-danger': !hoja.columnas_completas }">
+                                        <div class="d-flex justify-content-between">
+                                            <span>{{hoja.nombre}}</span>
+                                            <span *ngIf="!hoja.columnas_completas">&nbsp;&nbsp;&#9888;</span>
+                                        </div>
+                                    </option>
+                                </select>
+                            </mat-form-field>
+                            <span class="badge bg-danger margenes-badge"
+                                *ngIf="hojaSeleccionada && !hojaSeleccionada?.columnas_completas">INCOMPLETO</span>
+                        </div>
+                        <div class="col-4 d-flex justify-content-end px-0">
+                            <span class="letra-leyenda">Inicio a considerar</span>
+                            <div class="leyenda-inicio"></div>
+                        </div>
+                    </div>
+                    <div class="col-12 contenedor-tabla " *ngIf="hojaSeleccionada">
+                        <table class="tabla-general mt-3 tabla-10 table-bordered heigth-tabla-excel table-responsive">
+                            <thead class="headsticky text-center">
+                                <tr>
+                                    <th [ngClass]="{'width-header-vacio ': !wbExcel}">&nbsp;</th>
+                                    <th *ngFor="let row of hojaSeleccionada?.cant_header;let index = index">{{index}}
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <ng-container *ngIf="hojaSeleccionada?.tabla_excel?.length; else noData2">
+                                    <tr *ngFor="let row of hojaSeleccionada?.tabla_excel;let indice = index"
+                                        [ngClass]="{'filainicio': hojaSeleccionada?.inicio_tabla == indice}"
+                                        (click)="cambioFilaInicio(indice)">
+                                        <ng-container *ngIf="indice < 200">
+                                            <td class="bg-li text-center">{{indice}}</td>
+                                            <td *ngFor="let header of hojaSeleccionada?.cant_header; let j = index"
+                                                class="width-celda">
+                                                <span class=" w-100 recortatext1l"
+                                                    [ngbTooltip]="row[j]">{{row[j]}}</span>
+                                            </td>
+                                        </ng-container>
+                                        <ng-container *ngIf="indice == 201">
+                                            <td class="bg-li text-center"> <i class="fa fa-ellipsis-v"
+                                                    aria-hidden="true"></i></td>
+                                            <td colspan="100%" class="text-center"
+                                                [ngbTooltip]=" (hojaSeleccionada?.tabla_excel.length - 200) + 'Filas no mostradas'">
+                                                <i class="fa fa-ellipsis-v" aria-hidden="true"></i>
+                                            </td>
+                                        </ng-container>
+                                    </tr>
+                                </ng-container>
+                                <ng-template #noData2>
+                                    <tr>
+                                        <td class="mat-cell text-center" colspan="11">
+                                            <label *ngIf="!buscando">No se encontraron resultados</label>
+                                            <div *ngIf="buscando" class="preloader3 loader-block">
+                                                <div class="circ1"></div>
+                                                <div class="circ2"></div>
+                                                <div class="circ3"></div>
+                                                <div class="circ4"></div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </ng-template>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="col-12 heigth-tabla-excel mt-3" *ngIf="!hojaSeleccionada">
+                        <div class="header-vacio bg-li borde"></div>
+                        <div class="d-flex">
+                            <div class="columna-vacio bg-li"></div>
+                            <div class="columna-vacio2 text-center">Ninguna Hoja Seleccionada</div>
+                        </div>
+
+                    </div>
+                    <div class="col-12">
+                        <div class="col-12  px-0 d-flex">
+                            <table class="col overflow-auto" class="tabla-general tabla-10 table-bordered"
+                                *ngIf="this.hojaSeleccionada">
+                                <thead class="text-center">
+                                    <tr>
+                                        <th [attr.colspan]="hojaSeleccionada?.grupos_header.i"
+                                            *ngIf="hojaSeleccionada?.grupos_header.i"></th>
+                                        <th [attr.colspan]="hojaSeleccionada?.grupos_header.g"
+                                            *ngIf="hojaSeleccionada?.grupos_header.g">Geometria</th>
+                                        <th [attr.colspan]="hojaSeleccionada?.grupos_header.d"
+                                            *ngIf="hojaSeleccionada?.grupos_header.d">Descuentos</th>
+                                        <th [attr.colspan]="hojaSeleccionada?.grupos_header.f"
+                                            *ngIf="hojaSeleccionada?.grupos_header.f"></th>
+                                    </tr>
+                                    <tr>
+                                        <th appAnchocol [ancho]="60"
+                                            *ngFor="let item of hojaSeleccionada?.header; let i = index">{{item}}
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody class="text-center">
+                                    <td appAnchocol [ancho]="60"
+                                        *ngFor="let columna of hojaSeleccionada?.header; let i = index">
+                                        <select [appendTo]="'body'" style="width: 50px !important;" class="text-center"
+                                            (change)="cambioColumna($event.target.value, columna)">
+                                            <option *ngFor="let value of header; let j = index" [value]="value"
+                                                [selected]=" value === hojaSeleccionada.body_tabla[hojaSeleccionada.header[i]]">
+                                                {{value === '' ? '-No seleccionado-': value}}
+                                            </option>
+                                        </select>
+                                    </td>
+
+                                </tbody>
+                            </table>
+                            <div class="col d-flex justify-content-center align-content-center"
+                                style="width: 30px !important;">
+                                <div class="d-block align-content-center">
+                                    <button class="btn btn-secondary btn-mini2 "
+                                        ngbTooltip="Asignar seleccion a todas las hojas documento" container="body"
+                                        (click)="asignarTodos()">
+                                        <i class="fa fa-list-ol icono-but"></i>
+                                    </button>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                </mat-step>
+                <mat-step label="2">
+                    <ng-template matStepLabel>Verificación Estructura</ng-template>
+                    <div class="col-12 px-0">
+                        <div class="row">
+                            <div class="col-6 px-0 d-flex justify-content-between margen-tabla-presu">
+                                <span style="font-weight: bolder; font-family: ui-monospace">Tabla Presupuesto</span>
+                                <div class="d-flex"></div>
+                                <div class="d-flex">
+                                    <div class="leyenda-noExiste bg-noExisteExcel"></div>
+                                    <span class="leyendas-text">No existe Excel</span>
+                                    <div class="leyenda-noExiste bg-duplicadoExcel"></div>
+                                    <span class="leyendas-text">Duplicado Excel</span>
+                                    <div class="leyenda-noExiste bg-casiParecido"></div>
+                                    <div class="leyendas-text recortatext1l">Descripción Parecidas</div>
+                                </div>
+                            </div>
+                            <div class="col-6 px-0 d-flex justify-content-between ">
+                                <span style="font-weight: bolder; font-family: ui-monospace">Data Excel</span>
+                                <div class="d-flex">
+                                    <div class="leyenda-noExiste bg-noExistePresu"></div>
+                                    <div class="leyendas-text recortatext1l">No existe Presupuesto</div>
+                                    <div class="leyenda-noExiste bg-seRepiteItem"></div>
+                                    <div class="leyendas-text recortatext1l">Items Repetidos</div>
+                                    <div class="leyenda-noExiste bg-casiParecido"></div>
+                                    <div class="leyendas-text recortatext1l">Descripción Parecidas</div>
+                                    <div class="leyenda-noExiste bg-descripcion-diferente"></div>
+                                    <div class="leyendas-text recortatext1l">Descripción Diferente</div>
+                                </div>
+                            </div>
+                            <div class="col-6 px-0 overflow-auto  height-tabla-v3 margen-tabla-presu">
+                                <table class="tabla-general tabla-10 table-bordered ">
+                                    <thead class="text-center headsticky">
+                                        <th class="text-center" appAnchocol [ancho]="30">
+                                            Nº
+                                        </th>
+                                        <th class="text-center">
+                                            Descripción
+                                        </th>
+                                        <th class="text-center" appAnchocol [ancho]="50">
+                                            Unidad
+                                        </th>
+                                        <th class="text-center" appAnchocol [ancho]="50">
+                                            Nº Excel
+                                        </th>
+                                        <th class="text-center" appAnchocol [ancho]="30" *ngIf="habilitadoCorreccion">
+
+                                        </th>
+                                    </thead>
+                                    <tbody>
+                                        <ng-container *ngIf=" tablaPresupuesto.length; else noData3">
+                                            <tr *ngFor="let row of tablaPresupuesto; let index = index">
+                                                <td class="text-center" [ngClass]="{'bg-noExisteExcel': row.existeHoja == 0, 
+                                                'bg-casiParecido': row.existeHoja == 2, 
+                                                'bg-seRepiteItem': row.existeHoja == 3,
+                                                'bg-descripcion-diferente': row.existeHoja == 4, 
+                                                'bg-duplicadoExcel': row.arrayIndIguales?.length > 1}">
+                                                    {{index + 1}}</td>
+                                                <td [ngClass]="{'bg-noExisteExcel': row.existeHoja == 0, 
+                                                'bg-casiParecido': row.existeHoja == 2, 
+                                                'bg-seRepiteItem': row.existeHoja == 3,
+                                                'bg-descripcion-diferente': row.existeHoja == 4, 
+                                                'bg-duplicadoExcel': row.arrayIndIguales?.length > 1}">
+                                                    <div class="recortatextlinea text-left" [style.padding-left.px]="
+                          (row.item.toString().split('.').length - 1) * 5 +
+                          (row.unidad ? 17 : 0)
+                        " ngbTooltip="{{ row.descripcion }}" #t="ngbTooltip" container="body" triggers="click:blur"
+                                                        (mouseout)="t.close()">
+                                                        <span style="font-weight: 700">{{ row.item
+                                                            }}</span>&nbsp;&nbsp;<span>{{ row.descripcion }}</span>
+                                                    </div>
+                                                </td>
+                                                <td class="text-center" [ngClass]="{'bg-noExisteExcel': row.existeHoja == 0, 
+                                                'bg-casiParecido': row.existeHoja == 2, 
+                                                'bg-seRepiteItem': row.existeHoja == 3,
+                                                'bg-descripcion-diferente': row.existeHoja == 4, 
+                                                'bg-duplicadoExcel': row.arrayIndIguales?.length > 1}">
+                                                    {{row.unidad}}
+                                                </td>
+                                                <td [ngClass]="{'bg-noExisteExcel': row.existeHoja == 0, 
+                                                    'bg-casiParecido': row.existeHoja == 2, 
+                                                    'bg-seRepiteItem': row.existeHoja == 3,
+                                                    'bg-descripcion-diferente': row.existeHoja == 4, 
+                                                    'bg-duplicadoExcel': row.arrayIndIguales?.length > 1}">
+                                                    <ng-container *ngIf="row.existeHoja == 0; else elseTemplate">
+                                                        <div class="d-flex justify-content-center">
+                                                            <i class="fa fa-ban"></i>
+                                                        </div>
+                                                    </ng-container>
+                                                    <ng-template #elseTemplate>
+                                                        <ng-container
+                                                            *ngIf="row.arrayIndIguales?.length > 1; else elseTemplate2">
+                                                            <div class="d-flex justify-content-center">
+                                                                <span
+                                                                    *ngFor="let ind of row.arrayIndIguales; let k = index">
+                                                                    {{ind + 1}} <ng-container
+                                                                        *ngIf="k + 1 < row.arrayIndIguales.length">,</ng-container>
+
+                                                                </span>
+                                                            </div>
+                                                        </ng-container>
+                                                        <ng-template #elseTemplate2>
+                                                            <div class="d-flex justify-content-center"
+                                                                *ngIf="row.ind_parecido_excel?.length && row.existeHoja == 2">
+                                                                <span
+                                                                    *ngFor="let ind of row.ind_parecido_excel_titulo; let i =index">
+                                                                    {{ind + 1}} <ng-container
+                                                                        *ngIf="i + 1 < row.arrayIndIguales.length">,</ng-container>
+                                                                </span>
+                                                            </div>
+                                                            <div class="d-flex justify-content-center"
+                                                                *ngIf="row.ind_iguales_excel?.length && row.existeHoja == 1">
+                                                                <span
+                                                                    *ngFor="let ind of row.ind_iguales_excel_titulo, let i =index">
+                                                                    {{ind + 1}} <ng-container
+                                                                        *ngIf="i + 1< row.arrayIndIguales.length">,</ng-container>
+                                                                </span>
+                                                            </div>
+                                                            <div class="d-flex justify-content-center"
+                                                                *ngIf="row.ind_similar_excel?.length && row.existeHoja == 4">
+                                                                <span
+                                                                    *ngFor="let ind of row.ind_similar_excel_titulo, let i =index">
+                                                                    {{ind + 1}} <ng-container
+                                                                        *ngIf="i + 1< row.arrayIndIguales.length">,</ng-container>
+                                                                </span>
+                                                            </div>
+                                                        </ng-template>
+                                                    </ng-template>
+                                                </td>
+                                                <td class="text-center" *ngIf="habilitadoCorreccion">
+                                                    <mat-checkbox class="example-margin mb-custom"
+                                                        [checked]="row == filaTablaPresu"
+                                                        *ngIf="row.existeHoja == 0 || row.arrayIndIguales?.length > 1"
+                                                        (change)="$event.checked ? filaTablaPresu = row : null "></mat-checkbox>
+                                                </td>
+                                            </tr>
+                                        </ng-container>
+                                        <ng-template #noData3>
+                                            <tr>
+                                                <td class="mat-cell text-center" colspan="3">
+                                                    <label *ngIf="!buscando">No se encontraron resultados</label>
+                                                    <div *ngIf="buscando" class="preloader3 loader-block">
+                                                        <div class="circ1"></div>
+                                                        <div class="circ2"></div>
+                                                        <div class="circ3"></div>
+                                                        <div class="circ4"></div>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        </ng-template>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="col-6 px-0 overflow-auto  height-tabla-v3">
+                                <table class="tabla-general tabla-10 table-bordered ">
+                                    <thead class="text-center headsticky">
+                                        <th class="text-center" appAnchocol [ancho]="30">
+                                            Nº
+                                        </th>
+                                        <th class="text-center">
+                                            Descripción
+                                        </th>
+                                        <th class="text-center" appAnchocol [ancho]="50">
+                                            Unidad
+                                        </th>
+                                        <th class="text-center" appAnchocol [ancho]="100">
+                                            Hoja
+                                        </th>
+                                        <th class="text-center" appAnchocol [ancho]="30">
+                                            <button class="btn btn-success btn-mini2" type="button"
+                                                *ngIf="!habilitadoCorreccion" (click)="modalSolucionConflictos()"
+                                                (mouseup)="quitarfoco($event);"
+                                                ngbTooltip="Reemplazar descripcion por parecidos en presupuesto"
+                                                container="body">
+                                                <i class="fa fa-exchange icono-but"></i>
+                                            </button>
+                                            <button class="btn btn-danger btn-mini2" type="button"
+                                                *ngIf="habilitadoCorreccion" (click)="cancelarReemplazo()"
+                                                (mouseup)="quitarfoco($event);" ngbTooltip="Cancelar reemplazo"
+                                                container="body">
+                                                <i class="fa fa-ban icono-but"></i>
+                                            </button>
+                                        </th>
+                                    </thead>
+                                    <tbody>
+                                        <ng-container *ngIf="this.tablaExcel.length; else noDataExcel">
+                                            <tr *ngFor="let row of this.tablaExcel;let index = index">
+                                                <ng-container *ngIf="row.item">
+                                                    <td class="text-center"
+                                                        [ngClass]="{'bg-noExistePresu': row.tipoError == null, 'bg-descripcion-diferente':row.tipoError == 0,'border-top-sepador': index > 0 && row.hoja !== this.tablaExcel[index - 1].hoja,
+                                                            'bg-casiParecido': row.tipoError == 2,'bg-seRepiteItem' : row.tipoError == 3, 'filaEliminada': row.tipoError == 5 }">
+                                                        {{row.ind_titulo + 1}}</td>
+                                                    <td appPintarfilapre [tipo]="titulo1" [color]="titulo1color"
+                                                        [letra]="titulo1letra" [item]="row.item" [separador]="'.'"
+                                                        [partida]="row.unidad!=''?true:false" class="text-center"
+                                                        [ngClass]="{'bg-noExistePresu': row.tipoError == null, 'bg-descripcion-diferente':row.tipoError == 0,'border-top-sepador': index > 0 && row.hoja !== this.tablaExcel[index - 1].hoja,
+                                                            'bg-casiParecido': row.tipoError == 2,'bg-seRepiteItem' : row.tipoError == 3, 'filaEliminada': row.tipoError == 5}">
+                                                        <div class="recortatextlinea text-left" [style.padding-left.px]="
+                      (row.item.toString().split('.').length - 1) * 5 +
+                      (row.unidad ? 17 : 0)
+                    " ngbTooltip="{{ row.descripcion }}" #t="ngbTooltip" container="body" triggers="click:blur"
+                                                            (mouseout)="t.close()">
+                                                            <span style="font-weight: 700">{{ row.item
+                                                                }}</span>&nbsp;&nbsp;<span>{{ row.descripcion }}</span>
+                                                        </div>
+                                                    </td>
+                                                    <td class="text-center" class="text-center"
+                                                        [ngClass]="{'bg-noExistePresu': row.tipoError == null, 'bg-descripcion-diferente':row.tipoError == 0,'border-top-sepador': index > 0 && row.hoja !== this.tablaExcel[index - 1].hoja,
+                                                            'bg-casiParecido': row.tipoError == 2,'bg-seRepiteItem' : row.tipoError == 3, 'filaEliminada': row.tipoError == 5}">
+                                                        {{row.unidad}}</td>
+                                                    <td class="text-center"
+                                                        [ngClass]="{'bg-noExistePresu': row.tipoError == null, 'bg-descripcion-diferente':row.tipoError == 0,'border-top-sepador': index > 0 && row.hoja !== this.tablaExcel[index - 1].hoja,
+                                                'bg-casiParecido': row.tipoError == 2,'bg-seRepiteItem' : row.tipoError == 3, 'filaEliminada': row.tipoError == 5}">
+                                                        {{row.nom_hoja}}
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <!-- <ng-container *ngIf="row.tipoError !== 5"> -->
+
+                                                        <button class="btn btn-info btn-mini2" type="button"
+                                                            (mouseup)="quitarfoco($event);"
+                                                            (click)="reemplazarPorParecido(row)"
+                                                            *ngIf="(row.tipoError == 2 || row.tipoError == 0) && !habilitadoCorreccion"
+                                                            ngbTooltip="Reemplazar descripcion por parecido en presupuesto"
+                                                            container="body">
+                                                            <i class="fa fa-exchange icono-but"></i>
+                                                        </button>
+                                                        <button class="btn btn-primary btn-mini2" type="button"
+                                                            (mouseup)="quitarfoco($event);"
+                                                            (click)="habilitarReemplazoExcel(row)"
+                                                            *ngIf="(row.tipoError == 3 || row. tipoError== 5) && !habilitadoCorreccion"
+                                                            ngbTooltip="Reemplazar por Fila presupuesto"
+                                                            container="body">
+                                                            <i class="fa fa-exchange icono-but"></i>
+                                                        </button>
+                                                        <button class="btn btn-success btn-mini2" type="button"
+                                                            (mouseup)="quitarfoco($event);"
+                                                            (click)="reemplazarPorExcel(row)"
+                                                            *ngIf="row == filaTablaExcel && habilitadoCorreccion"
+                                                            ngbTooltip="Reemplazar por fila seleccionada de presupuesto"
+                                                            container="body">
+                                                            <i class="fa fa-check icono-but"></i>
+                                                        </button>
+                                                        <!-- </ng-container> -->
+                                                    </td>
+                                                </ng-container>
+                                            </tr>
+                                        </ng-container>
+                                        <ng-template #noDataExcel>
+                                        </ng-template>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </mat-step>
+                <mat-step label="3">
+                    <ng-template matStepLabel>Tabla Resultado</ng-template>
+                    <div class="col-12 px-0 height-tabla-final">
+                        <table class="tabla-general tabla-10 table-bordered ">
+                            <thead class="text-center">
+                                <tr class="tr1-sticky" style="height: 23px;"
+                                    *ngIf="this.headerSuperior?.i || this.headerSuperior?.g || this.headerSuperior?.d || this.headerSuperior?.d">
+                                    <th *ngIf="this.headerSuperior?.i" [colSpan]="this.headerSuperior?.i + 1"></th>
+                                    <th *ngIf="this.headerSuperior?.g" [colSpan]="this.headerSuperior?.g">Generales</th>
+                                    <th *ngIf="this.headerSuperior?.d" [colSpan]="this.headerSuperior?.d">Descuentos
+                                    </th>
+                                    <th *ngIf="this.headerSuperior?.f" [colSpan]="this.headerSuperior?.f"></th>
+                                </tr>
+                                <tr class="tr2-sticky">
+                                    <th style="width: 35px;">
+                                        <div class="d-flex justify-content-center text-center w-100">
+                                            <a style="padding: 0px 2px;cursor: pointer;" ngbTooltip="Expandir Todo"
+                                                container="body" (click)="maxtodo()"><i
+                                                    class="icofont icofont-caret-down"></i></a>
+                                            <a style="padding: 0px 2px;cursor: pointer;" ngbTooltip="Contraer Todo"
+                                                container="body" (click)="mintodo()"><i
+                                                    class="icofont icofont-caret-up"></i></a>
+                                        </div>
+                                    </th>
+                                    <th class="text-center text-capitalize"
+                                        *ngFor="let head of headerTablaEstructurada2"
+                                        [ngClass]="{'width-descripcion': head == 'descripcion'}">
+                                        {{head}}
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <ng-container *ngIf="tablaFinal.length">
+                                    <tr *ngFor="let row of this.tablaFinal; let i = index">
+                                        <!-- <th>{{index + 1}}</th> -->
+                                        <ng-container *ngIf="row.mostrar == 1">
+                                            <td class="text-center">
+                                                <a *ngIf="!row.unidad && row.icomost == 1 && !row.esMetrado " style="
+                                            padding: 0px 2px;
+                                            color: #06bb06;
+                                            cursor: pointer;
+                                          " (click)="toggleOnResult(row.item,i)">
+                                                    <i class="icofont icofont-caret-down"></i>
+                                                </a>
+                                                <a *ngIf="!row.unidad && row.icomost == 0 && !row.esMetrado"
+                                                    (click)="toggleOffResult(row.item,i)"
+                                                    style="padding: 0px 2px; color: red; cursor: pointer">
+                                                    <i class="icofont icofont-caret-up"></i> </a>
+
+                                                <!-- partida -->
+                                                <a *ngIf="row.unidad && row.icomost == 1 && !row.esMetrado" style="
+                                            padding: 0px 2px;
+                                            color: #06bb06;
+                                            font-size: 10px;
+                                            cursor: pointer;
+                                          " (click)="toggleOnPartida(i)">
+                                                    <i class="icofont icofont-plus"></i>
+                                                </a>
+                                                <a *ngIf="row.unidad && row.icomost == 0 && !row.esMetrado"
+                                                    (click)="toggleOffPartida(i)"
+                                                    style="padding: 0px 2px; color: red; cursor: pointer; font-size: 10px;">
+                                                    <i class="icofont icofont icofont-minus"></i> </a>
+                                                <!-- partida -->
+                                            </td>
+
+                                            <td *ngFor="let head of headerTablaEstructurada" appPintarfilapre
+                                                [tipo]="titulo1" [color]="titulo1color" [letra]="titulo1letra"
+                                                [item]="row.item" [separador]="'.'"
+                                                [partida]="row.unidad!=''?true:false"
+                                                [ngClass]="{'text-center': head == 'unidad' || head =='cantidad' || head =='nveces', 'text-right' : head !== 'item'&& head !=='descripcion'&& head !=='unidad'&& head !=='cantidad'&&head !=='nveces',
+                                             'es-metrado': (head == 'descripcion' && row.esMetrado && row.tipo == 1) , 'font-weight-bolder' : head == 'mtotal' || row.item && row.descripcion && row.unidad, 'width-descripcion': head == 'descripcion'}">
+                                                <div [ngClass]="{'recortatextlinea text-left' : head == 'descripcion'}">
+                                                    {{row[head]}}
+                                                </div>
+                                            </td>
+                                        </ng-container>
+                                    </tr>
+                                </ng-container>
+                            </tbody>
+                        </table>
+                    </div>
+                </mat-step>
+            </mat-horizontal-stepper>
+        </div>
+    </div>
+</div>
+
+<app-modal-basic #modalConflictos [dialogClass]="'modal-lg modalgrande'">
+    <div class="app-modal-header">
+        <h4 class="modal-title tit-modal1"><b>Solucion Conflictos Multiple</b></h4>
+        <button type="button" class="close basic-close" (click)="cerrarModal()">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+    <div class="app-modal-body">
+        <div class="row">
+            <div class="col-12">
+                <div class="d-flex px-5">
+                    <!-- <div class="leyenda-noExiste bg-noExistePresu"></div>
+                    <div class="leyendas-text recortatext1l">No existe Presupuesto</div>
+                    <div class="leyenda-noExiste bg-seRepiteItem"></div>
+                    <div class="leyendas-text recortatext1l">Items Repetidos</div> -->
+                    <div class="leyenda-noExiste bg-casiParecido"></div>
+                    <div class="leyendas-text recortatext1l">Descripción Parecidas</div>
+                    <div class="leyenda-noExiste bg-descripcion-diferente"></div>
+                    <div class="leyendas-text recortatext1l">Descripción Diferente</div>
+                </div>
+            </div>
+            <div class="col-12 d-flex justify-content-center h-container">
+                <table class="tabla-general tabla-10 table-bordered " style="width: 45%; font-size: 9px !important;">
+                    <thead class="text-center headsticky">
+                        <th class="text-center" appAnchocol [ancho]="30">
+                            Nº
+                        </th>
+                        <th class="text-center">
+                            Descripción (Presupuesto)
+                        </th>
+                        <th class="text-center" appAnchocol [ancho]="50">
+                            Unidad
+                        </th>
+                        <!-- <th class="text-center" appAnchocol [ancho]="50">
+                            Nº Excel
+                        </th>
+                        <th class="text-center" appAnchocol [ancho]="30" *ngIf="habilitadoCorreccion">
+
+                        </th> -->
+                    </thead>
+                    <tbody>
+                        <ng-container *ngIf=" filtradosPresu?.length; else noData5">
+                            <tr *ngFor="let row of filtradosPresu; let index = index" class="h-22">
+                                <td class="text-center h-22">
+                                    {{index + 1}}</td>
+                                <td class="h-22">
+                                    <div class="recortatextlinea text-left" [style.padding-left.px]="
+          (row.item.toString().split('.').length - 1) * 5 +
+          (row.unidad ? 17 : 0)
+        " ngbTooltip="{{ row.descripcion }}" #t="ngbTooltip" container="body" triggers="click:blur"
+                                        (mouseout)="t.close()">
+                                        <span style="font-weight: 700">{{ row.item
+                                            }}</span>&nbsp;&nbsp;<span>{{ row.descripcion }}</span>
+                                    </div>
+                                </td>
+                                <td class="text-center h-22">
+                                    {{row.unidad}}
+                                </td>
+
+                            </tr>
+                        </ng-container>
+                        <ng-template #noData5>
+                            <tr>
+                                <td class="mat-cell text-center" colspan="3">
+                                    <label *ngIf="!buscando">No se encontraron resultados</label>
+                                    <div *ngIf="buscando" class="preloader3 loader-block">
+                                        <div class="circ1"></div>
+                                        <div class="circ2"></div>
+                                        <div class="circ3"></div>
+                                        <div class="circ4"></div>
+                                    </div>
+                                </td>
+                            </tr>
+                        </ng-template>
+                    </tbody>
+                </table>
+
+                <table class="tabla-general tabla-10 table-bordered " style="width: 5%;">
+                    <thead class="text-center headsticky">
+                        <th class="text-center bg-smoke" style="height: 23.09px !important;">
+                            <mat-checkbox class="example-margin mb-custom" [checked]="todosCheck == true ? true:false"
+                                container="body" ngbTooltip="Seleccionar todos"
+                                (change)="cambiocheck($event.checked,null)"></mat-checkbox>
+                        </th>
+                    </thead>
+                    <tbody class="text-center">
+                        <tr *ngFor="let row of filtradosExcel;let index = index" class="h-22">
+                            <ng-container *ngIf="row.item">
+                                <td class="h-22">
+                                    <!-- <button class="btn btn-info btn-mini2" type="button"
+                                (mouseup)="quitarfoco($event);"
+                                (click)="reemplazarPorParecido(row)"
+                                *ngIf="(row.tipoError == 2 || row.tipoError == 0) && !habilitadoCorreccion"
+                                ngbTooltip="Reemplazar descripcion por parecido en presupuesto"
+                                container="body">
+                                <i class="fa fa-exchange icono-but"></i>
+                            </button>
+                            <button class="btn btn-primary btn-mini2" type="button"
+                                (mouseup)="quitarfoco($event);"
+                                (click)="habilitarReemplazoExcel(row)"
+                                *ngIf="row.tipoError == 3 && !habilitadoCorreccion"
+                                ngbTooltip="Reemplazar por Fila presupuesto"
+                                container="body">
+                                <i class="fa fa-exchange icono-but"></i>
+                            </button>
+                            <button class="btn btn-primary btn-mini2" type="button"
+                                (mouseup)="quitarfoco($event);"
+                                (click)="reemplazarPorExcel(row)"
+                                *ngIf="row == filaTablaExcel && habilitadoCorreccion"
+                                ngbTooltip="Reemplazar por fila seleccionada de presupuesto"
+                                container="body">
+                                <i class="fa fa-check icono-but"></i>
+                            </button> -->
+                                    <mat-checkbox class="example-margin mb-custom"
+                                        [checked]="todosCheck || arrayIndices.includes(index)"
+                                        (change)="cambiocheck($event.checked, index)"></mat-checkbox>
+                                </td>
+                            </ng-container>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <table class="tabla-general tabla-10 table-bordered " style="width: 45%;">
+                    <thead class="text-center headsticky">
+                        <th class="text-center" appAnchocol [ancho]="30">
+                            Nº
+                        </th>
+                        <th class="text-center">
+                            Descripción (Excel)
+                        </th>
+                        <th class="text-center" appAnchocol [ancho]="50">
+                            Unidad
+                        </th>
+
+                    </thead>
+                    <tbody>
+                        <ng-container *ngIf="filtradosExcel?.length; else noData6">
+                            <tr *ngFor="let row of filtradosExcel;let index = index" class="h-22">
+                                <ng-container *ngIf="row.item">
+                                    <td class="text-center h-22"
+                                        [ngClass]="{'bg-noExistePresu': row.tipoError == null, 'bg-descripcion-diferente':row.tipoError == 0,'border-top-sepador': index > 0 && row.hoja !== this.tablaExcel[index - 1].hoja,
+                                            'bg-casiParecido': row.tipoError == 2,'bg-seRepiteItem' : row.tipoError == 3}">
+                                        {{index + 1}}</td>
+                                    <td class="text-center h-22">
+                                        <div class="recortatextlinea text-left" [style.padding-left.px]="
+      (row.item.toString().split('.').length - 1) * 5 +
+      (row.unidad ? 17 : 0)
+    " ngbTooltip="{{ row.descripcion }}" #t="ngbTooltip" container="body" triggers="click:blur" (mouseout)="t.close()">
+                                            <span style="font-weight: 700">{{ row.item
+                                                }}</span>&nbsp;&nbsp;<span>{{ row.descripcion }}</span>
+                                        </div>
+                                    </td>
+                                    <td class="text-center h-22">
+                                        {{row.unidad}}</td>
+
+                                </ng-container>
+                            </tr>
+                        </ng-container>
+                        <ng-template #noData6>
+                        </ng-template>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- </div> -->
+    <div class="app-modal-footer w-100">
+        <div class="row px-3 justify-content-between">
+            <button type="button" class="btn btn-sm btn-secondary ripple" (click)="cerrarModal()">Cerrar</button>
+            <button type="button" class="btn btn-sm btn-success ripple" (click)="cambiarMultiple()">Reemplazar</button>
+        </div>
+    </div>
+</app-modal-basic>

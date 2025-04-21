@@ -1,0 +1,52 @@
+<div class="modal-dialog-scrollable modal-lg">
+    <div class="modal-content">
+        <div class="app-modal-header  modal-header">
+            <h4 class="modal-title tit-modal1"><b> Agregar Imagen de URL </b></h4>
+            <button type="button" class="close basic-close" (click)="cerrImgDrive()">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div class="d-flex m-t-5 m-b-5">
+                <label class="font-weight-bolder ">Fuente de Url: </label>
+                <mat-radio-group [(ngModel)]="fromdrive1" class="ml-2" (change)="cambFromDrive()">
+                    <mat-radio-button [value]="1" style="font-size: 10px;">Otros</mat-radio-button>
+                    <mat-radio-button [value]="2" style="font-size: 10px;" class="ml-5">Google Drive</mat-radio-button>
+                    <mat-radio-button [value]="3" style="font-size: 10px;" class="ml-5">Dropbox</mat-radio-button>
+                </mat-radio-group>
+            </div>
+            <div class="input-container row mx-0" *ngIf="fromdrive1!=1">
+                <!-- Ejemplo : <span>https://drive.google.com/file/d/<span class="f-w-900 text-primary">1pwO2R-cMZMTl10OyawrJ_uYJL_3dlFCM</span>/view?usp=drive_link</span> -->
+                <mat-form-field appearance="outline" class="mff-reduc" style="width: calc(100% - 36px);">
+                    <mat-label>Ingresar URL compartida</mat-label>
+                    <input matInput type="text" autocomplete="off" [(ngModel)]="idimagen" maxlength="21666" (input)="agregaID()">
+                </mat-form-field>
+            </div>
+            <div class="input-container row mx-0">
+                <mat-form-field appearance="outline" class="mff-reduc" style="width: calc(100% - 36px);">
+                    <mat-label>{{fromdrive1!=1?'Url corregida':'Ingresar una URL'}}</mat-label>
+                    <input matInput type="text" autocomplete="off" [(ngModel)]="urlimagen" maxlength="21666" (input)="imagenInvalida = false"
+                    [disabled]="fromdrive1!=1">
+                </mat-form-field>
+            </div>
+            <span *ngIf="!fromdrive1" class="text-danger f-s-italic">Solo se admite urls (http o https)</span>
+            <span *ngIf="!fromdrive1" class="text-danger f-s-italic">Usar imagenes de fuentes externas puede no cargar correctamente al generar el reporte.</span>
+            <div *ngIf="imagenInvalida" class="error-message image-preview">
+                No se pudo cargar la imagen. Verifica la URL.
+            </div>
+            <div *ngIf="urlimagen==''" class="error-message image-preview">
+                Ingresar una url correspondiente a una imagen.
+            </div>
+            <div class="col-12 image-preview" *ngIf="urlimagen">
+                <img [src]="urlimagen" class="w-100 h-100" (error)="imagenInvalida = true"/>
+            </div>
+        </div>
+        <div class="app-modal-footer modal-footer justify-content-between">
+            <button type="button" class="btn btn-danger btn-sm" (click)="cerrImgDrive()"><i
+                class="fa fa-times"></i>Cerrar</button>
+            <button type="button" class="btn btn-success btn-sm" (click)="guardaImgDrive()"><i
+                    class="fa fa-check"></i>Agregar</button>
+        </div>
+    </div>
+</div>
+<app-cargando [bloquearTodo]="true" *ngIf="mostrar_carga_todo"></app-cargando>

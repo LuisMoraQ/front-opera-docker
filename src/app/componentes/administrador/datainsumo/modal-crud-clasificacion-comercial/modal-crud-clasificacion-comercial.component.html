@@ -1,0 +1,162 @@
+<div class="modal-dialog-scrollable modal-lg">
+    <div class="modal-content">
+        <div class="app-modal-header  modal-header">
+            <!-- tipo modal es la accion de para el modal actualizar o guardar -->
+            <h4 class="modal-title tit-modal1">
+                <b *ngIf="!verCrud">Lista Clasificaciones Comerciales</b>
+                <b *ngIf="verCrud"> <span *ngIf="!clasificionSeleccionado">Guardar &nbsp;</span>
+                    <span *ngIf="clasificionSeleccionado">Editar&nbsp;</span>Clasificación Comercial</b>
+            </h4>
+            <button type="button" class="close basic-close" (click)="closeModal()">
+                <span aria-hidden="true" class="mt-2">&times;</span>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div class="row" *ngIf="!verCrud ; else crudClasificacion">
+                <div class="col-4">
+                    <mat-form-field class="mff-reduc w-100 alto-35 field-busqueda" appearance="outline">
+                        <mat-label>Buscar</mat-label>
+                        <input matInput type="text" [(ngModel)]="busqueda" (keyup)="applyFilterPrinc($event)" id="inpbusq"
+                            autocomplete="off">
+                        <button *ngIf="busqueda" matSuffix mat-icon-button aria-label="Clear" (click)="limpiarfiltro()">
+                            <mat-icon>close</mat-icon>
+                        </button>
+                    </mat-form-field>
+                </div>
+                <div class="col-4">
+                    <mat-form-field appearance="outline" class="mff-reduc col-12 alto-35 px-0">
+                        <mat-label>Tipo Insumo</mat-label>
+                        <select matNativeControl [(ngModel)]="tipoInsumo" (change)="cambioTipoInsumo()">
+                            <option value="">--Todos--</option>
+                            <option *ngFor="let tipoins of tipoInsumos" [value]="tipoins.id_tipo_insumo">
+                                {{tipoins.desc_tipo_insumo}}
+                            </option>
+                        </select>
+                    </mat-form-field>
+                </div>
+                <div class="col-4">
+                    <button type="button" class="btn btn-success btn-sm light ripple m-b-10 float-right"
+                        (click)="limpiarFormulario()" (mouseup)="quitarfoco($event);">
+                        <i class="fa fa-plus"></i>Clasificación Comercial
+                    </button>
+                </div>
+                <div class="col-12 table-responsive" style="height: calc(100vh - 200px);">
+                    <table #table1 class="tabla-general" mat-table [dataSource]="dataSource" matSort
+                        multiTemplateDataRows>
+                        <ng-container matColumnDef="activo">
+                            <th mat-header-cell *matHeaderCellDef appAnchocol [ancho]="30"></th>
+                            <td mat-cell *matCellDef="let row" appAnchocol [ancho]="30">
+                                <span *ngIf="row.activo=='1'" class="numberCircle backg-success">A</span>
+                                <span *ngIf="row.activo=='0'" class="numberCircle backg-danger">I</span>
+                            </td>
+                        </ng-container>
+                        <ng-container matColumnDef="abrev">
+                            <th mat-header-cell *matHeaderCellDef appAnchocol [ancho]="75">Abreviatura</th>
+                            <td mat-cell *matCellDef="let row" appAnchocol [ancho]="75"> {{row.abrev}} </td>
+                        </ng-container>
+                        <ng-container matColumnDef="desc_clasi">
+                            <th mat-header-cell *matHeaderCellDef>Clasificación</th>
+                            <td mat-cell *matCellDef="let row" class="text-left"> {{row.desc_clasi}} </td>
+                        </ng-container>
+                        <ng-container matColumnDef="desc_tipo_insumo">
+                            <th mat-header-cell *matHeaderCellDef appAnchocol [ancho]="130">Tipo Insumo</th>
+                            <td mat-cell *matCellDef="let row" appAnchocol [ancho]="100">
+                                <!-- {{row.desc_tipo_insumo}}  -->
+                                <div class="label-main" style="margin: 1px;">
+                                    <label *ngIf="row.abrev_tipo" class="label" [ngClass]="{'label-success': row.abrev_tipo == 'MO',
+                                    'label-warning-oscuro': row.abrev_tipo == 'MA',
+                                    'label-danger': row.abrev_tipo == 'EQ',
+                                    'label-primary': row.abrev_tipo == 'SC',
+                                    'label-scondary': row.abrev_tipo == 'SP'}">{{row.desc_tipo_insumo}}</label>
+                                </div>
+                            </td>
+                        </ng-container>
+                        <ng-container matColumnDef="acciones">
+                            <th mat-header-cell *matHeaderCellDef class="acciones-tabla">Acciones</th>
+                            <td mat-cell *matCellDef="let row; let i = dataIndex;">
+                                <button class="btn btn-mini btn-primary" placement="top" ngbTooltip="Editar"
+                                    container="body" *ngIf="row.id_cargo!=''" (click)="recuperarData(row)"
+                                    (mouseup)="quitarfoco($event);">
+                                    <i class="fa fa-pencil icono-but"></i>
+                                </button>
+                                <button class="btn btn-mini btn-danger" placement="top" ngbTooltip="Eliminar"
+                                    container="body" *ngIf="row.id_cargo!=''"
+                                    (click)="eliminarClasificacionComercial(row)" (mouseup)="quitarfoco($event);">
+                                    <i class="fa fa-remove icono-but"></i>
+                                </button>
+                            </td>
+                        </ng-container>
+                        <tr mat-header-row class="header-custom" *matHeaderRowDef="displayedColumn; sticky: true"></tr>
+                        <tr mat-row *matRowDef="let row; let i = dataIndex; columns: displayedColumn;"
+                            [ngClass]="{'highlight': fila_sel == i, 'deshabilitar-row': row.activo == 0}"
+                            (click)="cambindicesel(i, row)" (dblclick)="seleccionarTipo(row)"></tr>
+
+                        <tr *matNoDataRow class="nodata">
+                            <td class="mat-cell text-center" colspan="11">
+                                <label *ngIf="!buscando">No se encontraron resultados</label>
+                                <div *ngIf="buscando" class="preloader3 loader-block">
+                                    <div class="circ1"></div>
+                                    <div class="circ2"></div>
+                                    <div class="circ3"></div>
+                                    <div class="circ4"></div>
+                                </div>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+            <ng-template #crudClasificacion>
+                <!-- <div class="row"> -->
+                <form [formGroup]="formClasificacionComercial">
+                    <div class="row ">
+                        <div class="col-12 form-group">
+                            <label>Activo :</label>
+                            <div class="switch  d-inline m-r-10" style="margin-left: 10px;">
+                                <input type="checkbox" id="switch-p-3" formControlName="activo">
+                                <label for="switch-p-3" class="cr"></label>
+                            </div>
+                        </div>
+                        <mat-form-field appearance="outline" class="mff-reduc col-sm-12 col-12">
+                            <mat-label>Descripcíon</mat-label>
+                            <input matInput type="text" class="mayuscula" autocomplete="off" maxlength="255"
+                                formControlName="descripcion" [maxLength]="150">
+                        </mat-form-field>
+                        <mat-form-field appearance="outline" class="mff-reduc col-sm-12 col-12">
+                            <mat-label>Abreviatura</mat-label>
+                            <input matInput type="text" class="mayuscula" autocomplete="off" maxlength="20"
+                                formControlName="abrev" class="mayuscula">
+                        </mat-form-field>
+                        <mat-form-field appearance="outline" class="mff-reduc col-sm-12 col-12">
+                            <mat-label>Tipo Insumo</mat-label>
+                            <select matNativeControl formControlName="id_tipo">
+                                <option value="">--Seleccionar--</option>
+                                <option *ngFor="let tipo of tipoInsumos" [value]="tipo.id_tipo_insumo">
+                                    {{tipo.desc_tipo_insumo}}
+                                </option>
+                            </select>
+                        </mat-form-field>
+                    </div>
+                </form>
+                <!-- </div> -->
+
+            </ng-template>
+            <!-- <div class="row">
+
+            </div> -->
+        </div>
+        <div class="app-modal-footer modal-footer justify-content-between">
+            <button type="button" class="btn btn-danger btn-sm" (click)="closeModal()"><i
+                    class="fa fa-times"></i>Cerrar</button>
+            <button type="button" class="btn btn-secondary btn-sm" (click)="verCrud = false" *ngIf="verCrud"><i
+                    class="fa fa-list"></i>Volver</button>
+            <button type="button" class="btn btn-success btn-sm" (click)="almacenar()" *ngIf="verCrud"><i
+                    class="fa fa-check"></i>
+                <span *ngIf="!clasificionSeleccionado">Guardar</span>
+                <span *ngIf="clasificionSeleccionado">Actualizar</span>
+            </button>
+            <button type="button" class="btn btn-info btn-sm" (click)="seleccionarTipo()" *ngIf="!verCrud"><i
+                    class="fa fa-check"></i>Seleccionar</button>
+        </div>
+    </div>
+</div>
+<app-cargando [bloquearTodo]="true" *ngIf="mostrar_carga_todo"></app-cargando>

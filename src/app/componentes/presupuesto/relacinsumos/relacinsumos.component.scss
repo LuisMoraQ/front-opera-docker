@@ -1,0 +1,111 @@
+.cust-footri1{
+  /* width: 494px !important; */
+  min-width: 500px !important;
+  max-width: 500px !important;
+}
+.cust-footri2{
+  /* width: 464px !important; */
+  min-width: 464px !important;
+  max-width: 464px !important;
+}
+.cust-footri3{
+  /* width: 444px !important; */
+  min-width: 444px !important;
+  max-width: 444px !important;
+}
+.cust-solover{
+  /* width: 444px !important; */
+  min-width: 430px !important;
+  max-width: 430px !important;
+}
+
+//switch
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 30px;
+  height: 16px;
+  margin-top: 2px;
+}
+
+.switch input {display:none;}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ca2222;
+  -webkit-transition: .4s;
+  transition: .4s;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 12px;
+  width: 12px;
+  left: 2px;
+  bottom: 2px;
+  background-color: white;
+  -webkit-transition: .4s;
+  transition: .4s;
+}
+
+input:checked + .slider {
+  background-color: #2ab934;
+}
+
+input:focus + .slider {
+  box-shadow: 0 0 1px #2196F3;
+}
+
+input:checked + .slider:before {
+  -webkit-transform: translateX(14px);
+  -ms-transform: translateX(14px);
+  transform: translateX(14px);
+}
+
+/*------ ADDED CSS ---------*/
+.on
+{
+  display: none;
+}
+
+.on, .off
+{
+  color: white;
+  position: absolute;
+  transform: translate(-50%,-50%);
+  top: 50%;
+  left: 50%;
+  font-size: 10px;
+  font-family: Verdana, sans-serif;
+}
+
+input:checked+ .slider .on
+{display: block;}
+
+input:checked + .slider .off
+{display: none;}
+
+/*--------- END --------*/
+
+/* Rounded sliders */
+.slider.round {
+  border-radius: 18px;
+}
+
+.slider.round:before {
+  border-radius: 50%;}
+
+  label {
+    margin-bottom: 0rem;
+}
+
+//badge warning
+.label-warning{
+  background: #cca60d;
+}

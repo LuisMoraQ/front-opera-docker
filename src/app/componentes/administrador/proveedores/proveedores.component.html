@@ -1,0 +1,212 @@
+<div class="page-body">
+    <div class="titulo-contenido">
+        <h2>Proveedores</h2>
+    </div>
+    <app-card class="card col-md-12 card-principal">
+        <div class="row justify-content-between p-r-15">
+            <div class="col-sm-12 col-md-5" style="margin-bottom: 10px;">
+                <mat-form-field class="mff-reduc w-100 alto-35 field-busqueda" appearance="outline">
+                    <mat-label>Buscar</mat-label>
+                    <input matInput type="text" [(ngModel)]="busqueda" 
+                        autocomplete="off"><!-- (keyup)="applyFilterPrinc($event)" -->
+                    <button *ngIf="busqueda" matSuffix mat-icon-button aria-label="Clear" (click)="limpiarfiltro()">
+                        <mat-icon>close</mat-icon>
+                    </button>
+                </mat-form-field>
+            </div>
+            <div class="col-sm-12 col-md-7 ">
+                <button *ngIf="roleAdmin" type="button" class="btn btn-success btn-sm light ripple m-b-10 float-right" (click)="openModal()"
+                    (mouseup)="quitarfoco($event);">
+                    <i class="fa fa-plus"></i> Proveedor
+                </button>
+            </div>
+        </div>
+        <div [style.height.px]="height-50" class="tabla-limp">
+            <table class="table-bordered tab-10">
+                <thead>
+                    <tr class="headsticky header-custom">
+                        <th appAnchocol [ancho]="80">RUC</th>
+                        <th appAnchocol [ancho]="220" [detalle]="true">Razon Social</th>
+                        <th appAnchocol [ancho]="80">Departamento</th>
+                        <th appAnchocol [ancho]="130">Correo</th>
+                        <th appAnchocol [ancho]="130">Direccion</th>
+                        <th appAnchocol [ancho]="70">Telefono</th>
+                        <th appAnchocol [ancho]="20"></th>
+                        <th *ngIf="roleAdmin" appAnchocol [ancho]="65" class="acciones-tabla">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <ng-container *ngIf="dataSource.length>0">
+                        <tr *ngFor="let row of dataSource | filtoTablaDesc: busqueda: 'nombre_razon'; let i = index"
+                            [ngClass]="{'highlight': fila_sel == i}" (click)="cambindicesel(i)">
+                            <td appAnchocol [ancho]="55">
+                                {{row.nrodoc}}
+                            </td>
+                            <td class="text-left" appAnchocol [ancho]="220" [detalle]="true">
+                                {{row.nombre_razon}}
+                            </td>
+                            <td appAnchocol [ancho]="80">
+                                {{row.departamento}}
+                            </td>
+                            <td appAnchocol [ancho]="130">
+                                <div class="row mx-0" ngbTooltip="{{row.correo}}" #t="ngbTooltip" container="body"
+                                    triggers="click:blur" (mouseout)="t.close()">
+                                    <span class="recortatext1l">{{row.correo}}</span>
+                                </div>
+                            </td>
+                            <td appAnchocol [ancho]="130">
+                                <div class="row mx-0" ngbTooltip="{{row.direccion}}" #t="ngbTooltip" container="body"
+                                    triggers="click:blur" (mouseout)="t.close()">
+                                    <span class="recortatext1l">{{row.direccion}}</span>
+                                </div>
+                            </td>
+                            <td appAnchocol [ancho]="70">
+                                {{row?.telefono}}
+                            </td>
+                            <td appAnchocol [ancho]="20">
+                                <span *ngIf="row.activo=='1'" class="numberCircle backg-success"></span>
+                                <span *ngIf="row.activo=='0'" class="numberCircle backg-danger"></span>
+                            </td>
+                            <td *ngIf="roleAdmin" appAnchocol [ancho]="65">
+                                <!-- <button class="btn btn-mini2 btn-info" placement="top" ngbTooltip="Ver Archivos"
+                                    container="body" *ngIf="row.id_cargo!=''" (click)="openVisualizador(row, 1, i)"
+                                    (mouseup)="quitarfoco($event);">
+                                    <i class="fa fa-search icono-but"></i>
+                                </button> -->
+                                <button class="btn btn-mini2 btn-success" placement="top" ngbTooltip="Editar" container="body"
+                                    *ngIf="row.id_cargo!=''" (click)="openModal(row, true)" (mouseup)="quitarfoco($event);">
+                                    <i class="fa fa-edit icono-but"></i>
+                                </button>
+                                <!-- <button class="btn btn-mini2 btn-primary" placement="top" ngbTooltip="Duplicar"
+                                        container="body" *ngIf="row.id_cargo!=''" (click)="openModal(row, true, true)"
+                                        (mouseup)="quitarfoco($event);">
+                                        <i class="fa fa-copy icono-but"></i>
+                                    </button> -->
+                                <button class="btn btn-mini2 btn-danger" placement="top" ngbTooltip="Eliminar" container="body"
+                                    *ngIf="row.id_cargo!=''" (click)="eliminarProveedor(row)" (mouseup)="quitarfoco($event);">
+                                    <i class="fa fa-remove icono-but"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    </ng-container>
+                    <ng-container *ngIf="dataSource.length<=0">
+                        <tr>
+                            <td class="mat-cell text-center" colspan="8">
+                                <label *ngIf="!buscando">No se encontraron resultados</label>
+                                <div *ngIf="buscando" class="preloader3 loader-block">
+                                    <div class="circ1"></div>
+                                    <div class="circ2"></div>
+                                    <div class="circ3"></div>
+                                    <div class="circ4"></div>
+                                </div>
+                            </td>
+                        </tr>
+                    </ng-container>
+                </tbody>
+            </table>
+        </div>
+        <!-- <div class="tare-header" style="overflow: hidden;" [style.padding-right.px]="paddingscroll"
+            id="horscrollhead">
+            <table mat-table class="tabla-general tabla-10">
+                <ng-container matColumnDef="nrodoc">
+                    <th mat-header-cell *matHeaderCellDef appAnchocol [ancho]="80">RUC</th>
+                </ng-container>
+                <ng-container matColumnDef="nombre_razon">
+                    <th mat-header-cell *matHeaderCellDef appAnchocol [ancho]="220" [detalle]="true">Razon Social</th>
+                </ng-container>
+                <ng-container matColumnDef="departamento">
+                    <th mat-header-cell *matHeaderCellDef appAnchocol [ancho]="75">Departamento</th>
+                </ng-container>
+                <ng-container matColumnDef="correo">
+                    <th mat-header-cell *matHeaderCellDef appAnchocol [ancho]="130">Correo</th>
+                </ng-container>
+                <ng-container matColumnDef="direccion">
+                    <th mat-header-cell *matHeaderCellDef appAnchocol [ancho]="130">Direccion</th>
+                </ng-container>
+                <ng-container matColumnDef="telefono">
+                    <th mat-header-cell *matHeaderCellDef appAnchocol [ancho]="70">Telefono</th>
+                </ng-container>
+                <ng-container matColumnDef="activo">
+                    <th mat-header-cell *matHeaderCellDef appAnchocol [ancho]="20"></th>
+                </ng-container>
+                <ng-container matColumnDef="acciones">
+                    <th mat-header-cell *matHeaderCellDef class="acciones-tabla" appAnchocol [ancho]="65">Acciones</th>
+                </ng-container>
+                <tr mat-header-row *matHeaderRowDef="displayedColumn;" class="header-custom"></tr>
+            </table>
+        </div>
+        <cdk-virtual-scroll-viewport tvsItemSize="21" style="overflow-y: scroll;" [style.height.px]="height-50"
+            footerEnabled="false" headerHeight="21" id="horscrollbod" (scroll)="SyncScroll('horscrollbod')">
+            <table #table1 class="tabla-general tabla-10" mat-table [dataSource]="dataSource" matSort
+                multiTemplateDataRows>
+                <ng-container matColumnDef="nrodoc">
+                    <td mat-cell *matCellDef="let row" appAnchocol [ancho]="80">
+                        {{row.nrodoc}}
+                    </td>
+                </ng-container>
+                <ng-container matColumnDef="nombre_razon">
+                    <td mat-cell *matCellDef="let row" appAnchocol [ancho]="220" [detalle]="true" class="text-left">
+                        {{row.nombre_razon}}
+                    </td>
+                </ng-container>
+                <ng-container matColumnDef="departamento">
+                    <td mat-cell *matCellDef="let row" appAnchocol [ancho]="75">
+                        {{row.departamento}}
+                    </td>
+                </ng-container>
+                <ng-container matColumnDef="correo">
+                    <td mat-cell *matCellDef="let row" appAnchocol [ancho]="130">
+                        <div class="row mx-0" ngbTooltip="{{row.correo}}" #t="ngbTooltip" container="body"
+                            triggers="click:blur" (mouseout)="t.close()">
+                            <span class="recortatext1l">{{row.correo}}</span>
+                        </div>
+                    </td>
+                </ng-container>
+                <ng-container matColumnDef="direccion">
+                    <td mat-cell *matCellDef="let row" appAnchocol [ancho]="130">
+                        <div class="row mx-0" ngbTooltip="{{row.direccion}}" #t="ngbTooltip" container="body"
+                            triggers="click:blur" (mouseout)="t.close()">
+                            <span class="recortatext1l">{{row.direccion}}</span>
+                        </div>
+                    </td>
+                </ng-container>
+                <ng-container matColumnDef="telefono">
+                    <td mat-cell *matCellDef="let row" appAnchocol [ancho]="70">
+                        {{row?.telefono}}
+                    </td>
+                </ng-container>
+                <ng-container matColumnDef="activo">
+                    <td mat-cell *matCellDef="let row" appAnchocol [ancho]="20">
+                        <span *ngIf="row.activo=='1'" class="numberCircle backg-success"></span>
+                        <span *ngIf="row.activo=='0'" class="numberCircle backg-danger"></span>
+                    </td>
+                </ng-container>
+                <ng-container matColumnDef="acciones">
+                    <td mat-cell *matCellDef="let row; let i = dataIndex;" appAnchocol [ancho]="65">
+                        <button class="btn btn-mini2 btn-success" placement="top" ngbTooltip="Editar" container="body"
+                            *ngIf="row.id_cargo!=''" (click)="openModal(row, true)" (mouseup)="quitarfoco($event);">
+                            <i class="fa fa-edit icono-but"></i>
+                        </button>
+                        <button class="btn btn-mini2 btn-danger" placement="top" ngbTooltip="Eliminar" container="body"
+                            *ngIf="row.id_cargo!=''" (click)="eliminarProveedor(row)" (mouseup)="quitarfoco($event);">
+                            <i class="fa fa-remove icono-but"></i>
+                        </button>
+                    </td>
+                </ng-container>
+                <tr mat-row *matRowDef="let row; let i = dataIndex; columns: displayedColumn;"
+                    [ngClass]="{'highlight': fila_sel == i}" (click)="cambindicesel(i)"></tr>
+                <tr *matNoDataRow class="nodata">
+                    <td class="mat-cell text-center" colspan="11">
+                        <label *ngIf="!buscando">No se encontraron resultados</label>
+                        <div *ngIf="buscando" class="preloader3 loader-block">
+                            <div class="circ1"></div>
+                            <div class="circ2"></div>
+                            <div class="circ3"></div>
+                            <div class="circ4"></div>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+        </cdk-virtual-scroll-viewport> -->
+    </app-card>
+</div>

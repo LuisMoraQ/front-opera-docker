@@ -1,0 +1,198 @@
+.c-titi-but {
+  border-bottom: 3px solid #cecece;
+  padding-left:52px;
+}
+.c-bord-left{
+  border-left: 3px solid #cecece;
+}
+
+.div-celdavac{
+  width: 100%;
+  height: -webkit-fill-available;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+//switch
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 30px;
+  height: 16px;
+  margin-top: 2px;
+}
+
+.switch input {display:none;}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ca2222;
+  -webkit-transition: .4s;
+  transition: .4s;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 12px;
+  width: 12px;
+  left: 2px;
+  bottom: 2px;
+  background-color: white;
+  -webkit-transition: .4s;
+  transition: .4s;
+}
+
+input:checked + .slider {
+  background-color: #2ab934;
+}
+
+input:focus + .slider {
+  box-shadow: 0 0 1px #2196F3;
+}
+
+input:checked + .slider:before {
+  -webkit-transform: translateX(14px);
+  -ms-transform: translateX(14px);
+  transform: translateX(14px);
+}
+
+/*------ ADDED CSS ---------*/
+.on
+{
+  display: none;
+}
+
+.on, .off
+{
+  color: white;
+  position: absolute;
+  transform: translate(-50%,-50%);
+  top: 50%;
+  left: 50%;
+  font-size: 10px;
+  font-family: Verdana, sans-serif;
+}
+
+input:checked+ .slider .on
+{display: block;}
+
+input:checked + .slider .off
+{display: none;}
+
+/*--------- END --------*/
+
+/* Rounded sliders */
+.slider.round {
+  border-radius: 18px;
+}
+
+.slider.round:before {
+  border-radius: 50%;}
+
+  label {
+    margin-bottom: 0rem;
+}
+//fin switch
+
+.cust-sel-celda{
+  background-color: transparent;
+  border:none;
+  width: 100%;
+  text-align: center;
+}
+.row-seleccionado {
+  background-color: #bcbcbc !important;
+}
+.td-custom {
+  height: 22px !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  font-size: 10px !important;
+  border: 1px solid #ccc;
+}
+.mat-form-field.pd0 ::ng-deep .mat-form-field-wrapper {
+  padding-bottom: 0 !important;
+}
+.celdaTabla {
+  background-color: rgb(103, 197, 221) !important;
+}
+.oculto {
+  position: absolute;
+  left: -9999999px;
+  top: -999999px;
+}
+.bor-bot{
+  text-align: center;
+  background-color: #f0ebeb !important;
+  font-weight: bold;
+}
+.mb-custom ::ng-deep .mat-checkbox-layout {
+  margin-bottom: 0 !important;
+}
+
+
+.e-select {
+  background-color: #f9f4fa !important;
+  border: 3px solid #60407b !important;
+  border-style: double !important;
+}
+
+.f-select {
+  background-color: #f4fbf7 !important;
+  border: 3px solid #3b9061 !important;
+  border-style: double !important;
+}
+
+.g-select {
+  background-color: #fcf0fd !important;
+  border: 3px solid #b352a4 !important;
+  border-style: double !important;
+}
+.h-select {
+  background-color: #f2fcfe !important;
+  border: 3px solid #459ab8 !important;
+  border-style: double !important;
+}
+
+::ng-deep .checkbox-verde.mat-checkbox-checked .mat-checkbox-background {
+  background-color: green !important;
+}
+::ng-deep .checkbox-azul.mat-checkbox-checked .mat-checkbox-background {
+  background-color: blue !important;
+}
+.overflow-botones {
+  width: calc(100% - 60px);
+  margin-left: 25px;
+  overflow: hidden;
+}
+
+.overflow-botones2 {
+  width: calc(100% - 120px);
+  margin-left: 25px;
+  overflow: hidden;
+}
+.icscrol-r3 {
+  font-size: 24px;
+  cursor: pointer;
+  margin-top: 2px;
+}
+.icscrol-l {
+  font-size: 24px;
+  cursor: pointer;
+  margin-right: -15px;
+  margin-top: 2px;
+}
+.footer-sticky {
+  position: sticky !important;
+  z-index: 2;
+  bottom: -2px;
+  background-color: white;
+}

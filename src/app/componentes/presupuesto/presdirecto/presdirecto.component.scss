@@ -1,0 +1,82 @@
+.cust-ddm{
+  min-width: 7.5rem;
+  .btn-sm{
+    padding: 5px 5px;
+  }
+
+  .dropdown-divider{
+    margin: 1px 0;
+  }
+}
+.cust-col-20{
+  width: 20px !important;
+  min-width: 20px !important;
+  max-width: 20px !important;
+}
+.cust-col-50{
+  width: 56px !important;
+  min-width: 56px !important;
+  max-width: 56px !important;
+}
+
+.cust-foota{
+  /* width: 494px !important; */
+  min-width: 600px !important;
+  max-width: 600px !important;
+}
+.cust-footb{
+  /* width: 464px !important; */
+  min-width: 564px !important;
+  max-width: 564px !important;
+}
+.cust-footc{
+  /* width: 444px !important; */
+  min-width: 544px !important;
+  max-width: 544px !important;
+}
+
+.cust-footd{
+  /* width: 494px !important; */
+  min-width: 510px !important;
+  max-width: 510px !important;
+}
+.cust-foote{
+  /* width: 464px !important; */
+  min-width: 474px !important;
+  max-width: 474px !important;
+}
+.cust-footf{
+  /* width: 444px !important; */
+  min-width: 454px !important;
+  max-width: 454px !important;
+}
+
+.ng-dropdown-panel{
+  width: 260px !important;
+}
+
+.c-titi-but {
+  border-bottom: 3px solid #cecece;
+  padding-left:52px;
+}
+.c-bord-left{
+  border-left: 3px solid #cecece;
+}
+
+.icscrol-l{
+  font-size: 24px;
+  position: absolute;
+  left: 20px;
+  top:3px;
+  cursor: pointer;
+}
+.icscrol-r{
+  font-size: 24px;
+  position: absolute;
+  right: 164px;
+  top:3px;
+  cursor: pointer;
+}
+.height-tabla {
+  height: calc(100vh - 380px) !important;
+}

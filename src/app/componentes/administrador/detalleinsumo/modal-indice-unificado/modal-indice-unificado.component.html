@@ -1,0 +1,89 @@
+<div class="modal-dialog-scrollable modal-lg">
+    <div class="modal-content">
+        <div class="app-modal-header  modal-header">
+            <!-- tipo modal es la accion de para el modal actualizar o guardar -->
+            <h4 class="modal-title tit-modal1">
+                <b *ngIf="!editar">Agregar Indice Unificado</b>
+                <b *ngIf="editar">Editar Indice Unificado</b>
+            </h4>
+            <button type="button" class="close basic-close" (click)="closeModal('click-close')">
+                <span aria-hidden="true" class="mt-2">&times;</span>
+            </button>
+        </div>
+        <div class="modal-body">
+
+            <div class="row" *ngIf="ver; else editarGuardar">
+                <!-- <div class="form-group row"> -->
+                <div class="col-12">
+                    <label>Activo :</label>
+                    <div class="switch switch-primary d-inline m-r-10" style="margin-left: 10px;">
+                        <input type="checkbox" id="switch-p-1" [(ngModel)]='estado' disabled>
+                        <label for="switch-p-1" class="cr"></label>
+                    </div>
+                </div>
+                <!-- </div>
+            <div class="form-group row"> -->
+                <label class="col-sm-3 col-form-label">Indice :</label>
+                <div class="col-sm-9">
+                    <label id="tx_area2" class="col-sm-12 col-form-label"><b>{{datos?.id_indice}}</b></label>
+                </div>
+                <!-- </div>
+            <div class="form-group row"> -->
+                <label class="col-sm-3 col-form-label">Nombre :</label>
+                <div class="col-sm-9">
+                    <label id="tx_abr2" class="col-sm-12 col-form-label"><b>{{datos?.desc_indice}}</b></label>
+                </div>
+                <label class="col-sm-3 col-form-label">Abreviatura :</label>
+                <div class="col-sm-9">
+                    <label id="tx_abr2" class="col-sm-12 col-form-label"><b>{{datos?.abrev}}</b></label>
+                </div>
+                <!-- </div> -->
+            </div>
+            <ng-template #editarGuardar>
+                <form [formGroup]="formIndiceUnificado">
+                    <div class="row ">
+                        <div class="col-12 form-group">
+                            <label>Activo :</label>
+                            <div class="switch  d-inline m-r-10" style="margin-left: 10px;">
+                                <input type="checkbox" id="switch-p-1" formControlName="activo">
+                                <label for="switch-p-1" class="cr"></label>
+                            </div>
+                        </div>
+                        <mat-form-field appearance="outline" class="mff-reduc col-sm-12 col-12">
+                            <mat-label>Indice (2 digitos)</mat-label>
+                            <input matInput type="text" autocomplete="off" formControlName="id_indice" [maxLength]="2"
+                                (keydown)="this.formService.limitarSoloNumerosEnteros($event)">
+                        </mat-form-field>
+                        <mat-form-field appearance="outline" class="mff-reduc col-sm-12 col-12">
+                            <mat-label>Nombre del Indice </mat-label>
+                            <input matInput type="text" class="mayuscula" autocomplete="off" [maxLength]="255" formControlName="descripcion">
+                        </mat-form-field>
+                        <mat-form-field appearance="outline" class="mff-reduc col-sm-4 col-6">
+                            <mat-label>Abreviatura </mat-label>
+                            <input matInput type="text" class="mayuscula" autocomplete="off" [maxLength]="10" formControlName="abrev">
+                        </mat-form-field>
+                    </div>
+                </form>
+            </ng-template>
+        </div>
+
+        <div class="app-modal-footer modal-footer justify-content-between">
+            <button type="button" class="btn btn-danger btn-sm" (click)="closeModal('cancelar')"><i
+                    class="fa fa-times"></i>Cancelar</button>
+            <button type="button" *ngIf="!ver" class="btn btn-success btn-sm" (click)="almacenar()"><i
+                    class="fa fa-check"></i>Guardar</button>
+        </div>
+    </div>
+</div>
+
+<div class="theme-loader" *ngIf="mostrar_carga_todo">
+    <div class="loader-track">
+        <div class="loader-block">
+            <!-- <svg id="loader2" viewBox="0 0 100 100">
+                <circle id="circle-loader2" cx="50" cy="50" r="45"></circle>
+            </svg> -->
+            <img id='imgr1' width="70" heigth="69" class="imgr" src='assets/images/engranaje1.png'>
+            <img id='imgr2' width="60" heigth="59" class="imgr" src='assets/images/engranaje3.svg'>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,50 @@
+.position_btn {
+    position: absolute;
+    right: 1em;
+    top: 1em;
+    z-index: 1;
+}
+
+.options{
+    position: fixed;
+    padding: 10px;
+    left: 65%;
+    bottom: 10%;
+    transform: translate(-50%,-10px);
+    z-index: 1;
+    display: flex;
+
+}
+
+.option_item{
+    width: 40px;
+    height: 40px;
+    padding: 10px;
+    margin: 5px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: rgba(56, 56, 56, 0.7);
+    border-radius: 50%;
+    color: white;
+    border: none;
+}
+
+.option_item:hover{
+    background: rgba(104, 104, 104, 0.7);
+}
+
+.pagina-number {
+    width: 80px;
+    height: 40px;
+    padding: 10px;
+    margin: 5px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: white;
+    border-radius: 50%;
+    color: rgba(56, 56, 56, 0.7);
+    border: none;
+    font-weight: bolder;
+}

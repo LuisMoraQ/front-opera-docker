@@ -1,0 +1,74 @@
+import { Component, OnInit } from '@angular/core';
+@Component({
+    selector: 'app-menu-proyecto',
+    templateUrl: './menu-proyecto.component.html',
+    styleUrls: ['./menu-proyecto.component.scss']
+})
+export class MenuProyectoComponent implements OnInit {
+    menu = [
+        {
+            "id": 1,
+            "name": "Aspectos Generales Proyecto",
+            "position": 1,
+            "icon": "fa fa-2x fa-building"
+        },
+        {
+            "id": 2,
+            "name": "Presupuesto Directo",
+            "position": 2,
+            "icon": "fa fa-2x fa-building"
+        },
+        {
+            "id": 3,
+            "name": "Presupuesto Indirecto",
+            "position": 3,
+            "icon": "fa fa-2x fa-building"
+        },
+        {
+            "id": 4,
+            "name": "cotizaciones de Insumos",
+            "position": 4,
+            "icon": "fa fa-2x fa-building"
+        },
+        {
+            "id": 5,
+            "name": "Hoja de Metrados",
+            "position": 5,
+            "icon": "fa fa-2x fa-building"
+        },
+        {
+            "id": 6,
+            "name": "Formula Polinomica",
+            "position": 6,
+            "icon": "fa fa-2x fa-building"
+        },
+        {
+            "id": 7,
+            "name": "Programacion de Obra",
+            "position": 7,
+            "icon": "fa fa-2x fa-building"
+        },
+        {
+            "id": 8,
+            "name": "Especificaciones Tecnicas",
+            "position": 8,
+            "icon": "fa fa-2x fa-building"
+        },
+        {
+            "id": 9,
+            "name": "Gestion Proyecto",
+            "position": 9,
+            "icon": "fa fa-2x fa-building"
+        }
+    ]
+    constructor() { }
+
+    ngOnInit() {
+
+    }
+
+    opcion() {
+
+    }
+
+}

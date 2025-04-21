@@ -1,0 +1,701 @@
+
+<div class="row px-3"> 
+  <div class="col-12 espacio-boton">
+    <button type="button" ngbTooltip="Datos Proyecto" container="body"
+      class="btn btn-outline-secondary btn-sm  ripple m-b-10 custom-bt"
+      (click)="cambioSubMenu(1)"
+      [ngClass]="{'active': idnav== 1}">
+      <i class="fa fa-cogs"></i><span class="ocultar-sm">Datos Proyecto</span>
+    </button>
+    <button *ngIf="!solover && !esSecund" type="button"
+      ngbTooltip="Configuración" container="body"
+      class="btn btn-outline-secondary btn-sm  ripple m-b-10 custom-bt ml-3"
+      (click)="cambioSubMenu(2)"
+      [ngClass]="{'active': idnav === 2}">
+      <i class="fa fa-cogs"></i><span class="ocultar-sm">Configuración</span>
+    </button>
+    <button *ngIf="!solover && !esSecund" type="button"
+      ngbTooltip="Items Alternos" container="body"
+      class="btn btn-outline-secondary btn-sm  ripple m-b-10 custom-bt ml-3"
+      (click)="cambioSubMenu(3)"
+      [ngClass]="{'active': idnav === 3}">
+      <i class="fa fa-clock-o"></i><span class="ocultar-sm">Items Alternos</span>
+    </button>
+  </div>
+  <div class="row contenido-menu-responsive w-100">
+    <ng-container *ngIf="idnav==1">
+    <div class="col-sm-12 col-md-6 col-lg-6 col-12 mt-2  px-2"
+      [style.height.px]="height + 40">
+      <div class="card shadow-lg" [style.height.px]="height + 40">
+        <div class="card-header py-1">
+          <h5>INFORMACIÓN GENERAL</h5>
+          <button type="button" class="btn btn-sm btn-success float-right"
+            *ngIf="!permiso"
+            (click)="actualizarDatosProyecto()">
+            <i class="fa fa-save icono-but"></i>
+          </button>
+          <button type="button" class="btn btn-sm btn-secondary float-right"
+            *ngIf="!permiso"
+            (click)="cancelarEditarDatosProyecto()">
+            <i class="fa fa-times icono-but"></i>
+          </button>
+          <button type="button" class="btn btn-sm btn-info float-right"
+            *ngIf="permiso && (!solover || escreador) && !esSecund"
+            (click)="habilitarEdicionDatosProyecto()">
+            <i class="fa fa-pencil icono-but"></i>
+          </button>
+        </div>
+        <div class="card-body py-3 overflow-auto">
+          <div class="row">
+            <ng-container *ngIf="myGroup" [formGroup]="myGroup">
+              <mat-form-field appearance="outline"
+                class="mff-reduc my-form-field col-sm-12 col-12"
+                [floatLabel]="permiso ? 'always' : 'auto'"
+                [ngClass]="{'mat-form-field-disa': permiso}">
+                <mat-label>DESCRIPCIÓN<span class="text-danger"> * </span></mat-label>
+                <textarea matInput type="text" autocomplete="off" class="mayuscula"
+                  formControlName="descripcion" [maxLength]="500"></textarea>
+              </mat-form-field>
+              <mat-form-field appearance="outline"
+                class="mff-reduc my-form-field col-sm-6 col-12"
+                [floatLabel]="permiso ? 'always' : 'auto'"
+                [ngClass]="{'mat-form-field-disa': permiso}">
+                <mat-label>Clasificación <span class="text-danger"> * </span>
+                </mat-label>
+                <select matNativeControl formControlName="id_clasificacion">
+                  <option value="">--Seleccionar--</option>
+                  <option *ngFor="let clasificacion of clasificaciones"
+                    [value]="clasificacion.id_clasificacion">
+                    {{clasificacion.descripcion}}
+                  </option>
+                </select>
+              </mat-form-field>        
+              <mat-form-field appearance="outline"
+                class="mff-reduc my-form-field col-sm-6 col-12"
+                [floatLabel]="permiso ? 'always' : 'auto'"
+                [ngClass]="{'mat-form-field-disa': permiso}">
+                <mat-label>Modalidad <span class="text-danger"> * </span></mat-label>
+                <select matNativeControl formControlName="modalidad">
+                  <option value="">--Seleccionar--</option>
+                  <option *ngFor="let modalidad of modalidades" [value]="modalidad.id">
+                    {{modalidad.nombre}}
+                  </option>
+                </select>
+              </mat-form-field>
+              <div class="col-sm-6 col-12 d-flex">
+                <mat-form-field appearance="outline" class="mff-reduc my-form-field"
+                  [floatLabel]="permiso ? 'always' : 'auto'"
+                  [ngClass]="{'mat-form-field-disa w-100': permiso, 
+                              'w-grupo': !permiso}">
+                  <mat-label>Grupo <span class="text-danger"> * </span></mat-label>
+                  <select matNativeControl formControlName="id_grupo">
+                    <option value="0">--Seleccionar--</option>
+                    <option *ngFor="let grupo of grupos" [value]="grupo.id_grupo">
+                      {{grupo.descripcion}}
+                    </option>
+                  </select>
+                </mat-form-field>
+                <div class="boton-conf"
+                  *ngIf="!permiso">
+                  <button type="button" class="btn btn-mini btn-success"
+                    style="margin-top: +4px;" ngbTooltip="Agregar Grupo"
+                    (click)="verGrupoProyecto()">
+                    <i class="fa fa-plus icono-but"></i>
+                  </button>
+                </div>
+              </div>
+              <mat-form-field appearance="outline"
+                class="mff-reduc my-form-field col-sm-6 col-12"
+                [floatLabel]="permiso ? 'always' : 'auto'"
+                [ngClass]="{'mat-form-field-disa': permiso}">
+                <mat-label>Estado <span class="text-danger"> * </span></mat-label>
+                <select matNativeControl formControlName="estado">
+                  <option value="">--Seleccionar--</option>
+                  <option *ngFor="let estado of estados" [value]="estado.id">
+                    {{estado.nombre}}
+                  </option>
+                </select>
+              </mat-form-field>
+              <mat-form-field appearance="outline"
+                class="mff-reduc my-form-field col-sm-6 col-12"
+                [floatLabel]="permiso ? 'always' : 'auto'"
+                [ngClass]="{'mat-form-field-disa': permiso}">
+                <mat-label>País</mat-label>
+                <select matNativeControl formControlName="cod_pais"
+                (change)="CambiarPais($event.target.value)">
+                  <option value="">--Seleccionar--</option>
+                  <option *ngFor="let pais of paises" [value]="pais.cod_pais">
+                    {{pais.pais}}
+                  </option>
+                </select>
+              </mat-form-field>
+              <mat-form-field appearance="outline"
+                class="mff-reduc my-form-field col-sm-6 col-12"
+                [floatLabel]="permiso ? 'always' : 'auto'"
+                [ngClass]="{'mat-form-field-disa': permiso}">
+                <mat-label>Moneda</mat-label>
+                <select matNativeControl formControlName="moneda">
+                  <option value="">--Seleccionar--</option>
+                  <option *ngFor="let moneda of monedas" [value]="moneda.id_moneda">
+                    {{moneda.moneda}}
+                  </option>
+                </select>
+              </mat-form-field>
+              <ng-container *ngIf="!OtroPais; else visual1">
+                <mat-form-field appearance="outline"
+                class="mff-reduc my-form-field col-sm-6 col-12"
+                [floatLabel]="permiso ? 'always' : 'auto'"
+                [ngClass]="{'mat-form-field-disa': permiso}">
+                <mat-label>Departamento</mat-label>
+                <select matNativeControl formControlName="departamento"
+                  (change)="listarProvincias($event.target.value)">
+                  <option value="">--Seleccionar--</option>
+                  <option *ngFor="let departamento of departamentos" [value]="departamento.id_depart">
+                    {{departamento.DEPARTAMENTO}}
+                </option>
+                </select>
+              </mat-form-field> 
+              <mat-form-field appearance="outline"
+                class="mff-reduc my-form-field col-sm-6 col-12"
+                [floatLabel]="permiso ? 'always' : 'auto'"
+                [ngClass]="{'mat-form-field-disa': permiso}">
+                <mat-label>Provincia </mat-label>
+                <select matNativeControl formControlName="provincia"
+                  (change)="listarDistritos($event.target.value)">
+                  <option value="">--Seleccionar--</option>
+                  <option
+                    *ngFor="let provincia of provincias"
+                    [value]="provincia.id_prov">
+                    {{provincia.PROVINCIA}}
+                  </option>
+                </select>
+              </mat-form-field>
+              <mat-form-field appearance="outline"
+                class="mff-reduc my-form-field col-sm-6 col-12"
+                [floatLabel]="permiso ? 'always' : 'auto'"
+                [ngClass]="{'mat-form-field-disa': permiso}">
+                <mat-label>Distrito</mat-label>
+                <select matNativeControl formControlName="distrito">
+                  <option value="">--Seleccionar--</option>
+                  <option
+                    *ngFor="let distrito of distritos"
+                    [value]="distrito.id_distr">
+                    {{distrito.DISTRITO}}
+                  </option>
+                </select>
+              </mat-form-field>
+              </ng-container>
+              <ng-template #visual1>
+                <mat-form-field appearance="outline"
+                class="mff-reduc my-form-field col-sm-6 col-12"
+                [floatLabel]="permiso ? 'always' : 'auto'"
+                [ngClass]="{'mat-form-field-disa': permiso}">
+                <mat-label>Ubicacion Principal</mat-label>
+                <input matInput type="text" autocomplete="off"
+                  formControlName="otrodepartamento" [maxLength]="100">
+                </mat-form-field>
+                <mat-form-field appearance="outline"
+                class="mff-reduc my-form-field col-sm-6 col-12"
+                [floatLabel]="permiso ? 'always' : 'auto'"
+                [ngClass]="{'mat-form-field-disa': permiso}">
+                <mat-label>Ubicacion Secundaria</mat-label>
+                <input matInput type="text" autocomplete="off"
+                  formControlName="otraprovincia" [maxLength]="100">
+                </mat-form-field>
+                <mat-form-field appearance="outline"
+                class="mff-reduc my-form-field col-sm-6 col-12"
+                [floatLabel]="permiso ? 'always' : 'auto'"
+                [ngClass]="{'mat-form-field-disa': permiso}">
+                <mat-label>Ubicacion Proyecto</mat-label>
+                <input matInput type="text" autocomplete="off"
+                  formControlName="otrodistrito" [maxLength]="100">
+                </mat-form-field>
+              </ng-template>
+              <mat-form-field appearance="outline"
+                class="mff-reduc my-form-field col-sm-6 col-12"
+                [floatLabel]="permiso ? 'always' : 'auto'"
+                [ngClass]="{'mat-form-field-disa': permiso}">
+                <mat-label>Dirección</mat-label>
+                <input matInput type="text" autocomplete="off"
+                  formControlName="direccion" [maxLength]="300">
+              </mat-form-field>
+              <mat-form-field appearance="outline"
+                class="mff-reduc my-form-field col-sm-6 col-12"
+                [floatLabel]="permiso ? 'always' : 'auto'"
+                [ngClass]="{'mat-form-field-disa': permiso}">
+                <mat-label>Fecha Elaboración</mat-label>
+                <input matInput type="date" formControlName="fecha_elaboracion">
+                <mat-error
+                  *ngIf=" fecha_elaboracion?.hasError('required') ">
+                  La fecha es obligatoria.
+                </mat-error>
+                <!-- Error cuando el valor está fuera del rango (validador personalizado) -->
+                <mat-error
+                  *ngIf="fecha_elaboracion?.hasError('fechaInvalida')">
+                  La fecha ingresada no es valida.
+                </mat-error>
+              </mat-form-field>
+              <mat-form-field appearance="outline"
+                class="mff-reduc my-form-field col-sm-6 col-12"
+                [floatLabel]="permiso ? 'always' : 'auto'"
+                [ngClass]="{'mat-form-field-disa': permiso}">
+                <mat-label>Plazo de ejecución</mat-label>
+                <input matInput type="text" autocomplete="off" formControlName="plazo"
+                  (keyup)="TeclaCalcFin($event)" (blur)="CalculaFechaFin(i,0)"
+                  [textMask]="{mask: this.formService.maskTelefono}" maxlength="5">
+                <mat-error *ngIf="plazo?.hasError('min')">
+                  El plazo debe ser como mínimo 1.
+                </mat-error>
+
+                <mat-error *ngIf="plazo?.hasError('max')">
+                  El plazo no puede ser mayor a 5000.
+                </mat-error>
+
+                <!-- Error cuando el campo es requerido -->
+                <mat-error *ngIf="plazo?.hasError('required')">
+                  El plazo es obligatorio.
+                </mat-error>
+              </mat-form-field>
+              <div class="col-sm-6 col-12 mt-2">
+                <mat-form-field appearance="outline"
+                  class="mff-reduc my-form-field w-100"
+                  [floatLabel]="permiso ? 'always' : 'auto'"
+                  [ngClass]="{'mat-form-field-disa': permiso}">
+                  <mat-label>Fecha Inicio</mat-label>
+                  <input matInput type="date" formControlName="fecha_inicio"
+                    (keyup)="TeclaCalcFin($event)" (blur)="CalculaFechaFin(i,1)">
+                    <mat-error
+                    *ngIf="fecha_inicio?.hasError('required') ">
+                    La fecha es obligatoria.
+                  </mat-error>
+                  <!-- Error cuando el valor está fuera del rango (validador personalizado) -->
+                  <mat-error
+                    *ngIf="fecha_inicio?.hasError('fechaInvalida') ">
+                    La fecha ingresada no es valida.
+                  </mat-error>
+                </mat-form-field>
+                &nbsp;
+                <i *ngIf="calculandofecha"
+                  class="fa fa-spinner fa-pulse fa-lg fa-fw"></i>
+                <span class="sr-only">Loading...</span>
+              </div>
+              <mat-form-field appearance="outline"
+                class="mff-reduc my-form-field col-sm-6 col-12 mt-2"
+                [floatLabel]="permiso ? 'always' : 'auto'"
+                [ngClass]="{'mat-form-field-disa': permiso}">
+                <mat-label>Fecha Culminación</mat-label>
+                <input matInput type="date" formControlName="fecha_culmina"
+                  (keyup)="TeclaCalcFin($event)" (blur)="CalculaFechaFin(i,2)">
+                  <mat-error
+                  *ngIf=" fecha_culmina?.hasError('required') ">
+                  La fecha es obligatoria.
+                </mat-error>
+                <!-- Error cuando el valor está fuera del rango (validador personalizado) -->
+                <mat-error
+                  *ngIf="fecha_culmina?.hasError('fechaInvalida') ">
+                  La fecha ingresada no es valida.
+                </mat-error>
+              </mat-form-field>
+            </ng-container>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-sm-12 col-md-6 col-lg-6 col-12 mt-2  px-2">
+      <div class="card shadow-lg" [style.height.px]="height + 40">
+        <div class="card-header py-1">
+          <h5>SUB PRESUPUESTO DEL PROYECTO</h5>
+        </div>
+        <div class="card-body">
+          <ng-container>
+            <div class="row col-sm-12 m-b-5 pr-0">
+              <div class="col-9">
+                <button *ngIf="!solover && !esSecund" type="button"
+                  class="btn btn-mini btn-success" (click)="agregartitulo(i)">
+                  <i class="fa fa-plus"></i> Agregar
+                </button>
+                <button *ngIf="!solover && !esSecund" type="button"
+                  class="btn btn-mini btn-inverse" placement="top" ngbTooltip="Bajar"
+                  container="body" (click)="bajartitulo(i)"
+                  (mouseup)="quitarfoco($event);">
+                  <i class="fa fa-level-down icono-but"></i>
+                </button>
+                <button *ngIf="!solover && !esSecund" type="button"
+                  class="btn btn-mini btn-inverse" placement="top" ngbTooltip="Subir"
+                  container="body" (click)="subirtitulo(i)"
+                  (mouseup)="quitarfoco($event);">
+                  <i class="fa fa-level-up icono-but"></i>
+                </button>
+              </div>
+              <div class="col-3 d-flex justify-content-end pr-0">
+                <button type="button" class="btn btn-mini btn-primary" placement="top"
+                  ngbTooltip="Generar reporte" container="body"
+                  [disabled]="allform.get('aspectos_generales').value.tabla_prueba?.editado"
+                  (click)="enviarDataImpresion(i)" (mouseup)="quitarfoco($event);">
+                  <i class="fa fa-print icono-but"></i>
+                </button>
+              </div>
+            </div>
+            <div class="tabla-limp height-subpresu">
+              <table class="table-bordered tab-10">
+                <thead>
+                  <tr class="headsticky header-custom">
+                    <th appAnchocol [ancho]="30">ITEM</th>
+                    <th appAnchocol [ancho]="150" [detalle]="true">DETALLE DE ESTRUCTURA
+                    </th>
+                    <th appAnchocol [ancho]="90">MANO DE OBRA</th>
+                    <th appAnchocol [ancho]="90">MATERIALES</th>
+                    <th appAnchocol [ancho]="90">EQUIPOS</th>
+                    <th appAnchocol [ancho]="90">SUB CONTRATOS</th>
+                    <th appAnchocol [ancho]="90">SUB PARTIDAS</th>
+                    <th appAnchocol [ancho]="90">TOTAL</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <ng-container
+                    *ngIf="allform.get('aspectos_generales').value.tabla_prueba?.data_source.length>0">
+                    <tr (click)="cambindiceselsubpresu(indice,indice_tab)"
+                      [hidden]="row.mostrar == 0"
+                      *ngFor="let row of allform.get('aspectos_generales').value.tabla_prueba?.data_source;let indice=index;">
+                      <td class="cellsinpadding" appAnchocol [ancho]="28"
+                        [ngClass]="{'highlight': allform.get('aspectos_generales').value.tabla_prueba.filaSeleccionada == indice}">
+                        {{row.item}}
+                      </td>
+                      <td class="text-left cellsinpadding" appAnchocol [ancho]="150"
+                        [detalle]="true"
+                        [ngClass]="{'highlight': allform.get('aspectos_generales').value.tabla_prueba.filaSeleccionada == indice}">
+                        <div class="recortatextlinea celdaadvcero"
+                          ngbTooltip="{{row.descripcion}}" #t="ngbTooltip"
+                          container="body" triggers="click:blur" (mouseout)="t.close()">
+                          {{row.descripcion}}
+                        </div>
+                      </td>
+                      <td appAnchocol [ancho]="90"
+                        [ngClass]="{'highlight': allform.get('aspectos_generales').value.tabla_prueba.filaSeleccionada == indice}">
+                        <span
+                          class="float-left">{{this.moneda}}</span>
+                        <span class="float-right">{{row.manoobra | number:
+                          '0.2'}}</span>
+                      </td>
+                      <td appAnchocol [ancho]="90"
+                        [ngClass]="{'highlight': allform.get('aspectos_generales').value.tabla_prueba.filaSeleccionada == indice}">
+                        <span
+                          class="float-left">{{this.moneda}}</span>
+                        <span class="float-right">{{row.materiales | number:
+                          '0.2'}}</span>
+                      </td>
+                      <td appAnchocol [ancho]="90"
+                        [ngClass]="{'highlight': allform.get('aspectos_generales').value.tabla_prueba.filaSeleccionada == indice}">
+                        <span
+                          class="float-left">{{this.moneda}}</span>
+                        <span class="float-right">{{row.equipos | number: '0.2'}}</span>
+                      </td>
+                      <td appAnchocol [ancho]="90"
+                        [ngClass]="{'highlight': allform.get('aspectos_generales').value.tabla_prueba.filaSeleccionada == indice}">
+                        <span
+                          class="float-left">{{this.moneda}}</span>
+                        <span class="float-right">{{row.subcontratos | number:
+                          '0.2'}}</span>
+                      </td>
+                      <td appAnchocol [ancho]="90"
+                        [ngClass]="{'highlight': allform.get('aspectos_generales').value.tabla_prueba.filaSeleccionada == indice}">
+                        <span
+                          class="float-left">{{this.moneda}}</span>
+                        <span class="float-right">{{row.subpartidas | number:
+                          '0.2'}}</span>
+                      </td>
+                      <td appAnchocol [ancho]="90"
+                        [ngClass]="{'highlight': allform.get('aspectos_generales').value.tabla_prueba.filaSeleccionada == indice}">
+                        <span
+                          class="float-left">{{this.moneda}}</span>
+                        <span class="float-right">{{row.total | number: '0.2'}}</span>
+                      </td>
+                    </tr>
+                    <tr class="filafoot">
+                      <th class="cellsinpadding font-weight-bolder" appAnchocol
+                        [ancho]="180" [detalle]="true" colspan="2">
+                        COSTO DIRECTO
+                      </th>
+                      <th class="cellsinpadding" appAnchocol [ancho]="90">
+                        <span
+                          class="float-left">{{this.moneda}}</span><span
+                          class="float-right font-weight-bolder">
+                          {{allform.get('aspectos_generales').value.tabla_prueba.totmano |
+                          number : mask_parcial}}</span>
+                      </th>
+                      <th class="cellsinpadding" appAnchocol [ancho]="90">
+                        <span
+                          class="float-left">{{this.moneda}}</span><span
+                          class="float-right font-weight-bolder">
+                          {{allform.get('aspectos_generales').value.tabla_prueba.totmat |
+                          number : mask_parcial}}</span>
+                      </th>
+                      <th class="cellsinpadding" appAnchocol [ancho]="90">
+                        <span
+                          class="float-left">{{this.moneda}}</span><span
+                          class="float-right font-weight-bolder">
+                          {{allform.get('aspectos_generales').value.tabla_prueba.totequi |
+                          number : mask_parcial}}</span>
+                      </th>
+                      <th class="cellsinpadding" appAnchocol [ancho]="90">
+                        <span
+                          class="float-left">{{this.moneda}}</span><span
+                          class="float-right font-weight-bolder">
+                          {{allform.get('aspectos_generales').value.tabla_prueba.totsubc |
+                          number : mask_parcial}}</span>
+                      </th>
+                      <th class="cellsinpadding" appAnchocol [ancho]="90">
+                        <span
+                          class="float-left">{{this.moneda}}</span><span
+                          class="float-right font-weight-bolder">
+                          {{allform.get('aspectos_generales').value.tabla_prueba.totsubp |
+                          number : mask_parcial}}</span>
+                      </th>
+                      <th class="cellsinpadding" appAnchocol [ancho]="90">
+                        <span
+                          class="float-left">{{this.moneda}}</span><span
+                          class="float-right font-weight-bolder">
+                          {{allform.get('aspectos_generales').value.tabla_prueba.totdir |
+                          number : mask_parcial}}</span>
+                      </th>
+                    </tr>
+                    <ng-container
+                      *ngFor="let row of allform.get('aspectos_generales').value.tabla_prueba?.totind">
+                      <tr class="filafoot">
+                        <th class="cellsinpadding text-left"
+                          [ngClass]="{'font-weight-bolder':row.tipo_registro==2}"
+                          appAnchocol [ancho]="180" [detalle]="true" colspan="4">
+                          {{row.descripcion}}
+                        </th>
+                        <th class="cellsinpadding"
+                          [ngClass]="{'font-weight-bolder':row.tipo_registro==2}"
+                          appAnchocol [ancho]="90">
+                          {{row.abrev}}
+                        </th>
+                        <th class="cellsinpadding" [ngClass]="{'font-weight-bolder':row.tipo_registro==2}" appAnchocol [ancho]="90">
+                          <ng-container *ngIf="row.tipo_registro==4;else prueba">
+                            <span class="mt-1 font-weight-bolder" >C.I.={{row.abrev}}/{{row.formula==''?abretotal:row.formula}}={{( row.formula==''?totaldir:findabrev(row.formula))==0?'0.00':(row.monto * 100 /( row.formula==''?totaldir:findabrev(row.formula))).toFixed(2)}}%</span>
+                          </ng-container>
+                          <ng-template #prueba>
+                            {{row.formula}}
+                          </ng-template>
+                        </th>
+                        <th class="cellsinpadding" appAnchocol [ancho]="180"
+                          colspan="2">
+                          <span
+                            class="float-left">{{this.moneda}}</span>
+                          <span class="float-right"
+                            [ngClass]="{'font-weight-bolder':row.tipo_registro==2}">
+                            {{row.monto | number : mask_parcial}}</span>
+                        </th>
+                      </tr>
+                    </ng-container>
+                  </ng-container>
+                  <ng-container
+                    *ngIf="allform.get('aspectos_generales').value.tabla_prueba?.data_source.length<=0">
+                    <tr>
+                      <td class="mat-cell text-center" colspan="8">
+                        <label *ngIf="!buscatabla">No se encontraron resultados</label>
+                        <div *ngIf="buscatabla" class="preloader3 loader-block">
+                          <div class="circ1"></div>
+                          <div class="circ2"></div>
+                          <div class="circ3"></div>
+                          <div class="circ4"></div>
+                        </div>
+                      </td>
+                    </tr>
+                  </ng-container>
+                </tbody>
+              </table>
+            </div>
+            <div class="row col-sm-12 m-b-5 m-t-5 justify-content-between mx-0">
+              <button *ngIf="allform.get('aspectos_generales').value.tabla_prueba?.editado"
+                type="button" class="btn btn-mini btn-danger"
+                (click)="CancelarSubpresu(i)">
+                <i class="fa fa-times"></i> Cancelar
+              </button>
+              <button *ngIf="allform.get('aspectos_generales').value.tabla_prueba?.editado"
+                type="button" class="btn btn-mini btn-success"
+                (click)="GuardarSubpresu(i)">
+                <i class="fa fa-save"></i> Guardar
+              </button>
+            </div>
+          </ng-container>
+        </div>
+      </div>
+    </div>
+    </ng-container>
+    <ng-container *ngIf="idnav==2">
+      <div class="col-sm-12 mt-2 px-2">
+        <div class="card shadow-lg">
+          <div class="card-header py-1">
+            <h5>DECIMALES EN EL PROYECTO</h5>
+            <button type="button" class="btn btn-sm btn-success float-right"
+              (click)="GuardarConfigsDec(i)" [disabled]="bloqconf">
+              <i class="fa fa-save icono-but"></i>Guardar
+            </button>
+          </div>
+          <div class="card-body py-3 overflow-auto">
+            <form [formGroup]='Frmdecimales'>
+              <div class="row">
+                <ng-container *ngIf="bloqconf">
+                  <div class="w-100">
+                    <div class="preloader3 loader-block" style="height: 77px;">
+                      <div class="circ1"></div>
+                      <div class="circ2"></div>
+                      <div class="circ3"></div>
+                      <div class="circ4"></div>
+                    </div>
+                  </div>
+                </ng-container>
+                <ng-container *ngIf="!bloqconf">
+                  <mat-form-field class="mff-reduc my-form-field w-100 col-sm-3"
+                    appearance="outline">
+                    <mat-label>Decimales Metrado</mat-label>
+                    <select matNativeControl formControlName="metrado">
+                      <option value="2">2&nbsp;&nbsp;-->&nbsp;&nbsp;#,###.00</option>
+                      <option value="3">3&nbsp;&nbsp;-->&nbsp;&nbsp;#,###.000</option>
+                      <option value="4">4&nbsp;&nbsp;-->&nbsp;&nbsp;#,###.0000</option>
+                    </select>
+                  </mat-form-field>
+                  <mat-form-field class="mff-reduc my-form-field w-100 col-sm-3"
+                    appearance="outline">
+                    <mat-label>Decimales Precio</mat-label>
+                    <select matNativeControl formControlName="precio">
+                      <option value="2">2&nbsp;&nbsp;-->&nbsp;&nbsp;#,###.00</option>
+                      <option value="3">3&nbsp;&nbsp;-->&nbsp;&nbsp;#,###.000</option>
+                      <option value="4">4&nbsp;&nbsp;-->&nbsp;&nbsp;#,###.0000</option>
+                    </select>
+                  </mat-form-field>
+                  <mat-form-field class="mff-reduc my-form-field w-100 col-sm-3"
+                    appearance="outline">
+                    <mat-label>Decimales Total Presupuesto</mat-label>
+                    <select matNativeControl formControlName="parcial">
+                      <option value="2">2&nbsp;&nbsp;-->&nbsp;&nbsp;#,###.00</option>
+                      <option value="3">3&nbsp;&nbsp;-->&nbsp;&nbsp;#,###.000</option>
+                      <option value="4">4&nbsp;&nbsp;-->&nbsp;&nbsp;#,###.0000</option>
+                    </select>
+                  </mat-form-field>
+                  <mat-form-field class="mff-reduc my-form-field w-100 col-sm-3"
+                    appearance="outline">
+                    <mat-label>Decimales Cantidad Costos Unitarios</mat-label>
+                    <select matNativeControl formControlName="cantidad">
+                      <option value="2">2&nbsp;&nbsp;-->&nbsp;&nbsp;#,###.00</option>
+                      <option value="3">3&nbsp;&nbsp;-->&nbsp;&nbsp;#,###.000</option>
+                      <option value="4">4&nbsp;&nbsp;-->&nbsp;&nbsp;#,###.0000</option>
+                    </select>
+                  </mat-form-field>
+                </ng-container>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+      <div class="col-12 mt-2 px-2">
+        <div class="card shadow-lg">
+          <div class="card-header py-1">
+            <h5>OPCIONES DE VISUALIZACIÓN</h5>
+          </div>
+          <div class="card-body">
+            <div class="row col-sm-12 m-b-5">
+              <button tton type="button" class="btn btn-mini btn-success"
+                (click)="GuardarConfigsColor(i)" [disabled]="bloqconf">
+                <i class="fa fa-plus"></i> Guardar Cambios
+              </button>
+            </div>
+            <div class="tabla-limp height-aspectos">
+              <table class="table-bordered">
+                <thead>
+                  <tr class="headsticky header-custom">
+                    <th></th>
+                    <th colspan="4">PRESUPUESTO</th>
+                  </tr>
+                  <tr class="headsticky header-custom">
+                    <th>Detalle de Estructura</th>
+                    <th>Color Letra</th>
+                    <th>Tipo Letra</th>
+                    <th>Color Fondo</th>
+                    <th>Previsualizar</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <ng-container *ngIf="!bloqconf">
+                    <tr *ngFor="let element of dataSourceColor;let indice=index;"
+                      [hidden]="element.mostrar == 0">
+                      <td> {{element.detalle}} </td>
+                      <td>
+                        <input type="color" matInput autocomplete="off"
+                          [value]="element.presupuestoletra=='unset'?'#000000':element.presupuestoletra"
+                          style="width: 40px;" (input)="reasignarColor($event,indice)">
+                        <!-- <select [value]="element.presupuestoletra"
+                          [style.color]="element.presupuestoletra +'!important'"
+                          (change)="cambiarcolor($event.target.value,indice,'presupuestoletra')">
+                          <option *ngFor="let colletra of colorletra"
+                            [value]="colletra.id" [selected]="colletra.id==element.presupuestoletra"
+                            [style.color]="colletra.id!='unset'?colletra.id +'!important':'#000000'">
+                            {{colletra.nombre}}</option>
+                        </select> -->
+                      </td>
+                      <td>
+                        <select value="{{element.presupuestotipo}}" style="width: 130px;"
+                          [ngClass]="{'normal': element.presupuestotipo=='1','cursiva':element.presupuestotipo=='2','negrita':element.presupuestotipo=='3','cursivanegrita':element.presupuestotipo=='4'}"
+                          (change)="cambiarcolor($event.target.value,indice,'presupuestotipo')">
+                          <option *ngFor="let tipletra of tipoletra" [value]="tipletra.id"
+                            [selected]="tipletra.id==element.presupuestotipo"
+                            [ngClass]="{'normal': tipletra.id=='1','cursiva':tipletra.id=='2','negrita':tipletra.id=='3','cursivanegrita':tipletra.id=='4'}">
+                            {{tipletra.nombre}}</option>
+                        </select>
+                      </td>
+                      <td>
+                        <input type="checkbox" id="switch-p-3"
+                          [checked]="element.presupuesto=='none'"
+                          (change)="Sincolor1($event,indice)"> Sin Fondo |
+                        <input type="color" matInput autocomplete="off"
+                          [value]="element.presupuesto=='none'?'#ffffff':element.presupuesto"
+                          style="width: 40px;" [disabled]="element.presupuesto=='none'"
+                          [ngStyle]="{ opacity: element.presupuesto=='none'?'0.4':'1' }"
+                          (input)="reasignarColor1($event,indice)">
+                        <!-- <select value="{{element.presupuesto}}"
+                          [style.background]="element.presupuesto"
+                          (change)="cambiarcolor($event.target.value,indice,'presupuesto')">
+                          <option *ngFor="let colfondo of colorfondo"
+                            [value]="colfondo.id" [selected]="colfondo.id==element.presupuesto"
+                            [style.background]="colfondo.id!='none'?colfondo.id:'#ffffff'">
+                            {{colfondo.nombre}}</option>
+                        </select> -->
+                      </td>
+                      <td [style.color]="element.presupuestoletra+' !important'"
+                        [style.background]="element.presupuesto"
+                        [ngClass]="{'normal': element.presupuestotipo=='1','cursiva':element.presupuestotipo=='2','negrita':element.presupuestotipo=='3','cursivanegrita':element.presupuestotipo=='4'}">
+                        {{element.detalle}}
+                      </td>
+                    </tr>
+                  </ng-container>
+                  <ng-container *ngIf="bloqconf">
+                    <tr>
+                      <td class="mat-cell text-center" colspan="8">
+                        <div class="preloader3 loader-block">
+                          <div class="circ1"></div>
+                          <div class="circ2"></div>
+                          <div class="circ3"></div>
+                          <div class="circ4"></div>
+                        </div>
+                      </td>
+                    </tr>
+                  </ng-container>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+    <ng-container *ngIf="idnav==3">
+      <app-confproyimpr [tabproyecto]="allform" style="width: 100%;"></app-confproyimpr>
+    </ng-container>
+  </div>
+</div>
+
+
+<app-cargando [bloquearTodo]="true" *ngIf="mostrar_carga_todo"></app-cargando>
+<app-cargando [bloquearTodo]="false" *ngIf="mostrar_carga"></app-cargando>

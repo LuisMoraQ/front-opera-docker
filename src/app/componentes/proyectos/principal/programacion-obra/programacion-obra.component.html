@@ -1,0 +1,1508 @@
+<p-dialog [(visible)]="displayBasic" [style]="{width: '31rem'}">
+    <p-header>
+        Editar Predecesor
+    </p-header>
+    <form [formGroup]="formPredecesor">
+        <div class="row mx-0 justify-content-between  mb-2">
+            <div class="d-flex col px-0 align-items-center" style="font-size: 12px;">
+                <span>PREDECESOR: </span><span class="m-l-5 font-weight-bolder">{{stringPredecesor}}</span>
+            </div>
+            <div class="col justify-content-end px-0">
+                <button type="button" class="btn btn-sm btn-info float-right" (click)="agregarPredecesorRow()"><i
+                        class="fa fa-plus"></i> Agregar </button>
+            </div>
+        </div>
+        <div class="col-12 table-responsive px-0">
+            <ng-container formArrayName="tablaDetalle">
+                <p-table [value]="tablaDetalle.controls">
+                    <ng-template pTemplate="header">
+                        <tr class="text-center">
+
+                            <th appAnchocol [ancho]="250">Partida</th>
+                            <th appAnchocol [ancho]="20">ID</th>
+                            <th appAnchocol [ancho]="50">Tipo</th>
+                            <th appAnchocol [ancho]="55">Adicionales</th>
+                            <th appAnchocol [ancho]="30"></th>
+                        </tr>
+                    </ng-template>
+                    <ng-template pTemplate="body" let-predecesor let-rowIndex="rowIndex">
+                        <tr [formGroupName]="rowIndex">
+
+                            <td appAnchocol [ancho]="250" [detalle]="true">
+                                <div class="custom-row w-100">
+                                    <ng-select
+                                        [ngClass]="{'invalidsel':(predecesor?.get('partida')?.invalid && predecesor?.get('partida')?.touched)}"
+                                        [appendTo]="'body'" [clearable]="false" formControlName="partida"
+                                        (change)="seleccionPartidaModal(rowIndex)">
+                                        <ng-option value="">--Seleccionar--</ng-option>
+                                        <ng-option *ngFor="let partida of listaPartidas2" [value]="partida.idgantt">
+                                            <div class="d-flex" ngbTooltip="{{partida.descripcion}}" container="body">
+                                                <div>{{partida.idgantt}}</div>
+                                                <i class="fa fa-minus m-r-5 m-l-5"></i>
+                                                <span class="f-10">{{partida.item}}</span>
+                                                <div class="w-desc recortatext1l f-10">
+                                                    {{partida.descripcion}}</div>
+                                            </div>
+                                        </ng-option>
+                                    </ng-select>
+                                </div>
+                            </td>
+                            <td appAnchocol [ancho]="20" class="text-center">
+                                {{predecesor?.get('idgantt')?.value}}
+                            </td>
+                            <td appAnchocol [ancho]="60">
+                                <div class="custom-row w-100">
+                                    <ng-select
+                                        [ngClass]="{'invalidsel':(predecesor?.get('tipo')?.invalid && predecesor?.get('tipo')?.touched)}"
+                                        [appendTo]="'body'" [clearable]="false" formControlName="tipo"
+                                        (change)="referenciaActualModal()">
+                                        <ng-option value="" class="text-center">--</ng-option>
+                                        <ng-option *ngFor="let tipo of tiposPredecesor" [value]="tipo.id"
+                                            class="text-center">
+                                            <div class="d-flex">
+                                                <div>
+                                                    {{tipo.id}}
+                                                </div>
+                                            </div>
+                                        </ng-option>
+                                    </ng-select>
+                                </div>
+                            </td>
+
+                            <td appAnchocol [ancho]="55">
+                                <input type="text" formControlName="adicional" class="w-100 input-tb-colors mayuscula"
+                                    (keydown)="formsService.limitarTeclasPredecesor($event)"
+                                    (blur)="verificarAdicionalValido(rowIndex)">
+                            </td>
+
+                            <td appAnchocol [ancho]="30" class="text-center">
+                                <button type="button" class="btn btn-mini2 btn-danger" placement="top"
+                                    ngbTooltip="Eliminar Predecesor" container="body" (click)="eliminarRow(rowIndex)">
+                                    <i class="fa fa-trash icono-but"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    </ng-template>
+                    <ng-template pTemplate="emptymessage">
+                        <tr class="text-center">
+                            <td colspan="7" class="text-center">NINGUN PREDECESOR AGREGADO</td>
+                        </tr>
+                    </ng-template>
+                </p-table>
+            </ng-container>
+        </div>
+    </form>
+    <ng-template pTemplate="footer">
+        <button type="button" class="btn btn-success btn-sm" (click)="crearPredecesor()"><i
+                class="fa fa-check"></i>Guardar</button>
+    </ng-template>
+</p-dialog>
+
+<p-dialog [(visible)]="displayBasic2" [style]="{width: '14rem'}">
+    <p-header>
+        Editar Restricción ({{partidaSeleccionada?.item}})
+    </p-header>
+    <div class="d-flex">
+        <mat-form-field appearance="outline" class="mff-reduc wrapper-custom" style="width: 85%;"
+            [ngClass]="{'dangermatinput': submitModal && FIinvalido}">
+            <mat-label>Restricción Inicial</mat-label>
+            <input matInput type="date" [(ngModel)]="fechaRestriccion">
+        </mat-form-field>
+        <div style="width: 15%;">
+            <button type="button" class="btn btn-danger btn-mini boton-limpiar" (click)="fechaRestriccion = ''"
+                [disabled]="!fechaRestriccion" ngbTooltip="Limpiar" container="body"><i
+                    class="fa fa-trash mr-0"></i></button>
+        </div>
+    </div>
+
+    <div class="d-flex">
+        <mat-form-field appearance="outline" class="mff-reduc wrapper-custom" style="width: 85%;"
+            [ngClass]="{'dangermatinput': submitModal && FFinvalido}">
+            <mat-label>Restricción Final</mat-label>
+            <input matInput type="date" [(ngModel)]="fechaRestriccion2">
+        </mat-form-field>
+        <div style="width: 15%;">
+            <button type="button" class="btn btn-danger btn-mini boton-limpiar" container="body"
+                (click)="fechaRestriccion2 = ''" [disabled]="!fechaRestriccion2" ngbTooltip="Limpiar"><i
+                    class="fa fa-trash mr-0"></i></button>
+        </div>
+    </div>
+    <ng-template pTemplate="footer">
+        <button type="button" class="btn btn-success btn-sm" (click)="actualizarRestriccion()"><i
+                class="fa fa-check"></i>Guardar</button>
+    </ng-template>
+</p-dialog>
+
+<app-modal-basic #modalPartInsum [dialogClass]="'modal-xl modalgrande'">
+    <div class="app-modal-header">
+        <h4 class="modal-title tit-modal1"><b>Detalle </b></h4>
+        <button type="button" class="close basic-close" (click)="cerrarModal()">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+    <div class="app-modal-body">
+        <div class="row px-4">
+            <div class="col-12 px-0 overflow-auto max-body-tb-detalle">
+                <table class="table-bordered tab-10 table-p table-custom" style="table-layout: fixed;">
+                    <thead class="text-center headsticky">
+                        <tr>
+                            <th appAnchocol [ancho]="200" class="h-h-custom static1h" rowspan="3">
+                                Descripción</th>
+                            <th appAnchocol [ancho]="40" class="h-h-custom static2m" rowspan="3">Unidad</th>
+                            <th appAnchocol [ancho]="80" class="h-h-custom static3m" rowspan="3">Parcial</th>
+                            <th appAnchocol [ancho]="80 * (item.col)" class="h-h-custom"
+                                *ngFor="let item of yearsHeader" [attr.colspan]="item.col">
+                                {{item.year}}
+                            </th>
+                        </tr>
+                        <tr *ngIf="mesesHeader.length">
+                            <th appAnchocol [ancho]="80" [attr.colspan]="1" class="h-h-custom"
+                                *ngFor="let item of mesesHeader;let index = index">
+                                Mes {{index + 1}} &nbsp;&nbsp;
+                                ({{arrayMeses[item.mes- 1]}})
+                            </th>
+                        </tr>
+                        <tr *ngIf="mesesHeader.length">
+                            <ng-container *ngFor="let item of mesesHeader;let index = index">
+                                <th appAnchocol [ancho]="80" class="h-h-custom">
+                                    Monto
+                                </th>
+                            </ng-container>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <ng-container *ngIf="partsInsumos?.partidas.length; else nopartidas">
+                            <ng-container *ngFor="let item of partsInsumos?.partidas; let index = index">
+                                <tr (click)="filaModal = index">
+                                    <td class="static1h color-celda" [ngClass]="{'highlight2': index == filaModal}">
+                                        <div class="recortatext1l">
+                                            {{item.item}}&nbsp; - &nbsp;{{item.descripcion}}
+                                        </div>
+
+                                    </td>
+                                    <td class="text-center static2m color-celda"
+                                        [ngClass]="{'highlight2': index == filaModal}">
+                                        {{item.unidad}}
+                                    </td>
+                                    <td class="text-right static3m color-celda"
+                                        [ngClass]="{'highlight2': index == filaModal}">
+                                        {{item.parcial}}
+                                    </td>
+                                    <ng-container *ngFor="let row of item.meses;let i = index">
+                                        <td class="text-right" [ngClass]="{'highlight2': index == filaModal}">
+                                            {{redondeo(row)}}
+                                        </td>
+                                    </ng-container>
+                                </tr>
+                            </ng-container>
+
+                        </ng-container>
+                        <ng-template #nopartidas>
+                            <tr>
+                                <td class="mat-cell text-center" colspan="21">
+                                    <label>No se encontraron resultados</label>
+                                </td>
+                            </tr>
+                        </ng-template>
+                    </tbody>
+                    <tfoot class="text-right sticky-foot" *ngIf="partsInsumos?.partidas.length">
+                        <tr>
+                            <th class="h-h-custom text-center font-weight-bolder" colspan="2">
+                                Total </th>
+                            <th class="h-h-custom font-weight-bolder ">
+
+                                <div class="d-flex justify-content-between">
+                                    <div style="opacity: 0.6;">
+                                        {{simbolo}}
+                                    </div>
+                                    <div class="font-weight-bolder">
+                                        {{partsInsumos.parcial}}
+                                    </div>
+                                </div>
+
+                            </th>
+                            <th *ngFor="let mont of totInsumDEtalles" class="font-weight-bolder">
+                                <div class="d-flex justify-content-between">
+                                    <div style="opacity: 0.6;">
+                                        {{simbolo}}
+                                    </div>
+                                    <div class="font-weight-bolder">
+                                        {{redondeo(mont)}}
+                                    </div>
+                                </div>
+                            </th>
+                        </tr>
+
+                    </tfoot>
+                </table>
+            </div>
+
+        </div>
+
+    </div>
+    <div class="app-modal-footer w-100">
+        <div class="row px-3">
+            <button type="button" style="margin-right: 5px;" class="btn btn-sm btn-danger ripple"
+                (click)="cerrarModal()">Cerrar</button>
+        </div>
+    </div>
+</app-modal-basic>
+
+<ng-template #popOptions>
+    <div style="display: grid;" class="m-3">
+        <mat-checkbox [(ngModel)]="columnDiasCalendario">Dias (Calendario)
+        </mat-checkbox>
+        <mat-checkbox [(ngModel)]="columnCuadrilla">Cuadrilla
+        </mat-checkbox>
+        <mat-checkbox [(ngModel)]="columnRendimiento">Rendimiento
+        </mat-checkbox>
+        <mat-checkbox [(ngModel)]="columnMetrado">Metrado
+        </mat-checkbox>
+        <mat-checkbox [(ngModel)]="columnRestriccion">Restriccion
+        </mat-checkbox>
+    </div>
+</ng-template>
+
+<ng-template #popLeyenda>
+    <div class="m-2" style="font-family: serif;">
+        <div class="d-flex">
+            <span style="margin-right:15px">Grupos</span>
+            <div style=" background-color: #444446;" class="m-t-5 leyenda-item">
+            </div>
+        </div>
+        <div class="d-flex">
+            <span style="margin-right:15px">Partidas</span>
+            <div style="background-color: #3ca8ff" class="m-t-5 leyenda-item">
+            </div>
+        </div>
+        <div class="d-flex">
+            <span style="margin-right:15px">Ruta Crítica</span>
+            <div style=" background-color: #fc7171;" class="m-t-5 leyenda-item">
+            </div>
+        </div>
+        <div class="d-flex">
+            <span style="margin-right:15px">Feriados</span>
+            <div [style.background-color]="colorFeriadosLey" class=" leyenda-item-2"></div>
+        </div>
+        <div class="d-flex">
+            <span style="margin-right:15px">No Laborables</span>
+            <div [style.background-color]="colorNoLaboLey" class="leyenda-item-2">
+            </div>
+        </div>
+        <div class="d-flex">
+            <span style="margin-right:15px"> Dia Actual</span>
+            <div [style.background-color]="colorDiaActLey" class=" leyenda-item-2"></div>
+        </div>
+    </div>
+</ng-template>
+
+<div class="col-12 pr-0">
+    <ng-container *ngIf="tabSelect == 1 && dataPrincipal.length && !solover">
+        <i  *ngIf="running" class="fa fa-cloud-upload runtemp float-right" style ="right: 0;"  ngbTooltip="Sus cambios se estan guardando temporalmente." container="body"></i>
+
+        <button type="button" class="btn btn-mini btn-group-mini btn-success float-right d-flex"
+        style="margin-right: 20px;"
+            (mouseup)="quitarfoco($event);" [disabled]=" displayBasic || displayBasic2 || noEnlazar"
+            ngbTooltip="Guardar Cambios" container="body" (click)="guardarCambios()">
+            <i class="fa fa-save mr-0"><span *ngIf="existetemp" class="badge ballalert balert-danger"></span></i>
+        </button>
+        <button type="button" class="btn btn-mini btn-group-mini btn-danger float-right d-flex"
+            (mouseup)="quitarfoco($event);" [disabled]=" displayBasic || displayBasic2 || noEnlazar"
+            ngbTooltip="Descartar Cambios no guardados" container="body" (click)="descartarCambios()">
+            <i class="fa fa-times mr-0"></i>
+        </button>
+    </ng-container>
+</div>
+
+<ul ngbNav #nav="ngbNav" [(activeId)]="active" [destroyOnHide]="false" class="nav-tabs" style="margin-right: 4rem;"
+    (navChange)="cambioDeTab($event)" >
+
+    <li [ngbNavItem]="1" [disabled]="!dataPrincipal.length || progTiempNoVAlidos">
+        <a ngbNavLink>Programacion gant</a>
+        <ng-template ngbNavContent>
+            <div class="h-progragantt">
+                <div class="col-12 px-0 d-flex justify-content-between" *ngIf="dataPrincipal.length ">
+                    <div class="col d-flex pl-0">
+                        <ng-container *ngIf="!solover">
+                            <button type="button" class="btn btn-mini btn-group-mini btn-outline-secondary w-32"
+                                placement="top" (mouseup)="quitarfoco($event);"
+                                [disabled]=" !partidaSeleccionada?.duracion || !partidaSeleccionada || displayBasic || displayBasic2|| progTiempNoVAlidos"
+                                *ngIf="!noEnlazar" ngbTooltip="Agregar Hito" container="body" (click)="modalHito()">
+                                <i class="fa fa-header icono-but"></i>
+                            </button>
+                            <button type="button" class="btn btn-mini btn-group-mini btn-outline-secondary w-32"
+                                placement="top" (mouseup)="quitarfoco($event);"
+                                [disabled]=" (partidaSeleccionada?.duracion) || !partidaSeleccionada || displayBasic || displayBasic2 || progTiempNoVAlidos"
+                                *ngIf="!noEnlazar" ngbTooltip="Eliminar Hito" container="body"
+                                (click)="eliminarHito(partidaSeleccionada)">
+                                <i class="fa fa-times icono-but"></i>
+                            </button>
+                            <button type="button" class="btn btn-mini btn-group-mini btn-outline-secondary w-32"
+                                placement="top" (mouseup)="quitarfoco($event);"
+                                [disabled]=" (partidaSeleccionada?.duracion && !partidaSeleccionada?.unidad) || !partidaSeleccionada || !partidaSeleccionada?.duracion || displayBasic || displayBasic2"
+                                *ngIf="!noEnlazar" ngbTooltip="Reiniciar tarea" container="body"
+                                (click)="reprogramarInicio(partidaSeleccionada)">
+                                <i class="fa fa-reply icono-but"></i>
+                            </button>
+                            <button type="button" class="btn btn-mini btn-group-mini btn-outline-secondary  d-flex w-32"
+                                *ngIf="!noEnlazar" placement="top" (mouseup)="quitarfoco($event);"
+                                [disabled]=" displayBasic || displayBasic2 || progTiempNoVAlidos" ngbTooltip="Enlazar"
+                                container="body" (click)="noEnlazar = true">
+                                <i class="fa fa-link icono-but" style="position: relative;left: 2px;"></i>
+                            </button>
+                            <button type="button" class="btn btn-mini btn-group-mini btn-outline-secondary w-32"
+                                placement="top" (mouseup)="quitarfoco($event);"
+                                [disabled]=" displayBasic || displayBasic2 || !rowSeleccionado" *ngIf="!noEnlazar"
+                                ngbTooltip="quitar predecesor de la fila seleccionada" container="body"
+                                (click)="quitarReferenciasProyecto()">
+                                <i class="fa fa-chain-broken icono-but"></i>
+                            </button>
+                            <button class="btn btn-mini btn-group-mini btn-secondary d-flex w-32" *ngIf="noEnlazar"
+                                placement="top" ngbTooltip="Cancelar" type="button" (mouseup)="quitarfoco($event);"
+                                container="body" (click)="cancelarMultiples()">
+                                <i class="fa  fa-times icono-but mr-0"></i>
+                            </button>
+                            <button class="btn btn-mini btn-group-mini btn-primary d-flex w-32" *ngIf="noEnlazar"
+                                placement="top" ngbTooltip="Guardar Enlaces" type="button"
+                                (mouseup)="quitarfoco($event);" container="body" (click)="guardarEnlaces()">
+                                <i class="fa  fa-save icono-but mr-0"></i>
+                            </button>
+                        </ng-container>
+                        <button type="button" class="btn btn-mini btn-group-mini btn-outline-secondary ml-3 w-32"
+                            [ngbPopover]="popOptions" *ngIf="!noEnlazar" [placement]="['right', 'auto']"
+                            ngbTooltip="Ver Columnas" #p="ngbPopover" [autoClose]="'outside'" container="body"
+                            (mouseup)="quitarfoco($event);">
+                            <i class="fa icono-but"
+                                [ngClass]="{'fa-indent': ocultarColumnas, 'fa-outdent': !ocultarColumnas}"></i>
+                        </button>
+                        <button class="btn btn-mini btn-group-mini btn-outline-secondary d-flex w-32"
+                            *ngIf="!noEnlazar && (view_mode == 'Day' || view_mode == 'Month') " placement="top"
+                            [ngbTooltip]="!verDetalle ? 'Ver detalle de partida seleccionada': 'Ocultar vista detalles'"
+                            type="button" (mouseup)="quitarfoco($event);" container="body"
+                            (click)="verDetallePartida()">
+                            <i class="fa  icono-but mr-0"
+                                [ngClass]="{'fa-list-alt': !verDetalle, 'fa-caret-square-o-up': verDetalle}"></i>
+                        </button>
+                        <button class="btn btn-mini btn-group-mini btn-outline-secondary d-flex w-32"
+                            *ngIf="!noEnlazar && (view_mode == 'Day' || view_mode == 'Month') " placement="top"
+                            [ngbTooltip]="!verMontos ? 'Ver montos ': 'Ocultar vista montos'" type="button"
+                            (mouseup)="quitarfoco($event);" container="body" (click)="verMontosPartida()">
+                            <i class="fa  icono-but mr-0"
+                                [ngClass]="{'fa-money': !verMontos, 'fa-caret-square-o-up': verMontos}"></i>
+                        </button>
+                        <ng-container *ngIf="!solover">
+                            <button type="button" class="btn btn-mini btn-group-mini  btn-outline-secondary ml-3 w-32"
+                                *ngIf="!noEnlazar" placement="top" (mouseup)="quitarfoco($event);"
+                                [disabled]=" displayBasic || displayBasic2" ngbTooltip="Reiniciar programación completa"
+                                container="body" (click)="restaurarProgramacion()">
+                                <i class="fa fa-trash icono-but "></i>
+                            </button>
+                            <button type="button" class="btn btn-mini btn-group-mini btn-outline-secondary w-32"
+                                *ngIf="!noEnlazar" [disabled]=" displayBasic || displayBasic2" placement="top"
+                                ngbTooltip="ImportarXML" (mouseup)="quitarfoco($event);" container="body"
+                                (click)="abrirModalXml()">
+                                <i class="fa  fa-cloud-download icono-but"></i>
+                            </button>
+
+                            <button type="button" class="btn btn-mini btn-group-mini btn-outline-secondary w-32"
+                            *ngIf="!noEnlazar"    
+                            placement="bottom" ngbTooltip="Exportar Programación" container="body"
+                                [ngbPopover]="opcexport" (mouseup)="quitarfoco($event);">
+                                <i class="fa fa-cloud-upload icono-but"></i>
+                            </button>
+                        </ng-container>
+                        <button type="button" class="btn btn-mini btn-group-mini btn-outline-secondary w-32"
+                        *ngIf="!noEnlazar"    
+                        placement="bottom" ngbTooltip="Generar reporte" container="body"
+                            (click)="generarDataReporte()" (mouseup)="quitarfoco($event);">
+                            <i class="fa fa-print icono-but"></i>
+                        </button>
+                        <ng-template #opcexport>
+                            <div class="btn-group-vertical">
+                                <button type="button" ngbDropdownItem class="btn btn-sm"
+                                    (click)="exportarXML()">Exportar a
+                                    XML</button>
+                                <button type="button" ngbDropdownItem class="btn btn-sm"
+                                    (click)="exportarExcel()">Exportar
+                                    a Excel</button>
+
+                            </div>
+                        </ng-template>
+                        <button type="button" class="btn btn-mini btn-group-mini btn-primary d-flex w-32"
+                            *ngIf="!noEnlazar && prograNoActua" [disabled]=" displayBasic || displayBasic2"
+                            placement="top"
+                            [ngbTooltip]="'Actualizar dependencias Programación' + (view_mode ? ' y Ruta Critica grafico': '')"
+                            (mouseup)="quitarfoco($event);" container="body" (click)="actualizarModificados()">
+                            <i class="fa fa-refresh fa-spin icono-but" style="margin-left: 5px;"></i>
+                        </button>
+
+                    </div>
+                    <div class="col d-flex justify-content-end">
+
+                        <button type="button" class="btn btn-mini btn-group-mini btn-outline-secondary"
+                            *ngIf="!rutaCriticaActualizada && !prograNoActua" placement="top"
+                            ngbTooltip="Generar ruta critica actualizada" (mouseup)="quitarfoco($event);"
+                            container="body" (click)="actualizarRutaCritica()">
+                            <i class="fa fa-sliders icono-but"></i>
+                        </button>
+                        <button type="button" class="btn btn-mini btn-group-mini btn-outline-secondary "
+                            [ngbPopover]="popLeyenda" *ngIf="!noEnlazar && view_mode" [placement]="['right', 'auto']"
+                            ngbTooltip="Ver Leyenda grafico" #p="ngbPopover" [autoClose]="'outside'" container="body"
+                            (mouseup)="quitarfoco($event);">
+                            <i class="fa fa-tasks icono-but"></i>
+                        </button>
+                        <div>
+                            <mat-form-field appearance="outline" class="mff-reduc pd0" style="width: 110px;">
+                                <mat-label>Formato Gráfico</mat-label>
+                                <select matNativeControl [(ngModel)]="view_mode"
+                                    (ngModelChange)="visualizacionGrafico()">
+                                    <option value="">OCULTAR</option>
+                                    <option value="Day">DIA</option>
+                                    <option value="Week">SEMANA</option>
+                                    <option value="Month">MES</option>
+                                    <option value="Year">ANUAL</option>
+                                </select>
+                            </mat-form-field>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-12 d-flex mt-1 noseleccionable" style="position: absolute;margin-left: -15px;" id="ContenedorPrincipal">
+                    <div #box [style.width.px]=" menuOculto ?  width - 20 : width - 110" [class.active]="status === 1"
+                        (window:mouseup)="setStatus($event, 0)" class="contenedor-tabla tabla-margenes h-100 pl-0 pr-2 "
+                        id="bodyTabla">
+
+                        <div class="col-12 px-0 t"
+                            [ngClass]="{'over-tabla-data': view_mode, 'over-tabla-data2': !view_mode}"
+                            id="tablaProgramacion" [style.height.px]="hTabla - 43" (scroll)="SyncScroll2()">
+                            <table class="table-bordered tab-10 table-p tabla" id="tablaHtml">
+                                <thead class="text-center" style="position: relative;left: -1px; z-index:3;">
+                                    <tr class="headsticky" style="height: 26.01px;">
+                                        <th colspan="13">PROGRAMACION</th>
+                                    </tr>
+                                    <tr class="headsticky-2 sticky-1ra-fila">
+                                        <th appAnchocol [ancho]="40" style="height: 24px;" class="static1h"> ID</th>
+                                        <th [style.width.px]="wDescripcion" [style.max-width.px]="wDescripcion"
+                                            [style.width.px]="wDescripcion" style="height: 24px;">Partida
+                                        </th>
+                                        <th appAnchocol [ancho]="40" style="height: 24px;"
+                                            [hidden]="!columnRestriccion ? true : false">Restri.</th>
+                                        <th appAnchocol [hidden]="!columnDiasCalendario ? true : false" [ancho]="75"
+                                            style="height: 24px;">Duracion
+                                            <br>(Calendario)
+                                        </th>
+                                        <th appAnchocol [ancho]="75" style="height: 24px;">Duracion <br>(Laborables)
+                                        </th>
+
+
+                                        <th appAnchocol [ancho]="90" style="height: 24px;">Comienzo</th>
+                                        <th appAnchocol [ancho]="90" style="height: 24px;"> Fin</th>
+                                        <th [style.width.px]="wReferencia" [style.max-width.px]="wReferencia"
+                                        [style.width.px]="wReferencia" style="height: 24px;"> Predecesor</th>
+                                        <th appAnchocol [ancho]="55" [hidden]="!columnCuadrilla ? true : false"
+                                            style="height: 24px;">
+                                            Cuadrilla</th>
+                                        <th appAnchocol [ancho]="70" [hidden]="!columnRendimiento ? true : false"
+                                            style="height: 24px;">
+                                            Rendimiento</th>
+                                        <th appAnchocol [ancho]="70" [hidden]="!columnMetrado ? true : false"
+                                            style="height: 24px;">
+                                            Metrado</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="text-center" id="bodyTablaProgra">
+                                    <ng-container *ngIf="dataPrincipal.length; else noData">
+                                        <tr *ngFor="let row of dataPrincipal; let rowIndex = index" class="h-h-custom"
+                                            (click)="filaSel = rowIndex; partidaSeleccionada = row; rowSeleccionado = row;  recuperarDetallePartida(row)">
+                                            <td appAnchocol [ancho]="40" [ngClass]="{'highlight': filaSel == row.ind}"
+                                                class="static1 h-h-custom">
+                                                {{row.idgantt}}
+                                            </td>
+                                            <!-- appAnchocol [ancho]="wDescripcion" [detalle]="true" -->
+                                            <td [style.width.px]="wDescripcion" [style.max-width.px]="wDescripcion"
+                                                [style.width.px]="wDescripcion"
+                                                [ngClass]="{'highlight': filaSel == row.ind}" appPintarfilapre
+                                                [tipo]="titulo1" [color]="titulo1color" [letra]="titulo1letra"
+                                                [item]="row.item" [separador]="'.'"
+                                                [partida]="row.unidad!=''?true:false"
+                                                [hito]="!row.duracion ? true: false" class="h-h-custom">
+                                                <ng-container *ngIf="row.editarDescrip; else noeditDes">
+                                                    <input #inputdescripcion type="text" [value]="row.descripcion"
+                                                        appAutoFocus class="w-100 mayuscula h-20" autocomplete="off"
+                                                        maxlength="100" (focus)="inputdescripcion.select()"
+                                                        (blur)="evaluarDescripcion($event.target.value, row.ind)"
+                                                        (keydown.enter)="evaluarDescripcion($event.target.value, row.ind)">
+                                                </ng-container>
+                                                <ng-template #noeditDes>
+                                                    <div class="recortatextlinea text-left" *ngIf="!row.editarDescrip"
+                                                        (click)="habilitarEditar(rowIndex, 'descripcion')"
+                                                        [style.padding-left.px]="((row.item?.toString().split('.').length-1)*5)+(row.unidad?17:0) + (!row.duracion && !row.unidad ? 13 : 0)"
+                                                        ngbTooltip="{{row.descripcion}}" #t="ngbTooltip"
+                                                        container="body" triggers="click:blur" (mouseout)="t.close()">
+                                                        <a *ngIf="!row.unidad && row.icomost=='0' && row.duracion"
+                                                            style="padding: 0px 2px;color:#06bb06;cursor: pointer;">
+                                                            <i class="icofont icofont-caret-down"></i>
+                                                        </a>
+                                                        <a *ngIf="!row.unidad && row.icomost=='1' && row.duracion"
+                                                            style="padding: 0px 2px;color:red">
+                                                            <i class="icofont icofont-caret-down"></i>
+                                                        </a><span style="font-weight: 700;"
+                                                            [ngClass]="{'ocultarHiden': !row.duracion}">
+                                                            <ng-container *ngIf="!itemAuxActivo; else itAux">
+                                                                {{row.item}}
+                                                            </ng-container>
+                                                            <ng-template #itAux>
+                                                                {{ arrItemsAux[rowIndex].auxiliar}}
+                                                            </ng-template>
+                                                        </span>&nbsp;&nbsp;<span
+                                                            [ngClass]="{'font-weight-bold ml-1': !row.duracion && !row.unidad}">{{row.descripcion}}</span>
+                                                    </div>
+                                                </ng-template>
+                                            </td>
+                                            <td appAnchocol [ancho]="40" [ngClass]="{'highlight': filaSel == row.ind}"
+                                                appPintarfilapre [tipo]="titulo1" [color]="titulo1color"
+                                                [letra]="titulo1letra" [item]="row.item" [separador]="'.'"
+                                                [partida]="row.unidad!=''?true:false"
+                                                [hidden]="!columnRestriccion ? true : false"
+                                                [hito]="!row.duracion ? true: false" class="h-h-custom">
+                                                <ng-container *ngIf="row.unidad; else noedit6">
+                                                    <span *ngIf="!row.editarRest" class="w-100 d-inline-block"
+                                                        (click)="habilitarEditar(rowIndex, 'restriccion')"
+                                                        style="cursor:pointer">
+                                                        <span *ngIf="row.restriccion || row.restriccion2"
+                                                            ngbTooltip="{{textoRestriccion(row)}}" container="body"><i
+                                                                class="fa fa-2x fa-thumb-tack text-danger"
+                                                                aria-hidden="true"></i></span>
+                                                        <span *ngIf="!row.restriccion && !row.restriccion2">-</span>
+                                                    </span>
+                                                    <div *ngIf="row.editarRest " ngbTooltip="Editar restricción"
+                                                        container="body">
+                                                        -
+                                                    </div>
+                                                </ng-container>
+                                                <ng-template #noedit6>
+                                                    {{row.restriccion | date: 'dd-MM-yyyy'}}
+                                                </ng-template>
+                                            </td>
+                                            <td appAnchocol [ancho]="75" [hidden]="!columnDiasCalendario ? true : false"
+                                                [ngClass]="{'highlight': filaSel == row.ind}" appPintarfilapre
+                                                [tipo]="titulo1" [color]="titulo1color" [letra]="titulo1letra"
+                                                [item]="row.item" [separador]="'.'"
+                                                [partida]="row.unidad!=''?true:false"
+                                                [hito]="!row.duracion ? true: false" class="h-h-custom">
+                                                <ng-container *ngIf="!row.indice_ref_hito">
+                                                    {{row.duraciontot}} dias
+                                                </ng-container>
+
+                                            </td>
+                                            <td appAnchocol [ancho]="75" [ngClass]="{'highlight': filaSel == row.ind}"
+                                                appPintarfilapre [tipo]="titulo1" [color]="titulo1color"
+                                                [letra]="titulo1letra" [item]="row.item" [separador]="'.'"
+                                                [partida]="row.unidad!=''?true:false"
+                                                [hito]="!row.duracion ? true: false" class="h-h-custom">
+                                                <ng-container *ngIf="row.unidad; else noedit1">
+                                                    <span *ngIf="!row.editarDur"
+                                                        (click)="habilitarEditar(row.ind, 'duracion')">
+                                                        {{row.duracion}} dias
+                                                    </span>
+                                                    <div *ngIf="row.editarDur ">
+                                                        <input #inputduracion type="text" appAutoFocus
+                                                            [value]="row.duracion" autocomplete="off"
+                                                            (focus)="inputduracion.select()" class="w-100 mayuscula h-20"
+                                                            (keyup)="presTeclaTiempos($event, row.ind, 'Dur','')"
+                                                            (blur)="evaluarDuracion($event.target.value, row.ind)"
+                                                            [textMask]="{mask: this.formsService.maskDias}">
+                                                    </div>
+                                                </ng-container>
+                                                <ng-template #noedit1>
+                                                    {{row.duracion}} dias
+                                                </ng-template>
+                                            </td>
+                                            <td appAnchocol [ancho]="90" [ngClass]="{'highlight': filaSel == row.ind}"
+                                                appPintarfilapre [tipo]="titulo1" [color]="titulo1color"
+                                                [letra]="titulo1letra" [item]="row.item" [separador]="'.'"
+                                                [partida]="row.unidad!=''?true:false"
+                                                [hito]="!row.duracion ? true: false" class="h-h-custom">
+                                                <ng-container *ngIf="row.unidad || !row.duracion; else noedit2">
+                                                    <div *ngIf="!row.editarFI" class="w-100"
+                                                        (click)="habilitarEditar(row.ind, 'fechaini')">
+                                                        <span *ngIf="row.fechaini">{{row.fechaini | date:
+                                                            'dd-MM-yyyy'}}</span>
+                                                        <i class="fa fa-warning text-danger ml-1" container="body"
+                                                            [ngbTooltip]="'Fuera de fechas limite de proyecto'"
+                                                            *ngIf="row.fechaini < fiProyecto || row.fechaini > ffProyecto"></i>
+                                                        <i class="fa fa-exclamation-circle text-restrict ml-1"
+                                                            ngbTooltip="Fecha menor a fecha inicial restricción"
+                                                            container="body" *ngIf="row.restriccion > row.fechaini"></i>
+                                                        <span *ngIf="!row.fechaini">-</span>
+                                                    </div>
+                                                    <div *ngIf="row.editarFI">
+                                                        <input #inputFI type="date" appAutoFocus [value]="row.fechaini"
+                                                            class="w-100" (focus)="inputFI.select()"
+                                                            (blur)=" row.duracion ? evaluarFechaInicio($event.target.value, row.ind) : actualizarFechaFinHito($event.target.value, row.ind)"
+                                                            (keydown.enter)=" row.duracion ? evaluarFechaInicio($event.target.value, row.ind) : actualizarFechaFinHito($event.target.value, row.ind)">
+                                                    </div>
+                                                </ng-container>
+                                                <ng-template #noedit2>
+                                                    {{row.fechaini | date: 'dd-MM-yyyy'}}
+                                                </ng-template>
+                                            </td>
+                                            <td appAnchocol [ancho]="90" [ngClass]="{'highlight': filaSel == row.ind}"
+                                                appPintarfilapre [tipo]="titulo1" [color]="titulo1color"
+                                                [letra]="titulo1letra" [item]="row.item" [separador]="'.'"
+                                                [partida]="row.unidad!=''?true:false"
+                                                [hito]="!row.duracion ? true: false" class="h-h-custom">
+                                                <ng-container *ngIf="row.unidad; else noedit3">
+                                                    <span *ngIf="!row.editarFF">
+                                                        <span *ngIf="row.fechafin">{{row.fechafin| date: 'dd-MM-yyyy'}}
+                                                            <i class="fa fa-warning text-danger ml-1" container="body"
+                                                                [ngbTooltip]="'Fuera de fechas limite de proyecto'"
+                                                                *ngIf="row.fechafin < fiProyecto || row.fechafin > ffProyecto"></i>
+                                                            <i class="fa fa-exclamation-circle text-restrict ml-1"
+                                                                ngbTooltip="Fecha mayor a fecha final restricción"
+                                                                container="body"
+                                                                *ngIf="row.restriccion2 > row.fechafin"></i>
+                                                        </span>
+                                                        <span *ngIf="!row.fechafin">-</span>
+                                                    </span>
+                                                    <div *ngIf="row.editarFF">
+                                                        <input #inputFF type="date" appAutoFocus [value]="row.fechafin"
+                                                            class="w-100" (focus)="inputFF.select()"
+                                                            (blur)="verificarValor($event.target.value, 'fechafin', row.ind)"
+                                                            (keydown.enter)="verificarValor($event.target.value, 'fechafin', row.ind)">
+                                                    </div>
+                                                </ng-container>
+                                                <ng-template #noedit3>
+                                                    {{row.fechafin | date: 'dd-MM-yyyy'}}
+                                                </ng-template>
+                                            </td>
+                                            <td [style.width.px]="wReferencia" [style.max-width.px]="wReferencia"
+                                            [style.width.px]="wReferencia" [ngClass]="{'highlight': filaSel == row.ind}"
+                                                appPintarfilapre [tipo]="titulo1" [color]="titulo1color"
+                                                [letra]="titulo1letra" [item]="row.item" [separador]="'.'"
+                                                [partida]="row.unidad!=''?true:false"
+                                                [hito]="!row.duracion ? true: false" class="text-left h-h-custom">
+                                                <ng-container *ngIf="row.unidad || !row.duracion ; else noedit4">
+                                                    <div *ngIf="!row.editarPred" class="d-flex">
+                                                        <div 
+                                                        [style.width.px]="wReferencia == 111 ? 80 : wReferencia" [style.max-width.px]="wReferencia == 111 ? 80 : wReferencia"
+                                            [style.width.px]="wReferencia == 111 ? 80 : wReferencia"
+                                                            class="recortatextlinea text-center"
+                                                            (click)="habilitarEditar(row.ind, 'predecesor')">
+                                                            {{row.referencia}}
+                                                        </div>
+                                                        <button class="btn btn-mini2 btn-info" placement="top"
+                                                            type="button" (mouseup)="quitarfoco($event);"
+                                                            *ngIf="!noEnlazar && !displayBasic && !displayBasic2 && row.duracion && !mostrar_carga_todo && !solover"
+                                                            ngbTooltip="Editar Predecesor" container="body"
+                                                            (click)="showBasicDialog(row,row.ind)">
+                                                            <i class="fa fa-edit icono-but"></i>
+                                                        </button>
+                                                        <div *ngIf="row.nroclick" style="padding-top: 5px;font-size: 12px;margin-right: 5px;
+                                                    font-weight: bolder;">{{row.nroclick}}
+                                                        </div>
+                                                        <mat-checkbox class="checktabla"
+                                                            *ngIf="noEnlazar && row.duracion" [checked]="row.predecesor"
+                                                            (change)="checkMultiple(row, row.ind)">
+                                                        </mat-checkbox>
+                                                    </div>
+                                                    <div *ngIf="row.editarPred">
+                                                        <input #inputPred type="text" appAutoFocus
+                                                            [value]="row.referencia" autocomplete="off"
+                                                            (focus)="inputPred.select()" class="w-100 mayuscula h-20"
+                                                            (keyup)="presTeclaTiempos($event, row.ind, 'Pred','')"
+                                                            (blur)="row.duracion ? evaluarReferencia($event.target.value, row.ind) : evaluarRefHito($event.target.value, row.ind)"
+                                                            (keydown)="formsService.limitarTeclasPredecesor($event)">
+
+                                                    </div>
+                                                </ng-container>
+                                                <ng-template #noedit4>
+                                                    <div class="text-center recortatextlinea" [ngStyle]="{'margin-right.px': wReferencia == 111 ? 25: 0}">
+                                                        <!-- style="margin-right: 25px;"> -->
+                                                        {{row.referencia}}
+                                                    </div>
+                                                </ng-template>
+                                            </td>
+
+                                            <td appAnchocol [ancho]="55" [ngClass]="{'highlight': filaSel == row.ind}"
+                                                appPintarfilapre [tipo]="titulo1"
+                                                [hidden]="!columnCuadrilla ? true : false" [color]="titulo1color"
+                                                [letra]="titulo1letra" [item]="row.item" [separador]="'.'"
+                                                [partida]="row.unidad!=''?true:false"
+                                                [hito]="!row.duracion ? true: false" class="h-h-custom">
+                                                <ng-container *ngIf="row.unidad; else noedit5">
+                                                    <div>
+                                                        {{(row.cuadrilla) | number:'0.3-3'}}
+                                                    </div>
+                                                </ng-container>
+                                            </td>
+
+                                            <td appAnchocol [ancho]="70" [hidden]="!columnRendimiento ? true : false"
+                                                [ngClass]="{'highlight': filaSel == row.ind}" appPintarfilapre
+                                                [tipo]="titulo1" [color]="titulo1color" [letra]="titulo1letra"
+                                                [item]="row.item" [separador]="'.'"
+                                                [partida]="row.unidad!=''?true:false"
+                                                [hito]="!row.duracion ? true: false" class="text-right"
+                                                class="h-h-custom">
+                                                <ng-container *ngIf="row.unidad">
+                                                    {{row.rendimiento | number:'0.2'}}
+                                                </ng-container>
+                                            </td>
+
+                                            <td appAnchocol [ancho]="70" [hidden]="!columnMetrado ? true : false"
+                                                [ngClass]="{'highlight': filaSel == row.ind}" appPintarfilapre
+                                                [tipo]="titulo1" [color]="titulo1color" [letra]="titulo1letra"
+                                                [item]="row.item" [separador]="'.'"
+                                                [partida]="row.unidad!=''?true:false"
+                                                [hito]="!row.duracion ? true: false" class="text-right">
+                                                <ng-container *ngIf="row.unidad" class="h-h-custom">
+                                                    {{row.metrado | number: mask_metrado}}
+                                                </ng-container>
+                                            </td>
+                                        </tr>
+                                    </ng-container>
+                                    <ng-template #noData>
+                                        <tr>
+                                            <td class="mat-cell text-center" colspan="11">
+                                                <label *ngIf="!buscando">No se encontraron resultados</label>
+                                                <div *ngIf="buscando" class="preloader3 loader-block">
+                                                    <div class="circ1"></div>
+                                                    <div class="circ2"></div>
+                                                    <div class="circ3"></div>
+                                                    <div class="circ4"></div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </ng-template>
+                                </tbody>
+                            </table>
+
+                        </div>
+                        <div class="col-12 px-0" *ngIf="verMontos">
+                            <table class="table-bordered tab-10 table-p">
+                                <thead>
+                                    <tr style="height: 22px;">
+                                        <th>DETALLE</th>
+                                        <th>MONTO </th>
+                                    </tr>
+                                    <tr style="height: 22px;">
+                                        <th class="text-center">Monto Valorizado</th>
+                                        <th class="text-center" style=" font-size: 12px !important;">{{total | number :
+                                            '0.'+ this.dec_parcial + '-' + this.dec_parcial}}</th>
+                                    </tr>
+                                    <tr style="height: 22px;">
+                                        <th class="text-center">Porcentaje Monto</th>
+                                        <th class="text-center" style=" font-size: 12px !important;">100%</th>
+                                    </tr>
+                                </thead>
+                            </table>
+                        </div>
+
+                    </div>
+                    <div class="resize-action" (mousedown)="setStatus($event, 1)" *ngIf="view_mode"></div>
+                    <div class="col  height-gantt px-0 noseleccionable" (scroll)="SyncScroll()" id="ganttTabla"
+                        [style.height.px]="hGantt - 43">
+
+                        <div class="header-sticky-grafico" id="calendario" *ngIf="fechaFinalGrafico && fechaIniGrafico">
+                            <app-header-calendario [idProyecto]="idProyecto" [fechaFinGrafico]="fechaFinalGrafico"
+                                [color_noLabo]="colorNoLabo" [color_feriado]="colorFeriado" [color_actual]="colorActual"
+                                [view_mode]="view_mode" [fechaIniGrafico]="fechaIniGrafico"
+                                [actualizarHeader] = "actualizarHeader"
+                                (listaMeses)="recuperarDataHeader($event)"
+                                (tabla)="tablaHeader($event)"></app-header-calendario>
+                        </div>
+                        <div id="gantt" (click)="mostrar($event)" >
+                        </div>
+                        <div class="px-0 overflow-hidden" [style.width.px]="widthTotales + 1.11" id="tablaMontos"
+                            [ngClass]="{'fixed-table': !verDetalle, 'fixed-table2': verDetalle}" *ngIf="verMontos">
+                            <table class="table-bordered tab-10 table-p">
+                                <thead class="text-center">
+                                    <tr style="height: 22px;">
+                                        <ng-container *ngFor="let item of dataHeader">
+                                            <th appAnchocol [ancho]="item.width">
+                                                {{view_mode == 'Month'? item.nom_mes:((item.nombre)?.split('-')[0])}}
+                                            </th>
+                                        </ng-container>
+                                    </tr>
+                                    <tr style="height: 22px;">
+                                        <ng-container *ngFor="let item of dataHeader; let i = index">
+                                            <th appAnchocol [ancho]="item.width" style=" font-size: 12px !important;">
+                                                {{simbolo}} {{totalesDesembolso[i] | number:'0.'+ this.dec_parcial + '-' +
+                                                this.dec_parcial}}
+                                            </th>
+                                        </ng-container>
+                                    </tr>
+                                    <tr style="height: 22px;">
+                                        <ng-container *ngFor="let item of dataHeader; let i = index">
+                                            <th appAnchocol [ancho]="item.width" style=" font-size: 12px !important;">
+                                                {{porcentajes[i] | number:'0.2-2'}} <span class="opacity-50">%</span>
+                                            </th>
+                                        </ng-container>
+                                    </tr>
+                                </thead>
+                            </table>
+                        </div>
+                    </div>
+
+                </div>
+                <div class="col-12  d-flex class-detalle " style="margin-left: -10px;" *ngIf="verDetalle"
+                    [ngClass]="{'justify-content-center': !detalleGenerado ||!rowSeleccionado || (rowSeleccionado && !rowSeleccionado?.unidad)}">
+                    <ng-container *ngIf="detalleGenerado; else noDetalle">
+                        <ng-container *ngIf="rowSeleccionado?.unidad">
+                            <div class="col-4 px-1 card mt-3 px-1" style="width: fit-content;">
+                                <h5 class="text-danger font-weight-bolder">Cuadrilla segun ACU x Dia</h5>
+                                <div class="w-100 d-flex px-1" style="height: 50px;border: 1px solid #8f8f91;">
+                                    <div class="align-self-center" style="font-size: 12px;">Duracion: </div>
+                                    <div class="align-self-center ml-1 div-celda font-weight-bolder"
+                                        style="font-size: 120;">{{rowSeleccionado?.tiempoUnitario | number:'0.0'}}</div>
+                                    <div class="align-self-center ml-3 " style="font-size: 12px;"> Rendimiento:</div>
+                                    <div class="align-self-center div-celda ml-1 font-weight-bolder"
+                                        style="font-size: 120;">{{rowSeleccionado?.rendimiento | number:'0.2'}}</div>
+                                    <div class="align-self-center ml-2" style="font-size: 10px;">
+                                        {{rowSeleccionado?.unidad}}/Dia
+                                    </div>
+                                </div>
+
+                                <div class="mt-1">
+                                    𝐶𝑢𝑎𝑑. 𝑀𝑂 𝑥 𝐷𝑖𝑎 = <ng-container
+                                        *ngIf="rowSeleccionado?.cuadrillaMO; else noCuadrMO">{{rowSeleccionado?.cuadrillaMO}}</ng-container><ng-template
+                                        #noCuadrMO><i class="fa fa-ellipsis-h ml-2"></i></ng-template>
+
+                                </div>
+                                <div>
+                                    𝐶𝑢𝑎𝑑. 𝐸𝑄 𝑥 𝐷𝑖𝑎 = <ng-container
+                                        *ngIf="rowSeleccionado?.cuadrillaEQ; else noCuadrEQ">{{rowSeleccionado?.cuadrillaEQ}}</ng-container><ng-template
+                                        #noCuadrEQ><i class="fa fa-ellipsis-h ml-2"></i></ng-template>
+                                </div>
+                            </div>
+                            <div class="col-4 px-1 card mt-3 px-1" style="width: fit-content;">
+                                <h5 class="text-danger font-weight-bolder">Cuadrilla modificada x Dia</h5>
+                                <div class="w-100 d-flex px-1" style="height: 50px;border: 1px solid #8f8f91;">
+                                    <div class="align-self-center" style="font-size: 12px;">Duracion: </div>
+                                    <div class="align-self-center ml-1 div-celda font-weight-bolder"
+                                        style="font-size: 120;">{{rowSeleccionado?.duracion}}</div>
+                                    <div class="align-self-center ml-3 " style="font-size: 12px;"> Rendimiento:</div>
+                                    <div class="align-self-center div-celda ml-1 font-weight-bolder"
+                                        style="font-size: 120;">{{calculoRendCuadrMod(rowSeleccionado)}}</div>
+                                    <div class="align-self-center ml-2" style="font-size: 10px;">
+                                        {{rowSeleccionado?.unidad}}/Dia
+                                    </div>
+                                </div>
+                                <div class="mt-1">
+                                    𝐶𝑢𝑎𝑑. 𝑀𝑂 𝑥 𝐷𝑖𝑎 = <ng-container
+                                        *ngIf="rowSeleccionado?.cuadrillaMO1; else noCuadrMO1">{{rowSeleccionado?.cuadrillaMO1}}</ng-container><ng-template
+                                        #noCuadrMO1><i class="fa fa-ellipsis-h ml-2"></i></ng-template>
+                                </div>
+                                <div>
+                                    𝐶𝑢𝑎𝑑. 𝐸𝑄 𝑥 𝐷𝑖𝑎 = <ng-container
+                                        *ngIf="rowSeleccionado?.cuadrillaEQ1; else noCuadrEQ1">{{rowSeleccionado?.cuadrillaEQ1}}</ng-container><ng-template
+                                        #noCuadrEQ1><i class="fa fa-ellipsis-h ml-2"></i></ng-template>
+                                </div>
+                            </div>
+                        </ng-container>
+                        <ng-container *ngIf="!rowSeleccionado">
+                            <label style="align-self: center;">Ninguna partida
+                                seleccionada</label>
+                        </ng-container>
+                        <ng-container *ngIf=" rowSeleccionado && !rowSeleccionado?.unidad">
+                            <label style="align-self: center;"><i class="fa fa-ellipsis-h"></i></label>
+                        </ng-container>
+                    </ng-container>
+                    <ng-template #noDetalle>
+                        <div class="preloader3 loader-block">
+                            <div class="circ1"></div>
+                            <div class="circ2"></div>
+                            <div class="circ3"></div>
+                            <div class="circ4"></div>
+                        </div>
+
+                    </ng-template>
+                </div>
+            </div>
+
+        </ng-template>
+    </li>
+    <li (click)="evaluarTab(2)" [ngbNavItem]="2" [disabled]="!dataPrincipal.length || progTiempNoVAlidos || view_mode !== 'Day'">
+        <a ngbNavLink>Cronograma valorizado</a>
+        <ng-template ngbNavContent let-active>
+            <div class="row px-3 h-contenedores2">
+                <div class="col-12 d-flex justify-content-between pl-0">
+
+                    <div class="d-flex">
+                        <div>
+                            <button type="button" class="btn btn-mini btn-group-mini btn-outline-secondary w-32"
+                                placement="top" (mouseup)="quitarfoco($event);"
+                                [disabled]=" displayBasic || displayBasic2 || noEnlazar"
+                                (click)="reporteCronogramaValorizado()"
+                                ngbTooltip="Generar reporte cronograma valorizado" container="body">
+                                <i class="fa fa-print icono-but"></i>
+                            </button>
+
+                        </div>
+
+                        <mat-checkbox class="example-margin ml-2"
+                            (change)="evaluarColumnasTabla($event.checked, 'desembolso')">Columnas
+                            Estaticas</mat-checkbox>
+                        <mat-checkbox class="example-margin ml-2" [(ngModel)]="ocultarFueraRango"
+                            (change)="evaluarOcultarColum($event.checked)">
+                            Mostrar Fuera de Rango
+                        </mat-checkbox>
+                    </div>
+
+                    <button type="button" class="btn btn-mini  btn-primary d-flex" placement="top"
+                        *ngIf="tablaDesemDesactua" (mouseup)="quitarfoco($event);"
+                        [disabled]=" displayBasic || displayBasic2 || noEnlazar" (click)="generarTablaDesembolso()"
+                        ngbTooltip="Generar tabla cronograma valorizado actualizado" container="body">
+                        <i class="fa fa-refresh icono-but"></i> <span style="font-size: 10px;">ACTUALIZAR</span>
+                    </button>
+                    <div>
+                        <span class="badge bg-danger mr-2" *ngIf="fueraPlazo">Existen tareas programadas fuera de los
+                            limites del proyecto.</span>
+                        <span class="badge bg-danger" *ngIf="tablaDesemDesactua">DESACTUALIZADO</span>
+                        <span class="badge bg-info" *ngIf="!tablaDesemDesactua">ACTUALIZADO</span>
+                    </div>
+
+                </div>
+                <div class="col-12 px-0 custom-div" style="height: calc(100% - 30px)">
+                    <table class="table-bordered tab-10 table-p table-custom" style="table-layout: fixed;">
+                        <thead class="text-center headsticky" [ngClass]="{'zindex3': columnasEstatica}">
+                            <tr>
+                                <th appAnchocol [ancho]="30" class="h-h-custom"
+                                    [ngClass]="{'static1h': columnasEstatica}" rowspan="2">Nº</th>
+                                <th appAnchocol [ancho]="350" class="h-h-custom"
+                                    [ngClass]="{'static1h': columnasEstatica}" rowspan="2">Descripción</th>
+                                <th appAnchocol [ancho]="40" class="h-h-custom"
+                                    [ngClass]="{'static2h': columnasEstatica}" rowspan="2">Unidad</th>
+                                <th appAnchocol [ancho]="100" class="h-h-custom"
+                                    [ngClass]="{'static3h': columnasEstatica}" rowspan="2">Costo por Partida </th>
+                                <ng-container *ngFor="let item of yearsHeader; let index = index">
+                                    <ng-container *ngIf=" colspanAnios[index]">
+                                        <th [ngStyle]="{'width': (80 * colspanAnios[index]) + 'px',
+                                            'max-width': (80 * colspanAnios[index]) + 'px',
+                                            'min-width': (80 * colspanAnios[index]) + 'px'}" class="h-h-custom"
+                                            [attr.colspan]=" colspanAnios[index]">
+                                            {{item.year}}
+                                        </th>
+                                    </ng-container>
+                                </ng-container>
+                            </tr>
+
+                            <tr *ngIf="mesesHeader.length">
+                                <ng-container *ngFor="let item of mesesHeader;let index = index">
+                                    <ng-container *ngIf="mesesMostrar[index] !== 0">
+                                        <th appAnchocol [ancho]="80">
+                                            Mes {{nroMeses[index]}} <br>
+                                            {{arrayMeses[item.mes- 1]}}
+                                        </th>
+                                    </ng-container>
+                                </ng-container>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <ng-container *ngIf="tablaDesembolso.length; else noTablaDesembolso">
+                                <tr *ngFor="let row of tablaDesembolso; let index = index"
+                                    (click)=" filaValorizado = index ">
+                                    <td appPintarfilapre [tipo]="titulo1" [letra]="titulo1letra" class="text-center"
+                                        [ngClass]="{'static1 color-celda': columnasEstatica, 'highlight2': filaValorizado == index}"
+                                        [item]="row.item" [separador]="'.'" [tipo]="titulo1" [color]="titulo1color" [partida]="row.unidad!=''?true:false">
+                                        {{index+1}}
+                                    </td>
+                                    <td appPintarfilapre [tipo]="titulo1" [letra]="titulo1letra" [tipo]="titulo1" [color]="titulo1color"
+                                        [ngClass]="{'static1 color-celda': columnasEstatica, 'highlight2': filaValorizado == index}"
+                                        [item]="row.item" [separador]="'.'" [partida]="row.unidad!=''?true:false">
+                                        <div class="d-flex justify-content-between">
+                                            <div class="recortatextlinea text-left"
+                                                [style.padding-left.px]="((row.item?.toString().split('.').length-1)*5)+(row.unidad?17:0) + (!row.duracion && !row.unidad ? 13 : 0)"
+                                                ngbTooltip="{{row.descripcion}}" #t="ngbTooltip" container="body"
+                                                triggers="click:blur" (mouseout)="t.close()">
+                                                <span
+                                                    style="font-weight: 700;">{{row.item}}</span>&nbsp;&nbsp;<span>{{row.descripcion}}</span>
+                                            </div>
+                                            <i class="fa fa-exclamation-circle text-danger align-self-center"
+                                                container="body" *ngIf="row.fuera_rango"
+                                                ngbTooltip="Fuera de limites de fechas del proyecto"></i>
+                                        </div>
+                                    </td>
+                                    <td [ngClass]="{'highlight': filaSel == row.ind, 'static2 color-celda': columnasEstatica, 'highlight2': filaValorizado == index}"
+                                        appPintarfilapre [tipo]="titulo1" [letra]="titulo1letra" [item]="row.item" [tipo]="titulo1" [color]="titulo1color"
+                                        [separador]="'.'" [partida]="row.unidad!=''?true:false" class="text-center">
+                                        <ng-container *ngIf="row.unidad">
+                                            {{row.unidad}}
+                                        </ng-container>
+                                    </td>
+                                    <td [ngClass]="{'highlight': filaSel == row.ind, 'static3 color-celda': columnasEstatica, 'highlight2': filaValorizado == index}"
+                                        appPintarfilapre [tipo]="titulo1" [letra]="titulo1letra" [item]="row.item" [tipo]="titulo1" [color]="titulo1color"
+                                        [separador]="'.'" [partida]="row.unidad!=''?true:false" class="text-right">
+                                        <ng-container>
+                                            <div class="d-flex justify-content-between">
+                                                <div style="opacity: 0.6;">
+                                                    {{simbolo}}
+                                                </div>
+                                                <div>
+                                                    {{row.parcial | number: '0.'+ this.dec_parcial +'-'+this.dec_parcial
+                                                    }}
+                                                </div>
+                                            </div>
+                                        </ng-container>
+                                    </td>
+                                    <ng-container *ngFor="let item of row.meses; let i = index">
+                                        <ng-container *ngIf="mesesMostrar[i] !== 0">
+                                            <td [ngClass]="{'highlight2': filaValorizado == index}" appPintarfilapre [tipo]="titulo1" [color]="titulo1color"
+                                                [tipo]="titulo1" [letra]="titulo1letra" [item]="row.item"
+                                                [separador]="'.'" [partida]="row.unidad!=''?true:false"
+                                                class="text-center">
+                                                <div class="d-flex justify-content-between" *ngIf="item && row.unidad"
+                                                    ngbTooltip="{{item.dias}} dias habiles" container="body">
+                                                    <ng-container *ngIf="item.dias > 0">
+                                                        <div style="opacity: 0.6;">
+                                                            {{simbolo}}
+                                                        </div>
+                                                        <div>
+                                                            {{item?.monto | number: '0.'+ this.dec_parcial
+                                                            +'-'+this.dec_parcial}}
+                                                        </div>
+                                                    </ng-container>
+                                                </div>
+                                            </td>
+                                        </ng-container>
+                                    </ng-container>
+                                </tr>
+                            </ng-container>
+                            <ng-template #noTablaDesembolso>
+                                <tr>
+                                    <td class="mat-cell text-center" [attr.colspan]="5 + mesesHeader.length">
+                                        <label>No se encontraron resultados</label>
+                                    </td>
+                                </tr>
+                            </ng-template>
+
+                        </tbody>
+                        <tfoot class="text-right sticky-foot" *ngIf="tablaDesembolso.length"
+                            [ngClass]="{'zindex3': columnasEstatica}">
+                            <tr>
+                                <th appAnchocol [ancho]="30" class="h-h-custom text-center font-weight-bolder"
+                                    [ngClass]="{'static1h': columnasEstatica}"></th>
+                                <th appAnchocol [ancho]="350" class="h-h-custom text-center font-weight-bolder"
+                                    [ngClass]="{'static1h': columnasEstatica}">Monto
+                                    Presupuesto</th>
+                                <th appAnchocol [ancho]="40" class="h-h-custom  font-weight-bolder"
+                                    [ngClass]="{'static2h': columnasEstatica}"> </th>
+                                <th appAnchocol [ancho]="100" class="h-h-custom"
+                                    [ngClass]="{'static3h': columnasEstatica}">
+                                    <div class="d-flex justify-content-between">
+                                        <div style="opacity: 0.6;">
+                                            {{simbolo}}
+                                        </div>
+                                        <div class="font-weight-bolder">
+                                            {{ sumaTotalParciales | number: '0.'+ this.dec_parcial
+                                            +'-'+this.dec_parcial}}
+                                        </div>
+                                    </div>
+                                </th>
+                                <ng-container *ngFor="let item of redTotDesem; let i = index">
+                                    <th appAnchocol [ancho]="80" *ngIf="mesesMostrar[i] !== 0">
+                                        <div class="d-flex justify-content-between">
+                                            <div style="opacity: 0.6;">
+                                                {{simbolo}}
+                                            </div>
+                                            <div class="font-weight-bolder">
+                                                {{item | number: '0.'+ this.dec_parcial +'-'+this.dec_parcial}}
+                                            </div>
+                                        </div>
+                                    </th>
+                                </ng-container>
+                            </tr>
+                            <tr>
+                                <th appAnchocol [ancho]="30" class="h-h-custom"
+                                    [ngClass]="{'static1h': columnasEstatica}"></th>
+                                <th appAnchocol [ancho]="350" class="h-h-custom"
+                                    [ngClass]="{'static1h': columnasEstatica}"></th>
+                                <th appAnchocol [ancho]="40" class="h-h-custom"
+                                    [ngClass]="{'static2h': columnasEstatica}"></th>
+                                <th appAnchocol [ancho]="100" class="h-h-custom font-weight-bolder"
+                                    [ngClass]="{'static3h': columnasEstatica}">
+                                    <div class="d-flex justify-content-center">
+                                        <div class="ml-2">
+                                            <!-- {{sumPorcDesem }} -->
+                                            {{100 | number: '0.2-2'}}
+                                        </div>
+                                        <span style="opacity: 0.6;margin-left: 1px;">%</span>
+                                    </div>
+                                </th>
+                                <ng-container *ngFor="let item of porcentajesDesembolso; let i = index">
+                                    <th appAnchocol [ancho]="80" *ngIf="mesesMostrar[i] !== 0"
+                                        class="font-weight-bolder">
+                                        <div class="d-flex justify-content-center">
+                                            <div class="ml-2">
+                                                {{item }}
+                                            </div>
+                                            <span style="opacity: 0.6;margin-left: 1px;">%</span>
+                                        </div>
+                                    </th>
+                                </ng-container>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </ng-template>
+    </li>
+    <li (click)="evaluarTab(3)" [ngbNavItem]="3" [disabled]="!dataPrincipal.length || progTiempNoVAlidos || view_mode !== 'Day'">
+        <a ngbNavLink>Cronograma Adquisiciones</a>
+        <ng-template ngbNavContent let-active>
+            <div class="row h-contenedores2 px-3">
+                <div class="col-12 d-flex justify-content-between pl-0">
+                    <div>
+                        <button type="button" class="btn btn-mini btn-group-mini btn-outline-secondary w-32"
+                            placement="top" (mouseup)="quitarfoco($event);"
+                            [disabled]=" displayBasic || displayBasic2 || noEnlazar"
+                            (click)="reporteCalendarioMateriales()"
+                            ngbTooltip="Generar reporte Cronograma adquisiciones" container="body">
+                            <i class="fa fa-print icono-but"></i>
+                        </button>
+                        <mat-checkbox class="example-margin ml-2"
+                            (change)="evaluarColumnasTabla($event.checked, 'calendario')">Columnas
+                            Estaticas</mat-checkbox>
+
+                        <button type="button" class="btn btn-mini btn-group-mini btn-primary d-flex" placement="top"
+                            *ngIf="tablaMatDesac" (mouseup)="quitarfoco($event);"
+                            [disabled]=" displayBasic || displayBasic2 || noEnlazar"
+                            (click)="recalcularTablaMateriales()" ngbTooltip="Generar tabla Desembolso actualizada"
+                            container="body">
+                            <i class="fa fa-refresh icono-but"></i> <span style="font-size: 10px;">ACTUALIZAR</span>
+                        </button>
+                    </div>
+
+                    <div>
+                        <span class="badge bg-danger" *ngIf="tablaMatDesac">DESACTUALIZADO</span>
+                        <span class="badge bg-info" *ngIf="!tablaMatDesac">ACTUALIZADO</span>
+                    </div>
+
+                </div>
+                <div class="col-12 px-0 custom-div" style="height: calc(100% - 30px)">
+                    <table class="table-bordered tab-10 table-p table-custom" style="table-layout: fixed;">
+                        <thead class="text-center headsticky" [ngClass]="{'zindex3': columnasEstatica2}">
+                            <tr>
+                                <th appAnchocol [ancho]="30" class="h-h-custom" rowspan="3"
+                                    [ngClass]="{'static1h': columnasEstatica2}">
+                                </th>
+                                <th appAnchocol [ancho]="350" class="h-h-custom" rowspan="3"
+                                    [ngClass]="{'static1h': columnasEstatica2}">
+                                    Descripción</th>
+                                <th appAnchocol [ancho]="40" class="h-h-custom" rowspan="3"
+                                    [ngClass]="{'static2h': columnasEstatica2}">Unidad</th>
+                                <th appAnchocol [ancho]="80" class="h-h-custom" rowspan="3"
+                                    [ngClass]="{'static3h': columnasEstatica2}">Cantidad</th>
+                                <th appAnchocol [ancho]="80" class="h-h-custom" rowspan="3"
+                                    [ngClass]="{'static4h': columnasEstatica2}">Precio</th>
+                                <th appAnchocol [ancho]="100" class="h-h-custom" rowspan="3"
+                                    [ngClass]="{'static5h': columnasEstatica2}">Parcial</th>
+                                <!-- <th appAnchocol [ancho]="80 * (item.col * 2)" class="h-h-custom"
+                                    *ngFor="let item of yearsHeader" [attr.colspan]="item.col * 2">
+                                    {{item.year}}
+
+                                </th> -->
+                                <ng-container *ngFor="let item of yearsHeader; let index = index">
+                                    <ng-container *ngIf=" colspanAnios[index]">
+                                        <th [ngStyle]="{'width': (80 * colspanAnios[index] * 2) + 'px',
+                                            'max-width': (80 * colspanAnios[index] * 2) + 'px',
+                                            'min-width': (80 * colspanAnios[index]* 2) + 'px'}" class="h-h-custom"
+                                            [attr.colspan]=" colspanAnios[index] * 2">
+                                            {{item.year}}
+                                        </th>
+                                    </ng-container>
+                                </ng-container>
+                            </tr>
+                            <tr *ngIf="mesesHeader.length">
+
+                                <ng-container *ngFor="let item of mesesHeader; let index = index">
+
+                                    <ng-container *ngIf="mesesMostrar[index] !== 0">
+                                        <th appAnchocol [ancho]="160" [attr.colspan]="2" class="h-h-custom">
+                                            <!-- Mes {{index + 1}} &nbsp;&nbsp; -->
+                                            ({{arrayMeses[item.mes- 1]}})
+                                        </th>
+                                    </ng-container>
+                                </ng-container>
+                            </tr>
+                            <tr *ngIf="mesesHeader.length">
+                                <ng-container *ngFor="let item of mesesHeader;let index = index">
+                                    <ng-container *ngIf="mesesMostrar[index] !== 0">
+                                        <th appAnchocol [ancho]="80" class="h-h-custom">
+                                            Cantidad
+                                        </th>
+                                        <th appAnchocol [ancho]="80" class="h-h-custom">
+                                            Monto
+                                        </th>
+                                    </ng-container>
+                                </ng-container>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <ng-container *ngIf="calendarioMateriales.length; else noCalendarioMateriales">
+                                <tr class="text-right" *ngFor="let item of calendarioMateriales; let index = index"
+                                    (click)="item.unidad ? filaMateriales = index : filaMateriales = null">
+                                    <td class="text-center"
+                                        [ngClass]="{'titulo-grupo-iu ': !item.unidad, 'static1h': columnasEstatica2, 'color-celda': item.unidad, 'highlight2': filaMateriales == index, 'bg-grupo': !item.unidad && item.descripcion == 'total'}">
+                                        {{ item.ind2 !== undefined ? item.ind2 + 1 : ''}}
+                                    </td>
+                                    <td
+                                        [ngClass]="{'titulo-grupo-iu text-center': !item.unidad, 'text-left': item.unidad , 'static1h': columnasEstatica2, 'color-celda': item.unidad, 'highlight2': filaMateriales == index ,'bg-grupo': !item.unidad && item.descripcion == 'total'}">
+                                        <div class="d-flex justify-content-between" *ngIf="item.unidad; else titu">
+                                            <div class="recortatext1l" [ngbTooltip]="item.descripcion" container="body">
+                                                {{item.descripcion}}
+                                            </div>
+                                            <div>
+                                                <button class="btn btn-mini2 btn-outline-secondary" type="button"
+                                                    (click)="modalPartidasXInsumCatMat(item)"
+                                                    (mouseup)="quitarfoco($event);" container="body"
+                                                    ngbTooltip="Ver partidas en insumo">
+                                                    <i class="fa fa-search icono-but"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <ng-template #titu>
+                                            <div class="recortatext1l" [ngbTooltip]="item.descripcion" container="body">
+                                                {{item.descripcion}}
+                                            </div>
+                                        </ng-template>
+
+
+                                    </td>
+                                    <td [ngClass]="{'titulo-grupo-iu': !item.unidad, 'static2h': columnasEstatica2, 'color-celda': item.unidad, 'highlight2': filaMateriales == index,  'bg-grupo': !item.unidad && item.descripcion == 'total'}"
+                                        class="text-center">
+                                        <ng-container *ngIf="item.unidad">
+                                            {{item.unidad}}
+                                        </ng-container>
+                                    </td>
+                                    <td [ngClass]="{'titulo-grupo-iu': !item.unidad, 'static3h': columnasEstatica2, 'color-celda': item.unidad, 'highlight2': filaMateriales == index, 'bg-grupo': !item.unidad && item.descripcion == 'total'}"
+                                        class="text-right">
+                                        <ng-container *ngIf="item.unidad">
+                                            {{item.cantidad | number:'0.'+ this.dec_cant + '-'+ this.dec_cant}}
+                                        </ng-container>
+                                    </td>
+                                    <td
+                                        [ngClass]="{'titulo-grupo-iu': !item.unidad, 'static4h': columnasEstatica2,'color-celda': item.unidad, 'highlight2': filaMateriales == index,  'bg-grupo': !item.unidad && item.descripcion == 'total'}">
+                                        <div class="d-flex justify-content-between" *ngIf="item.unidad">
+                                            <div style="opacity: 0.6;">
+                                                {{simbolo}}
+                                            </div>
+                                            <div>
+                                                {{item.precio| number:'0.'+ this.dec_parcial + '-'+ this.dec_parcial}}
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td
+                                        [ngClass]="{'titulo-grupo-iu': !item.unidad, 'static5h': columnasEstatica2,'color-celda': item.unidad, 'highlight2': filaMateriales == index,  'bg-grupo': !item.unidad && item.descripcion == 'total'}">
+                                        <div class="d-flex justify-content-between"
+                                            *ngIf="item.unidad || !item.unidad && item.descripcion == 'total'">
+                                            <div style="opacity: 0.6;">
+                                                {{simbolo}}
+                                            </div>
+                                            <div [ngClass]="{'text-primary font-weight-bolder':!item.unidad}">
+                                                {{item.parcial| number:'0.'+ this.dec_parcial + '-'+ this.dec_parcial}}
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <ng-container *ngFor="let row of item.meses;let idx = index">
+                                        <ng-container *ngIf="mesesMostrar[idx] !== 0">
+                                            <td
+                                                [ngClass]="{'titulo-grupo-iu': !item.unidad, 'highlight2': filaMateriales == index,  'bg-grupo': !item.unidad && item.descripcion == 'total'}">
+                                                <div class="d-flex justify-content-between"
+                                                    *ngIf="item.unidad || !item.unidad && !item.descripcion == 'total'">
+                                                    <ng-container *ngIf="row > 0">
+                                                        <div style="opacity: 0.6;">
+                                                        </div>
+                                                        <div>
+                                                            {{ item.cantidades[idx] | number:'0.'+ this.dec_cant + '-'+
+                                                            this.dec_cant}}
+                                                        </div>
+                                                    </ng-container>
+                                                </div>
+                                            </td>
+                                            <td
+                                                [ngClass]="{'titulo-grupo-iu': !item.unidad, 'highlight2': filaMateriales == index,  'bg-grupo': !item.unidad && item.descripcion == 'total'}">
+                                                <div class="d-flex justify-content-between"
+                                                    *ngIf="item.unidad || !item.unidad && item.descripcion == 'total'">
+                                                    <ng-container
+                                                        *ngIf="row > 0 && item.unidad || !item.unidad && item.descripcion == 'total'">
+                                                        <div style="opacity: 0.6;">
+                                                            {{simbolo}}
+                                                        </div>
+                                                        <div>
+                                                            {{redondeo(row) | number:'0.'+ this.dec_parcial + '-'+
+                                                            this.dec_parcial}}
+                                                        </div>
+                                                    </ng-container>
+                                                </div>
+                                            </td>
+                                        </ng-container>
+                                    </ng-container>
+                                </tr>
+                            </ng-container>
+
+                            <ng-template #noCalendarioMateriales>
+                                <tr>
+                                    <td class="mat-cell text-center" [attr.colspan]="5 + (mesesHeader.length * 3)">
+                                        <label>No se encontraron resultados</label>
+                                    </td>
+                                </tr>
+                            </ng-template>
+                        </tbody>
+
+                        <tfoot class="text-right sticky-foot" *ngIf="calendarioMateriales.length"
+                            [ngClass]="{'zindex3': columnasEstatica2}">
+
+                            <tr>
+                                <th class="h-h-custom text-center font-weight-bolder" colspan="5"
+                                    [ngClass]="{'static1h': columnasEstatica2}">
+                                    Total Parciales
+                                </th>
+                                <th class="h-h-custom font-weight-bolder" [ngClass]="{'static5h': columnasEstatica2}">
+
+                                    <div class="d-flex justify-content-between">
+                                        <div style="opacity: 0.6;">
+                                            {{simbolo}}
+                                        </div>
+                                        <div class="font-weight-bolder">
+                                            {{totalParcialesCalMat | number:'0.'+ this.dec_parcial + '-'+
+                                            this.dec_parcial}}
+                                        </div>
+                                    </div>
+                                </th>
+                                <ng-container *ngFor="let item of totColRedMat; let i = index ">
+                                    <th *ngIf="mesesMostrar[i] !== 0" [attr.colspan]="2" class="font-weight-bolder">
+                                        <div class="d-flex justify-content-between">
+                                            <div style="opacity: 0.6;">
+                                                {{simbolo}}
+                                            </div>
+                                            <div class="font-weight-bolder">
+                                                {{item | number:'0.'+ this.dec_parcial + '-'+ this.dec_parcial}}
+                                            </div>
+                                        </div>
+                                    </th>
+                                </ng-container>
+                            </tr>
+                            <tr class="text-center">
+                                <th class="h-h-custom text-center font-weight-bolder" colspan="5"
+                                    [ngClass]="{'static1h': columnasEstatica2}">
+                                </th>
+                                <th class="h-h-custom font-weight-bolder text-center"
+                                    [ngClass]="{'static5h': columnasEstatica2}">
+
+                                    <div>
+                                        <!-- {{(totalPorcMat ? totalPorcMat : 100) | number: '0.2-2'}} % -->
+                                        {{100 | number: '0.2-2'}}
+                                    </div>
+
+                                </th>
+                                <ng-container *ngFor="let item of porcTotMat; let i = index">
+                                    <th [attr.colspan]="2" *ngIf="mesesMostrar[i] !== 0"
+                                        class="font-weight-bolder text-center">
+                                        <div>
+                                            {{item | number: '0.2-2'}} %
+                                        </div>
+                                    </th>
+                                </ng-container>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </ng-template>
+    </li>
+    <li (click)="evaluarTab(4)" [ngbNavItem]="4" [disabled]="!dataPrincipal.length || progTiempNoVAlidos || view_mode !== 'Day'">
+        <a ngbNavLink>Grafico cronograma valorizado</a>
+        <ng-template ngbNavContent let-active>
+            <div class="row contenedor-grafico overflow-auto ">
+                <div class="col-6 justify-content-center col-md-12 col-sm-12 col-lg-6 col-xl-6 h-sm-50">
+                    <div class="col-12">
+                        <button type="button" class="btn btn-mini btn-group-mini btn-outline-secondary w-32"
+                            placement="bottom" ngbTooltip="Generar reporte" container="body"
+                            (click)="generarReporteGrafico()" (mouseup)="quitarfoco($event);">
+                            <i class="fa fa-print icono-but"></i>
+                        </button>
+                        <button type="button" class="btn btn-mini  btn-primary d-flex" placement="top"
+                        *ngIf="tablaGrafDesac" (mouseup)="quitarfoco($event);"
+                        [disabled]=" displayBasic || displayBasic2 || noEnlazar" (click)="generarChart()"
+                        ngbTooltip="Generar tabla cronograma valorizado actualizado" container="body">
+                        <i class="fa fa-refresh icono-but"></i> <span style="font-size: 10px;">ACTUALIZAR</span>
+                    </button>
+                    </div>
+                    <div class="col-12 overflow-auto px-0 " style="height: calc(100% - 30px)">
+                        <table class=" tab-10 table-p table-custom d-block tabla-grafico"
+                            style="display: table !important;">
+                            <thead class="text-center headsticky">
+                                <tr>
+                                    <th appAnchocol [ancho]="25" rowspan="3" class="text-center"></th>
+                                    <th appAnchocol [ancho]="200" colspan="2" rowspan="2" class="text-center">PERIODO
+                                    </th>
+                                    <th colspan="4" class="text-center">PROGRAMADO</th>
+                                </tr>
+                                <tr>
+
+                                    <th colspan="2" class="text-center">COSTO DE EJECUCION PROGRAMADO ({{simbolo}})</th>
+                                    <th colspan="2" class="text-center">% EJECUCION PROGRAMADA</th>
+                                </tr>
+                                <tr>
+                                    <th class="text-center">MES</th>
+                                    <th class="text-center">AÑO</th>
+                                    <th class="text-center">MENSUAL</th>
+                                    <th class="text-center">ACUMULADO</th>
+                                    <th class="text-center">MENSUAL</th>
+                                    <th class="text-center">ACUMULADO</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr *ngFor="let row of this.tablaGrafico; let i = index">
+                                    <td appAnchocol [ancho]="25" class="text-center h-h-custom">{{ row.periodo != 'TOTAL
+                                        CD'
+                                        ? i: ''}}</td>
+                                    <td class="text-left h-h-custom" [ngClass]="{'fwb': row.periodo === 'TOTAL CD'}">
+                                        {{row.periodo + row.mesNombre}}</td>
+                                    <td class="text-center h-h-custom" [ngClass]="{'fwb': row.periodo === 'TOTAL CD'}">
+                                        {{row.anio}}</td>
+                                    <td class="text-right h-h-custom" [ngClass]="{'fwb': row.periodo === 'TOTAL CD'}">
+                                        <div class="d-flex justify-content-between ">
+                                            <div class="opacity-05">{{simbolo}}</div>
+                                            <div>{{row.mensualMonto | number:'0.'+ this.dec_parcial + '-'+
+                                                this.dec_parcial}}</div>
+
+                                        </div>
+
+                                    </td>
+                                    <td class="text-right h-h-custom" [ngClass]="{'fwb': row.periodo === 'TOTAL CD'}">
+                                        <div class="d-flex justify-content-between ">
+                                            <div class="opacity-05">{{simbolo}}</div>
+                                            <div>{{row.acumuladoMonto | number:'0.'+ this.dec_parcial + '-'+
+                                                this.dec_parcial}}</div>
+                                        </div>
+                                    </td>
+                                    <td class="text-right h-h-custom" [ngClass]="{'fwb': row.periodo === 'TOTAL CD'}">
+                                        {{row.mensualPorcentaje | number: '0.2-2'}} <span *ngIf="row.mensualPorcentaje"
+                                            class="opacity-05">%</span></td>
+                                    <td class="text-right h-h-custom" [ngClass]="{'fwb': row.periodo === 'TOTAL CD'}">
+                                        {{row.acumuladoPorcentaje | number: '0.2-2'}} <span
+                                            *ngIf="row.acumuladoPorcentaje" class="opacity-05">%</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                </div>
+                <div class="col-6 col-sm-12 col-md-12 col-lg-6 h-sm-50" id="contenedor">
+                    <div class="col-12 col-sm-6 col-md-12 h-sm-100" id="diagramaCurva">
+                        <canvas id="myChart"></canvas>
+                    </div>
+                    <div class="col-12 col-sm-6 col-md-12 h-sm-100" id="diagramaGauss">
+                        <canvas id="myChart2"></canvas>
+                    </div>
+                </div>
+
+            </div>
+
+        </ng-template>
+    </li>
+</ul>
+<app-cargando [bloquearTodo]="true" *ngIf="mostrar_carga_todo"></app-cargando>
+<div [ngbNavOutlet]="nav" class="mt-2"></div>

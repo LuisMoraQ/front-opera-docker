@@ -1,0 +1,32 @@
+//icono password
+.field-icon {
+  float: right;
+  margin-left: -25px;
+  margin-top: 10px;
+  position: relative;
+  z-index: 2;
+  cursor: pointer;
+}
+
+//espacios bajo el mat-form-field
+.mat-form-field{
+  margin-bottom: 0px;
+  padding-bottom: 2px;
+}
+
+.my-form-field .mat-form-field-wrapper{
+  padding-bottom: 0px;
+}
+
+.texto-fila{
+  padding-top: 8px !important; padding-bottom: 8px !important;
+}
+.texto-fila-neg{
+  padding-top: 8px !important; padding-bottom: 8px !important;
+  font-weight: bold;
+}
+//padings datos
+.espacios{
+  padding-left: 15px;
+  padding-right: 15px;
+}

@@ -1,0 +1,657 @@
+<div id="pcoded" class="pcoded custom-global" [ngClass]="animateSidebar" [attr.nav-type]="navType"
+  [attr.theme-layout]="themeLayout" [attr.vertical-placement]="verticalPlacement"
+  [attr.menu-bg]="menubg"
+  [attr.vertical-layout]="verticalLayout" [attr.pcoded-device-type]="pcodedDeviceType"
+  [attr.vertical-nav-type]="verticalNavType" [attr.vertical-effect]="verticalEffect"
+  [attr.vnavigation-view]="vnavigationView" [attr.fream-type]="freamType" [attr.sidebar-img]="sidebarImg"
+  [attr.sidebar-img-type]="sidebarImgType" [attr.layout-type]="layoutType" (window:resize)="onResize($event)">
+  <div class="pcoded-overlay-box"></div>
+  <div class="pcoded-container navbar-wrapper">
+    <nav class="navbar header-navbar pcoded-header" [attr.header-theme]="headerTheme"
+      [attr.pcoded-header-position]="pcodedHeaderPosition">
+      <div class="navbar-wrapper">
+        <div class="navbar-logo d-felx">
+          <a class="mobile-menu ripple light mt-1 cpoint" id="mobile-collapse" *ngIf="menuPrincipal"
+            (click)="toggleOpened($event)" [exclude]="'#main_navbar'" (clickOutside)="onClickedOutsideSidebar($event)">
+            <i class="icon-menu"></i>
+          </a>
+          <a class="mobile-menu ripple light mt-1 cpoint" id="mobile-collapse" *ngIf="!menuPrincipal"
+            ngbTooltip="Regresar al menu principal" (click)="regresarMenuPrincipal()" [exclude]="'#main_navbar'">
+            <i class="icon-arrow-left"></i>
+          </a>
+          <a class=" light" style="cursor: pointer;" (click)="Irainicio()">
+            <!-- [routerLink]="['/principal/inicio/']" -->
+            <h1 class="empresa">BIPLAN</h1>
+            <!-- <img class="d-flex align-self-center" src="assets/images/biplanlogo.png" alt="Logo"> -->
+          </a>
+          <a class="mobile-options ripple light mt-1 cpoint" (click)="toggleHeaderNavRight()">
+            <i class="icon-more"></i>
+          </a>
+        </div>
+        <div class="navbar-container">
+          <ul class="nav-left">
+            <li class="ripple light">
+              <div class="sidebar_toggle"><a class="cpoint"><i class="icon-menu">ssss</i></a></div>
+            </li>
+            <li class="ripple light" appToggleFullScreen>
+              <a class="cpoint">
+                <i class="icon-fullscreen"></i>
+              </a>
+            </li>
+          </ul>
+          <ul [@mobileHeaderNavRight]="navRight" [ngClass]="navRight" class="nav-right">
+            <!--  / SWITCH TEMAS DARK Y LIGHT -->
+            <!--  <li>
+              <a href="javascript:" class="row align-items-center">
+                <div class="switch switch-default d-inline m-r-10">
+                  <input type="checkbox" id="switch-i-1" (click) ="tema(); temaLight? setLayoutType('light'): setLayoutType('dark')">
+                  <label for="switch-i-1" class="cr" ></label>
+                </div>
+                <label></label>
+              </a>
+            </li> -->
+            <!-- ================ -->
+            <!-- notificaciones -->
+            <li (clickOutside)="notificationOutsideClick('live')" class="header-notification ripple light"
+            [ngClass]="liveNotificationClass" (click)="toggleLiveNotification()">
+              <a class="cpoint">
+                <i class="icon-bell"></i>
+                <span *ngIf="estnot!=0" class="badge" [ngClass]="{'bg-c-red':estnot==2,'bg-c-blue':estnot==1}"></span>
+              </a>
+              <ul [@notificationBottom]="liveNotification" class="show-notification" [ngClass]="liveNotificationClass">
+                <li class="text-center">
+                  <h6>Notificaciones</h6>
+                </li>
+                <ng-container *ngFor="let item of listnotif">
+                  <li class="ripple" >
+                    <div class="media">
+                      <i class="icofont ico-notif" [ngClass]="item?.icono"></i>
+                      <div class="media-body">
+                        <h5 class="notification-user">{{item?.titulo}}</h5>
+                        <p class="notification-msg" [innerHTML]="item?.mensaje"></p>
+                        <span class="notification-time">{{item?.fecha}}</span>
+                      </div>
+                      <label *ngIf="item?.estado==2" class="label label-danger">Nuevo</label>
+                    </div>
+                  </li>
+                </ng-container>
+              </ul>
+            </li>
+            <li (clickOutside)="temasOutsideClick('live')" class="header-notification ripple light"
+              [ngClass]="liveTemasClass" (click)="toggleLiveTemas()">
+              <a class="cpoint">
+                <i class="icon-settings"></i>
+              </a>
+              <ul [@notificationBottom]="liveTemasClass" class="show-notification" [ngClass]="liveTemasClass">
+                <ul>
+                  <li class="pb-0">
+                    <p class="selector-title tipoLabel">Temas</p>
+                  </li>
+                  <li class="py-0">
+                    <div class="theme-color">
+                      <a (click)="setLayoutType('light')" class="ripple cpoint" layout-type="light"
+                        placement="top" ngbTooltip="Light Layout">
+                        <span class="head"></span>
+                        <span class="cont"></span>
+                      </a>
+                      <a  (click)="setLayoutType('dark')" class="ripple light cpoint" layout-type="dark"
+                        placement="top" ngbTooltip="Dark Layout">
+                        <span class="head"></span>
+                        <span class="cont"></span>
+                      </a>
+                    </div>
+                  </li>
+                </ul>
+                <div class="style-cont m-t-10">
+                  <div class="tab-content tabs h-100">
+                    <ul>
+                      <li class="pb-0">
+                        <p class="selector-title tipoLabel">Color de Encabezado</p>
+                      </li>
+                      <li class="theme-option py-0">
+                        <div class="theme-color">
+                          <a class="header-theme ripple cpoint"
+                            (click)="this.menuTitleTheme=this.freamType=this.activeItemTheme=this.headerTheme='theme1';setBackgroundPattern('theme1')"
+                            header-theme="theme1">
+                            <span class="head"></span>
+                            <span class="cont"></span>
+                          </a>
+                          <a class="header-theme ripple cpoint"
+                            (click)="this.menuTitleTheme=this.freamType=this.activeItemTheme=this.headerTheme='theme2';setBackgroundPattern('theme2')"
+                            header-theme="theme2">
+                            <span class="head"></span>
+                            <span class="cont"></span></a>
+                          <a class="header-theme ripple cpoint"
+                            (click)="this.menuTitleTheme=this.freamType=this.activeItemTheme=this.headerTheme='theme3';setBackgroundPattern('theme3')"
+                            header-theme="theme3">
+                            <span class="head"></span>
+                            <span class="cont"></span>
+                          </a>
+                          <a class="header-theme ripple cpoint"
+                            (click)="this.menuTitleTheme=this.freamType=this.activeItemTheme=this.headerTheme='theme4';setBackgroundPattern('theme4')"
+                            header-theme="theme4">
+                            <span class="head"></span>
+                            <span class="cont"></span>
+                          </a>
+                          <a class="header-theme ripple cpoint"
+                            (click)="this.menuTitleTheme=this.freamType=this.activeItemTheme=this.headerTheme='theme5';setBackgroundPattern('theme5')"
+                            header-theme="theme5">
+                            <span class="head"></span>
+                            <span class="cont"></span>
+                          </a>
+                          <a class="header-theme ripple cpoint"
+                            (click)="this.menuTitleTheme=this.freamType=this.activeItemTheme=this.headerTheme='theme6';setBackgroundPattern('theme6')"
+                            header-theme="theme6">
+                            <span class="head"></span>
+                            <span class="cont"></span>
+                          </a>
+                        </div>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+                <ul>
+                  <li class="pb-0">
+                    <p class="selector-title tipoLabel">Color Menu</p>
+                  </li>
+                  <li class="theme-option py-0">
+                    <div class="theme-color color-prueba">
+                      <a class="ripple cpoint" (click)="cambiarColorMenu('theme1')">
+                        <span class="head celda-head"></span>
+                        <span class="cont menu-theme1"></span>
+                      </a>
+                      <a class="ripple cpoint" (click)="cambiarColorMenu('theme2')">
+                        <span class="head celda-head"></span>
+                        <span class="cont menu-theme2"></span>
+                      </a>
+                      <a class="ripple cpoint" (click)="cambiarColorMenu('theme3')">
+                        <span class="head celda-head"></span>
+                        <span class="cont menu-theme3"></span>
+                      </a>
+                      <a class="ripple cpoint" (click)="cambiarColorMenu('theme4')">
+                        <span class="head celda-head"></span>
+                        <span class="cont menu-theme4"></span>
+                      </a>
+                      <a class="ripple cpoint" (click)="cambiarColorMenu('theme5')">
+                        <span class="head celda-head"></span>
+                        <span class="cont menu-theme5"></span>
+                      </a>
+                      <a class="ripple cpoint" (click)="cambiarColorMenu('theme6')">
+                        <span class="head celda-head"></span>
+                        <span class="cont menu-theme6"></span>
+                      </a>
+                      <!-- <a class="ripple cpoint" (click)="cambiarColorMenu('theme7')">
+                        <span class="head celda-head"></span>
+                        <span class="cont menu-theme7"></span>
+                      </a>
+                      <a class="ripple cpoint" (click)="cambiarColorMenu('theme8')">
+                        <span class="head celda-head"></span>
+                        <span class="cont menu-theme8"></span>
+                      </a> -->
+                    </div>
+                  </li>
+                </ul>
+              </ul>
+            </li>
+            
+            <!-- mensajes -->
+            <!-- <li class="ripple light">
+              <a class="cpoint" (click)="toggleChat()">
+                <i class="icon-comments"></i>
+                <span class="badge bg-c-green"></span>
+              </a>
+            </li> -->
+            <li (clickOutside)="notificationOutsideClick('profile')"
+              class="user-profile header-notification ripple light" [ngClass]="profileNotificationClass"
+              (click)="toggleProfileNotification()">
+              <a class="cpoint">
+                <span>{{NombreUsuario}}</span>
+                <i class="icon-angle-down"></i>
+              </a>
+              <ul [@notificationBottom]="profileNotification" class="show-notification profile-notification"
+                [ngClass]="profileNotificationClass">
+                <li class="ripple">
+                  <a [routerLink]="['/principal/configs/confperfil']">
+                    <i class="icon-user"></i> Perfil
+                  </a>
+                </li>
+                <li class="ripple" (click)="logout()">
+                  <a style="cursor: pointer;" ><!-- [routerLink]="['/login/']" -->
+                    <i class="icon-layout-sidebar-left"></i> Salir
+                  </a>
+                </li>
+              </ul>
+            </li>
+          </ul>
+          <div [@slideInOut]="chatSlideInOut" id="sidebar" class="users p-chat-user showChat"
+            [ngClass]="chatSlideInOut">
+            <div class="had-container">
+              <div class="card card_main p-fixed users-main">
+                <div class="user-box">
+                  <div class="chat-search-box">
+                    <span class="back_friendlist2" (click)="toggleChat()">
+                      <i style="left:20px" class="fa fa-chevron-right"></i>
+                    </span>
+                    <span class="back_friendlist2" [ngClass]="{'botoncolor': mostrarmensajes}"
+                      (click)="ClickMenasajes()">
+                      <i style="left:60px" class="fa fa-comments"></i>
+                    </span>
+                    <span class="back_friendlist2" [ngClass]="{'botoncolor': mostrarcontactos}"
+                      (click)="ClickContactos()">
+                      <i style="left:100px" class="fa fa-users"></i>
+                    </span>
+                  </div>
+                  <div class="main-friend-list" style="overflow: scroll;height: calc(100% - 78px);">
+                    <!-- [style.height.px]="heighttmodal-60" -->
+                    <div *ngIf="mostrarmensajes">
+                      <div style="padding: 0rem 1rem 0rem 1rem;">
+                        <div class="right-icon-control">
+                          <form class="form-material" ><!-- action="javascript:" -->
+                            <div class="form-group form-primary">
+                              <input type="text" name="search-text" class="form-control" id="search-friends"
+                                required="" />
+                              <span class="form-bar"></span>
+                              <label class="float-label"><i class="fa fa-search m-r-10"></i>Buscar...</label>
+                            </div>
+                          </form>
+                        </div>
+                      </div>
+                      <div *ngFor="let item of listaMensajes">
+                        <div class="media userlist-box ripple" data-username="{{item.nombreSala}}" placement="left"
+                          ngbTooltip="{{item.nombreSala}}"
+                          (click)="cargarChat(item.id_sala,item.nombreSala,item.iddestino)">
+                          <div class="media-body">
+                            <div class="f-13 chat-header">{{item.nombreSala}}</div>
+                            <div style="max-width: 150px; font-size: 10px;">
+                              <span class="span-container" placement="top">
+                                <span class="span-ellipsis w-100 d-flex">
+                                  <span *ngIf="item.id_usuario==id_usuario"
+                                    class="fa fa-reply">&nbsp;&nbsp;{{item.mensaje}}</span>
+                                  <span *ngIf="item.id_usuario!=id_usuario"
+                                    class="fa fa-share">&nbsp;&nbsp;{{item.mensaje}}</span>
+                                </span>
+                              </span>
+                            </div>
+                            <span class="back_friendlist3">{{item.fecha}}</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div *ngIf="load">
+                        <div class="loader-track">
+                          <div class="loader-block">
+                            <svg id="loader2" viewBox="0 0 100 100">
+                              <circle id="circle-loader2" cx="50" cy="50" r="45"></circle>
+                            </svg>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div *ngIf="mostrarcontactos">
+                      <div style="padding: 0rem 1rem 0rem 1rem;">
+                        <div class="right-icon-control">
+                          <form class="form-material" ><!-- action="javascript:" -->
+                            <div class="form-group form-primary">
+                              <input type="text" name="search-text" class="form-control" id="search-friends"
+                                required="" />
+                              <span class="form-bar"></span>
+                              <label class="float-label"><i class="fa fa-search m-r-10"></i>Buscar...</label>
+                            </div>
+                          </form>
+                        </div>
+                      </div>
+                      <div *ngFor="let item of listaConectados">
+                        <div class="media userlist-box ripple" data-username="{{item.nombres}}" placement="left"
+                          ngbTooltip="{{item.nombres}}" (click)="cargarChat(item.id_sala,item.nombres,item.id_usuario)">
+                          <a class="media-left cpoint">
+                            <div *ngIf="item.id_conexion!=null">
+                              <a class="live-status bg-success"></a>
+                            </div>
+                            <div *ngIf="item.id_conexion==null">
+                              <a class="live-status bg-danger"></a>
+                            </div>
+                          </a>
+                          <div class="media-body">
+                            <div class="f-13 chat-header">{{item.nombres}}</div>
+                          </div>
+                        </div>
+                      </div>
+                      <div *ngIf="load">
+                        <div class="loader-track">
+                          <div class="loader-block">
+                            <svg id="loader2" viewBox="0 0 100 100">
+                              <circle id="circle-loader2" cx="50" cy="50" r="45"></circle>
+                            </svg>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div [@slideInOut]="innerChatSlideInOut" class="showChat_inner">
+            <div class="media chat-inner-header" style="height: 45px;">
+              <a class="back_chatBox">
+                <i class="fa fa-chevron-left" (click)="toggleInnerChat()"></i>{{nombresala}}
+              </a>
+            </div>
+            <div #SMensa id="SMensa" [scrollTop]="SMensa.scrollHeight-45"
+              style=" overflow: scroll;height: calc(100vh - 181px);">
+              <!-- [style.height.px]="heighttmodal-200" -->
+              <div *ngFor="let item of salamensajes">
+                <div class="media chat-messages">
+                  <div
+                    [ngClass]="{'media-body chat-menu-content': item.id_usuario!=id_usuario,'media-body chat-menu-reply':item.id_usuario==id_usuario}">
+                    <p *ngIf="item.mensaje.toString().substring(0,4)=='http'" style="text-decoration: underline;"
+                      class="chat-cont"><a href="{{item.mensaje}}"
+                        [ngStyle]="{'color': item.id_usuario!=id_usuario ? black:white}"
+                        style="font-weight: bold; font-size: 10px;" target="_blank">{{item.mensaje}}</a></p>
+                    <p *ngIf="item.mensaje.toString().substring(0,4)!='http'" class="chat-cont">{{item.mensaje}}</p>
+                    <p class="chat-time">{{item.fecha}}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div *ngIf="load2">
+              <div class="spinner">
+                <img src="assets/icon/sppiner.gif">
+              </div>
+            </div>
+            <div class="chat-reply-box">
+              <div class="right-icon-control">
+                <form class="form-material" ><!-- action="javascrpit:" -->
+                  <div class="form-group form-primary">
+                    <input #msj id="msj" (keyup.enter)="EnterEnviarMsj()" type="text" name="footer-email"
+                      class="form-control" required="">
+                    <span class="form-bar"></span>
+                    <label class="float-label"><i class="fa fa-search m-r-10"></i>Escribir mensaje aqui</label>
+                  </div>
+                </form>
+                <div class="form-icon ">
+                  <button class="btn btn-success btn-icon ripple light">
+                    <i class="fa fa-paper-plane" (click)="BotonEnviarMsj()"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </nav>
+    <div class="pcoded-main-container" [style.margin-top]="headerFixedMargin">
+      <div class="pcoded-wrapper">
+        <nav id="main_navbar" class="pcoded-navbar" (clickOutside)="onClickedOutsideSidebar($event)"
+          [exclude]="'#mobile-collapse'" [attr.navbar-theme]="themeLayout" [attr.active-item-theme]="activeItemTheme"
+          sub-item-theme="theme2" active-item-style="style0" [attr.pcoded-header-position]="pcodedHeaderPosition"
+          [attr.pcoded-navbar-position]="pcodedSidebarPosition" [style.top]="headerFixedTop"
+          [style.height]="sidebarFixedNavHeight" [style.max-width]="'150px'" (mouseleave)="hoverOutsideSidebar()">
+          <perfect-scrollbar [style.max-width]="'150px'" [style.max-height]="sidebarFixedHeight" [config]="config"
+            [ngClass]="perfectDisable">
+            <div class="pcoded-inner-navbar main-menu" appAccordion>
+              <div *ngFor="let asideItems of menuItems.getAll()" class="d-color">
+
+                <div class="pcoded-navigation-label" [attr.menu-title-theme]="menuTitleTheme">{{asideItems.label}}</div>
+                <ul class="pcoded-item pcoded-left-item" [attr.item-border]="itemBorder"
+                  [attr.item-border-style]="itemBorderStyle" [attr.subitem-border]="subItemBorder"
+                  *ngFor="let asideItem of asideItems.main ; let i = index" appAccordionLink
+                  group="{{asideItem.state}}">
+                  <li [routerLinkActive]="['active']" [style.max-width]="'150px'" *ngIf="asideItem.type === 'external'"
+                    appAccordionLink group="{{asideItem.state}}">
+                    <a [routerLinkActive]="['active']" class="ripple" href="{{asideItem.external}}"
+                      target="{{asideItem.target ? '_blank' : '_self'}}" appAccordionToggle>
+                      <span class="pcoded-micon"><i class="{{ asideItem.icon }}"></i><b>{{ asideItem.short_label
+                          }}</b></span>
+                      <span class="text-custom-lateral pcoded-mtext">{{ asideItem.name }}</span>
+                      <span *ngFor="let asideBadge of asideItem.badge"
+                        class="pcoded-badge label label-{{ asideBadge.type }}">{{asideBadge.value}}</span>
+                      <span class="pcoded-mcaret"></span>
+                    </a>
+                  </li>
+
+                  <li [routerLinkActive]="['active']" [style.max-width]="'150px'" *ngIf="asideItem.type === 'link'"
+                    appAccordionLink group="{{asideItem.state}}">
+                    <a [routerLinkActive]="['active']" class="ripple"
+                      [routerLink]="asideItems.state!=''?['/principal/',asideItems.state, asideItem.main_state, asideItem.state]:['/principal/', asideItem.main_state, asideItem.state]"
+                      target="{{asideItem.target ? '_blank' : '_self'}}" appAccordionToggle
+                      *ngIf="asideItem.main_state; else mainContent">
+                      <span class="pcoded-micon"><i class="{{ asideItem.icon }}"></i><b>{{ asideItem.short_label
+                          }}</b></span>
+                      <span class="text-custom-lateral pcoded-mtext">{{ asideItem.name }}</span>
+                      <span *ngFor="let asideBadge of asideItem.badge"
+                        class="pcoded-badge label label-{{ asideBadge.type }}">{{asideBadge.value}}</span>
+                      <span class="pcoded-mcaret"></span>
+                    </a>
+                    <ng-template #mainContent>
+                      <a [routerLinkActive]="['active']" class="ripple"
+                        [routerLink]="asideItems.state!=''?['/principal/',asideItems.state, asideItem.state]:['/principal/', asideItem.state]"
+                        target="{{asideItem.target ? '_blank' : '_self'}}" appAccordionToggle>
+                        <!-- <span class="pcoded-micon"><i class="{{ asideItem.icon }}"></i><b>{{ asideItem.short_label
+                            }}</b></span> -->
+                        <div class="prueba-imagen"
+                          [style.background-image]="'url(../../../assets/img-menu/' + asideItem.icon +')'"></div>
+                        <span class="text-custom-lateral pcoded-mtext">
+                          <div class="custom-label-menu">{{ asideItem.name }}</div>
+                        </span>
+                        <span *ngFor="let asideBadge of asideItem.badge"
+                          class="pcoded-badge label label-{{ asideBadge.type }}">{{asideBadge.value}}</span>
+                        <span class="pcoded-mcaret"></span>
+                      </a>
+                    </ng-template>
+                  </li>
+
+                  <li (mouseleave)="fireClickLeave($event)" [style.max-width]="'150px'" [routerLinkActive]="['active']"
+                    *ngIf="asideItem.type === 'sub'" class="pcoded-hasmenu cpoint" [attr.dropdown-icon]="dropDownIcon"
+                    [attr.subitem-icon]="subItemIcon" appAccordionLink group="{{asideItem.state}}">
+                    <a (mouseover)="fireClick($event)" [routerLinkActive]="['active']"
+                      appAccordionToggle>
+                      <div class="ripple menu-ripple"></div>
+                      <span class="pcoded-micon"><i class="{{ asideItem.icon }}"></i><b>{{ asideItem.short_label
+                          }}</b></span>
+                      <span class="text-custom-lateral pcoded-mtext">{{ asideItem.name }}</span>
+                      <span *ngFor="let asideBadge of asideItem.badge"
+                        class="pcoded-badge label label-{{ asideBadge.type }}">{{asideBadge.value}}</span>
+                      <span class="pcoded-mcaret"></span>
+                    </a>
+                    <ul class="pcoded-submenu">
+                      <ng-template ngFor let-asideChildren [ngForOf]="asideItem.children">
+                        <li [routerLinkActive]="['active']" [style.max-width]="'150px'"
+                          *ngIf="asideChildren.type !== 'sub'">
+                          <a [routerLinkActive]="['active']"
+                            [routerLink]="asideItems.state!=''?['/principal/',asideItems.state, asideItem.state, asideChildren.state]:['/principal/', asideItem.state, asideChildren.state]"
+                            target="{{asideChildren.target ? '_blank' : '_self'}}">
+                            <div class="ripple menu-ripple"></div>
+                            <span class="pcoded-micon"><i class="icon-angle-right"></i></span>
+                            <span class="text-custom-lateral pcoded-mtext">{{ asideChildren.name }} </span>
+                            <span *ngFor="let asideChildrenBadge of asideChildren.badge"
+                              class="pcoded-badge label label-{{ asideChildrenBadge.type }}">{{asideChildrenBadge.value}}</span>
+                            <span class="pcoded-mcaret"></span>
+                          </a>
+                        </li>
+
+                        <li (mouseleave)="fireClickLeave($event)" [routerLinkActive]="['active']" class="pcoded-hasmenu cpoint"
+                          [attr.dropdown-icon]="dropDownIcon" [attr.subitem-icon]="subItemIcon"
+                          *ngIf="asideChildren.type === 'sub'" appAccordionLink group="sub-toggled">
+                          <a (mouseover)="fireClick($event)" [routerLinkActive]="['active']"
+                            appAccordionToggle>
+                            <div class="ripple menu-ripple"></div>
+                            <span class="pcoded-micon"><i class="icon-direction-alt"></i></span>
+                            <span class="text-custom-lateral pcoded-mtext">{{ asideChildren.name }}</span>
+                            <span *ngFor="let asideChildrenBadge of asideChildren.badge"
+                              class="pcoded-badge label label-{{ asideChildrenBadge.type }}">{{asideChildrenBadge.value}}</span>
+                            <span class="pcoded-mcaret"></span>
+                          </a>
+                          <ul class="pcoded-submenu">
+                            <ng-template ngFor let-asideChildrenSub [ngForOf]="asideChildren.children">
+                              <li [routerLinkActive]="['active']">
+                                <a [routerLinkActive]="['active']"
+                                  [routerLink]="asideItems.state!=''?['/principal/',asideItems.state, asideItem.state, asideChildren.state, asideChildrenSub.state]:['/principal/', asideItem.state, asideChildren.state, asideChildrenSub.state]"
+                                  target="{{asideChildrenSub.target ? '_blank' : '_self'}}">
+                                  <div class="ripple menu-ripple"></div>
+                                  <span class="pcoded-micon"><i class="icon-angle-right"></i></span>
+                                  <span class="text-custom-lateral pcoded-mtext">{{ asideChildrenSub.name }}</span>
+                                  <span *ngFor="let asideChildrenSubBadge of asideChildrenSub.badge"
+                                    class="pcoded-badge label label-{{ asideChildrenSubBadge.type }}">{{asideChildrenSubBadge.value}}</span>
+                                  <span class="pcoded-mcaret"></span>
+                                </a>
+                              </li>
+                            </ng-template>
+                          </ul>
+                        </li>
+                      </ng-template>
+                    </ul>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </perfect-scrollbar>
+        </nav>
+        <!--contenido-->
+        <div class="pcoded-content">
+          <!-- <app-breadcrumbs></app-breadcrumbs> -->
+          <!--encabezado de contenido con fonto azul-->
+          <div class="pcoded-inner-content">
+            <!-- Main-body start -->
+            <div class="main-body">
+              <div class="page-wrapper">
+                <router-outlet>
+                  <title></title>
+                  <app-spinner></app-spinner>
+                </router-outlet>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!--contenido-->
+        <!--engranaje de configuracion-->
+        <div id="styleSelector" [ngClass]="configOpenRightBar">
+          <ul>
+            <li>
+            <li>
+              <p class="selector-title">Temas</p>
+            </li>
+            <li>
+              <div class="theme-color">
+                <a (click)="setLayoutType('light')" class="ripple cpoint" layout-type="light"
+                  placement="top" ngbTooltip="Light Layout">
+                  <span class="head"></span>
+                  <span class="cont"></span>
+                </a>
+                <a (click)="setLayoutType('dark')" class="ripple light cpoint" layout-type="dark"
+                  placement="top" ngbTooltip="Dark Layout">
+                  <span class="head"></span>
+                  <span class="cont"></span>
+                </a>
+              </div>
+            </li>
+          </ul>
+          <div class="style-cont m-t-10">
+            <div class="tab-content tabs h-100">
+              <ul>
+                <li>
+                  <p class="selector-title">Color de Encabezado</p>
+                </li>
+                <li class="theme-option">
+                  <div class="theme-color">
+                    <a class="header-theme ripple cpoint"
+                      (click)="this.menuTitleTheme=this.freamType=this.activeItemTheme=this.headerTheme='theme1';setBackgroundPattern('theme1')"
+                      header-theme="theme1">
+                      <span class="head"></span>
+                      <span class="cont"></span>
+                    </a>
+                    <a class="header-theme ripple cpoint"
+                      (click)="this.menuTitleTheme=this.freamType=this.activeItemTheme=this.headerTheme='theme2';setBackgroundPattern('theme2')"
+                      header-theme="theme2">
+                      <span class="head"></span>
+                      <span class="cont"></span></a>
+                    <a class="header-theme ripple cpoint"
+                      (click)="this.menuTitleTheme=this.freamType=this.activeItemTheme=this.headerTheme='theme3';setBackgroundPattern('theme3')"
+                      header-theme="theme3">
+                      <span class="head"></span>
+                      <span class="cont"></span>
+                    </a>
+                    <a class="header-theme ripple cpoint"
+                      (click)="this.menuTitleTheme=this.freamType=this.activeItemTheme=this.headerTheme='theme4';setBackgroundPattern('theme4')"
+                      header-theme="theme4">
+                      <span class="head"></span>
+                      <span class="cont"></span>
+                    </a>
+                    <a class="header-theme ripple cpoint"
+                      (click)="this.menuTitleTheme=this.freamType=this.activeItemTheme=this.headerTheme='theme5';setBackgroundPattern('theme5')"
+                      header-theme="theme5">
+                      <span class="head"></span>
+                      <span class="cont"></span>
+                    </a>
+                    <a class="header-theme ripple cpoint"
+                      (click)="this.menuTitleTheme=this.freamType=this.activeItemTheme=this.headerTheme='theme6';setBackgroundPattern('theme6')"
+                      header-theme="theme6">
+                      <span class="head"></span>
+                      <span class="cont"></span>
+                    </a>
+                  </div>
+                </li>
+                <!-- <li>
+                  <p class="selector-title">Color de Enlace activo</p>
+                </li>
+                <li class="theme-option">
+                  <div class="theme-color">
+                    <a href="javascript:" (click)="this.activeItemTheme='theme1'" class="small"
+                      active-item-theme="theme1"></a>
+                    <a href="javascript:" (click)="this.activeItemTheme='theme2'" class="small"
+                      active-item-theme="theme2"></a>
+                    <a href="javascript:" (click)="this.activeItemTheme='theme3'" class="small"
+                      active-item-theme="theme3"></a>
+                    <a href="javascript:" (click)="this.activeItemTheme='theme4'" class="small"
+                      active-item-theme="theme4"></a>
+                    <a href="javascript:" (click)="this.activeItemTheme='theme5'" class="small"
+                      active-item-theme="theme5"></a>
+                    <a href="javascript:" (click)="this.activeItemTheme='theme6'" class="small"
+                      active-item-theme="theme6"></a>
+                    <a href="javascript:" (click)="this.activeItemTheme='theme7'" class="small"
+                      active-item-theme="theme7"></a>
+                    <a href="javascript:" (click)="this.activeItemTheme='theme8'" class="small"
+                      active-item-theme="theme8"></a>
+                    <a href="javascript:" (click)="this.activeItemTheme='theme9'" class="small"
+                      active-item-theme="theme9"></a>
+                    <a href="javascript:" (click)="this.activeItemTheme='theme10'" class="small"
+                      active-item-theme="theme10"></a>
+                    <a href="javascript:" (click)="this.activeItemTheme='theme11'" class="small"
+                      active-item-theme="theme11"></a>
+                    <a href="javascript:" (click)="this.activeItemTheme='theme12'" class="small"
+                      active-item-theme="theme12"></a>
+                  </div>
+                </li>
+                <li>
+                  <p class="selector-title">Color de Título del Menu</p>
+                </li>
+                <li class="theme-option">
+                  <div class="theme-color">
+                    <a href="javascript:" class="small" (click)="this.menuTitleTheme='theme1'"
+                      lheader-theme="theme1"></a>
+                    <a href="javascript:" class="small" (click)="this.menuTitleTheme='theme2'"
+                      lheader-theme="theme2"></a>
+                    <a href="javascript:" class="small" (click)="this.menuTitleTheme='theme3'"
+                      lheader-theme="theme3"></a>
+                    <a href="javascript:" class="small" (click)="this.menuTitleTheme='theme4'"
+                      lheader-theme="theme4"></a>
+                    <a href="javascript:" class="small" (click)="this.menuTitleTheme='theme5'"
+                      lheader-theme="theme5"></a>
+                    <a href="javascript:" class="small" (click)="this.menuTitleTheme='theme6'"
+                      lheader-theme="theme6"></a>
+                    <a href="javascript:" class="small" (click)="this.menuTitleTheme='theme7'"
+                      lheader-theme="theme7"></a>
+                    <a href="javascript:" class="small" (click)="this.menuTitleTheme='theme8'"
+                      lheader-theme="theme8"></a>
+                    <a href="javascript:" class="small" (click)="this.menuTitleTheme='theme9'"
+                      lheader-theme="theme9"></a>
+                  </div>
+                </li> -->
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<app-cargando [bloquearTodo]="true" [nointernet]="nointer" *ngIf="mostrar_carga_todo"></app-cargando>

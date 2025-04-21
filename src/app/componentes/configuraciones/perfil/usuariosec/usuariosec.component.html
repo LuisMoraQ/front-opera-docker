@@ -1,0 +1,292 @@
+<div class="titulo-contenido">
+  <h2>USUARIOS SECUNDARIOS</h2>
+</div>
+<div class="table-responsive" style="min-height: 200px;">
+  <table #table1 class="tabla-general" mat-table [dataSource]="dataSourceorg" matSort multiTemplateDataRows>
+      <ng-container matColumnDef="id_usuario">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 40px;">Nro
+          </th>
+          <td mat-cell *matCellDef="let row ; let i = dataIndex">
+              {{row.nro}} </td>
+      </ng-container>
+      <ng-container matColumnDef="nombres">
+          <th mat-header-cell *matHeaderCellDef>Nombres y Apellidos</th>
+          <td mat-cell *matCellDef="let row" class="text-left"> {{row.nombres | titlecase}} </td>
+      </ng-container>
+      <ng-container matColumnDef="telefono">
+          <th mat-header-cell *matHeaderCellDef>Telefono</th>
+          <td mat-cell *matCellDef="let row"> {{row.telefono}} </td>
+      </ng-container>
+      <ng-container matColumnDef="correo">
+          <th mat-header-cell *matHeaderCellDef>Correo</th>
+          <td mat-cell *matCellDef="let row" class="text-left"> {{row.correo}} </td>
+      </ng-container>
+      <ng-container matColumnDef="usuario">
+        <th mat-header-cell *matHeaderCellDef>Usuario</th>
+        <td mat-cell *matCellDef="let row" class="text-left"> {{row.login}} </td>
+    </ng-container>
+      <ng-container matColumnDef="tipo">
+        <th mat-header-cell *matHeaderCellDef>Tipo</th>
+        <td mat-cell *matCellDef="let row"> {{row.nom_tipo}} </td>
+    </ng-container>
+      <ng-container matColumnDef="estado">
+          <th mat-header-cell *matHeaderCellDef>Estado</th>
+          <td mat-cell *matCellDef="let row"> 
+            <div class="label-main" *ngIf="row.id_cargo!=''" style="margin: 1px;">
+                <label *ngIf="row.estado=='1'" class="label label-success ancho-50p">Activo</label>
+                <label *ngIf="row.estado=='0'" class="label label-danger ancho-50p">Inactivo</label>
+            </div>
+        </td>
+      </ng-container>
+      
+      <ng-container matColumnDef="acciones">
+          <th mat-header-cell *matHeaderCellDef style="width: 20px;">Acciones</th>
+          <td mat-cell *matCellDef="let row; let i = dataIndex;" style="align-items: center;">
+              <button class="btn btn-mini btn-success" placement="top" ngbTooltip="Accesos" container="body"
+                  (click)="OpenModalAccesos(row)" (mouseup)="quitarfoco($event);">
+                  <i class="fa fa-key icono-but"></i>
+              </button>
+              <button class="btn btn-mini btn-info" placement="top" ngbTooltip="Ver" container="body"
+                  (click)="openModal(row,false)" (mouseup)="quitarfoco($event);">
+                  <i class="fa fa-search icono-but"></i>
+              </button>
+              <button class="btn btn-mini btn-primary" placement="top" ngbTooltip="Editar" container="body"
+                  (click)="openModal(row,true)" (mouseup)="quitarfoco($event);">
+                  <i class="fa fa-edit icono-but"></i>
+              </button>
+          </td>
+      </ng-container>
+
+      <tr mat-header-row class="header-custom" *matHeaderRowDef="displayedColumnorg; sticky: true"></tr>
+      <tr mat-row *matRowDef="let row; let i = dataIndex; columns: displayedColumnorg;"
+          [ngClass]="{'highlight': filaorg_sel == i}" (click)="cambindicesel(i)"></tr>
+
+      <tr *matNoDataRow class="nodata">
+          <td class="mat-cell" colspan="11">
+              <label *ngIf="!buscando1">No se encontraron resultados</label>
+              <div *ngIf="buscando1" class="preloader3 loader-block">
+                  <div class="circ1"></div>
+                  <div class="circ2"></div>
+                  <div class="circ3"></div>
+                  <div class="circ4"></div>
+              </div>
+          </td>
+      </tr>
+  </table>
+</div>
+<app-modal-basic #modalEditar [dialogClass]="'modal-lg'">
+  <div class="app-modal-header">
+      <h4 class="modal-title tit-modal1"><b>{{titmodal}}</b></h4>
+      <button type="button" class="close basic-close" (click)="cerrarModal()">
+      <span aria-hidden="true">&times;</span>
+      </button>
+  </div>
+  <div class="app-modal-body">
+    <div class="row" *ngIf="!opcver">
+      <form [formGroup]="formUsuario">
+          <h4 class="sub-title h4-grupo"><b>Datos Principales</b></h4>
+          <mat-form-field appearance="outline" class="mff-reduc col-sm-12 col-12">
+              <mat-label>Nombres</mat-label>
+              <input matInput autocomplete="off" formControlName="nombres">
+          </mat-form-field>
+          <!-- <mat-form-field appearance="outline" class="mff-reduc col-sm-6 col-12">
+              <mat-label>Número Documento</mat-label>
+              <input matInput autocomplete="off" formControlName="nrodoc"
+                  (keydown)="this.formService.limitarSoloAlfanumericos($event)">
+          </mat-form-field> -->
+
+          <mat-form-field appearance="outline" class="mff-reduc col-12">
+              <mat-label>Correo</mat-label>
+              <input matInput autocomplete="off" formControlName="correo">
+          </mat-form-field>
+          <mat-form-field appearance="outline" class="mff-reduc col-sm-6 col-12">
+              <mat-label>Teléfono</mat-label>
+              <input matInput type="text" formControlName="telefono" [textMask]="{mask: this.formService.maskTelefono}" autocomplete="off" maxlength="9"><!-- (keydown)="this.formService.limitarSoloNumerosEnteros($event)" -->
+          </mat-form-field>
+          <mat-form-field appearance="outline" class="mff-reduc col-sm-6 col-12">
+              <mat-label>Estado</mat-label>
+              <select matNativeControl formControlName="estado">
+                  <option *ngFor="let estado of tiposEstado" [value]="estado.id">
+                      {{estado.nombre}}
+                  </option>
+              </select>
+          </mat-form-field>
+          <!-- <div class="col-12 row" *ngIf="editar">
+              <div class="col-sm-6 col-xl-6">
+                  <button type="button" class="btn btn-primary light ripple m-b-10" placement="top" ngbTooltip="La nueva Contraseña se enviará al correo del usuario."
+                  style="padding-bottom: 4px; padding-top: 4px; padding-left: 10px; padding-right: 10px;" (click)="RestaurarPassword()" (mouseup)="quitarfoco($event);">
+                      <i class="fa fa-edit"></i>Restaurar Contraseña
+                  </button>
+              </div>
+              <div class="col-sm-6 col-xl-6">
+                  <button type="button" class="btn btn-info light ripple m-b-10" placement="top" ngbTooltip="Los Datos de Acceso se enviarán al correo del usuario."
+                  style="padding-bottom: 4px; padding-top: 4px; padding-left: 10px; padding-right: 10px" (click)="RestaurarTodo()" (mouseup)="quitarfoco($event);">
+                      <i class="fa fa-edit"></i>Restaurar Contraseña
+                  </button>
+              </div>
+          </div> -->
+          <h4 class="sub-title h4-grupo"><b>Datos Complementarios</b></h4>
+          <mat-form-field appearance="outline" class="mff-reduc col-sm-6 col-12">
+              <mat-label>Departamento</mat-label>
+              <select matNativeControl formControlName="departamentoActual" (change)="listarProvincias($event.target.value)">
+                  <option value="">--Seleccionar--</option>
+                  <option *ngFor="let departamento of departamentos" [value]="departamento.id_depart">
+                      {{departamento.DEPARTAMENTO}}
+                  </option>
+              </select>
+          </mat-form-field>
+          <mat-form-field appearance="outline" class="mff-reduc col-sm-6 col-12">
+              <mat-label>Provincia Residencia</mat-label>
+              <select matNativeControl formControlName="provinciaActual"
+                  (change)="listarDistritos($event.target.value)">
+                  <option value="">--Seleccionar--</option>
+                  <option *ngFor="let provincia of provincias" [value]="provincia.id_prov">
+                      {{provincia.PROVINCIA}}
+                  </option>
+              </select>
+          </mat-form-field>
+          <mat-form-field appearance="outline" class="mff-reduc col-sm-6 col-12">
+              <mat-label>Distrito Residencia</mat-label>
+              <select matNativeControl formControlName="distritoActual">
+                  <option value="">--Seleccionar--</option>
+                  <option *ngFor="let distrito of distritos" [value]="distrito.id_distr">
+                      {{distrito.DISTRITO}}
+                  </option>
+              </select>
+          </mat-form-field>
+          <!-- <mat-form-field appearance="outline" class="mff-reduc col-sm-6 col-12">
+              <mat-label>Nacionalidad</mat-label>
+              <select matNativeControl formControlName="nacionalidad">
+                  <option value="">--Seleccionar--</option>
+                  <option *ngFor="let nacionalidad of nacionalidades" [value]="nacionalidad.id">
+                      {{nacionalidad.nombre}}
+                  </option>
+              </select>
+          </mat-form-field> -->
+          <mat-form-field appearance="outline" class="mff-reduc col-sm-6 col-12">
+              <mat-label>Género</mat-label>
+              <select matNativeControl formControlName="genero">
+                  <option value="">--Seleccionar--</option>
+                  <option *ngFor="let genero of generos" [value]="genero.id">
+                      {{genero.nombre}}
+                  </option>
+              </select>
+          </mat-form-field>
+          <mat-form-field appearance="outline" class="mff-reduc col-12">
+              <mat-label>Dirección</mat-label>
+              <input matInput autocomplete="off" formControlName="direccion">
+          </mat-form-field>
+      </form>
+    </div>
+    <div *ngIf="opcver">
+        <h4 class="sub-title h4-grupo"><b>Datos Principales</b></h4>
+        <div class="row">
+            <div class="col-sm-4">
+                    <label>Activo :</label>
+                    <div class="switch switch-primary d-inline m-r-10" style="margin-left: 10px;">
+                        <input type="checkbox" id="switch-p-1" [(ngModel)]='datosfila.estado' disabled>
+                        <label for="switch-p-1" class="cr"></label>
+                    </div>
+            </div>
+        </div>
+        <div class="row">
+          <label class="col-sm-4 col-form-label">Tipo :</label>
+          <div class="col-sm-8">
+              <label id="tx_area2" class="col-sm-12 col-form-label"><b>{{datosfila?.nom_tipo}}</b></label>
+          </div>
+      </div>
+        <div class="row">
+            <label class="col-sm-4 col-form-label">Nombre :</label>
+            <div class="col-sm-8">
+                <label id="tx_area2" class="col-sm-12 col-form-label"><b>{{datosfila?.nombres}}</b></label>
+            </div>
+        </div>
+        <div class="row">
+            <label class="col-sm-4 col-form-label">Correo :</label>
+            <div class="col-sm-8">
+                <label id="tx_abr2" class="col-sm-12 col-form-label"><b>{{datosfila?.correo}}</b></label>
+            </div>
+        </div>
+
+        <div class="row">
+            <label class="col-sm-4 col-form-label">Telefono :</label>
+            <div class="col-sm-8">
+                <label id="tx_area2" class="col-sm-12 col-form-label"><b>{{datosfila?.telefono}}</b></label>
+            </div>
+        </div>
+        <h4 class="sub-title h4-grupo"><b>Datos Complementarios</b></h4>
+        <div class="row">
+            <label class="col-sm-4 col-form-label">Departamento :</label>
+            <div class="col-sm-8">
+                <label id="tx_area2" class="col-sm-12 col-form-label"><b>{{datosusuariodetalle?.deptact}}</b></label>
+            </div>
+        </div>
+        <div class="row">
+            <label class="col-sm-4 col-form-label">Provincia :</label>
+            <div class="col-sm-8">
+                <label id="tx_abr2" class="col-sm-12 col-form-label"><b>{{datosusuariodetalle?.provact}}</b></label>
+            </div>
+        </div>
+        <div class="row">
+            <label class="col-sm-4 col-form-label">Distrito :</label>
+            <div class="col-sm-8">
+                <label id="tx_area2" class="col-sm-12 col-form-label"><b>{{datosusuariodetalle?.distact}}</b></label>
+            </div>
+        </div>
+        <div class="row">
+            <label class="col-sm-4 col-form-label">Dirección :</label>
+            <div class="col-sm-8">
+                <label id="tx_abr2" class="col-sm-12 col-form-label"><b>{{datosusuariodetalle?.direccion}}</b></label>
+            </div>
+        </div>
+        <div class="row">
+            <label class="col-sm-4 col-form-label">Genero :</label>
+            <div class="col-sm-8">
+                <label id="tx_abr2" class="col-sm-12 col-form-label"><b>{{datosusuariodetalle?.genero}}</b></label>
+            </div>
+        </div>
+    </div>
+  </div>
+  <div class="app-modal-footer w-100">
+    <div class="row px-3 justify-content-between">
+        <button type="button" style="margin-right: 5px;" class="btn btn-sm btn-danger ripple" (click)="cerrarModal()"><i class="fa fa-times"></i>Cerrar</button>
+        <button *ngIf="!opcver" type="button" class="btn btn-sm btn-info ripple light" (click)="limpiarDatos()"><i class="fa fa-check"></i>Limpiar</button>
+        <button *ngIf="!opcver" type="button" class="btn btn-sm btn-success ripple light" (click)="guardarModal()"><i class="fa fa-check"></i>Guardar</button>
+    </div>
+  </div>
+</app-modal-basic>
+<app-modal-basic #modAccesos [dialogClass]="'modal-sm'">
+    <div class="app-modal-header">
+        <h4 class="modal-title" style="margin-bottom: 3px;">Datos de Acceso</h4>
+        <button type="button" class="close basic-close" (click)="cerrarModalAcc()">
+        <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+    <div class="app-modal-body">
+      <form [formGroup]="formLogin">
+        <mat-form-field appearance="outline" class="mff-reduc col-sm-12 col-12">
+          <mat-label>Login</mat-label>
+          <input matInput formControlName="login" autocomplete="off">
+        </mat-form-field>
+        <mat-form-field appearance="outline" class="mff-reduc col-sm-12 col-12">
+            <mat-label>Clave</mat-label>
+            <input matInput [type]="verclave?'text':'password'" formControlName="clave" autocomplete="off" >
+            <span *ngIf="!verclave" class="fa fa-fw fa-eye field-icon" (click)="verclave=true;"></span>
+            <span *ngIf="verclave" class="fa fa-fw fa-eye-slash field-icon" (click)="verclave=false;"></span>
+        </mat-form-field>
+      </form>
+    </div>
+    <div class="app-modal-footer w-100">
+        <div class="row px-3 justify-content-between">
+            <button type="button" class="btn  btn-sm btn-danger ripple" (click)="cerrarModalAcc()">
+                <i class="fa fa-times"></i>Cerrar
+            </button>
+            <button type="button" class="btn  btn-sm btn-success ripple light" (click)="GuardarAcc()" (mouseup)="quitarfoco($event);">
+                <i class="fa fa-check"></i>Guardar
+            </button>
+        </div>
+    </div>
+  </app-modal-basic>
+
+<app-cargando [bloquearTodo]="true" *ngIf="mostrar_carga_todo"></app-cargando>
+<!-- <app-cargando [bloquearTodo]="false" *ngIf="mostrar_carga"></app-cargando> -->

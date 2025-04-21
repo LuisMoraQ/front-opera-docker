@@ -1,0 +1,202 @@
+<div class="modal-dialog-scrollable modal-lg">
+  <div class="modal-content">
+    <div class="app-modal-header  modal-header">
+      <h4 class="modal-title tit-modal1"><b>Importar de Hoja de Cálculo</b></h4>
+      <button type="button" class="close basic-close" (click)="cerrarModal1()">
+      <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    <div class="app-modal-body modal-body">
+      <div *ngIf="!importado">
+          <div class="row m-l-0">
+              <label class="col-form-label p-t-5"><b>Archivo :</b></label>&nbsp;&nbsp;
+              <label class="custom-file-upload d-flex ml-1" style="border-radius: 10px;">
+                <input id="file" name="file" type="file" (change)="onFileChange($event)" [disabled]="!activarupload" accept=".xls ,.xlsx"/>
+                <i class="icofont icofont-upload-alt icono-but mt-1 ml-1 m-r-5"></i>
+                Seleccionar
+              </label>&nbsp;&nbsp;
+              <label class="col-form-label p-t-5">{{nom_archivo}}</label>
+          </div>
+          <div class="table-responsive" [style.height.px]="heighttmodal2">
+              <table mat-table [dataSource]="datadis" class="tabla-general tabla-10" multiTemplateDataRows>
+                  <ng-container matColumnDef="ind" sticky>
+                      <th mat-header-cell *matHeaderCellDef>&nbsp;</th>
+                      <td mat-cell *matCellDef="let i = dataIndex;" class="celda-head" style="color: #fff; padding-left: 2px !important;padding-right: 2px !important;" appAnchocol [ancho]="20">
+                          {{i}}
+                      </td>
+                  </ng-container>
+  
+                  <ng-container [matColumnDef]="column" *ngFor="let column of displayedColumnsagre">
+                      <th mat-header-cell *matHeaderCellDef class="celda-recorta"> {{column}} </th>
+                      <td mat-cell *matCellDef="let row" class="celda-recorta"> {{row[column]}} </td>
+                  </ng-container>
+              
+                  <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky:true;"></tr>
+                  <tr mat-row *matRowDef="let row; let i = dataIndex; columns: displayedColumns;" [ngClass]="{'filainicio': nrofila == i}"
+                  (click)="cambiovalnrofila(i)"></tr>
+              </table>
+          </div>
+  
+          <div class="row mx-0">
+              <span class="p-t-10">Fila Inicial de Datos:</span>
+              <mat-form-field class="my-form-field mff-reduc col-4 col-xl-3" appearance="outline">
+                  <input matInput type="text" id="txtnrofila" placeholder="0" value="{{nrofila}}" onkeypress="if(this.value.length>=11) {return false} else { return !(event.charCode == 46 || event.charCode == 45 || event.charCode == 43)}" onClick="this.select();"
+                  (input)="cambiovalnrofila($event.target.value)">
+              </mat-form-field>&nbsp;
+              <span class="p-t-10">(Ingrese el Numero de la fila o Haga click a la fila en la tabla)</span>
+          </div>
+  
+          <span>Seleccionar las columnas de la Hoja de Cálculo para asociarlas a la data del sistema:</span><br>
+          <span><b>NU</b> 	->	Numerico</span><br>
+          <span><b>IU</b> 	->  Indices Unificados de la Construcción( <b>01, 02, 03, ..., 80</b> , serán validados antes de importar)</span><br>
+          <span><b>TI</b> 	->  Tipo Insumo ( <b>'1'</b> ó <b>'MANO DE OBRA'</b> , <b>'2'</b> ó <b>'MATERIALES'</b> , <b>'3'</b> ó <b>'EQUIPO'</b> , <b>'4'</b> ó <b>'SUBCONTRATOS</b> )</span>
+          <div class="table-responsive tabla-1-fila">
+              <table mat-table [dataSource]="dataselcol" class="tabla-general">
+                  <ng-container matColumnDef="descripcion">
+                      <th mat-header-cell *matHeaderCellDef appAnchocol [ancho]="90">Descripcion *</th>
+                      <td mat-cell *matCellDef="let row;" appAnchocol [ancho]="90">
+                          <select class="select-celda" (change)="cambiarindice1(0,$event.target.value)">
+                              <option value="" [selected]="row.indice1==''">Obligatorio</option>
+                              <option *ngFor="let _id of displayedColumnsagre" value="{{_id}}">{{_id}}</option>
+                          </select>
+                      </td>
+                  </ng-container>
+                  <ng-container matColumnDef="unidad">
+                      <th mat-header-cell *matHeaderCellDef appAnchocol [ancho]="90">Unidad *</th>
+                      <td mat-cell *matCellDef="let row;" appAnchocol [ancho]="90">
+                          <select class="select-celda" (change)="cambiarindice1(1,$event.target.value)">
+                              <option value="" [selected]="row.indice1==''">Obligatorio</option>
+                              <option *ngFor="let _id of displayedColumnsagre" value="{{_id}}">{{_id}}</option>
+                          </select>
+                      </td>
+                  </ng-container>
+                  <ng-container matColumnDef="indiceunif">
+                    <th mat-header-cell *matHeaderCellDef appAnchocol [ancho]="90">Indice Unificado (IU) *</th>
+                    <td mat-cell *matCellDef="let row;" appAnchocol [ancho]="90">
+                        <select class="select-celda" (change)="cambiarindice1(2,$event.target.value)">
+                            <option value="" [selected]="row.indice1==''">Obligatorio</option>
+                            <option *ngFor="let _id of displayedColumnsagre" value="{{_id}}">{{_id}}</option>
+                        </select>
+                    </td>
+                </ng-container>
+                <ng-container matColumnDef="tipoinsumo">
+                  <th mat-header-cell *matHeaderCellDef appAnchocol [ancho]="90">Tipo Insumo (TI) *</th>
+                  <td mat-cell *matCellDef="let row;" appAnchocol [ancho]="90">
+                      <select class="select-celda" (change)="cambiarindice1(3,$event.target.value)">
+                          <option value="" [selected]="row.indice1==''">Obligatorio</option>
+                          <option *ngFor="let _id of displayedColumnsagre" value="{{_id}}">{{_id}}</option>
+                      </select>
+                  </td>
+                </ng-container>
+                  <ng-container matColumnDef="precio">
+                      <th mat-header-cell *matHeaderCellDef appAnchocol [ancho]="90">Precio (NU)</th>
+                      <td mat-cell *matCellDef="let row;" appAnchocol [ancho]="90">
+                          <select class="select-celda" (change)="cambiarindice1(4,$event.target.value)">
+                              <option value="" [selected]="row.indice1==''">Seleccionar</option>
+                              <option *ngFor="let _id of displayedColumnsagre" value="{{_id}}">{{_id}}</option>
+                          </select>
+                      </td>
+                  </ng-container>
+                  <ng-container matColumnDef="marcas">
+                      <th mat-header-cell *matHeaderCellDef appAnchocol [ancho]="90">Marcas</th>
+                      <td mat-cell *matCellDef="let row;" appAnchocol [ancho]="90">
+                          <select class="select-celda" (change)="cambiarindice1(5,$event.target.value)">
+                              <option value="" [selected]="row.indice1==''">Seleccionar</option>
+                              <option *ngFor="let _id of displayedColumnsagre" value="{{_id}}">{{_id}}</option>
+                          </select>
+                      </td>
+                  </ng-container>
+                  
+                  <tr mat-header-row *matHeaderRowDef="displayedColumnimp1;"></tr>
+                  <tr mat-row *matRowDef="let row; let i = dataIndex; columns: displayedColumnimp1;" ></tr>
+              </table>
+          </div>
+      </div>
+      <div *ngIf="importado">
+          <span class="p-t-10">Registros con formato incorrecto en la Hoja de Cálculo:</span>
+          <div class="table-responsive" [style.height.px]="heighttmodal1icor">
+              <table mat-table [dataSource]="dataincor" class="tabla-general" multiTemplateDataRows>
+                  <ng-container matColumnDef="ind">
+                      <th mat-header-cell *matHeaderCellDef>&nbsp;</th>
+                      <td mat-cell *matCellDef="let i = dataIndex;" class="celda-head" style="color: #fff;" appAnchocol [ancho]="20">
+                          {{i}}
+                      </td>
+                  </ng-container>
+  
+                  <ng-container [matColumnDef]="column" *ngFor="let column of displayedColumnsagre">
+                      <th mat-header-cell *matHeaderCellDef class="celda-recorta"> {{column}} </th>
+                      <td mat-cell *matCellDef="let row" class="celda-recorta"> {{row[column]}} </td>
+                  </ng-container>
+              
+                  <tr mat-header-row *matHeaderRowDef="displayedColumns;sticky: true"></tr>
+                  <tr mat-row *matRowDef="let row; let i = dataIndex; columns: displayedColumns;" [ngClass]="{'filaseleccionada': i < nrofila}"></tr>
+              </table>
+          </div>
+          <br>
+          <span class="p-t-10">Registros que no se pudieron agregar a la Data:</span>
+          <div class="table-responsive" [style.height.px]="heighttmodal1icor">
+              <table mat-table [dataSource]="dataincorbd" class="tabla-general">
+                  <ng-container matColumnDef="descripcion">
+                      <th mat-header-cell *matHeaderCellDef appAnchocol [ancho]="90">Descripcion *</th>
+                      <td mat-cell *matCellDef="let row;" appAnchocol [ancho]="90">
+                          {{row.descripcion}}
+                      </td>
+                  </ng-container>
+  
+                  <ng-container matColumnDef="unidad">
+                      <th mat-header-cell *matHeaderCellDef appAnchocol [ancho]="90">Unidad *</th>
+                      <td mat-cell *matCellDef="let row;" appAnchocol [ancho]="90">
+                          {{row.unidad}}
+                      </td>
+                  </ng-container>
+                  <ng-container matColumnDef="indiceunif">
+                    <th mat-header-cell *matHeaderCellDef appAnchocol [ancho]="90">Indice Unificado *</th>
+                    <td mat-cell *matCellDef="let row;" appAnchocol [ancho]="90">
+                        {{row.indiceunif}}
+                    </td>
+                  </ng-container>
+                  <ng-container matColumnDef="tipoinsumo">
+                    <th mat-header-cell *matHeaderCellDef appAnchocol [ancho]="90">Tipo Insumo *</th>
+                    <td mat-cell *matCellDef="let row;" appAnchocol [ancho]="90">
+                        {{row.tipoinsumo}}
+                    </td>
+                  </ng-container>
+                  <ng-container matColumnDef="precio">
+                      <th mat-header-cell *matHeaderCellDef appAnchocol [ancho]="90">Precio</th>
+                      <td mat-cell *matCellDef="let row;" appAnchocol [ancho]="90">
+                          {{row.precio}}
+                      </td>
+                  </ng-container>
+                  <ng-container matColumnDef="marcas">
+                      <th mat-header-cell *matHeaderCellDef appAnchocol [ancho]="90">Marcas</th>
+                      <td mat-cell *matCellDef="let row;" appAnchocol [ancho]="90">
+                          {{row.marcas}}
+                      </td>
+                  </ng-container>
+                  <ng-container matColumnDef="observacion">
+                    <th mat-header-cell *matHeaderCellDef class="celdasalto" appAnchocol [ancho]="200">Observación</th>
+                    <td mat-cell *matCellDef="let row;" class="celdasalto" appAnchocol [ancho]="200">
+                        <span class="text-obs">{{row.observacion}}</span>
+                    </td>
+                </ng-container>
+                  
+                  <tr mat-header-row *matHeaderRowDef="displayedColumnincorbd;sticky: true"></tr>
+                  <tr mat-row *matRowDef="let row; let i = dataIndex; columns: displayedColumnincorbd;" ></tr>
+              </table>
+          </div>
+      </div>
+    </div>
+    <div class="app-modal-footer modal-footer justify-content-between">
+      <button type="button" class="btn btn-sm btn-danger ripple" (click)="cerrarModal1()">
+        <i class="fa fa-times"></i>Cerrar
+      </button>
+      <button *ngIf="!importado" type="button" class="btn btn-sm btn-info ripple" (click)="limpiarModal1()">
+        <i class="fa fa-trash"></i>Limpiar
+      </button>
+      <button *ngIf="!importado" type="button" class="btn btn-sm btn-success ripple light" (click)="GuardarModal1()">
+        <i class="fa fa-check"></i>Guardar
+      </button>
+    </div>
+  </div>
+</div>
+<app-cargando [bloquearTodo]="true" *ngIf="mostrar_carga_todo"></app-cargando>

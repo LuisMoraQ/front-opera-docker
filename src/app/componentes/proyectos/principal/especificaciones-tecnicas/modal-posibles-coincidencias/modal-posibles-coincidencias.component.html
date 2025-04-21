@@ -1,0 +1,96 @@
+<div class="modal-dialog-scrollable modal-md">
+    <div class="modal-content">
+        <div class="app-modal-header  modal-header">
+            <span class="text-white">Lista vinculo parentesco</span>
+            <button type="button" class="close basic-close" (click)="closeModal()">
+                <span aria-hidden="true" class="mt-2">&times;</span>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div class="row px-3" style="height: 120px;">
+                <div class="col-12 px-0 overflow-auto">
+                    <table class="table-bordered tab-10 table-p">
+                        <thead class="text-center headsticky">
+                            <tr class="h-celda">
+                                <th appAnchocol [ancho]="30" class="h-h-custom">Nº</th>
+                                <th appAnchocol [ancho]="205" [detalle]="true" class="h-h-custom">
+                                    Descripción</th>
+                                <th appAnchocol [ancho]="50" class="h-h-custom"> % Similitud
+                                </th>
+                                <th appAnchocol [ancho]="100" class="h-h-custom"> Proyecto </th>
+                                <th appAnchocol [ancho]="100" class="h-h-custom"> Tipo Infraestructura
+                                </th>
+                                <th appAnchocol [ancho]="100" class="h-h-custom"> Modalidad ejecucion
+                                </th>
+                                <th appAnchocol [ancho]="30" class="h-h-custom"> Vinc.</th>
+                                <th appAnchocol [ancho]="35" class="h-h-custom"> Espec.</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <ng-container *ngIf="arrayPosibles.length; else elsenodata">
+                                <tr *ngFor="let row of arrayPosibles; let index = index"
+                                    [ngClass]="{'filaseleccionada': row == predeterminado}" class="h-celda">
+                                    <td class="text-center">{{index + 1}}</td>
+                                    <td>{{row.descripcion2}}</td>
+                                    <td class="text-center">
+                                        <div class="barra-estado text-center">
+                                            <div [style.width.px]="row.porcentaje2 == null ? 0 : (row.porcentaje2 / 2)"
+                                                class="barra-registro text-center tema">
+                                            </div>
+                                            <div class="porcentaje font-weight-bolder">
+                                                {{row.porcentaje2 == null ? 0 :
+                                                row.porcentaje2}}%</div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div appAnchocol [ancho]="200" class="recortatextlinea" [title]="row.vinculo_espproy2 |
+                                        nombreProyecto:listaProyUsuario:row">
+                                            {{row.vinculo_espproy2 |
+                                            nombreProyecto:listaProyUsuario:row:'descripcion2'}}
+                                        </div>
+                                    </td>
+                                    <td>{{row.clasificacion}}</td>
+                                    <td>{{row.modalidad}}</td>
+                                    <td class="text-center">
+                                        <mat-checkbox [checked]="row == predeterminado" [id]="t + index"
+                                            (change)="cambioValorCheck($event.checked, row)" container="body">
+                                        </mat-checkbox>
+                                    </td>
+                                    <td class="text-center">
+                                        <button type="button" class="btn btn-mini2 btn-outline-secondary"
+                                            container="body" (mouseup)="quitarfoco($event);"
+                                            ngbTooltip="Ver especificacion tecnica" (click)="especTecnXPartida(row)">
+                                            <i class="fa fa-file-code-o icono-but"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            </ng-container>
+                            <ng-template #elsenodata>
+                                <tr class="h-celda">
+                                    <td class="mat-cell text-center" colspan="8">
+                                        <label *ngIf="!buscando">No se encontraron resultados</label>
+                                        <div *ngIf="buscando" class="preloader3 loader-block">
+                                            <div class="circ1"></div>
+                                            <div class="circ2"></div>
+                                            <div class="circ3"></div>
+                                            <div class="circ4"></div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </ng-template>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="app-modal-footer modal-footer justify-content-between">
+            <button type="button" class="btn btn-danger btn-sm" (click)="closeModal()"><i
+                    class="fa fa-times"></i>Cerrar</button>
+            <button type="button" class="btn btn-success btn-sm" (click)="vincularSeleccionado()"><i
+                    class="fa fa-save"></i>
+                Vincular
+            </button>
+        </div>
+    </div>
+</div>
+<app-cargando [bloquearTodo]="true" *ngIf="mostrar_carga_todo"></app-cargando>

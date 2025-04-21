@@ -1,0 +1,220 @@
+<div class="modal-dialog-scrollable modal-lg">
+    <div class="modal-content">
+        <div class="app-modal-header  modal-header">
+            <!-- tipo modal es la accion de para el modal actualizar o guardar -->
+            <h4 class="modal-title tit-modal1">
+                <b *ngIf="!editar">Agregar Proyecto</b>
+                <b *ngIf="editar">Editar Proyecto</b>
+            </h4>
+            <button type="button" class="close basic-close" (click)="closeModal('click-close')">
+                <span aria-hidden="true" class="mt-2">&times;</span>
+            </button>
+        </div>
+        <div class="modal-body">
+            <form [formGroup]="formProyecto">
+                <div class="row ">
+                    <mat-form-field appearance="outline" class="mff-reduc col-sm-12 col-12">
+                        <mat-label>Descripción <span class="text-danger"> * </span></mat-label>
+                        <!-- <input matInput type="text" autocomplete="off" formControlName="descripcion" [maxLength]="500"> -->
+                        <textarea matInput autocomplete="off" class="mayuscula" maxlength="500"
+                            formControlName="descripcion"></textarea>
+                    </mat-form-field>
+                    <mat-form-field appearance="outline" class="mff-reduc col-sm-6 col-12">
+                        <mat-label>Clasificación <span class="text-danger"> * </span></mat-label>
+                        <select matNativeControl formControlName="id_clasificacion">
+                            <option value="">--Seleccionar--</option>
+                            <option *ngFor="let clasificacion of clasificaciones"
+                                [value]="clasificacion.id_clasificacion">
+                                {{clasificacion.descripcion}}
+                            </option>
+                        </select>
+                    </mat-form-field>
+                    <mat-form-field appearance="outline" class="mff-reduc col-sm-6 col-12">
+                        <mat-label>Modalidad <span class="text-danger"> * </span></mat-label>
+                        <select matNativeControl formControlName="modalidad">
+                            <option value="">--Seleccionar--</option>
+                            <option *ngFor="let modalidad of modalidades" [value]="modalidad.id">
+                                {{modalidad.nombre}}
+                            </option>
+                        </select>
+                    </mat-form-field>
+                    <div class="col-sm-6 col-12">
+                        <mat-form-field appearance="outline" class="mff-reduc " style="width: calc(100% - 36px);">
+                            <mat-label>Grupo <span class="text-danger"> * </span></mat-label>
+                            <select matNativeControl formControlName="id_grupo">
+                                <option value="0">--Seleccionar--</option>
+                                <option *ngFor="let grupo of grupos" [value]="grupo.id_grupo">
+                                    {{grupo.descripcion}}
+                                </option>
+                            </select>
+                        </mat-form-field>&nbsp;
+                        <button type="button" class="btn btn-mini btn-success" style="margin-top: -4px;"
+                            ngbTooltip="Agregar Grupo" (click)="verGrupoProyecto()">
+                            <i class="fa fa-plus icono-but"></i>
+                        </button>
+                    </div>
+                    <mat-form-field appearance="outline" class="mff-reduc col-sm-6 col-12">
+                        <mat-label>Estado <span class="text-danger"> * </span></mat-label>
+                        <select matNativeControl formControlName="estado">
+                            <option value="">--Seleccionar--</option>
+                            <option *ngFor="let estado of estados" [value]="estado.id">
+                                {{estado.nombre}}
+                            </option>
+                        </select>
+                    </mat-form-field>
+                    <mat-form-field appearance="outline" class="mff-reduc col-sm-6 col-12">
+                        <mat-label>País</mat-label>
+                        <select matNativeControl formControlName="cod_pais" (change)="CambiarPais($event.target.value)">
+                            <option value="">--Seleccionar--</option>
+                            <option *ngFor="let pais of paises" [value]="pais.cod_pais">
+                                {{pais.pais}}
+                            </option>
+                        </select>
+                    </mat-form-field>
+                    <mat-form-field appearance="outline" class="mff-reduc col-sm-6 col-12">
+                        <mat-label>Moneda</mat-label>
+                        <select matNativeControl formControlName="moneda">
+                            <option value="">--Seleccionar--</option>
+                            <option *ngFor="let moneda of monedas" [value]="moneda.id_moneda">
+                                {{moneda.moneda}}
+                            </option>
+                        </select>
+                    </mat-form-field>
+                    <ng-container *ngIf="!OtroPais; else visual1">
+                        <mat-form-field appearance="outline" class="mff-reduc col-sm-6 col-12">
+                            <mat-label>Departamento</mat-label>
+                            <select matNativeControl formControlName="departamento"
+                                (change)="listarProvincias($event.target.value)">
+                                <option value="">--Seleccionar--</option>
+                                <option *ngFor="let departamento of departamentos" [value]="departamento.id_depart">
+                                    {{departamento.DEPARTAMENTO}}
+                                </option>
+                            </select>
+                        </mat-form-field>
+                        <mat-form-field appearance="outline" class="mff-reduc col-sm-6 col-12">
+                            <mat-label>Provincia </mat-label>
+                            <select matNativeControl formControlName="provincia"
+                                (change)="listarDistritos($event.target.value)">
+                                <option value="">--Seleccionar--</option>
+                                <option *ngFor="let provincia of provincias" [value]="provincia.id_prov">
+                                    {{provincia.PROVINCIA}}
+                                </option>
+                            </select>
+                        </mat-form-field>
+                        <mat-form-field appearance="outline" class="mff-reduc col-sm-6 col-12">
+                            <mat-label>Distrito</mat-label>
+                            <select matNativeControl formControlName="distrito">
+                                <option value="">--Seleccionar--</option>
+                                <option *ngFor="let distrito of distritos" [value]="distrito.id_distr">
+                                    {{distrito.DISTRITO}}
+                                </option>
+                            </select>
+                        </mat-form-field>
+                    </ng-container>
+                    <ng-template #visual1>
+                        <mat-form-field appearance="outline"
+                        class="mff-reduc my-form-field col-sm-6 col-12"
+                        [floatLabel]="permiso ? 'always' : 'auto'"
+                        [ngClass]="{'mat-form-field-disa': permiso}">
+                        <mat-label>Ubicacion Principal</mat-label>
+                        <input matInput type="text" autocomplete="off"
+                          formControlName="otrodepartamento" [maxLength]="100">
+                        </mat-form-field>
+                        <mat-form-field appearance="outline"
+                        class="mff-reduc my-form-field col-sm-6 col-12"
+                        [floatLabel]="permiso ? 'always' : 'auto'"
+                        [ngClass]="{'mat-form-field-disa': permiso}">
+                        <mat-label>Ubicacion Secundaria</mat-label>
+                        <input matInput type="text" autocomplete="off"
+                          formControlName="otraprovincia" [maxLength]="100">
+                        </mat-form-field>
+                        <mat-form-field appearance="outline"
+                        class="mff-reduc my-form-field col-sm-6 col-12"
+                        [floatLabel]="permiso ? 'always' : 'auto'"
+                        [ngClass]="{'mat-form-field-disa': permiso}">
+                        <mat-label>Ubicacion Proyecto</mat-label>
+                        <input matInput type="text" autocomplete="off"
+                          formControlName="otrodistrito" [maxLength]="100">
+                        </mat-form-field>
+                    </ng-template>
+                    <mat-form-field appearance="outline" class="mff-reduc col-sm-6 col-12">
+                        <mat-label>Dirección</mat-label>
+                        <input matInput type="text" autocomplete="off" formControlName="direccion" [maxLength]="300">
+                    </mat-form-field>
+                    <mat-form-field appearance="outline" class="mff-reduc col-sm-6 col-12 h-dates">
+                        <mat-label>Fecha Elaboración</mat-label>
+                        <input matInput type="date" formControlName="fecha_elaboracion">
+                        <mat-error *ngIf="fecha_elaboracion?.hasError('required')">
+                            La fecha es obligatoria.
+                        </mat-error>
+                        <!-- Error cuando el valor está fuera del rango (validador personalizado) -->
+                        <mat-error *ngIf="fecha_elaboracion?.hasError('fechaInvalida')">
+                            La fecha ingresada no es valida.
+                        </mat-error>
+                    </mat-form-field>
+                    <mat-form-field appearance="outline" class="mff-reduc col-sm-6 col-12">
+                        <mat-label>Plazo(Dias)</mat-label>
+                        <input matInput type="text" autocomplete="off" formControlName="plazo"
+                            (keyup)="TeclaCalcFin($event)" (blur)="CalculaFechaFin(0)"
+                            [textMask]="{mask: this.formsService.maskTelefono}" maxlength="5">
+                        <mat-error *ngIf="plazo?.hasError('min')">
+                            El plazo debe ser como mínimo 1.
+                        </mat-error>
+
+                        <mat-error *ngIf="plazo?.hasError('max')">
+                            El plazo no puede ser mayor a 5000.
+                        </mat-error>
+
+                        <!-- Error cuando el campo es requerido -->
+                        <mat-error *ngIf="plazo?.hasError('required')">
+                            El plazo es obligatorio.
+                        </mat-error>
+                    </mat-form-field>
+
+                    <div class="col-sm-6 col-12 mt-2">
+                        <mat-form-field appearance="outline" class="mff-reduc h-dates w-100">
+                            <mat-label>Fecha Inicio</mat-label>
+                            <input matInput type="date" formControlName="fecha_inicio" (keyup)="TeclaCalcFin($event)"
+                                (blur)="CalculaFechaFin(1)">
+                                <mat-error *ngIf="fecha_inicio?.hasError('required')">
+                                    La fecha es obligatoria.
+                                </mat-error>
+        
+                                <!-- Error cuando el valor está fuera del rango (validador personalizado) -->
+                                <mat-error *ngIf="fecha_inicio?.hasError('fechaInvalida')">
+                                    La fecha ingresada no es valida.
+                                </mat-error>
+                        </mat-form-field>
+                       
+                        &nbsp;
+                        <!-- <button *ngIf="!calculandofecha" type="button"  style="margin-top: -4px;" class="btn btn-mini btn-info"  ngbTooltip="Calcular Fecha Culminación" (click)="CalculaFechaFin()">
+                            <i class="icofont icofont-ui-play icono-but"></i>
+                        </button> -->
+                        <i *ngIf="calculandofecha" class="fa fa-spinner fa-pulse fa-lg fa-fw"></i>
+                        <span class="sr-only">Loading...</span>
+                    </div>
+                    <mat-form-field appearance="outline" class="mff-reduc col-sm-6 col-12 h-dates mt-2">
+                        <mat-label>Fecha Culminación</mat-label>
+                        <input matInput type="date" formControlName="fecha_culmina" (keyup)="TeclaCalcFin($event)"
+                            (blur)="CalculaFechaFin(2)">
+                            <mat-error *ngIf="fecha_culmina?.hasError('required')">
+                                La fecha es obligatoria.
+                            </mat-error>
+    
+                            <!-- Error cuando el valor está fuera del rango (validador personalizado) -->
+                            <mat-error *ngIf="fecha_culmina?.hasError('fechaInvalida')">
+                                La fecha ingresada no es valida.
+                            </mat-error>
+                    </mat-form-field>
+                </div>
+            </form>
+        </div>
+        <div class="app-modal-footer modal-footer justify-content-between">
+            <button type="button" class="btn btn-danger btn-sm" (click)="closeModal('cancelar')"><i
+                    class="fa fa-times"></i>Cerrar</button>
+            <button type="submit" *ngIf="!ver" class="btn btn-success btn-sm" (click)="almacenar()"><i
+                    class="fa fa-check"></i>Guardar</button>
+        </div>
+    </div>
+</div>
+<app-cargando [bloquearTodo]="true" *ngIf="mostrar_carga_todo"></app-cargando>

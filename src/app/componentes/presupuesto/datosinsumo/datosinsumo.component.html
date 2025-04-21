@@ -1,0 +1,21 @@
+<div class="modal-dialog-scrollable modal-lg">
+  <div class="modal-content">
+    <div class="app-modal-header  modal-header">
+      <h4 class="modal-title tit-modal1">
+        <b>Detalles de Insumo</b>
+      </h4>
+      <button type="button" class="close basic-close" (click)="closeModal()">
+        <span aria-hidden="true" class="mt-2">&times;</span>
+      </button>
+    </div>
+    <div class="modal-body">
+      <app-visualizador-doc-insumos [insumoSeleccionado]="insumoSeleccionado" [opcionSeleccionada]="active" [bloquearAcciones]="bloquearAcciones">
+                </app-visualizador-doc-insumos>
+    </div>
+    <div class="app-modal-footer modal-footer justify-content-between">
+      <button type="button" class="btn btn-danger btn-sm" (click)="closeModal()"><i class="fa fa-times"></i>Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<app-cargando [bloquearTodo]="true" *ngIf="mostrar_carga_todo"></app-cargando>

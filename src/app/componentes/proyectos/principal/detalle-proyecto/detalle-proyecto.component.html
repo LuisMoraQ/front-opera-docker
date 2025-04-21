@@ -1,0 +1,496 @@
+<app-card>
+  <div class="row">
+    <div class="col-4 text-center">
+      <button type="button" class="btn btn-outline-secondary btn-sm  ripple m-b-10" (click)="opcion = 1"
+              [disabled]="opcion === 0" [ngClass]="{'active': opcion === 1}" (mouseup)="quitarfoco($event);">
+        <i class="fa fa-cogs"></i>Data Realizada
+      </button>
+    </div>
+    <div class="col-4 text-center">
+      <button type="button" class="btn btn-outline-secondary btn-sm  ripple m-b-10" (click)="opcion = 2"
+              [disabled]="opcion === 0" [ngClass]="{'active': opcion === 2}" (mouseup)="quitarfoco($event);">
+        <i class="fa fa-list-alt"></i>Resumen General
+      </button>
+    </div>
+    <div *ngIf="proyectoSeleccionado?.fuente==0" class="col-4 text-center">
+      <button type="button" class="btn btn-outline-secondary btn-sm  ripple m-b-10" (click)="opcion = 3"
+              [disabled]="opcion === 0" [ngClass]="{'active': opcion === 3}" (mouseup)="quitarfoco($event);">
+        <i class="fa fa-list-alt"></i>INFORMACIÓN
+      </button>
+    </div>
+    <div class="col-12 overflow-auto" [style.height.px]="height + 18">
+      <div class="row" *ngIf="opcion === 1">
+        <div class="col-sm-12 col-xl-6 mt-1">
+          <div class=" col-12 text-center font-weight-bold">
+            PRESUPUESTO DEL PROYECTO
+          </div>
+          <div class=" col-12" class="overflow-auto">
+            <table class="table-bordered table-deta">
+              <thead class="text-center">
+              <tr>
+                <th class="custom-detalle">Detalle de Estructura</th>
+                <th appAnchocol [ancho]="79" style="line-height: unset !important">Proceso Ejecutado
+                </th>
+                <th appAnchocol [ancho]="70" style="line-height: unset !important">Tipo de Vinculo
+                </th>
+              </tr>
+              </thead>
+              <tbody *ngIf="presupuestoProyecto.length">
+              <tr *ngFor="let item of presupuestoProyecto">
+                <td class="custom-detalle">{{ item.label }}</td>
+                <td class="text-center" appAnchocol [ancho]="79">
+                  <i class="fa fa-2x mt-1"
+                     [ngClass]="{'fa-square-o': item.proceso == 0, 'fa-check-square-o text-success': item.proceso == 1}"></i>
+                </td>
+                <td class="text-center">{{ item.tipo }}</td>
+              </tr>
+              </tbody>
+              <tbody *ngIf="!presupuestoProyecto.length">
+              <tr>
+                <td class="text-center" colspan="11">
+                  No se encontraron resultados
+                </td>
+              </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="col-sm-12 col-xl-6 mt-1">
+          <div class=" col-12 text-center font-weight-bold">
+            METRADO DEL PROYECTO
+          </div>
+          <div class=" col-12" class="overflow-auto">
+            <table class="table-bordered table-deta">
+              <thead class="text-center">
+              <tr>
+                <th class="custom-detalle">Detalle de Estructura</th>
+                <th appAnchocol [ancho]="79" style="line-height: unset !important">Proceso Ejecutado
+                </th>
+                <th appAnchocol [ancho]="70" style="line-height: unset !important">Tipo de Vinculo
+                </th>
+              </tr>
+              </thead>
+              <tbody *ngIf="metradoProyecto.length">
+              <tr *ngFor="let item of metradoProyecto">
+                <td class="custom-detalle">{{ item?.label }}</td>
+                <td class="text-center" appAnchocol [ancho]="79">
+                  <i class="fa fa-2x mt-1"
+                     [ngClass]="{'fa-square-o': item.proceso == 0, 'fa-check-square-o text-success': item.proceso == 1}"></i>
+                </td>
+                <td class="text-center">{{ item?.tipo }}</td>
+              </tr>
+              </tbody>
+              <tbody *ngIf="!metradoProyecto.length">
+              <tr>
+                <td class="text-center" colspan="11">
+                  No se encontraron resultados
+                </td>
+              </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="col-sm-12 col-xl-6 mt-1">
+          <div class=" col-12 text-center font-weight-bold">
+            PROGRAMACION DE OBRA
+          </div>
+          <div class=" col-12" class="overflow-auto">
+            <table class="table-bordered table-deta">
+              <thead class="text-center">
+              <tr>
+                <th class="custom-detalle">Detalle de Estructura</th>
+                <th appAnchocol [ancho]="79" style="line-height: unset !important">Proceso Ejecutado
+                </th>
+                <th appAnchocol [ancho]="70" style="line-height: unset !important">Tipo de Vinculo
+                </th>
+              </tr>
+              </thead>
+              <tbody *ngIf="programacionObra.length">
+              <tr *ngFor="let item of programacionObra">
+                <td class="custom-detalle">{{ item?.label }}</td>
+                <td class="text-center" appAnchocol [ancho]="79">
+                  <i class="fa fa-2x mt-1"
+                     [ngClass]="{'fa-square-o': item.proceso == 0, 'fa-check-square-o text-success': item.proceso == 1}"></i>
+                </td>
+                <td class="text-center">{{ item?.tipo }}</td>
+              </tr>
+              </tbody>
+              <tbody *ngIf="!programacionObra.length">
+              <tr>
+                <td class="text-center" colspan="11">
+                  No se encontraron resultados
+                </td>
+              </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="col-sm-12 col-xl-6 mt-1">
+          <div class=" col-12 text-center font-weight-bold">
+            FORMULA POLINÓMICA
+          </div>
+          <div class=" col-12" class="overflow-auto">
+            <table class="table-bordered table-deta">
+              <thead class="text-center">
+              <tr>
+                <th class="custom-detalle">Detalle de Estructura</th>
+                <th appAnchocol [ancho]="79" style="line-height: unset !important">Proceso Ejecutado
+                </th>
+                <th appAnchocol [ancho]="70" style="line-height: unset !important">Tipo de Vinculo
+                </th>
+              </tr>
+              </thead>
+              <tbody *ngIf="formulaPolinomica.length">
+              <tr *ngFor="let item of formulaPolinomica">
+                <td class="custom-detalle">{{ item?.label }}</td>
+                <td class="text-center" appAnchocol [ancho]="79">
+                  <i class="fa fa-2x mt-1"
+                     [ngClass]="{'fa-square-o': item.proceso == 0, 'fa-check-square-o text-success': item.proceso == 1}"></i>
+                </td>
+                <td class="text-center">{{ item?.tipo }}</td>
+              </tr>
+              </tbody>
+              <tbody *ngIf="!formulaPolinomica.length">
+              <tr>
+                <td class="text-center" colspan="11">
+                  No se encontraron resultados
+                </td>
+              </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="col-sm-12 col-xl-6 mt-1">
+          <div class=" col-12 text-center font-weight-bold">
+            ESPECIFICACIONES TÉCNICAS
+          </div>
+          <div class=" col-12" class="overflow-auto">
+            <table class="table-bordered table-deta">
+              <thead class="text-center">
+              <tr>
+                <th class="custom-detalle">Detalle de Estructura</th>
+                <th appAnchocol [ancho]="79" style="line-height: unset !important">Proceso Ejecutado
+                </th>
+                <th appAnchocol [ancho]="70" style="line-height: unset !important">Tipo de Vinculo
+                </th>
+              </tr>
+              </thead>
+              <tbody *ngIf="especificacionesTecnicas.length">
+              <tr *ngFor="let item of especificacionesTecnicas">
+                <td class="custom-detalle">{{ item?.label }}</td>
+                <td class="text-center" appAnchocol [ancho]="79">
+                  <i class="fa fa-2x mt-1"
+                     [ngClass]="{'fa-square-o': item.proceso == 0, 'fa-check-square-o text-success': item.proceso == 1}"></i>
+                </td>
+                <td class="text-center">{{ item?.tipo }}</td>
+              </tr>
+              </tbody>
+              <tbody *ngIf="!especificacionesTecnicas.length">
+              <tr>
+                <td class="text-center" colspan="11">
+                  No se encontraron resultados
+                </td>
+              </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <!-- <div class="col-sm-12 col-md-6 mt-1">
+            <div class=" col-12 text-center font-weight-bold">
+                COTIZACIÓN DE INSUMOS
+            </div>
+            <div class=" col-12" class="overflow-auto">
+                <table class="table-bordered table-deta">
+                    <thead class="text-center">
+                        <tr>
+                            <th class="custom-detalle">Detalle de Estructura</th>
+                            <th appAnchocol [ancho]="79" style="line-height: unset !important">Proceso Ejecutado
+                            </th>
+                            <th appAnchocol [ancho]="70" style="line-height: unset !important">Tipo de Vinculo
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody *ngIf="cotizacionInsumos.length">
+                        <tr *ngFor="let item of cotizacionInsumos">
+                            <td class="custom-detalle">{{item?.label}}</td>
+                            <td class="text-center" appAnchocol [ancho]="79">
+                                <i class="fa fa-2x mt-1"
+                                    [ngClass]="{'fa-square-o': item.proceso == 0, 'fa-check-square-o text-success': item.proceso == 1}"></i>
+                            </td>
+                            <td class="text-center">{{item?.tipo}}</td>
+                        </tr>
+                    </tbody>
+                    <tbody *ngIf="!cotizacionInsumos.length">
+                        <tr>
+                            <td class="text-center" colspan="11">
+                                No se encontraron resultados
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div> -->
+      </div>
+      <div class="row" *ngIf="opcion === 2">
+        <div class="col-12 card border-secondary">
+          <div class="card-header py-0">
+            <h5>INFORMACIÓN GENERAL DEL PROYECTO</h5>
+          </div>
+          <div class="card-body py-1">
+            <ul class="list-group list-group-flush">
+              <li class="list-group-item">
+                <label class="custom-label-list">NOMBRE PROYECTO :</label>
+                <span
+                  class="custom-texto-list ml-1 float-xl-right">{{ datosProyecto?.descripcion }}</span>
+              </li>
+            </ul>
+            <ul class="list-group list-group-horizontal">
+              <li class="list-group-item w-50">
+                <label class="custom-label-list">PROPIETARIO :</label>
+                <span class="custom-texto-list ml-1 float-xl-right">{{ datosProyecto?.desc_grupo }}</span>
+              </li>
+              <li class="list-group-item w-50">
+                <label class="custom-label-list">TIPO DE OBRA:</label>
+                <span class="custom-texto-list ml-1 float-xl-right">{{ datosProyecto?.desc_clasi }}</span>
+              </li>
+            </ul>
+            <ul class="list-group list-group-horizontal">
+              <li class="list-group-item w-50">
+                <label class="custom-label-list">MODALIDAD DE EJECUCIÓN :</label>
+                <span class="custom-texto-list ml-1 float-xl-right"
+                      *ngIf="datosProyecto?.modalidad == 1">
+                                    CONTRATA
+                                </span>
+                <span class="custom-texto-list ml-1 float-xl-right"
+                      *ngIf="datosProyecto?.modalidad == 0">
+                                    DIRECTA
+                                </span>
+              </li>
+              <li class="list-group-item w-50">
+                <label class="custom-label-list">MONEDA :</label>
+                <span class="custom-texto-list ml-1 float-xl-right"
+                      *ngIf="datosProyecto?.moneda == '1'">
+                                    DOLARES ($)
+                                </span>
+                <span class="custom-texto-list ml-1 float-xl-right"
+                      *ngIf="datosProyecto?.moneda == '0'">
+                                    SOLES (S/)
+                                </span>
+              </li>
+            </ul>
+            <ul class="list-group list-group-horizontal">
+              <li class="list-group-item w-50">
+                <label class="custom-label-list">LOCALIDAD :</label>
+                <span *ngIf="datosProyecto?.distact" class="custom-texto-list ml-1 float-xl-right">
+                                    {{ datosProyecto?.deptact }} - {{ datosProyecto?.provact }}
+                  - {{ datosProyecto?.distact }}
+                                </span>
+                <span *ngIf="!datosProyecto?.distact" class="custom-texto-list ml-1 float-xl-right">
+                                    <i class="fa fa-ellipsis-h"></i>
+                                </span>
+              </li>
+              <li class="list-group-item w-50">
+                <label class="custom-label-list">DIRECCIÓN :</label>
+                <span *ngIf="datosProyecto?.direccion"
+                      class="custom-texto-list ml-1 float-xl-right">{{ datosProyecto?.direccion }}</span>
+                <span *ngIf="!datosProyecto?.direccion" class="custom-texto-list ml-1 float-xl-right">
+                                    <i class="fa fa-ellipsis-h"></i>
+                                </span>
+              </li>
+            </ul>
+            <ul class="list-group list-group-horizontal">
+              <li class="list-group-item w-50">
+                <label class="custom-label-list">FECHA ELABORACIÓN :</label>
+                <span *ngIf="datosProyecto?.fecha_elaboracion"
+                      class="custom-texto-list ml-1 float-xl-right">{{
+                    datosProyecto?.fecha_elaboracion |
+                      date: 'dd-MM-yyyy'
+                  }}</span>
+                <span *ngIf="!datosProyecto?.fecha_elaboracion"
+                      class="custom-texto-list ml-1 float-xl-right">
+                                    <i class="fa fa-ellipsis-h"></i>
+                                </span>
+              </li>
+              <li class="list-group-item w-50">
+                <label class="custom-label-list">PLAZO DE EJECUCIÓN :</label>
+                <span *ngIf="datosProyecto?.plazo"
+                      class="custom-texto-list ml-1 float-xl-right">{{ datosProyecto?.plazo }} dias</span>
+                <span *ngIf="!datosProyecto?.plazo" class="custom-texto-list ml-1 float-xl-right">
+                                    <i class="fa fa-ellipsis-h"></i>
+                                </span>
+              </li>
+            </ul>
+            <ul class="list-group list-group-horizontal">
+              <li class="list-group-item w-50">
+                <label class="custom-label-list">FECHA INICIO :</label>
+                <span *ngIf="datosProyecto?.fecha_inicio"
+                      class="custom-texto-list ml-1 float-xl-right">{{
+                    datosProyecto?.fecha_inicio | date:
+                      'dd-MM-yyyy'
+                  }}</span>
+                <span *ngIf="!datosProyecto?.fecha_inicio"
+                      class="custom-texto-list ml-1 float-xl-right">
+                                    <i class="fa fa-ellipsis-h"></i>
+                                </span>
+              </li>
+              <li class="list-group-item w-50">
+                <label class="custom-label-list">FECHA CULMINACIÓN :</label>
+                <span *ngIf="datosProyecto?.fecha_culmina"
+                      class="custom-texto-list ml-1 float-xl-right">{{
+                    datosProyecto?.fecha_culmina | date:
+                      'dd-MM-yyyy'
+                  }}</span>
+                <span *ngIf="!datosProyecto?.fecha_culmina"
+                      class="custom-texto-list ml-1 float-xl-right">
+                                    <i class="fa fa-ellipsis-h"></i>
+                                </span>
+              </li>
+            </ul>
+            <!-- <ul class="list-group list-group-horizontal">
+                <li class="list-group-item w-50">
+                    <label class="custom-label-list">DIAS LABORADOS:</label>
+                    <span *ngIf="datosProyecto?.diaslaborados"
+                        class="custom-texto-list ml-1 float-xl-right">{{datosProyecto?.diaslaborados}}</span>
+                    <span *ngIf="!datosProyecto?.diaslaborados"
+                        class="custom-texto-list ml-1 float-xl-right">
+                        <i class="fa fa-ellipsis-h"></i>
+                    </span>
+                </li>
+                <li class="list-group-item w-50">
+                    <label class="custom-label-list">DIAS NO :</label>
+                    <span *ngIf="datosProyecto?.nolaborado"
+                        class="custom-texto-list ml-1 float-xl-right">{{datosProyecto?.nolaborados}}</span>
+                    <span *ngIf="!datosProyecto?.nolaborado" class="custom-texto-list ml-1 float-xl-right">
+                        <i class="fa fa-ellipsis-h"></i>
+                    </span>
+                </li>
+            </ul> -->
+            <ul class="list-group list-group-horizontal">
+              <li class="list-group-item w-100">
+                <label class="custom-label-list">CALENDARIO BASE:</label>
+                <span class="custom-texto-list ml-1 float-xl-right">STANDAR</span>
+              </li>
+              <!-- <li class="list-group-item w-50">
+                  <label class="custom-label-list">JORNADA LABORAL:</label>
+                  <span *ngIf="datosProyecto?.jornada"
+                      class="custom-texto-list ml-1 float-xl-right">{{datosProyecto?.jornada}}</span>
+                  <span *ngIf="!datosProyecto?.jornada" class="custom-texto-list ml-1 float-xl-right">
+                      <i class="fa fa-ellipsis-h"></i>
+                  </span>
+              </li> -->
+            </ul>
+          </div>
+          <div class="card-header py-0">
+            <h5>SUB PRESUPUESTO / SUBTÍTULOS</h5>
+          </div>
+          <div class="card-body py-1">
+            <div class="col-12 px-0 overflow-auto">
+              <table class="table-bordered table-ind">
+                <thead class="text-center">
+                <tr>
+                  <th appAnchocol [ancho]="40">N°</th>
+                  <th appAnchocol [ancho]="220" [detalle]="true">DISEÑO DE PIE DE PRESUPUESTO</th>
+                  <th appAnchocol [ancho]="150" [detalle]="true">MONTO</th>
+                </tr>
+                </thead>
+                <tbody>
+                <ng-container *ngIf="subPresupuesto.length>0">
+                  <tr *ngFor="let row of subPresupuesto;let indice=index;">
+                    <td class="cellsinpadding" appAnchocol [ancho]="40"
+                        [ngClass]="{'f-w-900':row.tipo_registro==3 || row.tipo_registro==2}">
+                      {{ indice + 1 }}
+                    </td>
+                    <td class="text-left cellsinpadding" appAnchocol [ancho]="220" [detalle]="true"
+                        [ngClass]="{'highlight': filaSel == indice,'f-w-900':row.tipo_registro==3 || row.tipo_registro==2}">
+                      <div class="recortatextlinea"
+                           ngbTooltip="{{row.descripcion}}" #t="ngbTooltip" container="body"
+                           triggers="click:blur" (mouseout)="t.close()">
+                        <span class="w-100 recortatext">{{ row.descripcion }}</span>
+                      </div>
+                    </td>
+                    <td appAnchocol [ancho]="100"
+                        [ngClass]="{'highlight': filaSel == indice,'f-w-900':row.tipo_registro==3 || row.tipo_registro==2}">
+                      <div class="float-right w-100">
+                        <span class="float-left">{{moneda}}<i *ngIf="row.monto==0"
+                                                      class="fa fa-exclamation-triangle c-alert"></i></span>
+                        <span class="float-right">{{ row.monto | number: mask_parcial }}</span>
+                      </div>
+                    </td>
+                  </tr>
+                </ng-container>
+                <ng-container *ngIf="subPresupuesto.length<=0">
+                  <tr>
+                    <td class="text-center" colspan="11">
+                      <label *ngIf="!buscando">No se encontraron resultados</label>
+                      <div *ngIf="buscando" class="preloader3 loader-block">
+                          <div class="circ1"></div>
+                          <div class="circ2"></div>
+                          <div class="circ3"></div>
+                          <div class="circ4"></div>
+                      </div>
+                    </td>
+                  </tr>
+                </ng-container>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="row" *ngIf="opcion === 3">
+        <div class="col-12">
+          <div class="col-12 px-0 d-flex justify-content-between">
+            <div *ngIf="!bloqesp" class="btn-group" style="margin-bottom: 3px;">
+              <button type="button" class="btn btn-mini btn-group-mini btn-outline-primary" placement="top" ngbTooltip="Reiniciar Especificacion Tecnica"
+              container="body" (click)="resetearEspecificacion()" (mouseup)="quitarfoco($event);">
+                  <i class="fa fa-reply icono-but"></i>
+              </button>
+              <button type="button" class="btn btn-mini btn-group-mini btn-outline-primary" placement="top" ngbTooltip="Agregar Imagen Local"
+              container="body" (click)="SubirArchivo()" (mouseup)="quitarfoco($event);">
+                  <i class="icofont icofont-image icono-but"></i>
+              </button>
+              <button type="button" class="btn btn-mini btn-group-mini btn-outline-primary" placement="top" ngbTooltip="Agregar Imagen de Link"
+              container="body" (click)="openImgDrive()" (mouseup)="quitarfoco($event);" [disabled]="buscaficha">
+                  <i class="fa fa-file-image-o icono-but"></i>
+              </button>
+            </div>
+            <div *ngIf="bloqesp"></div>
+            <input type="file" id="fileUpload" name="fileUpload" accept="image/*"/>
+            <div *ngIf="!rowSistema" class="float-right" style="margin-bottom: 3px;">
+              <button type="button" class="btn btn-mini btn-group-mini btn-secondary" (click)="canEdita2()" placement="left" ngbTooltip="Cancelar" container="body"
+                *ngIf="!bloqesp" (mouseup)="quitarfoco($event);">
+                <i class="fa fa-undo icono-but"></i><!-- Cancelar -->
+              </button>
+              <button type="button" class="btn btn-mini btn-group-mini btn-success" (click)="Actua2()" placement="left" ngbTooltip="Guardar" container="body"
+                *ngIf="!bloqesp" (mouseup)="quitarfoco($event);">
+                <i class="fa fa-save icono-but"></i><!-- Guardar -->
+              </button>
+              <button type="button" class="btn btn-mini btn-group-mini btn-info" (click)="Edita2()" placement="left" ngbTooltip="Editar" container="body"
+                *ngIf="bloqesp && esAdmin" (mouseup)="quitarfoco($event);" [disabled]="buscaespec">
+                <i class="fa fa-pencil icono-but"></i><!-- Editar -->
+              </button>
+            </div>
+          </div>
+          <div *ngIf="buscaespec" class="preloader3 loader-block cargasobre">
+            <div class="circ1"></div>
+            <div class="circ2"></div>
+            <div class="circ3"></div>
+            <div class="circ4"></div>
+          </div>
+          <div *ngIf="!bloqesp" class="overflow-auto" [style.height.px]="height-20" style="min-height: 250px; padding: 5px 5px;">
+            <app-tinymce [(ngModel)]='especificacionTexto' #tinymce='tinymce' id="tiny"
+                [options]='{branding:false}'>
+            </app-tinymce>
+          </div>
+          <div *ngIf="bloqesp" class="overflow-auto" [style.height.px]="height-20" style="min-height: 250px; padding: 5px 5px">
+            <app-tinymce [(ngModel)]='especificacionTexto'
+                [options]='{branding:false ,readonly:true ,statusbar:false,toolbar: false}'>
+            </app-tinymce>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</app-card>
+<app-cargando [bloquearTodo]="false" *ngIf="mostrar_carga"></app-cargando>
+<app-cargando [bloquearTodo]="true" *ngIf="mostrar_carga_todo"></app-cargando>

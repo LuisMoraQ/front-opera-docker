@@ -1,0 +1,1057 @@
+<div class="modal-lg modalgrande">
+  <div class="modal-content">
+    <div class="row app-modal-header modal-header" style="margin-left: 0.25px;">
+      <div class="col-sm-2 col-md-1 col-lg-1 " style="margin-top: -10px;">
+        <button type="button" class="close basic-close" (click)="toggleSidebar()" ngbTooltip="Menu">
+          <i class="fa fa-minus-square-o" aria-hidden="true"></i>
+        </button>
+      </div>
+      
+      <div class="col-sm-8 col-md-10 col-lg-10">
+        <h4 class="modal-title tit-modal1">
+          <b>Imprimir Componentes del Presupuesto</b>
+        </h4>
+      </div>
+      <div class="col-sm-2 col-md-1 col-lg-1 " style="margin-top: -10px;"  >
+        <button type="button" class="close basic-close" (click)="closeModal()">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+    </div>
+    <div class="modal-body">
+      <div class="contenedor-reportes"  >
+        <div class="tools-pdf"  *ngIf="showSidebar" [ngStyle]="{'display': showSidebar ? 'block' : 'none'}" >
+          <form [formGroup]="formulario1">
+            <div *ngIf="datos.titulos && datos.titulos.length > 0" class="form-group ">
+              <mat-label>Vizualizar Informacion</mat-label>
+              <mat-form-field appearance="outline" class="mff-reduc col-12 alto-35 mt-2 px-0">   
+                <mat-label>Selecion de:</mat-label>
+                <select matNativeControl (change)="cambiarTitulos($event.target.value)">
+                    <option *ngFor="let titulo of datos.titulos "
+                        [value]="datos.tipo_reporte ==7 ? titulo.indice : titulo.item">
+                        {{datos.tipo_reporte === 7 ? titulo.abrev : titulo.item}}.-{{titulo.descripcion}}
+                    </option>
+                    <option *ngIf="datos.tipo_reporte === 1" value="C">C - COMPLETO</option>
+                </select>
+              </mat-form-field>
+            </div>
+            <div *ngIf="datos.image && datos.image.length > 0" class="form-group ">
+              <mat-label>Vizualizacion Zoom</mat-label>
+              <mat-form-field appearance="outline" class="mff-reduc col-12 alto-35 px-0 mt-2">
+                <mat-label>Tamaño</mat-label>
+                <select matNativeControl formControlName="opcionzoom" (change)="ChangeOption()">
+                  <option value="2.5">50%</option>
+                  <option value="2.4">60%</option>
+                  <option value="2.3">70%</option>
+                  <option value="2.2">80%</option>
+                  <option value="2.1">90%</option>
+                  <option value="2">100%</option>
+                  <option value="1.9">110%</option>
+                  <option value="1.8">120%</option>
+                  <option value="1.7">130%</option>
+                  <option value="1.6">140%</option><!--1.1-->
+                  <option value="1.5">150%</option><!--1-->
+                </select>
+              </mat-form-field>
+            </div>
+            <div class="form-group mt-2">
+              <mat-label>Configuracion del Documento</mat-label>
+              <mat-form-field appearance="outline" class="mff-reduc col-12 alto-35 px-0 mt-2">
+                <mat-label>Tamaño Hoja</mat-label>
+                <select matNativeControl formControlName="opciones1" (change)="ChangeOption()">
+                  <option value="A0">A0</option>
+                  <option value="A1">A1</option>
+                  <option value="A2">A2</option>
+                  <option value="A3">A3</option>
+                  <option value="A4">A4</option>
+                  <option *ngIf="!datos.image" value="A5">A5</option>
+                  <option *ngIf="!datos.image" value="FOLIO">Oficio</option>
+                  <option *ngIf="!datos.image" value="LETTER">Carta</option>
+                </select>
+              </mat-form-field>
+            </div>
+            <div class="form-group mt-2">
+              <mat-form-field appearance="outline" class="mff-reduc col-12 alto-35 px-0" >
+                <mat-label>Orientacion de Pagina</mat-label>
+                <select matNativeControl formControlName="opciones5" (change)="ChangeOption()">
+                  <option value="">Orientacion Vertical</option>
+                  <option value="landscape">Orientacion Horizontal</option>
+                </select>
+              </mat-form-field>
+            </div>
+            <div class="form-group mt-2">
+                <mat-form-field appearance="outline" class="mff-reduc col-12 alto-35 px-0">
+                  <mat-label>Margen Hoja</mat-label>
+                  <select matNativeControl formControlName="opciones2" (change)="ChangeOption()" >
+                    <option value="normal">Normal</option>
+                    <option value="estrecho">Estrecho</option>
+                    <option value="moderado">Moderado</option>
+                    <option value="manual">Manual</option>
+                  </select>
+                </mat-form-field>
+            </div>
+            <div class="container-fluid mt-2">
+              <!-- <div class="form-group" [hidden]="!formulario1.get('mostrarmargen').value"> -->
+                <div class="row">
+                  <div class="col-6">
+                    <div style="display: flex; align-items: center">
+                      <mat-form-field class="mff-reduc w-100 alto-35" appearance="outline" >
+                        <mat-label>M. Superior</mat-label>
+                        <input matInput type="number" formControlName="margensuperior" (change)="ChangeOption()"/>
+                      </mat-form-field>
+                    </div>
+                  </div>
+                  <div class="col-6">
+                    <div style="margin-bottom: 10px;">
+                      <mat-form-field class="mff-reduc w-100 alto-35" appearance="outline">
+                        <mat-label>M. Inferior</mat-label>
+                        <input matInput type="number" formControlName="margeninferior" (change)="ChangeOption()" />
+                      </mat-form-field>
+                    </div>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col-6">
+                    <div style="display: flex; align-items: center">
+                      <mat-form-field class="mff-reduc w-100 alto-35" appearance="outline">
+                        <mat-label>M. Izquierdo</mat-label>
+                        <input matInput type="number" formControlName="margenizq" (change)="ChangeOption()"/>
+                      </mat-form-field>
+                    </div>
+                  </div>
+                  <div class="col-6">
+                    <div style="margin-bottom: 10px;">
+                      <mat-form-field class="mff-reduc w-100 alto-35" appearance="outline" >
+                        <mat-label>M. Derecho</mat-label>
+                        <input matInput type="number" formControlName="margender" (change)="ChangeOption()"/>
+                      </mat-form-field>
+                    </div>
+                  </div>
+                </div>
+            </div>
+            <mat-label *ngIf="!datos.image">Configuracion del Contenido</mat-label>
+            <mat-label *ngIf="datos.image">Configuracion de Titulo</mat-label>
+            <div *ngIf="!datos.image" class="form-group mt-2">
+              <mat-form-field appearance="outline" class="mff-reduc col-12 alto-35 px-0" >
+                <mat-label>Estilo de Vizualizacion</mat-label>
+                <select matNativeControl formControlName="opciones3" (change)="ChangeOption()">
+                  <option value="color">Color</option>
+                  <option value="monocromado">Monocromado</option>
+                </select>
+              </mat-form-field>
+            </div>
+            <div class="form-group mt-2">
+                <div class="form-group row">
+                  <div class="col-6" style="padding:8px;">
+                    <div class="d-flex">
+                    <mat-form-field appearance="outline" class="mff-reduc col-12 alto-35 px-0"  >
+                      <mat-label>Fuente</mat-label>
+                      <select matNativeControl formControlName="opciones4" (change)="ChangeOption()">
+                        <option value="Arial">Arial</option>
+                        <option value="TimesNewRoman">Times New Roman</option>
+                        <option value="Consola">Consola</option>
+                        <option value="Georgia">Georgia</option>
+                        <option value="Gothic">Century Ghotic</option>
+                      </select>
+                    </mat-form-field>
+                    </div>
+                  </div>
+                  <div class="col-6" style="padding:8px;"> 
+                    <div class="d-flex">
+                      <mat-form-field class="mff-reduc w-100 alto-35" appearance="outline" >
+                        <mat-label>Tamaño Fuente</mat-label>
+                        <input matInput type="number" formControlName="tamanofuente" (change)="ChangeOption()"/>
+                      </mat-form-field>
+                    </div>
+                  </div>
+                </div>
+            </div>
+            <mat-label>Encabezado/Pie de Pagina</mat-label>
+            <div class="form-group">
+              <div class="flex-container" style=" display: flex; align-items: center; width: 100%;">
+                <label class="mt-3">Encabezado :</label>
+                <div class="switch" style="margin-left: 10px;">
+                  <input type="checkbox" id="switch-p-8" formControlName="agregarencabezado" (change)="actualizarMargenEncabezado()"/>
+                  <label for="switch-p-8" class="cr" disabled></label>
+                </div>
+                <div class="button-container ml-2" style="display: flex; align-items: center;">
+                  <div *ngIf="!formulario1.get('agregarencabezado').value">
+                    <i class="fa fa-ban"  container="body"></i>
+                  </div>
+                  <div *ngIf="formulario1.get('agregarencabezado').value">
+                    <button class="btn btn-mini btn-primary mt-2"  ngbTooltip="Agregar Encabezado" [disabled]="!formulario1.get('agregarencabezado').value" container="body" (click)="ModalEncabezado()"> 
+                      <i class="fa fa-edit icono-but"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="form-group">
+              <div class="flex-container" style=" display: flex;align-items: center;width: 100%;">
+                <label  class="mt-3">Pie Pagina :</label>
+                <div class="switch" style="margin-left: 10px;">
+                  <input type="checkbox" id="switch-p-9" formControlName="agregarpiepagina" (change)="actualizarPiePagina()"/>
+                  <label for="switch-p-9" class="cr" disabled></label>
+                </div>
+                <div class="button-container ml-2" style="display: flex; align-items: center;">
+                  <div *ngIf="!formulario1.get('agregarpiepagina').value">
+                    <i class="fa fa-ban"  container="body"></i>
+                  </div>
+                  <div *ngIf="formulario1.get('agregarpiepagina').value">
+                    <button class="btn btn-mini btn-primary mt-2"  ngbTooltip="Agregar Pie Pagina" [disabled]="!formulario1.get('agregarpiepagina').value" container="body" (click)="ModalPiePagina()"> 
+                      <i class="fa fa-edit icono-but"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="form-group"  *ngIf="hasactivo===true&&this.hasitematlt===true&&datos.titulo!=='CLASIFICACIÓN COMERCIAL DE INSUMOS DEL PROYECTO'">
+              <mat-label>Items Alternativos :</mat-label>
+              <div class="flex-container" style=" display: flex;align-items: center;width: 100%;">
+                <label class="mt-3">Mostrar :</label>
+                <div class="switch" style="margin-left: 10px;">
+                  <input type="checkbox" id="switch-p-99" formControlName="cambiaritems" (change)="CambiarItems()"/>
+                  <label for="switch-p-99" class="cr" disabled></label>
+                </div>
+              </div>
+            </div>
+            <div class="form-group"  *ngIf="datos.tipo_reporte===7">
+              <mat-label>Mostrar Resumen General :</mat-label>
+              <div class="flex-container" style=" display: flex;align-items: center;width: 100%;">
+                <label class="mt-3">Mostrar :</label>
+                <div class="switch" style="margin-left: 10px;">
+                  <input type="checkbox" id="switch-p-85" formControlName="mostrarresumenes" (change)="ChangeOption()"/>
+                  <label for="switch-p-85" class="cr" disabled></label>
+                </div>
+              </div>
+            </div>
+            <div class="form-group"  *ngIf="datos.tipo_reporte===7&&this.formulario1.get('mostrarresumenes').value">
+              <mat-label>Mostrar Subtitulos :</mat-label>
+              <div class="flex-container" style=" display: flex;align-items: center;width: 100%;">
+                <label class="mt-3">Mostrar :</label>
+                <div class="switch" style="margin-left: 10px;">
+                  <input type="checkbox" id="switch-p-84" formControlName="mostrarsubtitulos" (change)="ChangeOption()"/>
+                  <label for="switch-p-84" class="cr" disabled></label>
+                </div>
+              </div>
+            </div>
+            <div class="form-group"  *ngIf="datos.tipo_reporte===2&&datos.titulo==='CRONOGRAMA VALORIZADO'">
+              <mat-label>Mostrar Costos Indirectos :</mat-label>
+              <div class="flex-container" style=" display: flex;align-items: center;width: 100%;">
+                <label class="mt-3">Mostrar :</label>
+                <div class="switch" style="margin-left: 10px;">
+                  <input type="checkbox" id="switch-p-89" formControlName="agregarcostosindirectos" (change)="ChangeOption()"/>
+                  <label for="switch-p-89" class="cr" disabled></label>
+                </div>
+              </div>
+            </div>
+            <mat-label *ngIf="(!datos.image && datos.tipo_reporte !== 5) || (datos.tipo_reporte === 5 && (datos.titulo === 'INDICES UNIFICADOS' && datos.titulo === 'GRAFICOS DIAGRAMA CURVA S Y DIAGRAMA GAUSS'))">Exportar :</mat-label>
+            <div class="mt-3" *ngIf="(datos.tipo_reporte!==4&&!datos.image && datos.tipo_reporte !== 5) || (datos.tipo_reporte!==4&&datos.tipo_reporte === 5 && (datos.titulo === 'INDICES UNIFICADOS'|| datos.titulo === 'GRAFICOS DIAGRAMA CURVA S Y DIAGRAMA GAUSS'))||(datos.tipo_reporte!==4&&datos.tipo_reporte === 5 && this.datos.tabla3)" class="example-button-container">
+            <button type="button" class="btn btn-primary btn-sm light ripple m-b-10 m-r-5" (click)="exportToExcel()">
+                    <i class="fa fa-cloud-upload icono-but"> Excel</i>
+            </button>
+            </div>
+              <button  *ngIf="!IframeOr"   type="button" class="btn btn-primary btn-sm light ripple m-b-10 m-r-5" (click)="descargarPDF()">
+                      <i class="fa fa-cloud-upload icono-but"> PDF</i>
+              </button>
+            <div  class="mt-3"*ngIf="datos.tipo_reporte===4" class="example-button-container">
+              <button type="button" class="btn btn-primary btn-sm light ripple m-b-10 m-r-5" (click)="descargarWord()">
+                  <i class="fa fa-cloud-upload icono-but"> Word</i>
+              </button>
+            </div>
+            <div class="mt-3" *ngIf="errores.length > 0">
+              <h3 style="color:red;">Errores encontrados:</h3>
+              <ul>
+                <li style="color: red;" *ngFor="let error of errores">
+                  <strong >{{ error.partida }}:</strong> {{ error.texto }}
+                </li>
+              </ul>
+              <div *ngIf="tablesmal.length >0 " class="example-button-container" style="margin-top:10px;">
+                <button type="button" class="btn btn-primary btn-sm light ripple m-b-10 m-r-5" (click)="mostrartablas()">
+                    <i class="fa fa-cloud-upload icono-but"> Mostrar</i>
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+        <div class="contenedor-pdf" [ngClass]="{'full-width': !showSidebar}">
+          <!-- Componente PDF solo visible si no estamos en un entorno iframe -->
+          <app-visualizador-pdf *ngIf="!IframeOr" [urlReport]="documentopdf"></app-visualizador-pdf>
+          <!-- Iframe solo visible si la condición es verdadera -->
+          <iframe *ngIf="IframeOr&&cargapdf" 
+                  [src]="documentopdf | safePipe:'resourceUrl'" 
+                  width="100%" height="100%" frameBorder="0"  (load)="mostrar_carga_todo=false"></iframe>
+        </div>
+      </div>
+    </div>  
+  </div>
+</div>
+<!-- MODAL HEADER-->
+<app-modal-basic [dialogClass]="'modal-lg modalgrande'" #modalEncabezado>
+  <div class="app-modal-header">
+    <h4 class="modal-title tit-modal1"><b>Aspectos Generales del Encabezado</b></h4>
+    <button type="button" class="close basic-close" (click)="cerrarModal()">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="app-modal-body">
+    <div class="container-fluid">
+      <form [formGroup]="formularioHeader">
+        <div class="row">
+          <div class="col-sm-12 col-md-12 col-lg-3">
+            <div  class="form-group d-flex align-items-center">
+               <mat-label>Encabezado Inicia:</mat-label>
+               <mat-form-field class="mff-reduc w-10 alto-35" style="width:25%;"  appearance="outline">
+                <div style=" display: flex; align-items: left;">
+                <input matInput type="number" formControlName="nuevomargenheader"/>
+                <span style="margin-left: 5px;line-height: 20px;">cm</span>
+                </div>
+              </mat-form-field>          
+              <mat-label>Del borde de la Hoja</mat-label>
+            </div>
+          </div>
+          <div class="col-sm-6 col-md-6 col-lg-2">
+            <div  class="form-group d-flex align-items-center">
+              <mat-label>Numero de Celdas :</mat-label>
+                <mat-form-field appearance="outline" class="mff-reduc alto-35" style="width:25%;">
+                  <select matNativeControl formControlName="headerceldas" > 
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                  </select>
+                </mat-form-field>
+            </div>
+          </div>
+          <div class="col-sm-6 col-md-6 col-lg-2">
+            <div class="form-group d-flex align-items-center">
+              <mat-label>Transparencia:</mat-label>
+              <mat-form-field class="mff-reduc w-10 alto-35" style="width:35%;"  appearance="outline">
+                <div style=" display: flex; align-items: left;">
+                <input matInput type="number" formControlName="headeropacity"/>
+                <span style="margin-left: 5px;line-height: 20px;">%</span>
+                </div>
+              </mat-form-field>          
+            </div>
+          </div>
+          <div class="col-sm-12 col-md-12 col-lg-5">
+            <div class="form-group d-flex align-items-center">
+              <mat-label>Ancho de Celdas:</mat-label>
+              <mat-form-field class="mff-reduc w-10 alto-35" style="width:25%;"  appearance="outline">
+                <div style=" display: flex; align-items: left;">
+                <input matInput type="number" formControlName="headertamano1"/>
+                <span style="margin-left: 5px;line-height: 20px;">%</span>
+                </div>
+              </mat-form-field>&nbsp;                     
+              <mat-form-field class="mff-reduc w-10 alto-35" style="width:25%;"  appearance="outline"  *ngIf="formularioHeader.get('headerceldas').value=='2'||formularioHeader.get('headerceldas').value=='3'">
+                <div style=" display: flex; align-items: left;">
+                <input matInput type="number" formControlName="headertamano2"/>
+                <span style="margin-left: 5px;line-height: 20px;">%</span>
+                </div>
+              </mat-form-field>&nbsp;      
+              <mat-form-field class="mff-reduc w-10 alto-35" style="width:25%;"  appearance="outline" *ngIf="formularioHeader.get('headerceldas').value=='3'">
+                <div style=" display: flex; align-items: left;">
+                <input matInput type="number" formControlName="headertamano3"/>
+                <span style="margin-left: 5px;line-height: 20px;">%</span>
+                </div>
+              </mat-form-field>          
+            </div>
+            <div class="errores-divs" *ngIf="formularioHeader.errors?.tamanoinvalido">
+             {{ formularioHeader.errors.tamanoinvalido }}
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-sm-12 col-md-6 col-lg-4 header-contenedor">
+            <h4 class="form-control" style="background-color:#F4F9FF">Informacion de lado Izquierdo</h4>
+            <div class="row">
+              <div class="col-3">
+                <button class="btn btn-mini btn-primary mt-2"  placement="bot" (click)="mostrarDivIzq(1)">
+                  <i class="fa fa-plus icono-but">Imagen</i>
+                </button>
+              </div>
+              <div class="col-3">
+                <button class="btn btn-mini btn-primary mt-2"  placement="bot" (click)="mostrarDivIzq(2)">
+                  <i class="fa fa-plus icono-but">Texto</i>
+                </button>
+              </div>
+            </div>
+            <div class="container mt-2">
+              <div *ngIf="mostrarDiv1 ">
+                <label class="custom-file-upload d-flex">
+                  <input type="file" #fileInput (change)="onFileSelected($event, 'imagenizq')"/>
+                  <i class="icofont icofont-upload-alt icono-but mt-1 ml-1"></i>
+                  <span class="texto-inputfile">Seleccionar</span>
+                </label>
+                <mat-form-field class="mff-reduc w-100 alto-35 mt-2 mb-1" appearance="outline">
+                  <mat-label>Archivo Adjunto</mat-label>
+                  <input matInput type="text" formControlName="headerizqnombre" readonly/>
+                </mat-form-field>
+                <mat-label>Ubicacion de la Imagen: </mat-label>
+                <mat-form-field appearance="outline" class="mff-reduc col-12 alto-35 px-0 mt-3">
+                  <mat-label>Posicion Imagen</mat-label>
+                  <select matNativeControl formControlName="headerizqpositionelementoimg" >
+                    <option value="left">Izquierda</option>
+                    <option value="center">Centrado</option>
+                    <option value="right">Derecha</option>
+                  </select>
+                </mat-form-field>
+                  <mat-form-field class="mff-reduc w-20 alto-35 mt-3" appearance="outline">
+                    <mat-label>Tamaño:</mat-label>
+                    <div style=" display: flex; align-items: left;">
+                    <input matInput type="number" formControlName="headerizqwidth"/>
+                    <span style="margin-left: 5px;line-height: 20px;">mm</span>
+                    </div>
+                  </mat-form-field>            
+              </div>
+              <div *ngIf="mostrarDiv2">
+                <div class="row">
+                  <div class="col-7"></div>
+                  <div class="col-5">
+                    <mat-form-field class="mff-reduc w-100 alto-35" appearance="outline">
+                      <mat-label>Tamaño de Letra:</mat-label>
+                      <input matInput type="number" formControlName="headerizqfontsize" />
+                    </mat-form-field>
+                  </div>
+                </div>
+                <mat-form-field appearance="outline" class="mff-reduc col-sm-12 col-12 mt-1">
+                  <mat-label>Texto:</mat-label>
+                  <textarea matInput autocomplete="off" maxlength="250" formControlName="headerizqtext" style="height: 100px; width:100% ;"></textarea>
+                </mat-form-field>
+                <div class="row">
+                  <div class="col-6">
+                    <mat-form-field appearance="outline" class="mff-reduc col-12 alto-35 px-0 mt-2">
+                      <mat-label>Posicion Horizontal</mat-label>
+                      <select matNativeControl formControlName="headerizqpositionelementotext" (change)="ChangeBackColor(($event.target.value),'header','izq')">
+                        <option value="left">Izquierda</option>
+                        <option value="center">Centrado</option>
+                        <option value="right">Derecha</option>
+                      </select>
+                    </mat-form-field>
+                  </div>
+                  <div class="col-2 d-flex align-items-center justify-content-center mt-2">
+                     <mat-label><i [ngClass]="{'selected-icon': selheaderizq === 'left'}" class="fa fa-align-left icon"></i></mat-label>
+                      <mat-label><i [ngClass]="{'selected-icon': selheaderizq === 'center'}" class="fa fa-align-center icon"></i></mat-label>
+                      <mat-label><i [ngClass]="{'selected-icon': selheaderizq === 'right'}" class="fa fa-align-right icon"></i></mat-label>
+                  </div>
+                </div>
+                <div class="row mt-2">
+                  <div class="col-6">
+                    <label>Negrita :</label>
+                    <div class="switch switch-primary d-inline ml-2" style="margin-left: 10px" >
+                      <input type="checkbox" id="switch-p-10" formControlName="headerizqbold"/>
+                      <label for="switch-p-10" class="cr"></label>
+                    </div>
+                  </div>
+                  <div class="col-6">
+                    <mat-form-field appearance="outline" class="mff-reduc col-sm-12 col-12">
+                      <mat-label>Color</mat-label>
+                      <input matInput type="color" formControlName="headerizqcolor" [maxLength]="150"/>
+                    </mat-form-field>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-sm-12 col-md-6 col-lg-4 header-contenedor" *ngIf="formularioHeader.get('headerceldas').value=='2'||formularioHeader.get('headerceldas').value=='3'">
+            <h4 class="form-control" style="background-color:#F4F9FF">Informacion de Centro</h4>
+            <div class="row">
+              <div class="col-3">
+                <button class="btn btn-mini btn-primary mt-2"  placement="bot" (click)="mostrarDivCentro(1)">
+                  <i class="fa fa-plus icono-but">Imagen</i>
+                </button>
+              </div>
+              <div class="col-3">
+                <button class="btn btn-mini btn-primary mt-2"  placement="bot" (click)="mostrarDivCentro(2)">
+                  <i class="fa fa-plus icono-but">Texto</i>
+                </button>
+              </div>
+            </div>
+            <div class="container mt-2">
+              <div *ngIf="mostrarDiv3">
+                <label class="custom-file-upload d-flex">
+                  <input type="file" #fileInput (change)="onFileSelected($event, 'imagencenter')"/>
+                  <i class="icofont icofont-upload-alt icono-but mt-1 ml-1"></i>
+                  <span class="texto-inputfile">Seleccionar</span>
+                </label>
+                <mat-form-field class="mff-reduc w-100 alto-35 mt-2 mb-1" appearance="outline">
+                  <mat-label>Archivo Adjunto</mat-label>
+                  <input matInput type="text" formControlName="headercenternombre" readonly/>
+                </mat-form-field>
+                <mat-label>Ubicacion de la Imagen: </mat-label>
+                <mat-form-field appearance="outline" class="mff-reduc col-12 alto-35 px-0 mt-3">
+                  <mat-label>Posicion Imagen</mat-label>
+                  <select matNativeControl formControlName="headercenterpositionelementoimg" >
+                    <option value="left">Izquierda</option>
+                    <option value="center">Centrado</option>
+                    <option value="right">Derecha</option>
+                  </select>
+                </mat-form-field>
+                  <mat-form-field class="mff-reduc w-20 alto-35 mt-3" appearance="outline">
+                    <mat-label>Tamaño:</mat-label>
+                    <div style=" display: flex; align-items: left;">
+                    <input matInput type="number" formControlName="headercenterwidth"/>
+                    <span style="margin-left: 5px;line-height: 20px;">mm</span>
+                    </div>
+                  </mat-form-field>            
+              </div>
+              <div *ngIf="mostrarDiv4">
+                <div class="row">
+                  <div class="col-8"></div>
+                  <div class="col-4">
+                    <mat-form-field class="mff-reduc w-100 alto-35 " appearance="outline">
+                      <mat-label>Tamaño de Letra:</mat-label>
+                      <input matInput type="number" formControlName="headercenterfontsize" />
+                    </mat-form-field>
+                  </div>
+                </div>
+                <mat-form-field appearance="outline" class="mff-reduc col-sm-12 col-12 mt-1">
+                  <mat-label>Texto:</mat-label>
+                  <textarea matInput autocomplete="off" maxlength="250" formControlName="headercentertext" style="height: 100px; width:100% ;"></textarea>
+                </mat-form-field>
+                <div class="row">
+                  <div class="col-6">
+                    <mat-form-field appearance="outline" class="mff-reduc col-12 alto-35 px-0 mt-2">
+                      <mat-label>Posicion Horizontal</mat-label>
+                      <select matNativeControl formControlName="headercenterpositionelementotext" (change)="ChangeBackColor(($event.target.value),'header','center')">
+                        <option value="left">Izquierda</option>
+                        <option value="center">Centrado</option>
+                        <option value="right">Derecha</option>
+                      </select>
+                    </mat-form-field>
+                  </div>
+                  <div class="col-2 d-flex align-items-center justify-content-center mt-2">
+                    <mat-label><i [ngClass]="{'selected-icon': selheadercenter === 'left'}" class="fa fa-align-left icon"></i></mat-label>
+                     <mat-label><i [ngClass]="{'selected-icon': selheadercenter === 'center'}" class="fa fa-align-center icon"></i></mat-label>
+                     <mat-label><i [ngClass]="{'selected-icon': selheadercenter === 'right'}" class="fa fa-align-right icon"></i></mat-label>
+                 </div>
+                </div>
+                <div class="row">
+                  <div class="col-6">
+                    <label>Negrita :</label>
+                    <div class="switch switch-primary d-inline m-r-1" style="margin-left: 10px" >
+                      <input type="checkbox" id="switch-p-11" formControlName="headercenterbold"/>
+                      <label for="switch-p-11" class="cr"></label>
+                    </div>
+                  </div>
+                  <div class="col-6">
+                    <mat-form-field appearance="outline" class="mff-reduc col-sm-12 col-12 mt-1">
+                      <mat-label>Color</mat-label>
+                      <input matInput type="color" formControlName="headercentercolor" [maxLength]="150"/>
+                    </mat-form-field>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-sm-12 col-md-6 col-lg-4 header-contenedor" *ngIf="formularioHeader.get('headerceldas').value=='3'">
+            <h4 class="form-control" style="background-color:#F4F9FF">Informacion de lado Derecho</h4>
+            <div class="row">
+              <div class="col-3">
+                <button class="btn btn-mini btn-primary mt-2"  placement="bot" (click)="mostrarDivDer(1)">
+                  <i class="fa fa-plus icono-but">Imagen</i>
+                </button>
+              </div>
+              <div class="col-3">
+                <button class="btn btn-mini btn-primary mt-2"  placement="bot" (click)="mostrarDivDer(2)">
+                  <i class="fa fa-plus icono-but">Texto</i>
+                </button>
+              </div>
+            </div>
+            <div class="container mt-2">
+              <div *ngIf="mostrarDiv5 ">
+                <label class="custom-file-upload d-flex">
+                  <input type="file" #fileInput (change)="onFileSelected($event, 'imagender')"/>
+                  <i class="icofont icofont-upload-alt icono-but mt-1 ml-1"></i>
+                  <span class="texto-inputfile">Seleccionar</span>
+                </label>
+                <mat-form-field class="mff-reduc w-100 alto-35 mt-2 mb-1" appearance="outline">
+                  <mat-label>Archivo Adjunto</mat-label>
+                  <input matInput type="text" formControlName="headerdernombre" readonly/>
+                </mat-form-field>
+                <mat-label>Ubicacion de la Imagen: </mat-label>
+                <mat-form-field appearance="outline" class="mff-reduc col-12 alto-35 px-0 mt-3">
+                  <mat-label>Posicion Imagen</mat-label>
+                  <select matNativeControl formControlName="headerderpositionelementoimg" >
+                    <option value="left">Izquierda</option>
+                    <option value="center">Centrado</option>
+                    <option value="right">Derecha</option>
+                  </select>
+                </mat-form-field>
+                  <mat-form-field class="mff-reduc w-20 alto-35 mt-3" appearance="outline">
+                    <mat-label>Tamaño:</mat-label>
+                    <div style=" display: flex; align-items: left;">
+                    <input matInput type="number" formControlName="headerderwidth"/>
+                    <span style="margin-left: 5px;line-height: 20px;">mm</span>
+                    </div>
+                  </mat-form-field>            
+              </div>
+              <div *ngIf="mostrarDiv6">
+                <div class="row">
+                  <div class="col-8"></div>
+                  <div class="col-4">
+                    <mat-form-field class="mff-reduc w-100 alto-35 " appearance="outline">
+                      <mat-label>Tamaño de Letra:</mat-label>
+                      <input matInput type="number" formControlName="headerderfontsize" />
+                    </mat-form-field>
+                  </div>
+                </div>
+                <mat-form-field appearance="outline" class="mff-reduc col-sm-12 col-12 mt-1">
+                  <mat-label>Texto:</mat-label>
+                  <textarea matInput autocomplete="off" maxlength="250" formControlName="headerdertext" style="height: 100px; width:100% ;"></textarea>
+                </mat-form-field>
+                <div class="row">
+                  <div class="col-6">
+                    <mat-form-field appearance="outline" class="mff-reduc col-12 alto-35 px-0 mt-2">
+                      <mat-label>Posicion Horizontal</mat-label>
+                      <select matNativeControl formControlName="headerderpositionelementotext" (change)="ChangeBackColor(($event.target.value),'header','der')">
+                        <option value="left">Izquierda</option>
+                        <option value="center">Centrado</option>
+                        <option value="right">Derecha</option>
+                      </select>
+                    </mat-form-field>
+                  </div>
+                  <div class="col-2 d-flex align-items-center justify-content-center mt-2">
+                    <mat-label><i [ngClass]="{'selected-icon': selheaderder === 'left'}" class="fa fa-align-left icon"></i></mat-label>
+                     <mat-label><i [ngClass]="{'selected-icon': selheaderder === 'center'}" class="fa fa-align-center icon"></i></mat-label>
+                     <mat-label><i [ngClass]="{'selected-icon': selheaderder === 'right'}" class="fa fa-align-right icon"></i></mat-label>
+                 </div>
+                </div>
+                <div class="row">
+                  <div class="col-6">
+                    <label>Negrita :</label>
+                    <div class="switch switch-primary d-inline m-r-1" style="margin-left: 10px" >
+                      <input type="checkbox" id="switch-p-12" formControlName="headerderbold"/>
+                      <label for="switch-p-12" class="cr"></label>
+                    </div>
+                  </div>
+                  <div class="col-6">
+                    <mat-form-field appearance="outline" class="mff-reduc col-sm-12 col-12 mt-1">
+                      <mat-label>Color</mat-label>
+                      <input matInput type="color" formControlName="headerdercolor" [maxLength]="150"/>
+                    </mat-form-field>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+  <div class="app-modal-footer w-100">
+    <div class="row px-3">
+      <button type="button" style="margin-right: 5px" class="btn btn-sm btn-danger ripple" (click)="cerrarModal()">
+        Salir
+      </button>
+      <button type="button" style="margin-right: 5px" class="btn btn-sm btn-primary ripple" (click)="GuardarEncabezado('checked')" >
+        Actualizar
+      </button>
+      <button type="button" style="margin-left:auto" class="btn btn-sm btn-success ripple" (click)="GuardarEncabezadoGeneral()">
+        Predeterminar Configuracion
+      </button>
+    </div>
+  </div>
+</app-modal-basic>
+<!-- MODAL FOOTER-->
+<app-modal-basic [dialogClass]="'modal-lg modalgrande'" #modalFooter>
+  <div class="app-modal-header">
+    <h4 class="modal-title tit-modal1"><b>Aspectos Generales de Pie de Pagina</b></h4>
+    <button type="button" class="close basic-close" (click)="cerrarModal2()">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="app-modal-body">
+    <div class="container-fluid">
+      <form [formGroup]="formularioFooter">
+        <div class="row">
+          <div class="col-sm-12 col-md-12 col-lg-3">
+            <div  class="form-group d-flex align-items-center">
+               <mat-label>Pie Pagina Inicia:</mat-label>
+               <mat-form-field class="mff-reduc w-10 alto-35" style="width:25%;"  appearance="outline">
+                <div style=" display: flex; align-items: left;">
+                <input matInput type="number" formControlName="nuevomargenfooter"/>
+                <span style="margin-left: 5px;line-height: 20px;">cm</span>
+                </div>
+              </mat-form-field>          
+              <mat-label>Del borde de la Hoja</mat-label>
+            </div>
+          </div>
+          <div class="col-sm-6 col-md-6 col-lg-2">
+            <div  class="form-group d-flex align-items-center">
+              <mat-label>Numero de Celdas :</mat-label>
+                <mat-form-field appearance="outline" class="mff-reduc alto-35" style="width:25%;">
+                  <select matNativeControl formControlName="footerceldas" > 
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                  </select>
+                </mat-form-field>
+            </div>
+          </div>
+          <div class="col-sm-6 col-md-6 col-lg-2">
+            <div class="form-group d-flex align-items-center">
+              <mat-label>Transparencia:</mat-label>
+              <mat-form-field class="mff-reduc w-10 alto-35" style="width:35%;"  appearance="outline">
+                <div style=" display: flex; align-items: left;">
+                <input matInput type="number" formControlName="footeropacity"/>
+                <span style="margin-left: 5px;line-height: 20px;">%</span>
+                </div>
+              </mat-form-field>          
+            </div>
+          </div>
+          <div class="col-sm-12 col-md-12 col-lg-5">
+            <div class="form-group d-flex align-items-center">
+              <mat-label>Ancho de Celdas:</mat-label>
+              <mat-form-field class="mff-reduc w-10 alto-35" style="width:25%;"  appearance="outline">
+                <div style=" display: flex; align-items: left;">
+                <input matInput type="number" formControlName="footertamano1"/>
+                <span style="margin-left: 5px;line-height: 20px;">%</span>
+                </div>
+              </mat-form-field>&nbsp;                     
+              <mat-form-field class="mff-reduc w-10 alto-35" style="width:25%;"  appearance="outline" *ngIf="formularioFooter.get('footerceldas').value=='2'||formularioFooter.get('footerceldas').value=='3'">
+                <div style=" display: flex; align-items: left;">
+                <input matInput type="number" formControlName="footertamano2"/>
+                <span style="margin-left: 5px;line-height: 20px;">%</span>
+                </div>
+              </mat-form-field>&nbsp;      
+              <mat-form-field class="mff-reduc w-10 alto-35" style="width:25%;"  appearance="outline"  *ngIf="formularioFooter.get('footerceldas').value=='3'">
+                <div style=" display: flex; align-items: left;">
+                <input matInput type="number" formControlName="footertamano3"/>
+                <span style="margin-left: 5px;line-height: 20px;">%</span>
+                </div>
+              </mat-form-field>          
+            </div>
+            <div class="errores-divs" *ngIf="formularioFooter.errors?.tamanoinvalido">
+              {{ formularioFooter.errors.tamanoinvalido }}
+             </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-sm-12 col-md-6 col-lg-4 header-contenedor">
+            <h4 class="form-control" style="background-color:#F4F9FF">Informacion de lado Izquierdo</h4>
+            <div class="row">
+              <!-- <div class="col-3">
+                <button class="btn btn-mini btn-primary mt-2"  placement="bot" (click)="mostrarDivIzqFooter(1)">
+                  <i class="fa fa-plus icono-but">Imagen</i>
+                </button>
+              </div> -->
+              <div class="col-3">
+                <button class="btn btn-mini btn-primary mt-2"  placement="bot" (click)="mostrarDivIzqFooter(2)">
+                  <i class="fa fa-plus icono-but">Texto</i>
+                </button>
+              </div>
+            </div>
+            <div class="container mt-2">
+              <!-- <div *ngIf="mostrarDiv1Footer ">
+                <label class="custom-file-upload d-flex">
+                  <input type="file" #fileInput (change)="onFileSelected($event, 'footerimagenizq')"/>
+                  <i class="icofont icofont-upload-alt icono-but mt-1 ml-1"></i>
+                  <span class="texto-inputfile">Seleccionar</span>
+                </label>
+                <mat-form-field class="mff-reduc w-100 alto-35 mt-2 mb-1" appearance="outline">
+                  <mat-label>Archivo Adjunto</mat-label>
+                  <input matInput type="text" formControlName="footerizqnombre" readonly/>
+                </mat-form-field>
+                <mat-label>Ubicacion de la Imagen: </mat-label>
+                <mat-form-field appearance="outline" class="mff-reduc col-12 alto-35 px-0 mt-3">
+                  <mat-label>Posicion Imagen</mat-label>
+                  <select matNativeControl formControlName="footerizqpositionelementoimg" >
+                    <option value="left">Izquierda</option>
+                    <option value="center">Centrado</option>
+                    <option value="right">Derecha</option>
+                  </select>
+                </mat-form-field>
+                  <mat-form-field class="mff-reduc w-20 alto-35 mt-3" appearance="outline">
+                    <mat-label>Tamaño:</mat-label>
+                    <div style=" display: flex; align-items: left;">
+                    <input matInput type="number" formControlName="footerizqwidth"/>
+                    <span style="margin-left: 5px;line-height: 20px;">mm</span>
+                    </div>
+                  </mat-form-field>            
+              </div> -->
+              <div *ngIf="mostrarDiv2Footer">
+                <div class="row">
+                  <div class="col-7"></div>
+                  <div class="col-5">
+                    <mat-form-field class="mff-reduc w-100 alto-35" appearance="outline">
+                      <mat-label>Tamaño de Letra:</mat-label>
+                      <input matInput type="number" formControlName="footerizqfontsize" />
+                    </mat-form-field>
+                  </div>
+                </div>
+                <mat-form-field appearance="outline" class="mff-reduc col-sm-12 col-12 mt-1">
+                  <mat-label>Texto:</mat-label>
+                  <textarea matInput autocomplete="off" maxlength="250" formControlName="footerizqtext" style="height: 100px; width:100% ;"></textarea>
+                </mat-form-field>
+                <div class="row">
+                  <div class="col-6">
+                    <mat-form-field appearance="outline" class="mff-reduc col-12 alto-35 px-0 mt-2">
+                      <mat-label>Posicion Horizontal</mat-label>
+                      <select matNativeControl formControlName="footerizqpositionelementotext" (change)="ChangeBackColor(($event.target.value),'footer','izq')">
+                        <option value="left">Izquierda</option>
+                        <option value="center">Centrado</option>
+                        <option value="right">Derecha</option>
+                      </select>
+                    </mat-form-field>
+                  </div>
+                  <div class="col-2 d-flex align-items-center justify-content-center mt-2">
+                     <mat-label><i [ngClass]="{'selected-icon': selfooterizq === 'left'}" class="fa fa-align-left icon"></i></mat-label>
+                      <mat-label><i [ngClass]="{'selected-icon': selfooterizq === 'center'}" class="fa fa-align-center icon"></i></mat-label>
+                      <mat-label><i [ngClass]="{'selected-icon': selfooterizq === 'right'}" class="fa fa-align-right icon"></i></mat-label>
+                  </div>
+                </div>
+                <div class="row mt-2">
+                  <div class="col-6">
+                    <label>Negrita :</label>
+                    <div class="switch switch-primary d-inline ml-2" style="margin-left: 10px" >
+                      <input type="checkbox" id="switch-p-13" formControlName="footerizqbold"/>
+                      <label for="switch-p-13" class="cr"></label>
+                    </div>
+                  </div>
+                  <div class="col-6">
+                    <mat-form-field appearance="outline" class="mff-reduc col-sm-12 col-12">
+                      <mat-label>Color</mat-label>
+                      <input matInput type="color" formControlName="footerizqcolor" [maxLength]="150"/>
+                    </mat-form-field>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col-3">
+                    <button class="btn btn-mini btn-primary mt-2"  placement="bot" (click)="Paginado(1, 'PaginaActual')">
+                      <i class="fa fa-plus icono-but">Pagina Actual</i>
+                    </button>
+                  </div>
+                  <div class="col-3">
+                    <button class="btn btn-mini btn-primary mt-2"  placement="bot" (click)="Paginado(1, 'TotalPaginas')">
+                      <i class="fa fa-plus icono-but">Total Pagina</i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div  class="col-sm-12 col-md-6 col-lg-4 header-contenedor" *ngIf="formularioFooter.get('footerceldas').value=='2'||formularioFooter.get('footerceldas').value=='3'">
+            <h4 class="form-control" style="background-color:#F4F9FF">Informacion de Centro</h4>
+            <div class="row">
+              <!-- <div class="col-3">
+                <button class="btn btn-mini btn-primary mt-2"  placement="bot" (click)="mostrarDivCentroFooter(1)">
+                  <i class="fa fa-plus icono-but">Imagen</i>
+                </button>
+              </div> -->
+              <div class="col-3">
+                <button class="btn btn-mini btn-primary mt-2"  placement="bot" (click)="mostrarDivCentroFooter(2)">
+                  <i class="fa fa-plus icono-but">Texto</i>
+                </button>
+              </div>
+            </div>
+            <div class="container mt-2">
+              <!-- <div *ngIf="mostrarDiv3Footer">
+                <label class="custom-file-upload d-flex">
+                  <input type="file" #fileInput (change)="onFileSelected($event, 'footerimagencenter')"/>
+                  <i class="icofont icofont-upload-alt icono-but mt-1 ml-1"></i>
+                  <span class="texto-inputfile">Seleccionar</span>
+                </label>
+                <mat-form-field class="mff-reduc w-100 alto-35 mt-2 mb-1" appearance="outline">
+                  <mat-label>Archivo Adjunto</mat-label>
+                  <input matInput type="text" formControlName="footercenternombre" readonly/>
+                </mat-form-field>
+                <mat-label>Ubicacion de la Imagen: </mat-label>
+                <mat-form-field appearance="outline" class="mff-reduc col-12 alto-35 px-0 mt-3">
+                  <mat-label>Posicion Imagen</mat-label>
+                  <select matNativeControl formControlName="footercenterpositionelementoimg" >
+                    <option value="left">Izquierda</option>
+                    <option value="center">Centrado</option>
+                    <option value="right">Derecha</option>
+                  </select>
+                </mat-form-field>
+                  <mat-form-field class="mff-reduc w-20 alto-35 mt-3" appearance="outline">
+                    <mat-label>Tamaño:</mat-label>
+                    <div style=" display: flex; align-items: left;">
+                    <input matInput type="number" formControlName="footercenterwidth"/>
+                    <span style="margin-left: 5px;line-height: 20px;">mm</span>
+                    </div>
+                  </mat-form-field>            
+              </div> -->
+              <div *ngIf="mostrarDiv4Footer">
+                <div class="row">
+                  <div class="col-7"></div>
+                  <div class="col-5">
+                    <mat-form-field class="mff-reduc w-100 alto-35" appearance="outline">
+                      <mat-label>Tamaño de Letra:</mat-label>
+                      <input matInput type="number" formControlName="footercenterfontsize" />
+                    </mat-form-field>
+                  </div>
+                </div>
+                <mat-form-field appearance="outline" class="mff-reduc col-sm-12 col-12 mt-1">
+                  <mat-label>Texto:</mat-label>
+                  <textarea matInput autocomplete="off" maxlength="250" formControlName="footercentertext" style="height: 100px; width:100% ;"></textarea>
+                </mat-form-field>
+                <div class="row">
+                  <div class="col-6">
+                    <mat-form-field appearance="outline" class="mff-reduc col-12 alto-35 px-0 mt-2">
+                      <mat-label>Posicion Horizontal</mat-label>
+                      <select matNativeControl formControlName="footercenterpositionelementotext" (change)="ChangeBackColor(($event.target.value),'footer','center')">
+                        <option value="left">Izquierda</option>
+                        <option value="center">Centrado</option>
+                        <option value="right">Derecha</option>
+                      </select>
+                    </mat-form-field>
+                  </div>
+                  <div class="col-2 d-flex align-items-center justify-content-center mt-2">
+                     <mat-label><i [ngClass]="{'selected-icon': selfootercenter === 'left'}" class="fa fa-align-left icon"></i></mat-label>
+                      <mat-label><i [ngClass]="{'selected-icon': selfootercenter === 'center'}" class="fa fa-align-center icon"></i></mat-label>
+                      <mat-label><i [ngClass]="{'selected-icon': selfootercenter === 'right'}" class="fa fa-align-right icon"></i></mat-label>
+                  </div>
+                </div>
+                <div class="row mt-2">
+                  <div class="col-6">
+                    <label>Negrita :</label>
+                    <div class="switch switch-primary d-inline ml-2" style="margin-left: 10px" >
+                      <input type="checkbox" id="switch-p-14" formControlName="footercenterbold"/>
+                      <label for="switch-p-14" class="cr"></label>
+                    </div>
+                  </div>
+                  <div class="col-6">
+                    <mat-form-field appearance="outline" class="mff-reduc col-sm-12 col-12">
+                      <mat-label>Color</mat-label>
+                      <input matInput type="color" formControlName="footercentercolor" [maxLength]="150"/>
+                    </mat-form-field>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col-3">
+                    <button class="btn btn-mini btn-primary mt-2"  placement="bot" (click)="Paginado(2, 'PaginaActual')">
+                      <i class="fa fa-plus icono-but">Pagina Actual</i>
+                    </button>
+                  </div>
+                  <div class="col-3">
+                    <button class="btn btn-mini btn-primary mt-2"  placement="bot" (click)="Paginado(2, 'TotalPaginas')">
+                      <i class="fa fa-plus icono-but">Total Pagina</i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div  class="col-sm-12 col-md-6 col-lg-4 header-contenedor" *ngIf="formularioFooter.get('footerceldas').value=='3'">
+            <h4 class="form-control" style="background-color:#F4F9FF">Informacion de lado Derecho</h4>
+            <div class="row">
+              <!-- <div class="col-3">
+                <button class="btn btn-mini btn-primary mt-2"  placement="bot" (click)="mostrarDivDerFooter(1)">
+                  <i class="fa fa-plus icono-but">Imagen</i>
+                </button>
+              </div> -->
+              <div class="col-3">
+                <button class="btn btn-mini btn-primary mt-2"  placement="bot" (click)="mostrarDivDerFooter(2)">
+                  <i class="fa fa-plus icono-but">Texto</i>
+                </button>
+              </div>
+            </div>
+            <div class="container mt-2">
+              <!-- <div *ngIf="mostrarDiv5Footer ">
+                <label class="custom-file-upload d-flex">
+                  <input type="file" #fileInput (change)="onFileSelected($event, 'footerimagender')"/>
+                  <i class="icofont icofont-upload-alt icono-but mt-1 ml-1"></i>
+                  <span class="texto-inputfile">Seleccionar</span>
+                </label>
+                <mat-form-field class="mff-reduc w-100 alto-35 mt-2 mb-1" appearance="outline">
+                  <mat-label>Archivo Adjunto</mat-label>
+                  <input matInput type="text" formControlName="footerdernombre" readonly/>
+                </mat-form-field>
+                <mat-label>Ubicacion de la Imagen: </mat-label>
+                <mat-form-field appearance="outline" class="mff-reduc col-12 alto-35 px-0 mt-3">
+                  <mat-label>Posicion Imagen</mat-label>
+                  <select matNativeControl formControlName="footerderpositionelementoimg" >
+                    <option value="left">Izquierda</option>
+                    <option value="center">Centrado</option>
+                    <option value="right">Derecha</option>
+                  </select>
+                </mat-form-field>
+                  <mat-form-field class="mff-reduc w-20 alto-35 mt-3" appearance="outline">
+                    <mat-label>Tamaño:</mat-label>
+                    <div style=" display: flex; align-items: left;">
+                    <input matInput type="number" formControlName="footerderwidth"/>
+                    <span style="margin-left: 5px;line-height: 20px;">mm</span>
+                    </div>
+                  </mat-form-field>            
+              </div> -->
+              <div *ngIf="mostrarDiv6Footer">
+                <div class="row">
+                  <div class="col-7"></div>
+                  <div class="col-5">
+                    <mat-form-field class="mff-reduc w-100 alto-35" appearance="outline">
+                      <mat-label>Tamaño de Letra:</mat-label>
+                      <input matInput type="number" formControlName="footerderfontsize" />
+                    </mat-form-field>
+                  </div>
+                </div>
+                <mat-form-field appearance="outline" class="mff-reduc col-sm-12 col-12 mt-1">
+                  <mat-label>Texto:</mat-label>
+                  <textarea matInput autocomplete="off" maxlength="250" formControlName="footerdertext" style="height: 100px; width:100% ;"></textarea>
+                </mat-form-field>
+                <div class="row">
+                  <div class="col-6">
+                    <mat-form-field appearance="outline" class="mff-reduc col-12 alto-35 px-0 mt-2">
+                      <mat-label>Posicion Horizontal</mat-label>
+                      <select matNativeControl formControlName="footerderpositionelementotext" (change)="ChangeBackColor(($event.target.value),'footer','der')">
+                        <option value="left">Izquierda</option>
+                        <option value="center">Centrado</option>
+                        <option value="right">Derecha</option>
+                      </select>
+                    </mat-form-field>
+                  </div>
+                  <div class="col-2 d-flex align-items-center justify-content-center mt-2">
+                     <mat-label><i [ngClass]="{'selected-icon': selfooterder === 'left'}" class="fa fa-align-left icon"></i></mat-label>
+                      <mat-label><i [ngClass]="{'selected-icon': selfooterder === 'center'}" class="fa fa-align-center icon"></i></mat-label>
+                      <mat-label><i [ngClass]="{'selected-icon': selfooterder === 'right'}" class="fa fa-align-right icon"></i></mat-label>
+                  </div>
+                </div>
+                <div class="row mt-2">
+                  <div class="col-6">
+                    <label>Negrita :</label>
+                    <div class="switch switch-primary d-inline ml-2" style="margin-left: 10px" >
+                      <input type="checkbox" id="switch-p-15" formControlName="footerderbold"/>
+                      <label for="switch-p-15" class="cr"></label>
+                    </div>
+                  </div>
+                  <div class="col-6">
+                    <mat-form-field appearance="outline" class="mff-reduc col-sm-12 col-12">
+                      <mat-label>Color</mat-label>
+                      <input matInput type="color" formControlName="footerdercolor" [maxLength]="150"/>
+                    </mat-form-field>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col-3">
+                    <button class="btn btn-mini btn-primary mt-2"  placement="bot" (click)="Paginado(3, 'PaginaActual')">
+                      <i class="fa fa-plus icono-but">Pagina Actual</i>
+                    </button>
+                  </div>
+                  <div class="col-3">
+                    <button class="btn btn-mini btn-primary mt-2"  placement="bot" (click)="Paginado(3, 'TotalPaginas')">
+                      <i class="fa fa-plus icono-but">Total Pagina</i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+  <div class="app-modal-footer w-100">
+    <div class="row px-3">
+      <button type="button" style="margin-right: 5px" class="btn btn-sm btn-danger ripple" (click)="cerrarModal2()">
+        Salir
+      </button>
+      <button type="button" style="margin-right: 5px" class="btn btn-sm btn-primary ripple" (click)="GuardarFooter('checked')">
+        Actualizar
+      </button>
+      <button type="button" style="margin-left:auto" class="btn btn-sm btn-success ripple" (click)="GuardarFooterGeneral()">
+        Predeterminar Configuracion
+      </button>
+    </div>
+  </div>
+</app-modal-basic>
+<app-cargando [bloquearTodo]="true" *ngIf="mostrar_carga_todo"></app-cargando>

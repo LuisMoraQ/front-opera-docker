@@ -1,0 +1,23 @@
+.nav-link {
+  padding: 0rem 1rem;
+  padding-top: 3px;
+  display: flex;
+  cursor: alias !important;
+}
+
+table th {
+  border: 1px solid #d6d6d6 !important;
+}
+
+.height-tabla {
+  height: calc(100vh - 400px) !important;
+}
+
+.sticky-foot {
+  position: sticky !important;
+  bottom: 0 !important;
+}
+
+.ng-dropdown-panel{
+  width: 260px !important;
+}

@@ -1,0 +1,128 @@
+.example-h2 {
+    margin: 10px;
+}
+
+.example-margin {
+    margin: 0 10px;
+}
+
+.h6-mb0 {
+    margin-bottom: 0px !important;
+}
+
+.custom-check .mat-checkbox-layout {
+    white-space: no-wrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    display: block !important;
+    max-width: 100% !important
+}
+
+.modal-body {
+    padding-top: 15px !important;
+    padding-bottom: 15px !important;
+}
+
+.checkbox-error {
+    color: #ff5252;
+
+    &:before,
+    &::before {
+        position: absolute;
+        content: '';
+        width: 0;
+        // opacity: 0;
+        height: 1px;
+        background-color: #ff5252;
+        top: -5px;
+    }
+
+    &.show {
+        height: auto;
+        // opacity: 1;
+        margin-bottom: 1rem;
+        visibility: visible;
+
+        &:before,
+        &::before {
+            width: 100%;
+            // opacity: 1;
+            transition: width 600ms ease-in-out, opacity 750ms linear;
+        }
+    }
+
+    .mat-checkbox-background,
+    .mat-checkbox-frame {
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        position: absolute;
+        border-radius: 2px;
+        box-sizing: border-box;
+        pointer-events: none;
+        border-color: #ff5252 !important;
+    }
+}
+
+.example-right-align {
+    text-align: right;
+}
+
+.h-contenedor-tabla {
+    height: calc(100vh - 210px);
+    overflow: auto;
+}
+
+
+.static1 {
+    position: sticky !important;
+    left: -1px !important;
+    z-index: 2;
+    background-color: white !important;
+}
+
+.static1h {
+    position: sticky !important;
+    left: -1px !important;
+    z-index: 2;
+}
+
+.static2 {
+    position: sticky !important;
+    left: 203px !important;
+    z-index: 2;
+    background-color: white !important;
+}
+
+.static2h {
+    position: sticky !important;
+    left: 203px !important;
+    z-index: 2;
+}
+
+.stilo-info {
+    font-family: ui-monospace !important;
+    color: #448aff !important;
+}
+mat-checkbox label {
+    font-size: 11px !important;
+}
+
+.h-proyectos-list {
+    overflow: auto;
+}
+
+@media (min-width: 992px) { 
+    .h-proyectos-list {
+        height: calc(100% - 80px); 
+        overflow: auto;
+    }
+    .h-l-proy {
+        height: calc(100vh - 250px);
+    }
+   
+}
+.h-95 {
+    height: 95%;
+}

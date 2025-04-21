@@ -1,0 +1,242 @@
+<div class="modal-dialog-scrollable modal-lg">
+    <div class="modal-content">
+        <div class="app-modal-header  modal-header">
+            <h4 class="modal-title tit-modal1">
+                <b *ngIf="ver">Datos Licencia</b>
+                <b *ngIf="!ver && !editar">Guardar Licencia</b>
+                <b *ngIf="!ver && editar">Editar Licencia</b>
+            </h4>
+            <button type="button" class="close basic-close" (click)="closeModal('click-close')">
+                <span aria-hidden="true" class="mt-2">&times;</span>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div class="row" *ngIf="ver; else editarGuardar">
+                <div class="row col-12">
+                    <div class="col-4 col-form-label">
+                        <label>Activo :</label>
+                    </div>
+                    <div class="col-8">
+                        <div class="switch switch-primary d-inline m-r-10" style="margin-left: 10px;">
+                            <input type="checkbox" id="switch-p-1" [(ngModel)]='datos.activo' disabled>
+                            <label for="switch-p-1" class="cr"></label>
+                        </div>
+                    </div>
+                    <div class="row col-12">
+                        <label class="col-sm-4 col-form-label">Descripción :</label>
+                        <div class="col-sm-8">
+                            <label id="tx_area2"
+                                class="col-sm-12 col-form-label"><b>{{datos?.desc_licencia}}</b></label>
+                        </div>
+                    </div>
+                    <div class="row col-12">
+                        <label class="col-sm-4 col-form-label">Abreviatura :</label>
+                        <div class="col-sm-8">
+                            <label id="tx_abr2" class="col-sm-12 col-form-label"><b>{{datos?.abrev}}</b></label>
+                        </div>
+                    </div>
+                    <div class="row col-12">
+                        <label class="col-sm-4 col-form-label">Precio :</label>
+                        <div class="col-sm-8">
+                            <label id="tx_abr2" class="col-sm-12 col-form-label"><b>S/ {{datos?.precio | number:'0.2'}}</b></label>
+                        </div>
+                    </div>
+                    <div class="col-4 col-form-label">
+                        <label>Limitado :</label>
+                    </div>
+                    <div class="col-8">
+                        <div class="switch switch-primary d-inline m-r-10" style="margin-left: 10px;">
+                            <input type="checkbox" id="switch-p-1" [(ngModel)]='datos.limitado' disabled>
+                            <label for="switch-p-1" class="cr"></label>
+                        </div>
+                    </div>
+                    <div class="row col-12" *ngIf="datos.limitado">
+                        <label class="col-sm-4 col-form-label">Tiempo(dias) :</label>
+                        <div class="col-sm-8">
+                            <label class="col-sm-12 col-form-label"><b>{{datos?.tiempo}}</b></label>
+                        </div>
+                    </div>
+                    <div class="col-4 col-form-label">
+                        <label>Máximo Proyectos :</label>
+                    </div>
+                    <div class="col-8">
+                        <div class="switch switch-primary d-inline m-r-10" style="margin-left: 10px;">
+                            <input type="checkbox" id="switch-p-1" [(ngModel)]='datos.limitproy' disabled>
+                            <label for="switch-p-1" class="cr"></label>
+                        </div>
+                    </div>
+                    <div class="row col-12" *ngIf="datos.limitproy">
+                        <label class="col-sm-4 col-form-label"># Proyectos :</label>
+                        <div class="col-sm-8">
+                            <label class="col-sm-12 col-form-label"><b>{{datos?.nroproys}}</b></label>
+                        </div>
+                    </div>
+                    <div class="table-responsive col-12 ml-3 px-0"  [style.max-height.px]="height">
+                        <form [formGroup]="formLicencia" class="row col-12 w-100 px-0 ml-0">
+                            <table #table1 class="tabla-general tab-10" mat-table formArrayName="tablaDetalle"
+                                [dataSource]="dataSource" multiTemplateDataRows>
+                                <ng-container matColumnDef="nombre">
+                                    <th mat-header-cell *matHeaderCellDef> Tipo Usuario </th>
+                                    <td mat-cell *matCellDef="let element;" [formGroup]="element" class="text-left">
+                                        <span class="ml-2">{{element.get('nombre').value}}</span>
+                                    </td>
+                                </ng-container>
+                                <ng-container matColumnDef="cantidad">
+                                    <th mat-header-cell *matHeaderCellDef appAnchocol [ancho]="70"> Nro Usuarios </th>
+                                    <td mat-cell *matCellDef="let element let i = dataIndex;" [formGroup]="element"
+                                        class="custom-celda">
+                                        {{element.get('cantidad').value}}
+                                    </td>
+                                </ng-container>
+                                <ng-container matColumnDef="principal">
+                                    <th mat-header-cell *matHeaderCellDef appAnchocol [ancho]="52"> Principal </th>
+                                    <td mat-cell *matCellDef="let element let i = dataIndex;" [formGroup]="element"
+                                        class="custom-celda">
+                                        <mat-checkbox formControlName="principal" class="mt-1" (change)="cambioPrincipal(i)">
+                                        </mat-checkbox>
+                                    </td>
+                                </ng-container>
+                                <ng-container matColumnDef="Editapresu">
+                                    <th mat-header-cell *matHeaderCellDef appAnchocol [ancho]="72"> Edicion Presupuesto </th>
+                                    <td mat-cell *matCellDef="let element let i = dataIndex;" [formGroup]="element"
+                                        class="custom-celda">
+                                        <mat-checkbox formControlName="edpresu" class="mt-1"></mat-checkbox>
+                                    </td>
+                                </ng-container>
+                                <!-- Header and Rw Declarations -->
+                                <tr mat-header-row class="header-custom"
+                                    *matHeaderRowDef="displayedColumn; sticky: true"></tr>
+                                <tr mat-row *matRowDef="let row; let i = dataIndex; columns: displayedColumn;"></tr>
+                                <tr *matNoDataRow class="nodata">
+                                    <td class="mat-cell text-center" colspan="11">
+                                        <label *ngIf="!buscando">No se encontraron resultados</label>
+                                        <div *ngIf="buscando" class="preloader3 loader-block">
+                                            <div class="circ1"></div>
+                                            <div class="circ2"></div>
+                                            <div class="circ3"></div>
+                                            <div class="circ4"></div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </table>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <ng-template #editarGuardar>
+                <form [formGroup]="formLicencia">
+                    <div class="row">
+                        <div class="col-12 form-group">
+                            <label>Activo :</label>
+                            <div class="switch  d-inline m-r-10" style="margin-left: 10px;">
+                                <input type="checkbox" id="switch-p-1" formControlName="estado">
+                                <label for="switch-p-1" class="cr"></label>
+                            </div>
+                        </div>
+                        <mat-form-field appearance="outline" class="mff-reduc col-sm-12 col-12">
+                            <mat-label>Descripción</mat-label>
+                            <input matInput class="mayuscula" autocomplete="off" maxlength="250" formControlName="desc_licencia">
+                        </mat-form-field>
+                        <mat-form-field appearance="outline" class="mff-reduc col-sm-6 col-12">
+                            <mat-label>Abreviatura</mat-label>
+                            <input matInput class="mayuscula" autocomplete="off" maxlength="25" formControlName="abrev">
+                        </mat-form-field>
+                        <mat-form-field appearance="outline" class="mff-reduc col-sm-6 col-12">
+                            <mat-label>Precio</mat-label>
+                            <input matInput type="text" formControlName="precio" [textMask]="this.formsService.maskUsAmountDecimal2" autocomplete="off" class="text-right" maxlength="15"
+                                thousandSeparator="," class="text-right" prefix="S/  " (blur)="verificarDecimales()" onClick="this.select();">
+                        </mat-form-field>
+                        <div class="col-6 form-group" >
+                            <label>Limitado :</label>
+                            <div class="switch d-inline m-r-10" style="margin-left: 10px;">
+                                <input type="checkbox" id="switch-p-2" formControlName="limitado"
+                                    (change)="cambioLimitado()">
+                                <label for="switch-p-2" class="cr"></label>
+                            </div>
+                        </div>
+                        <mat-form-field appearance="outline" class="mff-reduc col-6" *ngIf="limitado.value">
+                            <mat-label>Tiempo(dias)</mat-label>
+                            <input matInput type="text" #inputtiempo [textMask]="{mask: this.formsService.maskTelefono}" formControlName="tiempo" autocomplete="off" maxlength="7"
+                                (click)="inputtiempo.select()">
+                        </mat-form-field>
+                        <div class="col-6 form-group">
+                            <label>Máximo Proyectos :</label>
+                            <div class="switch d-inline m-r-10" style="margin-left: 10px;">
+                                <input type="checkbox" id="switch-p-3" formControlName="limitproy"
+                                    (change)="cambioLimitproy()">
+                                <label for="switch-p-3" class="cr"></label>
+                            </div>
+                        </div>
+                        <mat-form-field appearance="outline" class="mff-reduc col-6" *ngIf="limitproy.value">
+                            <mat-label># Proyectos</mat-label>
+                            <input matInput type="text" #inputpr [textMask]="{mask: this.formsService.maskTelefono}" formControlName="nroproys" autocomplete="off" maxlength="5"
+                                (click)="inputpr.select()">
+                        </mat-form-field>
+                        <div class="col-12">
+                            <div class="table-responsive" [style.max-height.px]="height">
+                                <table #table1 class="tabla-general tab-10" mat-table formArrayName="tablaDetalle"
+                                    [dataSource]="dataSource" multiTemplateDataRows>
+                                    <ng-container matColumnDef="nombre">
+                                        <th mat-header-cell *matHeaderCellDef> Tipo Usuario </th>
+                                        <td mat-cell *matCellDef="let element;" [formGroup]="element" class="text-left">
+                                            <span class="ml-2">{{element.get('nombre').value}}</span>
+                                        </td>
+                                    </ng-container>
+                                    <ng-container matColumnDef="cantidad">
+                                        <th mat-header-cell *matHeaderCellDef appAnchocol [ancho]="55"> Nro Usuarios </th>
+                                        <td mat-cell *matCellDef="let element let i = dataIndex;" [formGroup]="element"
+                                            class="custom-celda">
+                                            <mat-form-field floatLabel="never" appearance="outline"
+                                                class="mff-reduc custom-input" appAnchocol [ancho]="55">
+                                                <input matInput type="text" #inputcantidad [textMask]="{mask: this.formsService.maskTelefono}" autocomplete="off" maxlength="3"
+                                                    (click)="inputcantidad.select()" (blur)="verificar(i)"
+                                                    formControlName="cantidad" class="text-center">
+                                            </mat-form-field>
+                                        </td>
+                                    </ng-container>
+                                    <ng-container matColumnDef="principal">
+                                        <th mat-header-cell *matHeaderCellDef appAnchocol [ancho]="52"> Principal </th>
+                                        <td mat-cell *matCellDef="let element let i = dataIndex;" [formGroup]="element"
+                                            class="custom-celda">
+                                            <mat-checkbox formControlName="principal" class="mt-1" (change)="cambioPrincipal(i)">
+                                            </mat-checkbox>
+                                        </td>
+                                    </ng-container>
+                                    <ng-container matColumnDef="Editapresu">
+                                        <th mat-header-cell *matHeaderCellDef appAnchocol [ancho]="72">Edicion Presupuesto</th>
+                                        <td mat-cell *matCellDef="let element let i = dataIndex;" [formGroup]="element" class="custom-celda">
+                                            <mat-checkbox formControlName="edpresu" class="mt-1"></mat-checkbox>
+                                        </td>
+                                    </ng-container>
+                                    <!-- Header and Rw Declarations -->
+                                    <tr mat-header-row class="header-custom"
+                                        *matHeaderRowDef="displayedColumn; sticky: true">
+                                    </tr>
+                                    <tr mat-row *matRowDef="let row; let i = dataIndex; columns: displayedColumn;"></tr>
+                                    <tr *matNoDataRow class="nodata">
+                                        <td class="mat-cell text-center" colspan="11">
+                                            <label *ngIf="!buscando">No se encontraron resultados</label>
+                                            <div *ngIf="buscando" class="preloader3 loader-block">
+                                                <div class="circ1"></div>
+                                                <div class="circ2"></div>
+                                                <div class="circ3"></div>
+                                                <div class="circ4"></div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </ng-template>
+        </div>
+        <div class="app-modal-footer modal-footer justify-content-between">
+            <button type="button" class="btn btn-danger btn-sm" (click)="closeModal('cancelar')"><i
+                    class="fa fa-times"></i>Cerrar</button>
+            <button type="button" class="btn btn-success btn-sm" (click)="almacenar()" *ngIf="!ver"><i
+                    class="fa fa-check"></i>Guardar</button>
+        </div>
+    </div>
+</div>
+<app-cargando [bloquearTodo]="true" *ngIf="mostrar_carga_todo"></app-cargando>

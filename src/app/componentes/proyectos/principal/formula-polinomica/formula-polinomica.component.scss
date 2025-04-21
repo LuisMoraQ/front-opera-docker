@@ -1,0 +1,245 @@
+.switch input[type=checkbox]+.cr {
+    height: 14px !important;
+    width: 31px !important;
+    top: 2px !important;
+}
+
+label {
+    margin-bottom: 0px !important;
+}
+
+.switch input[type=checkbox]+.cr:before {
+    height: 14px !important;
+    width: 31px !important;
+    background-color: darkgrey !important;
+}
+
+.switch input[type=checkbox]+.cr:after {
+    height: 14px !important;
+    width: 14px !important;
+
+}
+
+.switch.switch-primary input[type=checkbox]:checked+.cr:before {
+    background-color: green !important;
+}
+
+// .disab .mat-checkbox-ripple .mat-ripple-element,
+// .mat-checkbox-checked.mat-accent .mat-checkbox-background {
+//     background-color: #f3424a !important;
+// }
+
+.enabl .mat-checkbox-ripple .mat-ripple-element,
+.mat-checkbox-checked.mat-accent .mat-checkbox-background {
+    background-color: #448AFF !important;
+}
+
+.height-cont-tab {
+    height: calc(100vh - 160px) !important;
+    margin-top: 1rem !important;
+}
+
+.mat-custom {
+    position: relative;
+    font-size: 18px;
+    top: 3px;
+}
+
+table thead th {
+    height: 22px !important;
+}
+
+table tbody td {
+    height: 22px !important;
+}
+
+// .ng-select .ng-select-container {
+//     min-height: 22px !important;
+//     max-height: 22px !important;
+// }
+
+// .ng-select .ng-arrow-wrapper {
+//     margin-top: 4px !important;
+// }
+
+// .ng-select div, .ng-select input, .ng-select span { 
+//     position: relative;
+//     top: 5px;
+// }
+
+// .ng-select.ng-select-single .ng-select-container .ng-value-container .ng-input {
+//     top: 0px;
+// }
+
+.height-tabla-insumo {
+    height: calc(100vh - 195px);
+}
+
+.height-tabla-insumo2 {
+    height: calc(100vh - 300px);
+}
+
+.h-titulos {
+    height: calc(100% - 50px);
+}
+
+.titulo-grupo-iu {
+    font-weight: bolder !important;
+    background-color: #dddddd !important;
+    border: 1px solid #fafafa !important;
+}
+
+.ico-mt-2px {
+    margin-top: 2px !important;
+}
+
+
+.btn-custom:active {
+    background-color: #dd4814;
+}
+
+.btn-custom {
+    color: #6c757d !important;
+    border-color: #6c757d !important;
+    border: 1px solid !important;
+    background-color: transparent !important;
+    padding: 3px 8px !important;
+    line-height: 16px !important;
+    font-size: 11px !important;
+    cursor: pointer;
+}
+
+.btn-custom:hover {
+    color: #fafafa !important;
+    border-color: #6c757d !important;
+    background-color: #6c757d !important;
+}
+
+.btn-custom-active {
+    color: #fafafa !important;
+    border-color: #6c757d !important;
+    background-color: #6c757d !important;
+}
+
+.pos-badge {
+    position: relative !important;
+    bottom: 2px !important;
+}
+
+.badge-outline {
+    color: #6c757d;
+    border: 1px solid #999;
+    background-color: transparent;
+}
+
+.badge-outline.badge-secondary {
+    border-color: #6c757d;
+}
+
+.custom-total {
+    position: sticky !important;
+    bottom: 0 !important;
+}
+
+.celda-excel {
+    color: #1a1818 !important;
+    background-color: #dfdfdf !important;
+    border: 1px solid #c4c0c0 !important;
+}
+
+.celda-mayor {
+    background-color: #fda484 !important;
+}
+
+.stilo-formula {
+    font-family: serif !important;
+    font-size: small;
+}
+
+.h-agrupMon {
+    height: calc(100vh - 200px) !important;
+}
+
+h5 {
+    margin-top: 2px !important;
+    margin-left: 4px !important;
+}
+
+.disab-button {
+    color: #acb5bd !important;
+    border-color: #d6dbdf !important;
+    cursor: not-allowed !important;
+}
+
+hr {
+    margin-top: 0px !important;
+    margin-bottom: 0px !important;
+    width: 100% !important;
+    border-color: #455a64 !important;
+}
+
+.coeficiente {
+    display: flex !important;
+    align-self: center !important;
+}
+
+.letra-stilo {
+    font-style: italic !important;
+}
+
+.contenedor-fp {
+    background-color: #ebeaea !important;
+    padding-right: 10px !important;
+    border-radius: 10px !important;
+}
+
+.h-th {
+    height: 36.5px !important;
+}
+
+.switch input[type=checkbox]+.cr {
+    height: 13px !important;
+    width: 31px !important;
+    top: 2px !important;
+}
+
+.alert {
+    font-size: 10px !important;
+    margin-bottom: 0px !important;
+    padding: 0.45rem 1.25rem !important;
+}
+
+.alert-danger {
+    background-color: #f8d7da !important;
+}
+
+.icon-alert {
+    font-size: 16px !important;
+    position: relative !important;
+    top: 2px !important;
+}
+
+.row-nuevo {
+    background-color: rgb(158, 252, 134) !important;
+}
+
+.row-eliminar {
+    background-color: #f9877f !important
+}
+
+.row-modificado {
+    background-color: rgb(244, 247, 86) !important;
+}
+
+.highlight2 {
+    background-color: #d2d540 !important
+}
+
+.alert-warning {
+    background-color: #f7de21;
+    border-color: #ffe100;
+    color: #353535;
+}
+.alert {
+    padding: 0.15rem 1.25rem !important;
+}

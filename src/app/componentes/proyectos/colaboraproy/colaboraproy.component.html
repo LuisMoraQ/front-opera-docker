@@ -1,0 +1,257 @@
+<div class="page-body">
+  <div class="titulo-contenido">
+    <h2>Lista de Proyectos</h2>
+  </div>
+  <div class="row">
+    <div class="col-lg-6 col-md-6 col-sm-12 col-12">
+      <app-card class="card col-md-12 card-principal">
+        <div class="row col-12">
+          <div class="col-sm-6 float-left" style="margin-bottom: 10px;">
+            <mat-form-field class="mff-reduc w-100 alto-35 field-busqueda" appearance="outline">
+              <mat-label>Buscar</mat-label>
+              <input matInput type="text" [(ngModel)]="busqueda" autocomplete="off">
+              <button *ngIf="busqueda" matSuffix mat-icon-button aria-label="Clear" (click)="limpiarfiltro()">
+                <mat-icon>close</mat-icon>
+              </button>
+            </mat-form-field>
+          </div>
+        </div>
+        <div [style.height.px]="height" class="overflow-auto tabla-limp">
+          <table class="table-bordered tab-9">
+            <thead class="text-center">
+              <tr class="headsticky header-custom">
+                <th appAnchocol [ancho]="40">N°</th>
+                <th appAnchocol [ancho]="300" [detalle]="true">Descripción</th>
+                <th appAnchocol [ancho]="102">Fuente</th>
+                <th appAnchocol [ancho]="75">F.Modificación</th>
+                <th appAnchocol [ancho]="75">Estado</th>
+                <th appAnchocol [ancho]="26"></th>
+                <th appAnchocol [ancho]="38"></th>
+              </tr>
+            </thead>
+            <tbody class="text-center">
+              <ng-container *ngIf="datasourcesis.length>0">
+                <tr *ngFor="let row of datasourcesis | filtroTablaProy: busqueda;let i = index;"
+                  (click)="cambindicesel(row,i)" [hidden]="!row.mostrar"
+                  [ngClass]="{ 'highlight': fila_sel == row.id_proyecto,'filagrupo':row.nro!=''}">
+                  <td appAnchocol [ancho]="40" style="cursor: pointer;"
+                    (click)="row.nro!='' && row.icomost=='0'?toggleOn(row.id_grupo):row.nro!='' && row.icomost=='1'?toggleOff(row.id_grupo):false">
+                    <a *ngIf="row.icomost=='0' && row.nro!=''" style="color:#06bb06; width: 14px;">
+                      <i class="icofont icofont-caret-up"></i>
+                    </a>
+                    <a *ngIf="row.icomost=='1' && row.nro!=''" style="color:red; width: 14px;">
+                      <i class="icofont icofont-caret-down"></i>
+                    </a>
+                    {{row.nro}}
+                  </td>
+                  <td class="text-left" appAnchocol [ancho]="300" [detalle]="true">
+                    <div class="recortatext" ngbTooltip="{{row.descripcion}}" #t="ngbTooltip" container="body"
+                      triggers="click:blur" (mouseout)="t.close()">
+                      {{row.descripcion}}
+                    </div>
+                  </td>
+                  <td appAnchocol [ancho]="102">
+                    <i class="fa fa-2x" [ngClass]="row.icono?.toString().split('|')[1]"
+                      ngbTooltip="{{row.desc_clasi}}" #t1="ngbTooltip" container="body" style="cursor: pointer;"
+                      triggers="click:blur" (mouseout)="t1.close()"></i>&nbsp;
+                    <label *ngIf="row.nro==''" class="label"
+                      style="font-size:8px;width: 64px; text-align: center;"
+                      [ngClass]="{'label-success': row.fuente == '1','label-primary': row.fuente=='0','label-inverse': row.fuente=='2' }">
+                      {{row.fuente=='0'?'DATA SISTEMA':row.fuente=='1'?'FUENTE PROPIA':'DUPLICADO'}}
+                    </label>
+                  </td>
+                  <td appAnchocol [ancho]="75">
+                    {{row.fecha_modificacion | date: 'dd-MM-yyyy'}}
+                  </td>
+                  <td appAnchocol [ancho]="63">
+                    {{row.asignado?(row.asignado=='1'?'Multiusuario':'Monousuario'):''}}
+                  </td>
+                  <td appAnchocol [ancho]="26">
+                    <i *ngIf="row.nro==''" class="fa fa-2x" style="margin:auto;" ngbTooltip="{{row.estado=='1'?'APROBADO':row.estado=='2'?'EVALUACIÓN':'BORRADOR'}}" container="body"
+                      [ngClass]="{'fa-lock': row.estado == '1','fa-unlock': row.estado!='1'}"
+                      [ngStyle]="{'color': row.estado == 1 ? 'red' : 'none'}"></i>
+                  </td>
+                  <td appAnchocol [ancho]="38">
+                    <button *ngIf="row.nro==''" class="btn btn-mini btn-info" placement="top"
+                      ngbTooltip="Ver Proyecto" (click)="SelecProy(row)">
+                      <i class="fa fa-search icono-but"></i>
+                    </button>
+                  </td>
+                </tr>
+              </ng-container>
+              <ng-container *ngIf="datasourcesis.length<=0">
+                <tr>
+                  <td class="mat-cell text-center" colspan="8">
+                    <label *ngIf="!buscando">No se encontraron resultados</label>
+                    <div *ngIf="buscando" class="preloader3 loader-block">
+                      <div class="circ1"></div>
+                      <div class="circ2"></div>
+                      <div class="circ3"></div>
+                      <div class="circ4"></div>
+                    </div>
+                  </td>
+                </tr>
+              </ng-container>
+            </tbody>
+          </table>
+        </div>
+      </app-card>
+    </div>
+    <div *ngIf="!ocultadet" class="col-lg-6 col-md-6 col-sm-12 col-12">
+      <h2 class="text-center">Asignar Accesos</h2>
+      <app-card class="card col-md-12 card-principal">
+        <ng-container *ngTemplateOutlet="detallefil"></ng-container>
+      </app-card>
+    </div>
+  </div>
+</div>
+<app-modal-basic #modDeta [dialogClass]="'modal-lg'">
+  <div class="app-modal-header">
+      <h4 class="modal-title" style="margin-bottom: 3px;">Asignar de Acceso</h4>
+      <button type="button" class="close basic-close" (click)="cerrarModalAcc()">
+        <span aria-hidden="true">&times;</span>
+      </button>
+  </div>
+  <div class="app-modal-body">
+    <ng-container *ngTemplateOutlet="detallefil"></ng-container>
+  </div>
+</app-modal-basic>
+
+<ng-template #detallefil>
+  <div class="col-12 justify-content-between d-flex" *ngIf="proysel">
+    <div class="col-6">
+      <label>Habilitar Asignacion:</label>
+      <div class="switch switch-primary d-inline m-r-10" style="margin-left: 10px;">
+          <input type="checkbox" id="switch-p-1" [(ngModel)]='valactivo' (change)="cambioEst()">
+          <label for="switch-p-1" class="cr"></label>
+      </div>
+    </div>
+    <button type="button" class="btn btn-success btn-sm light ripple m-b-10 m-r-5"
+        (mouseup)="quitarfoco($event);" (click)="Guardar()">
+      <i class="fa fa-check"></i>Guardar Cambios
+    </button>
+    <!-- <button type="button" class="btn btn-primary btn-sm light ripple m-b-10 m-r-5"
+        (mouseup)="quitarfoco($event);" (click)="Reinicia()">
+      <i class="fa fa-plus"></i>Reiniciar
+    </button> -->
+  </div>
+  <div style="max-height: 300px;" class="overflow-auto tabla-limp m-b-10">
+    <table class="table-bordered tab-10">
+      <thead class="text-center">
+        <tr class="headsticky header-custom">
+          <th appAnchocol [ancho]="100"></th>
+          <th appAnchocol [ancho]="300" [detalle]="true">Descripción</th>
+          <th appAnchocol [ancho]="160"></th>
+        </tr>
+      </thead>
+      <tbody class="text-center">
+        <ng-container *ngIf="tablaUser.length>0">
+          <tr *ngFor="let row of tablaUser;let ind = index;">
+            <td appAnchocol [ancho]="100">
+              {{row.user}}
+            </td>
+            <td class="text-left" appAnchocol [ancho]="300" [detalle]="true">
+              <div class="recortatext" ngbTooltip="{{row.nombres}}" #t="ngbTooltip" container="body"
+                triggers="click:blur" (mouseout)="t.close()">
+                {{row.nombres}}
+              </div>
+            </td>
+            <td class="text-left" appAnchocol [ancho]="160" [ngClass]="{ 'text-danger': row.edpresu==0}">
+              {{row.edpresu==1?'Puede Editar Presupuesto.':'No puede editar Presupuesto.'}}
+            </td>
+          </tr>
+        </ng-container>
+        <ng-container *ngIf="tablaUser.length<=0">
+          <tr>
+            <td class="mat-cell text-center" colspan="8">
+              <label *ngIf="!buscando3">No se encontraron resultados</label>
+              <div *ngIf="buscando3" class="preloader3 loader-block">
+                <div class="circ1"></div>
+                <div class="circ2"></div>
+                <div class="circ3"></div>
+                <div class="circ4"></div>
+              </div>
+            </td>
+          </tr>
+        </ng-container>
+      </tbody>
+    </table>
+  </div>
+  <div [style.height.px]="height-160" style="min-height: 150px;" class="overflow-auto tabla-limp">
+    <table class="table-bordered tab-10">
+      <thead class="text-center">
+        <tr class="headsticky header-custom">
+          <th appAnchocol [ancho]="40">N°</th>
+          <th appAnchocol [ancho]="300" [detalle]="true">Descripción</th>
+          <th appAnchocol [ancho]="70">Principal</th>
+          <th appAnchocol [ancho]="70">Secundario 1</th>
+          <th appAnchocol [ancho]="70">Secundario 2</th>
+          <th appAnchocol [ancho]="70">Secundario 3</th>
+          <th appAnchocol [ancho]="70">Secundario 4</th>
+        </tr>
+      </thead>
+      <tbody class="text-center">
+        <ng-container *ngIf="tablaPrinc.length>0">
+          <tr *ngFor="let row of tablaPrinc;let ind = index;" (click)="cambindicesel2(ind)" 
+            [ngClass]="{ 'highlight': fila_sel2 == ind,'filagrupo':row.nro!=''}">
+            <td appAnchocol [ancho]="40">
+              {{row.nro}}
+            </td>
+            <td class="text-left" appAnchocol [ancho]="300" [detalle]="true">
+              <div class="recortatext" ngbTooltip="{{row.descripcion}}" #t="ngbTooltip" container="body"
+                triggers="click:blur" (mouseout)="t.close()">
+                {{row.descripcion}}
+              </div>
+            </td>
+            <td appAnchocol [ancho]="70">
+              <label class="label" style="font-size:8px;width: 64px; text-align: center;cursor: pointer;" (click)="cambiaEst(1,ind)"
+                [ngClass]="{'label-success': row.usuario1 == '1','label-primary': row.usuario1=='0','label-inverse': row.usuario1=='2','badge-inverse-info': row.usuario1=='3'}">
+                {{row.usuario1=='1'?'EDICIÓN':row.usuario1=='2'?'SIN ACCESO':row.usuario1=='3'?'SEL TODO':'VISUAL'}}
+              </label>
+            </td>
+            <td appAnchocol [ancho]="70">
+              <label class="label" style="font-size:8px;width: 64px; text-align: center;cursor: pointer;" (click)="cambiaEst(2,ind)"
+                [ngClass]="{'label-success': row.usuario2 == '1','label-primary': row.usuario2=='0','label-inverse': row.usuario2=='2','badge-inverse-info': row.usuario2=='3'}">
+                {{row.usuario2=='1'?'EDICIÓN':row.usuario2=='2'?'SIN ACCESO':row.usuario2=='3'?'SEL TODO':'VISUAL'}}
+              </label>
+            </td>
+            <td appAnchocol [ancho]="70">
+              <label class="label" style="font-size:8px;width: 64px; text-align: center;cursor: pointer;" (click)="cambiaEst(3,ind)"
+                [ngClass]="{'label-success': row.usuario3 == '1','label-primary': row.usuario3=='0','label-inverse': row.usuario3=='2','badge-inverse-info': row.usuario3=='3'}">
+                {{row.usuario3=='1'?'EDICIÓN':row.usuario3=='2'?'SIN ACCESO':row.usuario3=='3'?'SEL TODO':'VISUAL'}}
+              </label>
+            </td>
+            <td appAnchocol [ancho]="70">
+              <label class="label" style="font-size:8px;width: 64px; text-align: center;cursor: pointer;" (click)="cambiaEst(4,ind)"
+                [ngClass]="{'label-success': row.usuario4 == '1','label-primary': row.usuario4=='0','label-inverse': row.usuario4=='2','badge-inverse-info': row.usuario4=='3'}">
+                {{row.usuario4=='1'?'EDICIÓN':row.usuario4=='2'?'SIN ACCESO':row.usuario4=='3'?'SEL TODO':'VISUAL'}}
+              </label>
+            </td>
+            <td appAnchocol [ancho]="70" class="text-left">
+              <label class="label" style="font-size:8px;width: 64px; text-align: center;cursor: pointer;" (click)="cambiaEst(5,ind)"
+                [ngClass]="{'label-success': row.usuario5 == '1','label-primary': row.usuario5=='0','label-inverse': row.usuario5=='2','badge-inverse-info': row.usuario4=='3'}">
+                {{row.usuario5=='1'?'EDICIÓN':row.usuario5=='2'?'SIN ACCESO':row.usuario5=='3'?'SEL TODO':'VISUAL'}}
+              </label>
+            </td>
+          </tr>
+        </ng-container>
+        <ng-container *ngIf="tablaPrinc.length<=0">
+          <tr>
+            <td class="mat-cell text-center" colspan="8">
+              <label *ngIf="!buscando2">No se encontraron resultados</label>
+              <div *ngIf="buscando2" class="preloader3 loader-block">
+                <div class="circ1"></div>
+                <div class="circ2"></div>
+                <div class="circ3"></div>
+                <div class="circ4"></div>
+              </div>
+            </td>
+          </tr>
+        </ng-container>
+      </tbody>
+    </table>
+  </div>
+</ng-template>
+
+<app-cargando [bloquearTodo]="true" *ngIf="mostrar_carga_todo"></app-cargando>
+<app-cargando [bloquearTodo]="false" *ngIf="mostrar_carga"></app-cargando>

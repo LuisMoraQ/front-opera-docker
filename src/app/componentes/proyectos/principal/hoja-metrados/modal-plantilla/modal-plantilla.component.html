@@ -1,0 +1,212 @@
+<div class="modal-dialog-scrollable modal-md">
+        <div class="modal-content">
+                <div class="app-modal-header  modal-header">
+                        <span class="text-white">Agregar Plantilla</span>
+                        <button type="button" class="close basic-close" (click)="closeModal()">
+                                <span aria-hidden="true" class="mt-2">&times;</span>
+                        </button>
+                </div>
+                <div class="modal-body">
+                        <form [formGroup]="formPlantilla">
+                                <div class="row justify-content-between">
+                                        <div class="col-12">
+                                                <mat-form-field appearance="outline" class="mff-reduc col-sm-12 col-12">
+                                                        <mat-label>Nombre Plantilla</mat-label>
+                                                        <input matInput class="mayuscula" type="text" autocomplete="off"
+                                                                formControlName="nom_plantilla">
+                                                </mat-form-field>
+                                        </div>
+                                </div>
+                                <div class="col-12 row m-0">
+                                        <div class="col-12 custom-div bg-li"> &nbsp;&nbsp;</div>
+                                        <div class="col-3 custom-div"
+                                                [ngClass]="{'text-invalido ': !item.value && submit}">Item <mat-checkbox
+                                                        [ngClass]="{'invalido-check': !item.value && submit}"
+                                                        (change)="cambioCheckbox('item', 'Item', 0, item.value)"
+                                                        class="float-right" formControlName="item"></mat-checkbox>
+                                        </div>
+                                        <div class="col-3 custom-div"
+                                                [ngClass]="{'text-invalido': !descripcion.value && submit}">Descripción
+                                                <mat-checkbox
+                                                        (change)="cambioCheckbox('descripcion', 'Descripción',0, descripcion.value)"
+                                                        [ngClass]="{'invalido-check': !descripcion.value && submit}"
+                                                        class="float-right" formControlName="descripcion">
+                                                </mat-checkbox>
+                                        </div>
+                                        <div class="col-3 custom-div">Detalle <mat-checkbox
+                                                        (change)="cambioCheckbox('detalle', 'Detalle',0, detalle.value)"
+                                                        class="float-right" formControlName="detalle"></mat-checkbox>
+                                        </div>
+                                        <div class="col-3 custom-div">Cantidad <mat-checkbox
+                                                        (change)="cambioCheckbox('cantidad', 'Cantidad',0, cantidad.value)"
+                                                        class="float-right" formControlName="cantidad"></mat-checkbox>
+                                        </div>
+                                        <div class="col-3 custom-div">Nº Veces <mat-checkbox
+                                                        (change)="cambioCheckbox('nveces', 'Nº Veces',0, nveces.value)"
+                                                        class="float-right" formControlName="nveces"></mat-checkbox>
+                                        </div>
+                                        <div class="col-3 custom-div">Factor 1 <mat-checkbox
+                                                        (change)="cambioCheckbox('factor1', 'Factor 1',0, factor1.value)"
+                                                        class="float-right" formControlName="factor1"></mat-checkbox>
+                                        </div>
+                                        <div class="col-3 custom-div">Factor 2 <mat-checkbox
+                                                        (change)="cambioCheckbox('factor2', 'Factor 2',0, factor2.value)"
+                                                        class="float-right" formControlName="factor2"></mat-checkbox>
+                                        </div>
+                                        <div class="col-3 custom-div">Factor 3 <mat-checkbox
+                                                        (change)="cambioCheckbox('factor3', 'Factor 3',0, factor3.value)"
+                                                        class="float-right" formControlName="factor3"></mat-checkbox>
+                                        </div>
+                                        <div class="col-3 custom-div">Area<mat-checkbox
+                                                        (change)="cambioCheckbox('area', 'Area',0, area.value)"
+                                                        class="float-right" formControlName="area"></mat-checkbox>
+                                        </div>
+                                        <div class="col-3 custom-div">Volumen<mat-checkbox
+                                                        (change)="cambioCheckbox('volumen', 'Volumen',0, volumen.value)"
+                                                        class="float-right" formControlName="volumen"></mat-checkbox>
+                                        </div>
+                                        <div class="col-3 custom-div">M. Parcial<mat-checkbox
+                                                        (change)="cambioCheckbox('mparcial', 'M. Parcial',0, mparcial.value)"
+                                                        class="float-right" formControlName="mparcial"></mat-checkbox>
+                                        </div>
+                                        <div class="col-3 custom-div" [ngClass]="{'text-invalido': !unidad.value && submit}">Unidad<mat-checkbox
+                                                        [ngClass]="{'invalido-check': !unidad.value && submit}"
+                                                        (change)="cambioCheckbox('unidad', 'Unidad',0, unidad.value)"
+                                                        class="float-right" formControlName="unidad"></mat-checkbox>
+                                        </div>
+                                        <div class="col-3 custom-div">Sub Total<mat-checkbox                                                    
+                                                        (change)="cambioCheckbox('subtotal', 'Sub Total',0, subtotal.value)"
+                                                        class="float-right" formControlName="subtotal"></mat-checkbox>
+                                        </div>
+                                        <div class="col-3 custom-div">Otro<mat-checkbox                                                     
+                                                        (change)="cambioCheckbox('otro', 'Otro',0, otro.value)"
+                                                        class="float-right" formControlName="otro"></mat-checkbox>
+                                        </div>
+                                        <div class="col-3 custom-div"
+                                                [ngClass]="{'text-invalido': !mtotal.value && submit}">M. Total
+                                                <mat-checkbox [ngClass]="{'invalido-check': !mtotal.value && submit}"
+                                                        (change)="cambioCheckbox('mtotal', 'M. Total',0, mtotal.value)"
+                                                        class="float-right" formControlName="mtotal"></mat-checkbox>
+                                        </div>
+                                        <div class="col-12 custom-div bg-li">Geometrica</div>
+                                        <div class="col-3 custom-div">Descripcion <mat-checkbox
+                                                        (change)="cambioCheckbox('gdescripcion','Descripcion', 1,gdescripcion.value)"
+                                                        class="float-right" formControlName="gdescripcion">
+                                                </mat-checkbox>
+                                        </div>
+                                        <div class="col-3 custom-div">Cantidad <mat-checkbox
+                                                        (change)="cambioCheckbox('gcantidad','Cantidad', 1, gcantidad.value)"
+                                                        class="float-right" formControlName="gcantidad"></mat-checkbox>
+                                        </div>
+                                        <div class="col-3 custom-div">Factor <mat-checkbox
+                                                        (change)="cambioCheckbox('gfactor', 'Factor', 1, gfactor.value)"
+                                                        class="float-right" formControlName="gfactor"></mat-checkbox>
+                                        </div>
+                                        <div class="col-3 custom-div">Nº veces <mat-checkbox
+                                                        (change)="cambioCheckbox('gnveces', 'Nº veces', 1, gnveces.value)"
+                                                        class="float-right" formControlName="gnveces"></mat-checkbox>
+                                        </div>
+                                        <div class="col-3 custom-div">Longitud <mat-checkbox
+                                                        (change)="cambioCheckbox('glongitud', 'Longitud', 1, glongitud.value)"
+                                                        class="float-right" formControlName="glongitud"></mat-checkbox>
+                                        </div>
+                                        <div class="col-3 custom-div">Ancho <mat-checkbox
+                                                        (change)="cambioCheckbox('gancho', 'Ancho', 1, gancho.value)"
+                                                        class="float-right" formControlName="gancho"></mat-checkbox>
+                                        </div>
+                                        <div class="col-3 custom-div">Altura <mat-checkbox
+                                                        (change)="cambioCheckbox('galtura', 'Altura', 1, galtura.value)"
+                                                        class="float-right" formControlName="galtura"></mat-checkbox>
+                                        </div>
+                                        <div class="col-3 custom-div">Sub Total <mat-checkbox
+                                                        (change)="cambioCheckbox('gsubtotal', 'Sub Total', 1, gsubtotal.value)"
+                                                        class="float-right" formControlName="gsubtotal"></mat-checkbox>
+                                        </div>
+                                        <div class="col-12 custom-div bg-li">Descuento</div>
+                                        <div class="col-3 custom-div">Descripcion <mat-checkbox
+                                                        (change)="cambioCheckbox('ddescripcion', 'Descripcion', 2, ddescripcion.value)"
+                                                        class="float-right" formControlName="ddescripcion">
+                                                </mat-checkbox>
+                                        </div>
+                                        <div class="col-3 custom-div">Cantidad <mat-checkbox
+                                                        (change)="cambioCheckbox('dcantidad', 'Cantidad', 2, dcantidad.value)"
+                                                        class="float-right" formControlName="dcantidad"></mat-checkbox>
+                                        </div>
+                                        <div class="col-3 custom-div">Factor <mat-checkbox
+                                                        (change)="cambioCheckbox('dfactor', 'Factor', 2, dfactor.value)"
+                                                        class="float-right" formControlName="dfactor"></mat-checkbox>
+                                        </div>
+                                        <div class="col-3 custom-div">Nº veces <mat-checkbox
+                                                        (change)="cambioCheckbox('dnveces', 'Nº veces', 2, dnveces.value)"
+                                                        class="float-right" formControlName="dnveces"></mat-checkbox>
+                                        </div>
+                                        <div class="col-3 custom-div">Longitud <mat-checkbox
+                                                        (change)="cambioCheckbox('dlongitud', 'Longitud', 2, dlongitud.value)"
+                                                        class="float-right" formControlName="dlongitud"></mat-checkbox>
+                                        </div>
+                                        <div class="col-3 custom-div">Ancho <mat-checkbox
+                                                        (change)="cambioCheckbox('dancho', 'Ancho', 2, dancho.value)"
+                                                        class="float-right" formControlName="dancho"></mat-checkbox>
+                                        </div>
+                                        <div class="col-3 custom-div">Altura <mat-checkbox
+                                                        (change)="cambioCheckbox('daltura', 'Altura', 2, daltura.value)"
+                                                        class="float-right" formControlName="daltura"></mat-checkbox>
+                                        </div>
+                                        <div class="col-3 custom-div">Sub Total <mat-checkbox
+                                                        (change)="cambioCheckbox('dsubtotal', 'Sub Total', 2, dsubtotal.value)"
+                                                        class="float-right" formControlName="dsubtotal"></mat-checkbox>
+                                        </div>
+                                </div>
+                        </form>
+                        <div class="col-12 overflow-auto mt-3">
+                                <div>
+                                        Tabla Generada
+                                </div>
+                                <table class="tabla-general tabla-10 table-bordered">
+                                        <thead class="text-center">
+                                                <tr *ngIf="cantidadCeldas.length" style="min-height: 24px;">
+                                                        <th [attr.colspan]="icols" *ngIf="icols"></th>
+                                                        <th [attr.colspan]="gcols" *ngIf="gcols">Geometria</th>
+                                                        <th [attr.colspan]="dcols" *ngIf="dcols">Descuentos</th>
+                                                        <th [attr.colspan]="fcols" *ngIf="fcols"></th>
+                                                </tr>
+                                                <tr>
+                                                        <th *ngFor="let celda of header">
+                                                                {{celda.nombre}}
+                                                        </th>
+                                                </tr>
+                                        </thead>
+                                        <tbody class="text-center">
+                                                <tr>
+                                                        <td *ngFor="let item of cantidadCeldas"><i
+                                                                        class="fa fa-ellipsis-h"></i>
+                                                        </td>
+                                                </tr>
+                                                <tr>
+                                                        <td class="text-center"
+                                                                *ngFor="let item of header; let i = index">
+                                                                <button class="btn btn-mini2 btn-secondary"
+                                                                        (mouseup)="quitarfoco($event);"
+                                                                        (click)="desplazarIzquierda(i, item)">
+                                                                        <i class="fa fa-arrow-left icono-but"></i>
+                                                                </button>
+                                                                <button class="btn btn-mini2 btn-secondary"
+                                                                        (mouseup)="quitarfoco($event);"
+                                                                        (click)="desplazarDerecha(i, item)">
+                                                                        <i class="fa fa-arrow-right icono-but"></i>
+                                                                </button>
+                                                        </td>
+                                                </tr>
+                                        </tbody>
+                                </table>
+                        </div>
+                </div>
+                <div class="app-modal-footer modal-footer justify-content-between">
+                        <button type="button" class="btn btn-danger btn-sm" (click)="closeModal()"><i
+                                        class="fa fa-times"></i>Cerrar</button>
+                        <button type="button" class="btn btn-success btn-sm" (click)="guardarPlantilla()"><i
+                                        class="fa fa-calendar-check-o"></i>Guardar</button>
+                </div>
+        </div>
+</div>
+<app-cargando [bloquearTodo]="true" *ngIf="mostrar_carga_todo"></app-cargando>

@@ -1,0 +1,13 @@
+<div class="side-width content-fluid p-2">
+    <div class="row pb-0">
+        <div class="col-12" *ngFor="let item of menu">
+            <!-- Block level buttons with icon -->
+            <div class="form-group">
+                <button class="btn btn-inverse btn-outline-inverse ripple d-flex align-items-center">
+                    <i class="{{item.icon}}"></i>
+                    <span class="labels ml-2">{{item.name}}</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

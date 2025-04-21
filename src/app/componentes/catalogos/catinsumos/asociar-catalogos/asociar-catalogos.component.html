@@ -1,0 +1,226 @@
+<div class="modal-dialog-scrollable">
+    <div class="modal-content">
+        <div class="app-modal-header  modal-header">
+            <!-- tipo modal es la accion de para el modal actualizar o guardar -->
+            <h4 class="modal-title tit-modal1">
+                <b>Asociar Catalogos</b>
+            </h4>
+            <button type="button" class="close basic-close" (click)="closeModal()">
+                <span aria-hidden="true" class="mt-2">&times;</span>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div class="row h-100">
+                <div class="col-sm-12 col-md-7">
+                    <div class="row h-100">
+                        <div class="col-12  contenido-tabla-catalogos">
+                            <div class="row">
+                                <div class="col-md-4 col-sm-12">
+                                    <mat-form-field appearance="outline" class="mff-reduc w-100 alto-35">
+                                        <mat-label>Fuente</mat-label>
+                                        <select matNativeControl [(ngModel)]="fuente" (change)="cambiarSelect()">
+                                            <option *ngFor="let fuente of fuentes" [value]="fuente.id">
+                                                {{fuente.nombre}}
+                                            </option>
+                                        </select>
+                                    </mat-form-field>
+                                </div>
+                                <div class="col-md-4 col-sm-12 mt-2 mt-md-0 mt-lg-0 mt-xl-0">
+                                    <mat-form-field appearance="outline" class="mff-reduc w-100 alto-35">
+                                        <mat-label>Tipo Insumo</mat-label>
+                                        <select matNativeControl [(ngModel)]="tipoInsumo" (change)="cambiarSelect()">
+                                            <option value="">--Todos--</option>
+                                            <option *ngFor="let tipo of tipoInsumos" [value]="tipo.id_tipo_insumo">
+                                                {{tipo.desc_tipo_insumo}}
+                                            </option>
+                                        </select>
+                                    </mat-form-field>
+                                </div>
+                                <div class="col-md-4 col-sm-12 mt-2 mt-md-0 mt-lg-0 mt-xl-0">
+                                    <div class="w-100">
+                                        <span class="span-sobre">Indice Unificado</span>
+                                        <ng-select [appendTo]="'body'" [clearable]="false" [(ngModel)]="tipoIndice"
+                                            (change)="cambiarSelect()">
+                                            <!-- [loading]="true" -->
+                                            <ng-option value="">--Todos--</ng-option>
+                                            <ng-option *ngFor="let car of tiposIndice" [value]="car.id_indice">
+                                                {{car.id_indice+' '+car.desc_indice}}</ng-option>
+                                        </ng-select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row mt-3">
+                                <div class="col text-center">
+                                    <span> <u>Lista de Catalogos</u> </span>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 col-6 mt-2">
+                                    <mat-form-field class="mff-reduc w-100 alto-35 field-busqueda" appearance="outline">
+                                        <mat-label>Buscar</mat-label>
+                                        <input matInput type="text" [(ngModel)]="busqueda"
+                                            (keyup)="applyFilterPrinc($event)" autocomplete="off">
+                                        <button *ngIf="busqueda" matSuffix mat-icon-button aria-label="Clear"
+                                            (click)="limpiarfiltro()">
+                                            <mat-icon>close</mat-icon>
+                                        </button>
+                                    </mat-form-field>
+                                </div>
+                                <div class="col-md-6 col-6 mt-2">
+                                    <button type="button" class="btn btn-success btn-sm float-right"
+                                        (click)="agregarSeleccionados()"><i class="fa fa-check"></i>Agregar
+                                        Seleccionados</button>
+                                </div>
+                                <div class="col-12 justify-content-center mt-2">
+                                    <div class="table-responsive">
+                                        <table #table1 class="tabla-general" mat-table [dataSource]="dataSource" matSort
+                                            multiTemplateDataRows>
+                                            <ng-container matColumnDef="acciones" sticky>
+                                                <th mat-header-cell *matHeaderCellDef>Acciones</th>
+                                                <td mat-cell *matCellDef="let row; let i = dataIndex;" appAnchocol
+                                                    [ancho]="65">
+                                                    <mat-checkbox class="checktabla" ngbTooltip="Seleccionar"
+                                                        container="body" [checked]="row.seleccion==0?false:true"
+                                                        (change)="$event ? cambioselt1(row) : null"></mat-checkbox>
+                                                    <!-- <button class="btn btn-mini btn-info ml-1" placement="top"
+                                                        type="button" ngbTooltip="Ver Catalogo" container="body"
+                                                        (click)="openVisualizador(row)" (mouseup)="quitarfoco($event);">
+                                                        <i class="fa fa-search icono-but"></i>
+                                                    </button> -->
+                                                </td>
+                                            </ng-container>
+                                            <ng-container matColumnDef="catalogo">
+                                                <th mat-header-cell *matHeaderCellDef mat-sort-header appAnchocol
+                                                    [ancho]="300">Catalogo</th>
+                                                <td mat-cell *matCellDef="let row" appAnchocol [ancho]="300">
+                                                    {{row.catalogo}} </td>
+                                            </ng-container>
+                                            <ng-container matColumnDef="insumos">
+                                                <th mat-header-cell *matHeaderCellDef mat-sort-header appAnchocol [ancho]="750">Insumos</th>
+                                                <td mat-cell *matCellDef="let row" class="text-left" appAnchocol [ancho]="750">
+                                                    {{row.insumos | separador | async}}
+                                                </td>
+                                            </ng-container>
+
+                                            <tr mat-header-row class="header-custom"
+                                                *matHeaderRowDef="displayedColumn; sticky: true"></tr>
+                                            <tr mat-row
+                                                *matRowDef="let row; let i = dataIndex; columns: displayedColumn;"
+                                                [ngClass]="{'highlight': fila_sel == i}"
+                                                (click)="cambindicesel(i, row);"></tr>
+                                            <tr *matNoDataRow class="nodata">
+                                                <td class="mat-cell text-center" colspan="11">
+                                                    <label *ngIf="!buscando">No se encontraron resultados</label>
+                                                    <div *ngIf="buscando" class="preloader3 loader-block">
+                                                        <div class="circ1"></div>
+                                                        <div class="circ2"></div>
+                                                        <div class="circ3"></div>
+                                                        <div class="circ4"></div>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- </div> -->
+                        </div>
+                        <div class="col-12  contenido-catalogos-seleccionados p-3 justify-content-center">
+                            <div class="row h-100 px-0 justify-content-center custom-borde">
+                                <div class="col-12 text-center pt-1 px-0">
+                                    <span> <u>Catalogos Seleccionados(Maximo {{cantidadDisponible}} Catalogos)</u>
+                                    </span>
+                                </div>
+                                <div class="col-12">
+                                    <div class="alert alert-info background-info mb-0 text-center" role="alert"
+                                        *ngIf="!seleccionados.length; else mostrarSeleccionados">
+                                        <i class="fa fa-warning"></i> Ningun Catalogo Seleccionado
+                                    </div>
+                                    <ng-template #mostrarSeleccionados>
+                                        <mat-chip-list #chipList aria-label="Fruit selection" class="ml-md-3">
+                                            <mat-chip *ngFor="let documento of seleccionados; let i = index"
+                                                [selectable]="true" [removable]="true" class="bg-primary custom-chip"
+                                                (removed)="removearc(i, documento)">
+                                                <span class="recortatextlinea">{{documento.catalogo}}</span>
+                                                <mat-icon matChipRemove>cancel</mat-icon>
+                                            </mat-chip>
+                                        </mat-chip-list>
+                                    </ng-template>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+                <div class="col-sm-12 col-md-5">
+                    <div class="row h-100 p-3">
+                        <div class="card shadow-lg h-100 w-100">
+                            <div class="card-header" *ngIf="rowSeleccionado">
+                                <div class="row">
+                                    <div class="text-center col-12"><u>VISTA CATALOGO</u></div>
+                                    <span class="font-weight-bolder ml-1"><i
+                                            class="fa fa-hand-o-right mr-2"></i>{{rowSeleccionado?.catalogo}}</span>
+                                </div>
+                            </div>
+                            <ng-container *ngIf="url; else noPdf">
+                                <pdf-viewer class="viewer-pdf-custom" [src]="url" [show-all]="false" [page]="page"
+                                    [zoom]="zoom" [show-borders]="true"
+                                    (after-load-complete)="afterLoadComplete($event)" [original-size]="false"
+                                    [render-text]="true">
+                                </pdf-viewer>
+                                <div class="row d-flex justify-content-center align-content-center mt-md-3">
+                                    <button class="option_item" (click)="zoomIn()" title="Aumentar">
+                                        <i class="fa fa-search-plus" aria-hidden="true"></i>
+                                    </button>
+
+                                    <button class="option_item" (click)="zoomOut()" title="Disminuir">
+                                        <i class="fa fa-search-minus" aria-hidden="true"></i>
+                                    </button>
+                                    <button class="option_item" (click)="previousPage()" [disabled]="page === 1"
+                                        title="Pagina anterior">
+                                        <i class="fa fa-angle-left" aria-hidden="true"></i>
+                                    </button>
+
+                                    <button class="option_item" (click)="nextPage()"
+                                        [disabled]="totalPages === 1 || page === totalPages" title="Pagina siguiente">
+                                        <i class="fa fa-angle-right" aria-hidden="true"></i>
+                                    </button>
+                                    <div class="pagina-number">{{ page }} / {{ totalPages }}</div>
+                                </div>
+                            </ng-container>
+                            <ng-template #noPdf>
+                                <div class="d-flex align-items-center justify-content-center contenidoNoData"
+                                    *ngIf="url != null">
+                                    <div class="row justify-content-center">
+                                        <span class="fa-stack fa-5x">
+                                            <i class="fa fa-file-pdf-o fa-stack-1x "></i>
+                                            <i class="fa fa-ban fa-stack-2x text-danger"></i>
+                                        </span>
+                                        <span class="col-12 text-center letra-nodata mt-2">PDF NO ENCONTRADO</span>
+                                    </div>
+                                </div>
+                                <div class="d-flex align-items-center justify-content-center contenidoNoData"
+                                    *ngIf="url === null">
+                                    <div class="row justify-content-center">
+                                        <img src='assets/icon/search-plomo.svg' class="col-12 imagen-nodata"><br>
+                                        <span class="col-12 text-center letra-nodata mt-2">NINGUN CATÁLOGO
+                                            SELECCIONADO</span>
+                                    </div>
+                                </div>
+                            </ng-template>
+                            <app-cargando [bloquearTodo]="false" *ngIf="mostrar_carga" [contenido]="true">
+                            </app-cargando>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        <div class="app-modal-footer modal-footer justify-content-between">
+            <button type="button" class="btn btn-danger btn-sm" (click)="closeModal()"><i
+                    class="fa fa-times"></i>Cerrar</button>
+            <button type="button" class="btn btn-success btn-sm" (click)="asociarCatalogos()"><i
+                    class="fa fa-check"></i>Asociar</button>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,766 @@
+<div class="page-body">
+  <div *ngIf="!verMenuProyecto; else MenuProyecto">
+    <div class="row justify-content-center mb-1">
+      <div class="titulo-contenido">
+        <h2>Lista de Proyectos</h2>
+      </div>
+      <button type="button" *ngIf="this.formProyecto.value?.length"
+        class="btn btn-success btn-sm light ripple m-b-10 custom-position" (click)="verProyectosAbiertos()"
+        (mouseup)="quitarfoco($event);">
+        <i class="fa fa-arrow-circle-right"></i>Ver Proyectos Abiertos
+      </button>
+    </div>
+    <div class="row">
+      <div [ngClass]="{'col-lg-7 col-md-6 col-sm-12': !expanded, 'col-md-12 col-sm-12': expanded}">
+        <app-card class="card col-md-12 " style="margin-bottom:10px; padding-left: 0; padding-right: 0;">
+          <ul ngbNav #nav="ngbNav" [(activeId)]="tabSeleccionado" class="nav-tabs" (navChange)="onNavChangepri($event)">
+            <li [ngbNavItem]="1">
+              <a ngbNavLink>Mis Proyectos</a>
+              <ng-template ngbNavContent>
+                <div class="row ">
+                  <div class="col-12 ">
+                    <div class="col-sm-6 float-left" style="margin-bottom: 10px;">
+                      <mat-form-field class="mff-reduc w-100 alto-35 field-busqueda" appearance="outline">
+                        <mat-label>Buscar</mat-label>
+                        <input matInput type="text" [(ngModel)]="busqueda" autocomplete="off"
+                          id="inpbusq"><!-- (keyup)="applyFilterPrinc($event)" -->
+                        <button *ngIf="busqueda" matSuffix mat-icon-button aria-label="Clear" (click)="limpiarfiltro()">
+                          <mat-icon>close</mat-icon>
+                        </button>
+                      </mat-form-field>
+                    </div>
+                    <button type="button" class="btn btn-info btn-sm light ripple m-b-10 float-right m-r-5"
+                      (click)="JuntarProy()" (mouseup)="quitarfoco($event);">
+                      <i class="icofont icofont-copy-invert"></i>Juntar
+                    </button>
+                    <button *ngIf="!esSecund" type="button"
+                      class="btn btn-primary btn-sm light ripple m-b-10 float-right m-r-5" (click)="openModalProyecto()"
+                      (mouseup)="quitarfoco($event);">
+                      <i class="fa fa-plus"></i>Nuevo
+                    </button>
+                  </div>
+                </div>
+                <div [style.height.px]="height" class="overflow-auto tabla-limp">
+                  <table class="table-bordered tab-9">
+                    <thead class="text-center">
+                      <tr class="headsticky header-custom">
+                        <th appAnchocol [ancho]="40">N°</th>
+                        <th appAnchocol [ancho]="300" [detalle]="true">
+                          Descripción
+                        </th>
+                        <th appAnchocol [ancho]="102">Fuente</th>
+                        <th appAnchocol [ancho]="63">F.Registro</th>
+                        <th appAnchocol [ancho]="75">F.Modificación</th>
+                        <th appAnchocol [ancho]="26"></th>
+                        <th appAnchocol [ancho]="120"></th>
+                      </tr>
+                    </thead>
+                    <tbody class="text-center">
+                      <ng-container *ngIf="dataSourceorg.length>0">
+                        <tr *ngFor="let row of dataSourceorg | filtroTablaProy: busqueda;let i = index;"
+                          (click)="cambindicesel(row,i)" [hidden]="!row.mostrar"
+                          [ngClass]="{ 'highlight': fila_sel == row.id_proyecto,'filagrupo':row.nro!=''}">
+                          <td appAnchocol [ancho]="40" style="cursor: pointer;"
+                            (click)="row.nro!='' && row.icomost=='0'?toggleOn(row.id_grupo):row.nro!='' && row.icomost=='1'?toggleOff(row.id_grupo):false">
+                            <a *ngIf="row.icomost=='0' && row.nro!=''" style="color:#06bb06; width: 14px;">
+                              <i class="icofont icofont-caret-up"></i>
+                            </a>
+                            <a *ngIf="row.icomost=='1' && row.nro!=''" style="color:red; width: 14px;">
+                              <i class="icofont icofont-caret-down"></i>
+                            </a>
+                            {{row.nro}}
+                          </td>
+                          <td class="text-left" appAnchocol [ancho]="300" [detalle]="true">
+                            <div class="recortatext" ngbTooltip="{{row.descripcion}}" #t="ngbTooltip" container="body"
+                              triggers="click:blur" (mouseout)="t.close()">
+                              {{row.descripcion}}
+                            </div>
+                          </td>
+                          <td appAnchocol [ancho]="102">
+                            <i class="fa fa-2x" [ngClass]="row.icono?.toString().split('|')[1]"
+                              ngbTooltip="{{row.desc_clasi}}" #t1="ngbTooltip" container="body" style="cursor: pointer;"
+                              triggers="click:blur" (mouseout)="t1.close()"></i>&nbsp;
+                            <label *ngIf="row.nro==''" class="label"
+                              style="font-size:8px;width: 64px; text-align: center;"
+                              [ngClass]="{'label-success': row.fuente == '1','label-primary': row.fuente=='0','label-inverse': row.fuente=='2' }">
+                              {{row.fuente=='0'?'DATA SISTEMA':row.fuente=='1'?'FUENTE PROPIA':'DUPLICADO'}}
+                            </label>
+                          </td>
+                          <td appAnchocol [ancho]="63">
+                            {{row.fecha_registro | date: 'dd-MM-yyyy'}}
+                          </td>
+                          <td appAnchocol [ancho]="75">
+                            {{row.fecha_modificacion | date: 'dd-MM-yyyy'}}
+                          </td>
+                          <td appAnchocol [ancho]="26">
+                            <i *ngIf="row.nro==''" class="fa fa-2x" style="margin:auto;"
+                              ngbTooltip="{{row.estado=='1'?'APROBADO':row.estado=='2'?'EVALUACIÓN':'BORRADOR'}}"
+                              container="body" [ngClass]="{'fa-lock': row.estado == '1','fa-unlock': row.estado!='1'}"
+                              [ngStyle]="{'color': row.estado == 1 ? 'red' : 'none'}"></i>
+                          </td>
+                          <td appAnchocol [ancho]="120">
+                            <button *ngIf="row.nro==''" class="btn btn-mini btn-success" placement="top"
+                              ngbTooltip="Abrir Proyecto" (click)="abrirProyectoEspecifico(row, i)">
+                              <i class="fa fa-folder-open icono-but"></i>
+                            </button>
+                            <button *ngIf="row.nro=='' && !esSecund" class="btn btn-mini btn-inverse" placement="top"
+                              ngbTooltip="Compartir" (click)="CompartirProy(row)" style="margin-right: 2px;">
+                              <i class="fa fa-send icono-but"></i>
+                            </button>
+                            <button *ngIf="row.nro=='' && !esSecund" class="btn btn-mini btn-danger" placement="top"
+                              ngbTooltip="Eliminar" (click)="eliminarProyecto(row)">
+                              <i class="fa fa-remove icono-but"></i>
+                            </button>
+                            <button *ngIf="row.nro=='' && !esSecund" class="btn btn-mini btn-info" placement="top"
+                              ngbTooltip="Duplicar Proyecto" (click)="DuplicarProye(row)" style="margin-right: 2px;"
+                              (mouseup)="quitarfoco($event);">
+                              <i class="icofont icofont-ui-copy icono-but"></i>
+                            </button>
+                          </td>
+                        </tr>
+                      </ng-container>
+                      <ng-container *ngIf="dataSourceorg.length<=0">
+                        <tr>
+                          <td class="mat-cell text-center" colspan="8">
+                            <label *ngIf="!buscando">No se encontraron resultados</label>
+                            <div *ngIf="buscando" class="preloader3 loader-block">
+                              <div class="circ1"></div>
+                              <div class="circ2"></div>
+                              <div class="circ3"></div>
+                              <div class="circ4"></div>
+                            </div>
+                          </td>
+                        </tr>
+                      </ng-container>
+                    </tbody>
+                  </table>
+                </div>
+              </ng-template>
+            </li>
+            <li [ngbNavItem]="4" *ngIf="!esSecund">
+              <a ngbNavLink>Proyectos del Sistema</a>
+              <ng-template ngbNavContent>
+                <div class="row col-12">
+                  <div class="col-sm-6 float-left" style="margin-bottom: 10px;">
+                    <mat-form-field class="mff-reduc w-100 alto-35 field-busqueda" appearance="outline">
+                      <mat-label>Buscar</mat-label>
+                      <input matInput type="text" [(ngModel)]="busqueda4" autocomplete="off">
+                      <button *ngIf="busqueda4" matSuffix mat-icon-button aria-label="Clear" (click)="limpiarfiltro4()">
+                        <mat-icon>close</mat-icon>
+                      </button>
+                    </mat-form-field>
+                  </div>
+                </div>
+                <div [style.height.px]="height" class="overflow-auto tabla-limp">
+                  <table class="table-bordered tab-9">
+                    <thead class="text-center">
+                      <tr class="headsticky header-custom">
+                        <th appAnchocol [ancho]="40">N°</th>
+                        <th appAnchocol [ancho]="300" [detalle]="true">
+                          Descripción
+                        </th>
+                        <th appAnchocol [ancho]="102">Fuente</th>
+                        <th appAnchocol [ancho]="63">F.Elaboración</th>
+                        <th appAnchocol [ancho]="75">F.Inicio</th>
+                        <th appAnchocol [ancho]="26"></th>
+                        <th appAnchocol [ancho]="62"></th>
+                      </tr>
+                    </thead>
+                    <tbody class="text-center">
+                      <ng-container *ngIf="datasourcesis.length>0">
+                        <tr *ngFor="let row of datasourcesis | filtroTablaProy: busqueda4;let i = index;"
+                          (click)="cambindicesel4(row,i)" [hidden]="!row.mostrar"
+                          [ngClass]="{ 'highlight': fila_sel4 == row.id_proyecto,'filagrupo':row.nro!=''}">
+                          <td appAnchocol [ancho]="40" style="cursor: pointer;"
+                            (click)="row.nro!='' && row.icomost=='0'?toggleOn4(row.id_grupo):row.nro!='' && row.icomost=='1'?toggleOff4(row.id_grupo):false">
+                            <a *ngIf="row.icomost=='0' && row.nro!=''" style="color:#06bb06; width: 14px;">
+                              <i class="icofont icofont-caret-up"></i>
+                            </a>
+                            <a *ngIf="row.icomost=='1' && row.nro!=''" style="color:red; width: 14px;">
+                              <i class="icofont icofont-caret-down"></i>
+                            </a>
+                            {{row.nro}}
+                          </td>
+                          <td class="text-left" appAnchocol [ancho]="300" [detalle]="true">
+                            <div class="recortatext" ngbTooltip="{{row.descripcion}}" #t="ngbTooltip" container="body"
+                              triggers="click:blur" (mouseout)="t.close()">
+                              {{row.descripcion}}
+                            </div>
+                          </td>
+                          <td appAnchocol [ancho]="102">
+                            <i class="fa fa-2x" [ngClass]="row.icono?.toString().split('|')[1]"
+                              ngbTooltip="{{row.desc_clasi}}" #t1="ngbTooltip" container="body" style="cursor: pointer;"
+                              triggers="click:blur" (mouseout)="t1.close()"></i>&nbsp;
+                            <label *ngIf="row.nro==''" class="label label-info"
+                              style="font-size:8px;width: 64px; text-align: center;">SISTEMA</label>
+                          </td>
+                          <td appAnchocol [ancho]="63">
+                            {{row.fecha_elaboracion | date: 'dd-MM-yyyy'}}
+                          </td>
+                          <td appAnchocol [ancho]="75">
+                            {{row.fecha_inicio | date: 'dd-MM-yyyy'}}
+                          </td>
+                          <td appAnchocol [ancho]="26">
+                            <i *ngIf="row.nro==''" class="fa fa-2x" style="margin:auto;"
+                              ngbTooltip="{{row.estado=='1'?'APROBADO':row.estado=='2'?'EVALUACIÓN':'BORRADOR'}}"
+                              container="body" [ngClass]="{'fa-lock': row.estado == '1','fa-unlock': row.estado!='1'}"
+                              [ngStyle]="{'color': row.estado == 1 ? 'red' : 'none'}"></i>
+                          </td>
+                          <td appAnchocol [ancho]="62" class="text-left">
+                            <button *ngIf="row.nro==''" class="btn btn-mini btn-success" placement="top"
+                              ngbTooltip="Ver Proyecto" (click)="abrirProyectoEspecifico(row, i)"
+                              (mouseup)="quitarfoco($event);"><!-- proyecto solo visual, no edicion -->
+                              <i class="fa fa-search icono-but"></i>
+                            </button>
+                            <button *ngIf="row.nro==''" class="btn btn-mini btn-info" placement="top"
+                              ngbTooltip="Agregar a Mis Proyectos" (click)="DuplicarProye(row)"
+                              style="margin-right: 2px;" (mouseup)="quitarfoco($event);">
+                              <i class="icofont icofont-ui-copy icono-but"></i>
+                            </button><!-- duplica todo, o opcion de selccion que se va a duplicar? -->
+                          </td>
+                        </tr>
+                      </ng-container>
+                      <ng-container *ngIf="datasourcesis.length<=0">
+                        <tr>
+                          <td class="mat-cell text-center" colspan="8">
+                            <label *ngIf="!buscando4">No se encontraron resultados</label>
+                            <div *ngIf="buscando4" class="preloader3 loader-block">
+                              <div class="circ1"></div>
+                              <div class="circ2"></div>
+                              <div class="circ3"></div>
+                              <div class="circ4"></div>
+                            </div>
+                          </td>
+                        </tr>
+                      </ng-container>
+                    </tbody>
+                  </table>
+                </div>
+              </ng-template>
+            </li>
+            <li [ngbNavItem]="2" *ngIf="!esSecund">
+              <a ngbNavLink>Compartido Conmigo</a>
+              <ng-template ngbNavContent>
+                <div class="row ">
+                  <div class="col-12 ">
+                    <div class="col-sm-6 float-left" style="margin-bottom: 10px;">
+                      <mat-form-field class="mff-reduc w-100 alto-35 field-busqueda" appearance="outline">
+                        <mat-label>Buscar</mat-label>
+                        <input matInput type="text" [(ngModel)]="busqueda3" autocomplete="off"
+                          id="inpbusq"><!-- (keyup)="applyFilterPrinc($event)" -->
+                        <button *ngIf="busqueda3" matSuffix mat-icon-button aria-label="Clear"
+                          (click)="limpiarfiltro3()">
+                          <mat-icon>close</mat-icon>
+                        </button>
+                      </mat-form-field>
+                    </div>
+                  </div>
+                </div>
+                <div [style.height.px]="height" class="overflow-auto tabla-limp">
+                  <table class="table-bordered tab-9">
+                    <thead class="text-center">
+                      <tr class="headsticky header-custom">
+                        <th appAnchocol [ancho]="40">N°</th>
+                        <th appAnchocol [ancho]="300" [detalle]="true">
+                          Descripción
+                        </th>
+                        <th appAnchocol [ancho]="102">Fuente</th>
+                        <th appAnchocol [ancho]="63">F.Elaboración</th>
+                        <th appAnchocol [ancho]="75">F.Compartida</th>
+                        <th appAnchocol [ancho]="26"></th>
+                        <th appAnchocol [ancho]="62"></th>
+                      </tr>
+                    </thead>
+                    <tbody class="text-center">
+                      <ng-container *ngIf="datasourcecomp.length>0">
+                        <tr *ngFor="let row of datasourcecomp | filtroTablaProy: busqueda3;let i = index;"
+                          (click)="cambindicesel3(row,i)" [hidden]="!row.mostrar"
+                          [ngClass]="{ 'highlight': fila_sel3 == row.id_proyecto,'filagrupo':row.nro!=''}">
+                          <td appAnchocol [ancho]="40" style="cursor: pointer;"
+                            (click)="row.nro!='' && row.icomost=='0'?toggleOn3(row.id_grupo):row.nro!='' && row.icomost=='1'?toggleOff3(row.id_grupo):false">
+                            <a *ngIf="row.icomost=='0' && row.nro!=''" style="color:#06bb06; width: 14px;">
+                              <i class="icofont icofont-caret-up"></i>
+                            </a>
+                            <a *ngIf="row.icomost=='1' && row.nro!=''" style="color:red; width: 14px;">
+                              <i class="icofont icofont-caret-down"></i>
+                            </a>
+                            {{row.nro}}
+                          </td>
+                          <td class="text-left" appAnchocol [ancho]="300" [detalle]="true">
+                            <div class="recortatext" ngbTooltip="{{row.descripcion}}" #t="ngbTooltip" container="body"
+                              triggers="click:blur" (mouseout)="t.close()">
+                              {{row.descripcion}}
+                            </div>
+                          </td>
+                          <td appAnchocol [ancho]="102">
+                            <i class="fa fa-2x" [ngClass]="row.icono?.toString().split('|')[1]"
+                              ngbTooltip="{{row.desc_clasi}}" #t1="ngbTooltip" container="body" style="cursor: pointer;"
+                              triggers="click:blur" (mouseout)="t1.close()"></i>&nbsp;
+                            <label *ngIf="row.nro==''" class="label label-info"
+                              style="font-size:8px;width: 64px; text-align: center;">COMPARTIDO</label>
+                          </td>
+                          <td appAnchocol [ancho]="63">
+                            {{row.fecha_elaboracion | date: 'dd-MM-yyyy'}}
+                          </td>
+                          <td appAnchocol [ancho]="75">
+                            {{row.fecha_modificacion | date: 'dd-MM-yyyy'}}
+                          </td>
+                          <td appAnchocol [ancho]="26">
+                            <i *ngIf="row.nro==''" class="fa fa-2x" style="margin:auto;"
+                              ngbTooltip="{{row.estado=='1'?'APROBADO':row.estado=='2'?'EVALUACIÓN':'BORRADOR'}}"
+                              container="body" [ngClass]="{'fa-lock': row.estado == '1','fa-unlock': row.estado!='1'}"
+                              [ngStyle]="{'color': row.estado == 1 ? 'red' : 'none'}"></i>
+                          </td>
+                          <td appAnchocol [ancho]="62" class="text-left">
+                            <button *ngIf="row.nro==''" class="btn btn-mini btn-success" placement="top"
+                              ngbTooltip="Ver Proyecto" (click)="abrirProyectoEspecifico(row, i,true)"
+                              (mouseup)="quitarfoco($event);">
+                              <i class="fa fa-search icono-but"></i>
+                            </button>
+                            <button *ngIf="row.duplica=='1'" class="btn btn-mini btn-info" placement="top"
+                              ngbTooltip="Agregar a Mis Proyectos" (click)="DuplicarProye(row)"
+                              style="margin-right: 2px;" (mouseup)="quitarfoco($event);">
+                              <i class="icofont icofont-ui-copy icono-but"></i>
+                            </button>
+                          </td>
+                        </tr>
+                      </ng-container>
+                      <ng-container *ngIf="datasourcecomp.length<=0">
+                        <tr>
+                          <td class="mat-cell text-center" colspan="8">
+                            <label *ngIf="!buscando3">No se encontraron resultados</label>
+                            <div *ngIf="buscando3" class="preloader3 loader-block">
+                              <div class="circ1"></div>
+                              <div class="circ2"></div>
+                              <div class="circ3"></div>
+                              <div class="circ4"></div>
+                            </div>
+                          </td>
+                        </tr>
+                      </ng-container>
+                    </tbody>
+                  </table>
+                </div>
+              </ng-template>
+            </li>
+            <li [ngbNavItem]="3" *ngIf="!esSecund">
+              <a ngbNavLink>Papelera de Proyectos</a>
+              <ng-template ngbNavContent>
+                <div class="row ">
+                  <div class="col-12 ">
+                    <div class="col-sm-6 float-left" style="margin-bottom: 10px;">
+                      <mat-form-field class="mff-reduc w-100 alto-35 field-busqueda" appearance="outline">
+                        <mat-label>Buscar</mat-label>
+                        <input matInput type="text" [(ngModel)]="busqueda2" autocomplete="off"
+                          id="inpbusq"><!-- (keyup)="applyFilterPrinc($event)" -->
+                        <button *ngIf="busqueda2" matSuffix mat-icon-button aria-label="Clear"
+                          (click)="limpiarfiltro2()">
+                          <mat-icon>close</mat-icon>
+                        </button>
+                      </mat-form-field>
+                    </div>
+                  </div>
+                </div>
+                <div [style.height.px]="height" class="overflow-auto tabla-limp">
+                  <table class="table-bordered tab-9">
+                    <thead class="text-center">
+                      <tr class="headsticky header-custom">
+                        <th appAnchocol [ancho]="40">N°</th>
+                        <th appAnchocol [ancho]="300" [detalle]="true">
+                          Descripción
+                        </th>
+                        <th appAnchocol [ancho]="102">Fuente</th>
+                        <th appAnchocol [ancho]="63">F.Registro</th>
+                        <th appAnchocol [ancho]="75">Disponible Por</th>
+                        <th appAnchocol [ancho]="26"></th>
+                        <th appAnchocol [ancho]="94"></th>
+                      </tr>
+                    </thead>
+                    <tbody class="text-center">
+                      <ng-container *ngIf="datasourcepap.length>0">
+                        <tr *ngFor="let row of datasourcepap | filtroTablaProy: busqueda2;let i = index;"
+                          (click)="cambindicesel2(row,i)" [hidden]="!row.mostrar"
+                          [ngClass]="{ 'highlight': fila_sel2 == row.id_proyecto,'filagrupo':row.nro!=''}">
+                          <td appAnchocol [ancho]="40" style="cursor: pointer;"
+                            (click)="row.nro!='' && row.icomost=='0'?toggleOn2(row.id_grupo):row.nro!='' && row.icomost=='1'?toggleOff2(row.id_grupo):false">
+                            <a *ngIf="row.icomost=='0' && row.nro!=''" style="color:#06bb06; width: 14px;">
+                              <i class="icofont icofont-caret-up"></i>
+                            </a>
+                            <a *ngIf="row.icomost=='1' && row.nro!=''" style="color:red; width: 14px;">
+                              <i class="icofont icofont-caret-down"></i>
+                            </a>
+                            {{row.nro}}
+                          </td>
+                          <td class="text-left" appAnchocol [ancho]="300" [detalle]="true">
+                            <div class="recortatext" ngbTooltip="{{row.descripcion}}" #t="ngbTooltip" container="body"
+                              triggers="click:blur" (mouseout)="t.close()">
+                              {{row.descripcion}}
+                            </div>
+                          </td>
+                          <td appAnchocol [ancho]="102">
+                            <i class="fa fa-2x" [ngClass]="row.icono?.toString().split('|')[1]"
+                              ngbTooltip="{{row.desc_clasi}}" #t1="ngbTooltip" container="body" style="cursor: pointer;"
+                              triggers="click:blur" (mouseout)="t1.close()"></i>&nbsp;
+                            <label *ngIf="row.nro==''" class="label"
+                              style="font-size:8px;width: 64px; text-align: center;"
+                              [ngClass]="{'label-success': row.fuente == '1','label-primary': row.fuente=='0','label-info': row.fuente=='2' }">
+                              {{row.fuente=='0'?'DATA SISTEM':row.fuente=='1'?'FUENTE PROPIA':'COMPARTIDO'}}
+                            </label>
+                          </td>
+                          <td appAnchocol [ancho]="63">
+                            {{row.fecha_registro | date: 'dd-MM-yyyy'}}
+                          </td>
+                          <td appAnchocol [ancho]="75">
+                            <span class="text-danger f-w-900">{{row.restante}} dias</span>
+                          </td>
+                          <td appAnchocol [ancho]="26">
+                            <i *ngIf="row.nro==''" class="fa fa-2x" style="margin:auto;"
+                              ngbTooltip="{{row.estado=='1'?'APROBADO':row.estado=='2'?'EVALUACIÓN':'BORRADOR'}}"
+                              container="body" [ngClass]="{'fa-lock': row.estado == '1','fa-unlock': row.estado!='1'}"
+                              [ngStyle]="{'color': row.estado == 1 ? 'red' : 'none'}"></i>
+                          </td>
+                          <td appAnchocol [ancho]="94">
+                            <button *ngIf="row.nro==''" class="btn btn-mini btn-info" placement="top"
+                              ngbTooltip="RestaurarProy" (click)="RestaurarProy(row)" style="margin-right: 2px;"
+                              (mouseup)="quitarfoco($event);">
+                              <i class="fa fa-reply icono-but"></i>
+                            </button>
+                            <button *ngIf="row.nro==''" class="btn btn-mini btn-success" placement="top"
+                              ngbTooltip="Abrir Proyecto" (click)="abrirProyectoEspecifico(row, i)"
+                              (mouseup)="quitarfoco($event);">
+                              <i class="fa fa-folder-open icono-but"></i>
+                            </button>
+                            <button *ngIf="row.nro==''" class="btn btn-mini btn-danger" placement="top"
+                              ngbTooltip="Eliminar" (click)="eliminarPerma(row)" (mouseup)="quitarfoco($event);">
+                              <i class="fa fa-remove icono-but"></i>
+                            </button>
+                          </td>
+                        </tr>
+                      </ng-container>
+                      <ng-container *ngIf="datasourcepap.length<=0">
+                        <tr>
+                          <td class="mat-cell text-center" colspan="8">
+                            <label *ngIf="!buscando2">No se encontraron resultados</label>
+                            <div *ngIf="buscando2" class="preloader3 loader-block">
+                              <div class="circ1"></div>
+                              <div class="circ2"></div>
+                              <div class="circ3"></div>
+                              <div class="circ4"></div>
+                            </div>
+                          </td>
+                        </tr>
+                      </ng-container>
+                    </tbody>
+                  </table>
+                </div>
+              </ng-template>
+            </li>
+            <button type="button" class="btn btn-outline-secondary btn-mini light ripple  m-b-10 float-right"
+              (mouseup)="quitarfoco($event);" style="position: absolute; right: 10px; top:5px"
+              [ngbTooltip]="expanded ? 'Reducir' : 'Expandir'" (click)="expanded = !expanded" container="body">
+              <i class="fa  mr-0 icono-but"
+                [ngClass]="{'fa-long-arrow-right': !expanded,'fa-long-arrow-left': expanded}"></i>
+            </button>
+          </ul>
+          <div [ngbNavOutlet]="nav" class="mt-2"></div>
+        </app-card>
+      </div>
+      <div *ngIf="!mostrarModal" [ngClass]="{'col-lg-5 col-md-6 pt-0 pl-0': !expanded, 'd-none': expanded}">
+        <!-- <app-detalle-proyecto [rowSeleccionado]="proyectoSeleccionado" [active]="active"></app-detalle-proyecto> -->
+        <div *ngIf="mostrarModal; else visual1"></div>
+      </div>
+    </div>
+  </div>
+  <ng-template #MenuProyecto>
+    <form [formGroup]="formArrayProyecto" class="height-tab">
+      <ul ngbNav #nav="ngbNav" [(activeId)]="active" class="nav-tabs" (navChange)="onNavChange($event)">
+        <ng-container formArrayName="formProyecto">
+          <ng-container *ngFor="let tab of formProyecto.controls;  index as i">
+            <ng-container [formGroupName]="i">
+              <li [ngbNavItem]="tab.get('indice_tab').value">
+                <a ngbNavLink>
+                  <div style="width: 12rem" class="d-flex">
+                    <span style="width: calc(100% - 20px);" class="recortatextlinea" container="body"
+                      ngbTooltip="{{tab.get('nombre_proyecto').value}}">{{tab.get('nombre_proyecto').value}}</span>
+                    <span class="ms-2  ml-1 float-right" style="cursor: pointer;">
+                      <i class="fa fa-times icono-but " (click)="close($event, tab.get('indice_tab').value)"></i>
+                    </span>
+                  </div>
+                </a>
+                <ng-template ngbNavContent>
+                  <div class="page-body">
+                    <div class="contenido-proyecto">
+                      <div class="row ml-0">
+                        <div class="menu-proyectos" [style.height.px]="height + 115" *ngIf="!ocultarMenu">
+                          <ul>
+                            <ng-container *ngFor="let item of itemsMenu; let itemMenu = index">
+                              <li
+                                *ngIf="(tab.get('menuver').value!= null && tab.get('menuver').value[itemMenu]==1) || tab.get('menuver').value== null"
+                                class="item-menu"><!-- arrmenuproy[itemMenu]==1 -->
+                                <a [routerLinkActive]="['active']" class="item-menu-proyecto d-flex"
+                                  [ngbTooltip]="item.name " container="body"
+                                  [ngClass]="{'item-activo':tab.get('menu_proyecto_seleccionado').value == itemMenu}"
+                                  (click)="seleccionMenu(itemMenu, tab.get('indice_tab').value)">
+                                  <div class="icono-menu-proyecto">
+                                    <ng-container *ngIf="item.verImagen; else icono">
+                                      <div class="prueba-imagen mt-0"
+                                        [style.background-image]="'url(../../../assets/img-menu/' + item.imagen +')'">
+                                      </div>
+                                    </ng-container>
+                                    <ng-template #icono>
+                                      <i class="{{item.icon}} icono-menu"></i>
+                                    </ng-template>
+                                  </div>
+                                </a>
+                              </li>
+                            </ng-container>
+                          </ul>
+                        </div>
+                        <div [style.height.px]="height + 100"
+                          [ngClass]="{'contenido-menu': !ocultarMenu, 'contenido-menu-oculto': ocultarMenu}">
+                          <app-card class="card card-principal m-t-5" [style.height.px]="height + 100">
+                            <div class="boton-ocultar-menu">
+                              <button class="btn btn-mini btn-outline-secondary" type="button"
+                                (click)="ocultarMenu = !ocultarMenu" content="body" (mouseup)="quitarfoco($event);"
+                                [ngbTooltip]="!ocultarMenu ? 'Ocultar Menu' : 'Mostrar Menu'"><i class="fa icono-but"
+                                  [ngClass]="{'fa-arrow-left': !ocultarMenu, 'fa-arrow-right': ocultarMenu}"></i></button>
+                            </div>
+                            <ng-container *ngIf="tab.get('menu_proyecto_seleccionado').value == 0">
+                              <app-aspectos-generales [tabproyecto]="tab" (tabChange)="onTabChange($event)" ></app-aspectos-generales>
+                            </ng-container>
+                            <!-- <ng-container *ngIf="tab.get('menu_proyecto_seleccionado').value == 1">
+                              <app-aspectosproy [tabproyecto]="tab.get('id_proyecto').value"></app-aspectosproy>
+                            </ng-container> -->
+                            <ng-container *ngIf="tab.get('menu_proyecto_seleccionado').value == 1">
+                              <app-presdirecto [tabproyecto]="tab"></app-presdirecto>
+                            </ng-container>
+                            <ng-container *ngIf="tab.get('menu_proyecto_seleccionado').value == 2">
+                              <app-presindir [tabproyecto]="tab"></app-presindir>
+                            </ng-container>
+                            <ng-container *ngIf="tab.get('menu_proyecto_seleccionado').value == 3">
+                              <app-hoja-metrados [tabproyecto]="tab"></app-hoja-metrados>
+                            </ng-container>
+                            <ng-container *ngIf="tab.get('menu_proyecto_seleccionado').value == 4">
+                              <app-formula-polinomica [idProyecto]="tab.get('id_proyecto').value"
+                                [tabproyecto]="tab"></app-formula-polinomica>
+                            </ng-container>
+                            <ng-container *ngIf="tab.get('menu_proyecto_seleccionado').value == 5">
+                              <app-tiempos-programacion [tabproyecto]="tab"></app-tiempos-programacion>
+                            </ng-container>
+                            <ng-container *ngIf="tab.get('menu_proyecto_seleccionado').value == 6">
+                              <app-programacion-obra [idProyecto]="tab.get('id_proyecto').value" [tabproyecto]="tab"
+                                [ocultarMenu]="ocultarMenu"
+                                [nombreProyecto]="tab.get('nombre_proyecto').value"></app-programacion-obra>
+                            </ng-container>
+                            <ng-container *ngIf="tab.get('menu_proyecto_seleccionado').value == 7">
+                              <app-especificaciones-tecnicas [idProyecto]="tab.get('id_proyecto').value"
+                                [tabproyecto]="tab">
+                              </app-especificaciones-tecnicas>
+                            </ng-container>
+                            <ng-container *ngIf="tab.get('menu_proyecto_seleccionado').value == 8">
+                              <app-visor-de-plano [idProyecto]="tab.get('id_proyecto').value" [tabproyecto]="tab">
+                              </app-visor-de-plano>
+                            </ng-container>
+                          </app-card>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </ng-template>
+              </li>
+            </ng-container>
+          </ng-container>
+        </ng-container>
+      </ul>
+      <div [ngbNavOutlet]="nav"></div>
+    </form>
+  </ng-template>
+</div>
+<ng-template #visual1>
+  <app-detalle-proyecto [rowSeleccionado]="proyectoSeleccionado" [active]="active"></app-detalle-proyecto>
+</ng-template>
+<app-modal-basic #modalDetalleProyecto [dialogClass]="'modal-lg modalgrande'">
+  <div class="app-modal-header">
+    <h4 class="modal-title tit-modal1"><b> Detalle Proyecto </b></h4>
+    <button type="button" class="close basic-close" (click)="cerrarModalDetalle()">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="app-modal-body">
+    <app-card class="card">
+      <!-- <app-detalle-proyecto [rowSeleccionado]="proyectoSeleccionado" [active]="active"></app-detalle-proyecto> -->
+      <div *ngIf="!mostrarModal; else visual1"></div>
+    </app-card>
+  </div>
+  <div class="app-modal-footer w-100">
+    <div class="row px-3">
+      <button type="button" style="margin-right: 5px;" class="btn btn-sm btn-danger ripple"
+        (click)="cerrarModalDetalle()">Cerrar</button>
+    </div>
+  </div>
+</app-modal-basic>
+<app-modal-basic #modproyjunta [dialogClass]="'modal-lg'">
+  <div class="app-modal-header">
+    <h4 class="modal-title tit-modal1"><b>Seleccionar Proyecto para Juntar</b></h4>
+    <button type="button" class="close basic-close" (click)="cerrarModJunta(1)">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="app-modal-body">
+    <div *ngIf="tvista==0" class="col-12">
+      <div class="row justify-content-between">
+        <div class="col-sm-4" style="margin-bottom: 10px;">
+          <mat-form-field class="mff-reduc w-100 alto-35 field-busqueda" appearance="outline">
+            <mat-label>Buscar</mat-label>
+            <input matInput type="text" [(ngModel)]="busquedajun" autocomplete="off" id="inpbusqjun">
+            <button *ngIf="busquedajun" matSuffix mat-icon-button aria-label="Clear" (click)="limpiarfiljun()">
+              <mat-icon>close</mat-icon>
+            </button>
+          </mat-form-field>
+        </div>
+        <div class="col-sm-4">
+          <mat-form-field appearance="outline" class="mff-reduc w-100 alto-35">
+            <mat-label>Tipo de Proyecto</mat-label>
+            <select matNativeControl [(ngModel)]="tiposelj" (change)="cambiarTipoProy($event.target.value)">
+              <option value="">--Todos--</option>
+              <option *ngFor="let tipo of clasificaciones" [value]="tipo.id_clasificacion">{{tipo.descripcion}}</option>
+            </select>
+          </mat-form-field>
+        </div>
+        <div class="col-sm-4">
+          <mat-form-field appearance="outline" class="mff-reduc w-100 alto-35">
+            <mat-label>Fuente</mat-label>
+            <select matNativeControl [(ngModel)]="fuentesel" (change)="cambiarFuente($event.target.value)">
+              <option value="1">Proyectos del Usuario</option>
+              <option value="0">Proyectos del Sistema</option>
+              <option value="3">Proyectos Compartidos</option>
+            </select>
+          </mat-form-field>
+        </div>
+      </div>
+      <div [style.height.px]="height" class="overflow-auto tabla-limp">
+        <table class="table-bordered tab-9">
+          <thead class="text-center">
+            <tr class="headsticky header-custom">
+              <th appAnchocol [ancho]="40">N°</th>
+              <th appAnchocol [ancho]="300" [detalle]="true">Descripción</th>
+              <th appAnchocol [ancho]="102">Fuente</th>
+              <th appAnchocol [ancho]="63">F.Registro</th>
+              <th appAnchocol [ancho]="75">F.Modificación</th>
+            </tr>
+          </thead>
+          <tbody class="text-center">
+            <ng-container *ngIf="datasourcePri.length>0">
+              <tr *ngFor="let row of datasourcePri | filtroTablaProy: busquedajun;let i = index;"
+                (click)="cambindiceselpri(row,i)" [hidden]="!row.mostrar"
+                [ngClass]="{ 'highlight': filaselpri == row.id_proyecto,'filagrupo':row.nro!=''}">
+                <td appAnchocol [ancho]="40" style="cursor: pointer;"
+                  (click)="row.nro!='' && row.icomost=='0'?toggleOn(row.id_grupo):row.nro!='' && row.icomost=='1'?toggleOff(row.id_grupo):false">
+                  <a *ngIf="row.icomost=='0' && row.nro!=''" style="color:#06bb06; width: 14px;">
+                    <i class="icofont icofont-caret-up"></i>
+                  </a>
+                  <a *ngIf="row.icomost=='1' && row.nro!=''" style="color:red; width: 14px;">
+                    <i class="icofont icofont-caret-down"></i>
+                  </a>
+                  {{row.nro}}
+                </td>
+                <td class="text-left" appAnchocol [ancho]="300" [detalle]="true">
+                  <div class="recortatext" ngbTooltip="{{row.descripcion}}" #t="ngbTooltip" container="body"
+                    triggers="click:blur" (mouseout)="t.close()">
+                    {{row.descripcion}}
+                  </div>
+                </td>
+                <td appAnchocol [ancho]="102">
+                  <i class="fa fa-2x" [ngClass]="row.icono?.toString().split('|')[1]" ngbTooltip="{{row.desc_clasi}}"
+                    #t1="ngbTooltip" container="body" style="cursor: pointer;" triggers="click:blur"
+                    (mouseout)="t1.close()"></i>&nbsp;
+                  <label *ngIf="row.nro==''" class="label" style="font-size:8px;width: 64px; text-align: center;"
+                    [ngClass]="{'label-success': row.fuente == '1','label-primary': row.fuente=='0','label-inverse': row.fuente=='2' }">
+                    {{row.fuente=='0'?'DATA SISTEMA':row.fuente=='1'?'FUENTE PROPIA':'DUPLICADO'}}
+                  </label>
+                </td>
+                <td appAnchocol [ancho]="63">
+                  {{row.fecha_registro | date: 'dd-MM-yyyy'}}
+                </td>
+                <td appAnchocol [ancho]="75">
+                  {{row.fecha_modificacion | date: 'dd-MM-yyyy'}}
+                </td>
+              </tr>
+            </ng-container>
+            <ng-container *ngIf="datasourcePri.length<=0">
+              <tr>
+                <td class="mat-cell text-center" colspan="8">
+                  <label *ngIf="!buscandojun">No se encontraron resultados</label>
+                  <div *ngIf="buscandojun" class="preloader3 loader-block">
+                    <div class="circ1"></div>
+                    <div class="circ2"></div>
+                    <div class="circ3"></div>
+                    <div class="circ4"></div>
+                  </div>
+                </td>
+              </tr>
+            </ng-container>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div *ngIf="tvista==1" class="col-12">
+      <h4 class="sub-title h4-grupo"><b>Proyectos para Juntar</b></h4>
+      <div class="row">
+        <label class="col-sm-3 col-form-label">Proyecto Principal :</label>
+        <div class="col-sm-9">
+          <label id="tx_area2" class="col-sm-12 col-form-label"><b>{{datproy1?.descripcion}}</b></label>
+        </div>
+      </div>
+      <div class="row">
+        <label class="col-sm-3 col-form-label">Proyecto a Juntar :</label>
+        <div class="col-sm-9">
+          <label id="tx_area2" class="col-sm-12 col-form-label"><b>{{datproy2?.descripcion}}</b></label>
+        </div>
+      </div>
+      <h4 class="sub-title h4-grupo"><b>Elementos para Juntar</b></h4>
+      <div class="col-12" style="display: flex;justify-content: center;">
+        <div class="tabla-limp" style="margin-bottom: 2px;padding-bottom: 8px;">
+          <table class="table-bordered tab-9">
+            <thead class="text-center">
+              <tr class="headsticky header-custom">
+                <th appAnchocol [ancho]="225" [detalle]="true">
+                  Elementos
+                </th>
+                <th appAnchocol [ancho]="75">Adjuntar</th>
+              </tr>
+            </thead>
+            <tbody class="text-center">
+              <tr *ngFor="let row of datacomp;let i = index;">
+                <td *ngIf="row.mostrar==1" class="text-left" appAnchocol [ancho]="225" [detalle]="true">
+                  {{row.nombres}}
+                </td>
+                <td *ngIf="row.mostrar==1" appAnchocol [ancho]="75">
+                  <mat-checkbox *ngIf="row.permite!=2" class="checktabla" [checked]="row.permite==0?false:true"
+                    (change)="$event ? cambioselt2(row) : null"></mat-checkbox>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <span><b>Indicaciones</b></span><br>
+      <span>-No podrá juntar si hay cambios en algun proceso del Proyecto Principal.</span><br>
+      <span>-Evitar asignar permisos de edicion a otros usuarios para el Proyecto Principal.</span><br>
+      <span>-La Programación se adaptara a la Configuracion del Proyecto Principal.</span><br>
+    </div>
+  </div>
+  <div class="app-modal-footer w-100">
+    <div class="row px-3 justify-content-between">
+      <button type="button" style="margin-right: 5px;" class="btn btn-sm btn-danger ripple"
+        (click)="cerrarModJunta(0)">{{tvista==0?'Cerrar':'Regresar'}}</button>
+      <button *ngIf="tvista==0" type="button" style="margin-right: 5px;" class="btn btn-sm btn-primary ripple"
+        (click)="SigJunta()">Seleccionar</button>
+      <button *ngIf="tvista==1" type="button" style="margin-right: 5px;" class="btn btn-sm btn-success ripple"
+        (click)="AccJunta()">Juntar</button>
+    </div>
+  </div>
+</app-modal-basic>
+
+<app-cargando [bloquearTodo]="true" *ngIf="mostrar_carga_todo"></app-cargando>
+<app-cargando [bloquearTodo]="false" *ngIf="mostrar_carga"></app-cargando>

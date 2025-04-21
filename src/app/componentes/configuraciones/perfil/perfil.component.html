@@ -1,0 +1,316 @@
+<div class="page-body">
+  
+
+  <div class="titulo-contenido">
+      <h2 style="margin-bottom: 5px;">Perfil de Usuario</h2>
+  </div>
+  <div class="card">
+    <div class="card-header">
+        <h5 class="card-header-text">Información Principal</h5>
+    </div>
+    <div class="card-body" style="padding-top: 10px;padding-bottom: 5px;padding-right: 10px; padding-left: 10px;">
+      <div class="view-info">
+        <div class="row">
+          <div class="col-lg-12">
+            <div class="general-info">
+              <div class="row">
+                <div class="col-lg-12 col-xl-6">
+                  <table class="table m-0">
+                    <tbody>
+                      <tr>
+                        <th scope="row" class="texto-fila-neg">Nombre Completo</th>
+                        <td class="texto-fila">{{nombres}}</td>
+                      </tr>
+                      <tr>
+                        <th scope="row" class="texto-fila-neg">Tipo Usuario</th>
+                        <td class="texto-fila">{{tipo_usuario}}</td>
+                      </tr>
+                      <tr>
+                        <th scope="row" class="texto-fila-neg">Licencia</th>
+                        <td class="texto-fila">{{licencia}}</td>
+                      </tr>
+                      <tr>
+                        <th scope="row" class="texto-fila-neg">Codigo de Usuario</th>
+                        <td class="texto-fila f-w-900">{{codigo}}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div class="col-lg-12 col-xl-6">
+                  <table class="table" style="margin-bottom: 0px;">
+                    <tbody>
+                      <tr>
+                        <th scope="row" class="texto-fila-neg">Fecha de Asignacion</th>
+                        <td class="texto-fila">{{fecha_asinga|date:'dd-MM-yyyy'}}</td>
+                      </tr>
+                      <tr>
+                        <th scope="row" class="texto-fila-neg">Fecha de Culminacion</th>
+                        <td class="texto-fila">{{fecha_culmi|date:'dd-MM-yyyy'}}</td>
+                      </tr>
+                      <tr>
+                        <th scope="row" class="texto-fila-neg">Tiempo Restante</th>
+                        <td class="texto-fila">{{tiempo_restante}}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row" style="margin-left: 0px;margin-right: 0px;">
+    <div class="card col-12">
+      <div class="card-header">
+        <!-- <h5 class="card-header-text">Direccion Actual</h5> -->
+        <button *ngIf='!es_editar1 && !esSecund' type="button" class="btn btn-mini btn-primary pull-right ripple light" placement="top" ngbTooltip="Editar" container="body" (click)="cliceditar1()" (mouseup)="quitarfoco($event);">
+          <i class="icofont icofont-edit icono-but"></i>
+        </button>
+        <button *ngIf='es_editar1' type="button" class="btn btn-mini btn-danger pull-right ripple light" placement="top" ngbTooltip="Cerrar" container="body" (click)="cliccancelar1()" (mouseup)="quitarfoco($event);">
+          <i class="icofont icofont-close icono-but"></i>
+        </button>
+      </div>
+      <div class="card-body" style="padding-top: 10px;padding-bottom: 5px;padding-right: 10px; padding-left: 10px;">
+        <form [formGroup]='Editar1'>
+          <div class="view-info">
+            <div class="row">
+              <div class="col-lg-6">
+                <h4 class="sub-title" style="margin-left: 10px; margin-bottom: 5px; padding-bottom: 0px;text-align: center;"><b>Datos de Usuario</b></h4>
+                <table class="table m-b-15">
+                  <tbody>
+                    <tr>
+                      <th scope="row" class="texto-fila-neg">Telefono</th>
+                      <td class="texto-fila">
+                        <div *ngIf="!es_editar1">
+                          {{telefono}}
+                        </div>
+                        <div class="espacios" *ngIf="es_editar1">
+                          <mat-form-field class="mff-reduc my-form-field w-100" appearance="outline">
+                            <input matInput type="text" formControlName="Telefono" [textMask]="{mask: this.formService.maskTelefono}" autocomplete="off" maxlength="9">
+                          </mat-form-field>
+                        </div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <th scope="row" class="texto-fila-neg">Correo</th>
+                      <td class="texto-fila">
+                        <div *ngIf="!es_editar1">
+                          {{correo}}
+                        </div>
+                        <div class="espacios" *ngIf="es_editar1">
+                          <mat-form-field class="mff-reduc my-form-field w-100" appearance="outline">
+                            <input matInput type="text" formControlName="Correo" autocomplete="off">
+                          </mat-form-field>
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+                <h4 class="sub-title" style="margin-left: 10px; margin-bottom: 5px; padding-bottom: 0px;text-align: center;"><b>Datos de Inicio de Sesión</b></h4>
+                <table class="table m-0" style="margin-bottom: 0px;">
+                  <tbody>
+                  <tr>
+                    <td class="texto-fila-neg">Login</td>
+                    <td class="texto-fila">{{login}}</td>
+                  </tr>
+                  <tr>
+                    <td class="texto-fila" colspan="2">
+                      <div style="display: flex; justify-content:center;">
+                        <button *ngIf="!esSecund" type="button" class="btn btn-sm btn-primary light ripple m-b-10" style="padding-bottom: 4px; padding-top: 4px; padding-left: 10px; padding-right: 10px;" (click)="CambiarLogin()" (mouseup)="quitarfoco($event);">
+                          <i class="fa fa-edit"></i>Cambiar Login
+                        </button>&nbsp;&nbsp;
+                        <button *ngIf="!esSecund" type="button" class="btn btn-sm btn-info light ripple m-b-10" style="padding-bottom: 4px; padding-top: 4px; padding-left: 10px; padding-right: 10px" (click)="CambiarPass()" (mouseup)="quitarfoco($event);">
+                            <i class="fa fa-edit"></i>Cambiar Contraseña
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="col-lg-6">
+                <h4 class="sub-title" style="margin-left: 10px; margin-bottom: 5px; padding-bottom: 0px;text-align: center;"><b>Información Complementaria</b></h4>
+                  <table class="table m-0" style="margin-bottom: 0px;">
+                    <tbody>
+                      <!-- <tr>
+                        <th scope="row" class="texto-fila-neg">Nacionalidad</th>
+                        <td class="texto-fila">{{nacionalidad}}</td>
+                      </tr> -->
+                      <tr>
+                        <th scope="row" class="texto-fila-neg">Departamento</th>
+                        <td class="texto-fila">
+                          <div *ngIf="!es_editar1">
+                            {{departamento}}
+                          </div>
+                          <div class="espacios" *ngIf="es_editar1">
+                            <mat-form-field class="mff-reduc my-form-field w-100" appearance="outline">
+                              <select matNativeControl formControlName="Deptact" (change)="chdepa($event.target.value)">
+                                <option value="" >--Seleccionar--</option>
+                                <option *ngFor="let _depa of datadepa" value="{{_depa.id_depart}}">{{_depa.DEPARTAMENTO}}</option>
+                              </select>
+                            </mat-form-field>
+                          </div>
+                        </td>
+                      </tr>
+                      <tr>
+                        <th scope="row" class="texto-fila-neg">Provincia</th>
+                        <td class="texto-fila">
+                          <div *ngIf="!es_editar1">
+                            {{provincia}}
+                          </div>
+                          <div class="espacios" *ngIf="es_editar1">
+                            <mat-form-field class="mff-reduc my-form-field w-100" appearance="outline">
+                              <select matNativeControl formControlName="Provact" (change)="chprovi($event.target.value)">
+                                <option value="" >--Seleccionar--</option>
+                                <option *ngFor="let _provi of dataprovi" value="{{_provi.id_prov}}">{{_provi.PROVINCIA}}</option>
+                              </select>
+                            </mat-form-field>
+                          </div>
+                        </td>
+                      </tr>
+                      <tr>
+                        <th scope="row" class="texto-fila-neg">Distrito</th>
+                        <td class="texto-fila">
+                          <div *ngIf="!es_editar1">
+                            {{distrito}}
+                          </div>
+                          <div class="espacios" *ngIf="es_editar1">
+                            <mat-form-field class="mff-reduc my-form-field w-100" appearance="outline">
+                              <select matNativeControl formControlName="Distact">
+                                <option value="" >--Seleccionar--</option>
+                                <option *ngFor="let _distri of datadistri" value="{{_distri.id_distr}}">{{_distri.DISTRITO}}</option>
+                              </select>
+                            </mat-form-field>
+                          </div>
+                        </td>
+                      </tr>
+                      <tr>
+                        <th scope="row" class="texto-fila-neg">Dirección</th>
+                        <td class="texto-fila">
+                          <div *ngIf="!es_editar1">
+                            {{direccion}}
+                          </div>
+                          <div class="espacios" *ngIf="es_editar1">
+                            <mat-form-field class="mff-reduc my-form-field w-100" appearance="outline">
+                              <input matInput type="text" formControlName="Direccionact" autocomplete="off" maxlength="300">
+                            </mat-form-field>
+                          </div>
+                        </td>
+                      </tr>
+                      <tr>
+                        <th scope="row" class="texto-fila-neg">Genero</th>
+                        <td class="texto-fila">
+                          <div *ngIf="!es_editar1">
+                            {{genero}}
+                          </div>
+                          <div class="espacios" *ngIf="es_editar1">
+                            <mat-form-field class="mff-reduc my-form-field w-100" appearance="outline">
+                              <select matNativeControl formControlName="Genero">
+                                <option value="">--Seleccionar--</option>
+                                <option value="1">Femenino</option>
+                                <option value="2">Masculino</option>
+                              </select>
+                            </mat-form-field>
+                          </div>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                <!-- </div> -->
+              </div>
+            </div>
+            <div class="text-center">
+              <a *ngIf='es_editar1' class="btn  btn-sm btn-danger waves-effect m-r-30" (click)="cliccancelar1()"><i class="fa fa-times"></i>Cancelar</a>
+              <a *ngIf='es_editar1' class="btn  btn-sm btn-success waves-effect" (click)="Guardar1()"><i class="fa fa-check"></i>Guardar</a>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  <div class="card col-12">
+    <app-usuariosec (cargaParcial)="activarBloqueoPantalla($event)"></app-usuariosec>
+  </div>
+  
+  <app-modal-basic #camblogin>
+    <div class="app-modal-header">
+        <h4 class="modal-title" style="margin-bottom: 3px;">Cambiar Login</h4>
+        <button type="button" class="close basic-close" (click)="cerrarModal1()">
+        <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+    <div class="app-modal-body">
+
+      <div class="form-group row">
+        <label class="col-sm-5 col-form-label">Login Actual :</label>
+        <div class="col-sm-7">
+            <label id="txt_login" class="col-sm-12 col-form-label"><b>{{login}}</b></label>
+        </div>
+      </div>
+      <div class="form-group row">
+        <label class="col-sm-5 col-form-label">Login Nuevo :</label>
+        <div class="col-sm-7">
+          <input type="text" id="txt_lognew" class="form-control">
+        </div>
+      </div>
+      <div class="form-group row">
+          <label class="col-sm-5 col-form-label">Contraseña :</label>
+          <div class="col-sm-7 row" style="margin-left: 0px;margin-right: 0px;">
+            <input type="password" id="password-field-con" class="form-control">
+            <span toggle="#password-field-con" class="fa fa-fw fa-eye field-icon toggle-password2"></span>
+          </div>
+      </div>
+    </div>
+    <div class="app-modal-footer w-100">
+      <div class="row px-3 justify-content-between">
+        <button type="button" class="btn  btn-sm btn-danger ripple" (click)="cerrarModal1()">
+          <i class="fa fa-times"></i>Cerrar
+        </button>
+        <button type="button" class="btn  btn-sm btn-success ripple light" (click)="confirmAlertGuardar1()" (mouseup)="quitarfoco($event);">
+          <i class="fa fa-check"></i>Guardar
+        </button>
+      </div>
+    </div>
+  </app-modal-basic>
+
+  <app-modal-basic #cambpass>
+    <div class="app-modal-header">
+        <h4 class="modal-title" style="margin-bottom: 3px;">Cambiar Contraseña</h4>
+        <button type="button" class="close basic-close" (click)="cerrarModal2()">
+        <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+    <div class="app-modal-body">
+      <div class="form-group row">
+        <label class="col-sm-5 col-form-label">Contraseña Anterior :</label>
+        <div class="col-sm-7 row" style="margin-left: 0px;margin-right: 0px;">
+          <input type="password" id="password-field-ant" class="form-control">
+          <span toggle="#password-field-ant" class="fa fa-fw fa-eye field-icon toggle-password"></span>
+        </div>
+      </div>
+      <div class="form-group row">
+          <label class="col-sm-5 col-form-label">Contraseña Nueva :</label>
+          <div class="col-sm-7 row" style="margin-left: 0px;margin-right: 0px;">
+            <input type="password" id="password-field-new" class="form-control">
+            <span toggle="#password-field-new" class="fa fa-fw fa-eye field-icon toggle-password1"></span>
+          </div>
+      </div>
+    </div>
+    <div class="app-modal-footer w-100">
+      <div class="row px-3 justify-content-between">
+        <button type="button" style="margin-right: 5px;" class="btn  btn-sm btn-danger ripple" (click)="cerrarModal2()">
+          <i class="fa fa-times"></i>Cerrar
+        </button>
+        <button type="button" class="btn  btn-sm btn-success ripple light" (click)="confirmAlertGuardar2()" (mouseup)="quitarfoco($event);">
+          <i class="fa fa-check"></i>Guardar
+        </button>
+      </div>
+    </div>
+  </app-modal-basic>
+  
+  <app-cargando [bloquearTodo]="true" *ngIf="mostrar_carga_todo"></app-cargando>
+  <app-cargando [bloquearTodo]="false" *ngIf="mostrar_carga"></app-cargando>
+</div>

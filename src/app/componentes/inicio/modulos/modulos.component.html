@@ -1,0 +1,701 @@
+
+<body>
+  <main class="portada">
+    <div class="main-content full-width">
+      <div class="image-container">
+        <div class="container">
+        <div class="overlay" style="margin-top: 0;padding-top: 0;">
+          <div class="containter-fluid" style="background-color:rgba(240, 242, 247, 0.95);padding-left: 20px;padding-right: 20px;">
+            <h2 style="color: blue;margin-left: 20px;padding-top: 15px;"><b><u>PANEL 01: MODULO DE USUARIO</u></b></h2>
+            <!-- MODULO USUARIO -->
+            <div class="card-container-portada" *ngIf="!isMobile">
+              <div *ngFor="let item of items" class="card-portada" (click)="navigateTo(item.link)">
+              <h3 class="card-title-portada">{{ item.title }}</h3>
+                <div class="card-card-content">
+                  <img [src]="item.image" alt="{{ item.title }}" class="section-image-portada" />
+                  <p class="card-description-portada">{{ item.description }}</p>
+                </div>
+              </div>
+            </div>
+            <div *ngIf="isMobile" class="carousel">
+              <button class="carousel-button prev" (click)="prev()">&#10094;</button>
+              <div class="carousel-wrapper">
+                <div class="carousel-track" [ngStyle]="{'transform': 'translateX(-' + currentIndexCarrusel * 100 + '%)'}">
+                  <div *ngFor="let item of items" class="card-carousel" (click)="navigateTo(item.link)">
+                    <h3 class="card-title-portada"><b>{{ item.title }}</b></h3>
+                    <div class="card-card-content">
+                      <img [src]="item.image" alt="{{ item.title }}" class="card-image-portada" />
+                      <p class="card-description-portada">{{ item.description }}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <button class="carousel-button next" (click)="next()">&#10095;</button>
+            </div>
+            <!-- MODULO PROYECTO --> 
+            <h2 style="color: green;margin-left: 20px;margin-top: 10px;"><b><u>PANEL 02: MODULO DEL PROYECTO</u></b></h2>
+            <div class="card-container-portada" *ngIf="!isMobile">
+              <div *ngFor="let proyecto of proyectos" class="card-portada" (click)="navigateTo(proyecto.link)">
+              <h3 class="card-title-portada">{{ proyecto.title }}</h3>
+                <div class="card-card-content">
+                  <img [src]="proyecto.image" alt="{{ proyecto.title }}" class="section-image-portada" />
+                  <p class="card-description-portada">{{ proyecto.description }}</p>
+                </div>
+              </div>
+            </div>
+            <div *ngIf="isMobile" class="carousel">
+              <button class="carousel-button prev" (click)="prev2()">&#10094;</button>
+              <div class="carousel-wrapper">
+                <div class="carousel-track" [ngStyle]="{'transform': 'translateX(-' + currentIndexCarruse2 * 100 + '%)'}">
+                  <div *ngFor="let item of proyectos" class="card-carousel" (click)=" navigateTo(item.link)">
+                    <h3 class="card-title-portada"><b>{{ item.title }}</b></h3>
+                    <div class="card-card-content">
+                      <img [src]="item.image" alt="{{ item.title }}" class="card-image-portada" />
+                      <p class="card-description-portada">{{ item.description }}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <button class="carousel-button next" (click)="next2()">&#10095;</button>
+            </div><br><br>
+          </div>
+          <!---MODULO USUARIO CONTENT-->
+          <div class="container modulo-usuario-div" style="background: linear-gradient(to right,rgba(247, 160, 88,1),transparent,transparent,transparent,transparent,transparent,transparent,transparent,transparent,transparent);">
+            <div class="container-fluid info2">
+              <div style="background-color: rgba(247, 160, 88,1);padding-left:30px;padding-right: 30px;margin-left: -15px; color: white;display: inline-flex; ">
+                <h1 style="margin:0;padding: 0;"><b>Panel 01 : Modulo de Usuario</b></h1>
+              </div>
+              <section class="info-sections" id="seccion1">
+                <div class="card-content-encabezado" (click)="toggleSection(1)">
+                  <img class="thumb" src="assets/img-menu/ibancoproy.png" alt="Imagen Proyectos">
+                  <p><b>BANCO DE PROYECTOS</b>: En este módulo se encuentra la Base de Datos integral del usuario.  Siendo esta data realizada por el usuario, data compartida o Base de Datos Brindada por el sistema. El Banco de proyectos se encuentra agrupado en 04 Bandejas.</p>
+                   <div class="icono-position">
+                    <i class="icofont-plus-circle cruz-naranja"></i>
+                  </div>
+                </div>
+                <div class="card-content-portada" *ngIf="isSectionOpen(1)">
+                  <div class="contenido-texto">
+                      <b>Bandejas Principales.</b><br>
+                      <ol>
+                       <li><b>"Mis proyectos"</b> Aquí se mostrará los proyectos realizados por usuario.</li>
+                       <li><b>"Proyectos Sistema"</b> En esta bandeja se visualizará los proyectos brindados por el sistema la cual cuenta con una base de datos Integral. Expedientes técnicos Completos.</li>
+                       <li><b>"Compartido Conmigo"</b> En esta bandeja se visualizará los proyectos compartidos de otros usuarios, contando información total o parcial de uno todos los Módulos.</li>
+                       <li><b>Bandeja de Reciclados "Papelera de Proyectos"</b> En esta bandeja se encuentra de forma temporal todos los proyectos eliminados de la bandeja del Usuario.</li>
+                      </ol>
+                  </div>
+                  <div class="contenido-imagen">
+                    <div class="carousel-contenido">
+                      <div *ngFor="let media of section1Media; let i = index" class="carousel-contenido-item" [class.active]="i === currentIndex" >
+                        <img  class="responsive-imagen" *ngIf="media.type === 'image'" [src]="media.src" [attr.data-index]="i" (click)="openLightbox(i, '')" alt="Media {{ i + 1 }}" />
+                        <video  class="responsive-imagen" *ngIf="media.type === 'video'" controls>
+                          <source [src]="media.src" type="video/mp4" />
+                          Tu navegador no soporta videos.
+                        </video>
+                      </div>
+                    </div>
+                    <div class="dots">
+                      <span *ngFor="let media of section1Media; let i = index" (click)="goToSlide(i)" [class.active]="i === currentIndex"></span>
+                    </div>
+                  </div>
+                </div>
+              </section>
+              <ng-container *ngIf="isSectionOpen(1)">
+                  <hr class="info2">
+              </ng-container>
+              <section class="info-sections" id="seccion2">
+                <div class="card-content-encabezado"(click)="toggleSection(2)">
+                  <img class="thumb" src="assets/img-menu/colabproy.png" alt="Imagen Proyectos">
+                  <p><b>COLABORACIÓN EN PROYECTOS</b>: En este Modulo se asigna la edición de los Distintos Módulos a otros usuarios para que puedan realizar el Trabajo Colaborativo, en tiempo real trabajando en el Mismo Proyecto. se podrá asignar trabajo colaborativo del Mismo Modulo o de Otros Módulos.</p>
+                   <div class="icono-position">
+                    <i class="icofont-plus-circle cruz-naranja"></i>
+                  </div>
+                </div>
+                <div class="card-content-portada"  *ngIf="isSectionOpen(2)">
+                  <div class="contenido-texto">
+                      <b>Algunas Ventajas del Modulo</b>
+                      <ul class="ultimo">
+                        <li>Trabajo Colaborativo en el Mismo Proyecto en Tiempo real con distintos usuarios.</li>
+                        <li>Toda la información que se va registrando se encuentra vinculada entre sí.</li>
+                        <li>Se puede asignar hasta 05 usuarios para realizar el trabajo Colaborativo. La cual dependerá del tipo de licencia.</li>
+                        <li>Todos los usuarios tienen acceso a visualización para todos los módulos solo se asignara, un usuario para su edición o registro de información. </li>
+                      </ul>
+                  </div>
+                  <div class="contenido-imagen">
+                    <div class="carousel-contenido">
+                      <div *ngFor="let media of section1Media2; let i = index" class="carousel-contenido-item" [class.active]="i === currentIndex2">
+                        <img  class="responsive-imagen"*ngIf="media.type === 'image'" [src]="media.src" [attr.data-index]="i" (click)="openLightbox(i, 2)" alt="Media {{ i + 1 }}" />
+                        <video  class="responsive-imagen"*ngIf="media.type === 'video'" controls>
+                          <source [src]="media.src" type="video/mp4" />
+                          Tu navegador no soporta videos.
+                        </video>
+                      </div>
+                    </div>
+                    <div class="dots">
+                      <span *ngFor="let media of section1Media2; let i = index" (click)="goToSlide2(i)" [class.active]="i === currentIndex2"></span>
+                    </div>
+                  </div>
+                </div>
+              </section>
+               <ng-container *ngIf="isSectionOpen(2)">
+                  <hr class="info2">
+              </ng-container>
+              <section class="info-sections" id="seccion3">
+                <div class="card-content-encabezado" (click)="toggleSection(3)">
+                  <img class="thumb" src="assets/img-menu/icatalogpart.png" alt="Imagen Catalogos">
+                  <p><b>CATALOGO DE PARTIDAS</b>: En este módulo se encuentra la base de datos de partidas tanto del sistema como del usuario. Cada partida tiene información registrada, así como su especificaciones técnicas y ficha técnica. Así mismo su agrupamiento de las partidas está en función del tipo de infraestructura.</p>
+                   <div class="icono-position">
+                    <i class="icofont-plus-circle cruz-naranja"></i>
+                  </div>
+                </div>
+                <div class="card-content-portada"  *ngIf="isSectionOpen(3)">
+                  <div class="contenido-texto">
+                      <b>Partidas del Sistema</b><br>
+                      Las Partidas del Sistema cuenta con la siguiente información. <br>
+                      <ul class="ultimo">
+                      <li>Análisis de Costos Unitarios.</li>
+                      <li>Especificaciones Técnicas.</li>
+                      <li>Ficha técnica.</li>
+                      </ul>
+                      Las partidas del Sistema no son editables para los usuarios, pero si se puede utilizar la información para completar o duplicar el contenido brindado. <br>
+                      <b>Partidas del usuario</b> 
+                      <ul  class="ultimo">
+                        <li>Se registra las partidas del usuario la cual tiene la opción  de Edición, Duplicar o eliminar la partida.</li>
+                      </ul>
+                  </div>
+                  <div class="contenido-imagen">
+                    <div class="carousel-contenido">
+                      <div *ngFor="let media of section1Media3; let i = index" class="carousel-contenido-item" [class.active]="i === currentIndex3">
+                        <img  class="responsive-imagen"*ngIf="media.type === 'image'" [src]="media.src" [attr.data-index]="i" (click)="openLightbox(i, 3)" alt="Media {{ i + 1 }}" />
+                        <video  class="responsive-imagen"*ngIf="media.type === 'video'" controls>
+                          <source [src]="media.src" type="video/mp4" />
+                          Tu navegador no soporta videos.
+                        </video>
+                      </div>
+                    </div>
+                    <div class="dots">
+                      <span *ngFor="let media of section1Media3; let i = index" (click)="goToSlide3(i)" [class.active]="i === currentIndex3"></span>
+                    </div>
+                  </div>
+                </div>
+              </section>         
+               <ng-container *ngIf="isSectionOpen(3)">
+                  <hr class="info2">
+              </ng-container>
+              <!-- <section class="info-sections" id="seccion1">
+                <div class="card-content-portada">
+                  <div class="contenido-texto">
+                      <div class="titulo-img">
+                        <div class="titulo-cont"  style="background-color: red;color: white;">
+                           <p>COLABORACION DE PROYECTOS</p>
+                        </div>
+                          <img class="thumb" src="assets/img-menu/ibancoproy.png" alt="Imagen Proyectos">
+                      </div><br>
+                      <b>Banco de Proyectos</b><br>
+                      Aqui se encuentra la base de Datos del Usuario ya sea base de datos del usuario o del Sistema o data Compartida. <br>
+                      <b>Bandejas del banco de Proyecto</b> 
+                      <ul>
+                        <li>Bandeja del Usuario "Mis proyectos"<p style="margin-left: 10px;font-size: 15px;">En esta bandeja se mostrara los proyectos realizados por usuario. </p></li>
+                        <li>Bandeja del Sistema "Proyectos Sistema" <p style="margin-left: 10px;font-size: 15px;">En esta bandeja se visualizara los proyectos brindados por el sistema la cual cuenta con una base de datos Integral. Expedientes tecnicos Completos (Presupuesto, FP, Metrado, Programacion, Especificaciones Tecnicas, Memorias de Calculo, Planos y otros documentos del Proyecto).</p></li>
+                        <li>Bandeja Compartida "Compartido Conmigo"<p style="margin-left: 10px;font-size: 15px;">En esta bandeja se visualizara los proyectos compartidos de otros usuarios, el cual tendra informacion compartida total o parcial de uno todos los Modulos.</p></li>
+                        <li>Bandeja de Reciclados "Papelera de Proyectos" <p style="margin-left: 10px;font-size: 15px;"> En esta bandeja se encuentra de forma temporal todos los proyectos eliminados de la bandeja del Usuario. </p></li>
+                      </ul>
+                  </div>
+                  <div class="contenido-imagen">
+                    <div class="carousel-contenido">
+                      <div *ngFor="let media of section1Media; let i = index" class="carousel-contenido-item" [class.active]="i === currentIndex">
+                        <img  class="responsive-imagen" *ngIf="media.type === 'image'" [src]="media.src" alt="Media {{ i + 1 }}" />
+                        <video  class="responsive-imagen" *ngIf="media.type === 'video'" controls>
+                          <source [src]="media.src" type="video/mp4" />
+                          Tu navegador no soporta videos.
+                        </video>
+                      </div>
+                    </div>
+                    <div class="dots">
+                      <span *ngFor="let media of section1Media; let i = index" (click)="goToSlide(i)" [class.active]="i === currentIndex"></span>
+                    </div>
+                  </div>
+                </div>
+              </section>
+              <section class="info-sections" id="seccion2">
+                <div class="card-content-portada">
+                  <div class="contenido-texto">
+                      <div class="titulo-img">
+                        <div class="titulo-cont"  style="background-color: purple;color: white;">
+                           <p>COLABORACION DE PROYECTOS</p>
+                        </div>
+                          <img class="thumb" src="assets/img-menu/colabproy.png" alt="Imagen Proyectos">
+                      </div><br>
+                      <b>Colaboracion de Proyectos</b><br>
+                      Con esta opcion se Asigna funcion de edicion de los Distintos Modulos a otros usuarios para que puedan realizar el Trabajo Colaborativo, en tiempo real trabajando en el Mismo Proyecto. se podra asignar trabajo colaborativo del Mismo Modulo o de Otros Modulos.<br>
+                      <b>Algunas Ventajas del Modulo</b> 
+                      <ul>
+                        <li>Trabajo Colaborativo en el Mismo Proyecto en Tiempo real con distintos usuarios. esta opcion nos da la facilidad de poder trabajar en el Mismo Modulo u otro modulo, toda la informacion que se va registrando se encuentra vinculados entre si.</li>
+                        <li>Se puede asignar hasta 05 usuarios para realizar el trabajo Colaborativo. la cual esta dependera del tipo de licencia con la que se cuenta.</li>
+                        <li>Todos los usuarios registrados tienen acceso a visualizacion para todos los modulos solo se asignara  a un usuario para su edicion o registro de informacion.</li>
+                      </ul>
+                  </div>
+                  <div class="contenido-imagen">
+                    <div class="carousel-contenido">
+                      <div *ngFor="let media of section1Media2; let i = index" class="carousel-contenido-item" [class.active]="i === currentIndex2">
+                        <img  class="responsive-imagen"*ngIf="media.type === 'image'" [src]="media.src" alt="Media {{ i + 1 }}" />
+                        <video  class="responsive-imagen"*ngIf="media.type === 'video'" controls>
+                          <source [src]="media.src" type="video/mp4" />
+                          Tu navegador no soporta videos.
+                        </video>
+                      </div>
+                    </div>
+                    <div class="dots">
+                      <span *ngFor="let media of section1Media2; let i = index" (click)="goToSlide2(i)" [class.active]="i === currentIndex2"></span>
+                    </div>
+                  </div>
+                </div>
+              </section>
+              <section class="info-sections" id="seccion3">
+                <div class="card-content-portada">
+                  <div class="contenido-texto">
+                      <div class="titulo-img">
+                        <div class="titulo-cont"  style="background-color: blue;color: white;">
+                           <p>CATALOGOS DE PARTIDAS</p>
+                        </div>
+                          <img class="thumb" src="assets/img-menu/icatalogpart.png" alt="Imagen Catalogos">
+                      </div><br>
+                      <b>Catalogo de Partidas</b><br>
+                      En este modulo se ecuentra la base de datos de partidas tanto del sistema como del usuario. la cual cada partida tiene informacion registrada.<br>
+                      <b>Catalogo de Partidas del Sistema</b> 
+                      <ul>
+                        <li>Las Partidas Brindadas del sistema cuenta con Analisis de Costos Unitarios, especificaciones tecnicas, y ficha tecnica.</li>
+                        <li>Las partidas del Sistema no son editables para los usuarios, pero si s epuede utilizar su informacion para completar o duplicar el contenido brindado.</li>
+                      </ul>
+                      <b>Catalogo de Partidas del Usuario</b> 
+                      <ul>
+                        <li>Se registra las partidas del usuario la cual tiene la opcion  de edicion o eliminar la partida.</li>
+                      </ul>
+                  </div>
+                  <div class="contenido-imagen">
+                    <div class="carousel-contenido">
+                      <div *ngFor="let media of section1Media3; let i = index" class="carousel-contenido-item" [class.active]="i === currentIndex3">
+                        <img  class="responsive-imagen"*ngIf="media.type === 'image'" [src]="media.src" alt="Media {{ i + 1 }}" />
+                        <video  class="responsive-imagen"*ngIf="media.type === 'video'" controls>
+                          <source [src]="media.src" type="video/mp4" />
+                          Tu navegador no soporta videos.
+                        </video>
+                      </div>
+                    </div>
+                    <div class="dots">
+                      <span *ngFor="let media of section1Media3; let i = index" (click)="goToSlide3(i)" [class.active]="i === currentIndex3"></span>
+                    </div>
+                  </div>
+                </div>
+              </section> -->
+              <section class="info-sections" id="seccion4">
+                <div class="card-content-encabezado" (click)="toggleSection(4)">
+                  <img class="thumb" src="assets/img-menu/icatalgoins2.png" alt="Imagen Insumos">
+                  <p><b>CATALOGO DE INSUMOS</b>: En este módulo se encuentra la base de datos de los insumos del Sistema e Insumos registrados por el Usuario. Los catálogos de insumos se encuentran agrupados en dos bandejas que son "Insumos del Usuario" e Insumos de Sistema" a su vez cada bandeja puede contener información tales como datos de Insumos, Ficha técnica y Catalogo de Insumos.</p>
+                   <div class="icono-position">
+                    <i class="icofont-plus-circle cruz-naranja"></i>
+                  </div>
+                </div>
+                <div class="card-content-portada" *ngIf="isSectionOpen(4)">
+                  <div class="contenido-texto">
+                      <b>Catálogo de Insumos del Sistema</b><br>
+                      Los Catálogos del Sistema cuenta con la siguiente información.<br>
+                      <ul  class="ultimo">
+                      <li>Datos del Insumo.</li>
+                      <li>Ficha Técnicas del Insumo.</li>
+                      <li>Catálogo de Insumos.</li>
+                      </ul>
+                      Los Insumos del Sistema no son editables para los usuarios, pero si se puede utilizar la información para completar o duplicar el contenido brindado. <br>
+                      <b>Insumos del Usuario</b> <br>
+                      El Catálogo de los Insumos del Usuario se puede realizar su edición de forma libre sin restricciones.                           
+                  </div>
+                  <div class="contenido-imagen">
+                    <div class="carousel-contenido">
+                        <div *ngFor="let media of section1Media9; let i = index" class="carousel-contenido-item" [class.active]="i === currentIndex9">
+                            <img class="responsive-imagen" *ngIf="media.type === 'image'" [src]="media.src" [attr.data-index]="i" (click)="openLightbox(i, 9)" alt="Media {{ i + 1 }}" />
+                            <video class="responsive-imagen" *ngIf="media.type === 'video'" controls>
+                                <source [src]="media.src" type="video/mp4" />
+                                Tu navegador no soporta videos.
+                            </video>
+                        </div>
+                    </div>
+                    <div class="dots">
+                        <span *ngFor="let media of section1Media9; let i = index" (click)="goToSlide9(i)" [class.active]="i === currentIndex9"></span>
+                    </div>
+                </div>
+                </div>
+              </section>
+              <ng-container *ngIf="isSectionOpen(4)">
+                  <hr class="info2">
+              </ng-container>
+              <section class="info-sections" id="seccion5">
+                <div class="card-content-encabezado" (click)="toggleSection(5)">
+                  <img class="thumb" src="assets/img-menu/iparmagen.png" alt="Imagen Parametros">
+                  <p><b>PARÁMETROS GENERALES</b>: Modulo en el cual se podrá configurar los Parámetros Generales a nivel de usuario, como Configuración decimales a nivel de Usuario, opciones de Visualización de la estructura de presentación de los Títulos, sub títulos el otro grupo es la clasificación de Proyectos. Parámetros Generales se divide en dos bandejas.</p>
+                   <div class="icono-position">
+                    <i class="icofont-plus-circle cruz-naranja"></i>
+                  </div>
+                </div>
+                <div class="card-content-portada" *ngIf="isSectionOpen(5)">
+                  <div class="contenido-texto">
+                      <b>Parámetros Generales</b><br>
+                      <ul  class="ultimo">
+                      <li>Configuración Decimales. <br>Se podrá configurar los Decimales a nivel de Usuario.</li>
+                      <li>Opciones de Visualización. <br>Se podrá editar la visualización de la estructura de los títulos, Sub títulos y Partidas a Nivel de Usuario. </li>
+                      </ul>
+                      Cualquier modificación que realicemos afectará a todos los proyectos registrados por el usuario<br>
+                      <b>Clasificación de Proyectos</b> <br>
+                      Esta bandeja clasifica la relación de proyectos según su tipología, la cual se agruparon en ocho tipologías.     
+                  </div>
+                  <div class="contenido-imagen">
+                    <div class="carousel-contenido">
+                      <div *ngFor="let media of section1Media10; let i = index" class="carousel-contenido-item" [class.active]="i === currentIndex10">
+                        <img  class="responsive-imagen"*ngIf="media.type === 'image'" [src]="media.src" [attr.data-index]="i" (click)="openLightbox(i, 10)" alt="Media {{ i + 1 }}" />
+                        <video  class="responsive-imagen"*ngIf="media.type === 'video'" controls>
+                          <source [src]="media.src" type="video/mp4" />
+                          Tu navegador no soporta videos.
+                        </video>
+                      </div>
+                    </div>
+                    <div class="dots">
+                      <span *ngFor="let media of section1Media10; let i = index" (click)="goToSlide10(i)" [class.active]="i === currentIndex10"></span>
+                    </div>
+                  </div>
+                </div>
+              </section>
+               <ng-container *ngIf="isSectionOpen(5)">
+                  <hr class="info2">
+              </ng-container>
+              <section class="info-sections" id="seccion6">
+                <div class="card-content-encabezado"  (click)="toggleSection(6)">
+                  <img class="thumb" src="assets/img-menu/caracinsumo1.png" alt="Imagen Parametros">
+                  <p><b>CARACTERÍSTICAS DE INSUMO</b>: Modulo en el que se visualiza dos ventanas. la primera en la que se configura las Unidades del Usuario y la segundo la Clasificación Comercial de los Insumos a nivel del Usuario. Parámetros Generales se divide en dos bandejas.</p>
+                   <div class="icono-position">
+                    <i class="icofont-plus-circle cruz-naranja"></i>
+                  </div>
+                </div>
+                <div class="card-content-portada" *ngIf="isSectionOpen(6)">
+                  <div class="contenido-texto">
+                      <b>Unidades de Medida del Usuario</b><br>
+                      <ul  class="ultimo">
+                      <li>Ventana donde se visualiza las Unidades asignadas por el usuario y las Unidades creadas por el Usuario.</li>
+                      </ul>
+                      <b>Clasificación Comercial</b>
+                      <ul class="ultimo">
+                      <li>Esta bandeja clasificada agrupa los insumos del sistema e insumos del usuario según su clasificación Comercial.</li>
+                      </ul>
+                  </div>
+                  <div class="contenido-imagen">
+                    <div class="carousel-contenido">
+                      <div *ngFor="let media of section1Media11; let i = index" class="carousel-contenido-item" [class.active]="i === currentIndex11">
+                        <img  class="responsive-imagen"*ngIf="media.type === 'image'" [src]="media.src" [attr.data-index]="i" (click)="openLightbox(i, 11)" alt="Media {{ i + 1 }}" />
+                        <video  class="responsive-imagen"*ngIf="media.type === 'video'" controls>
+                          <source [src]="media.src" type="video/mp4" />
+                          Tu navegador no soporta videos.
+                        </video>
+                      </div>
+                    </div>
+                    <div class="dots">
+                      <span *ngFor="let media of section1Media11; let i = index" (click)="goToSlide11(i)" [class.active]="i === currentIndex11"></span>
+                    </div>
+                  </div>
+                </div>
+              </section>
+               <ng-container *ngIf="isSectionOpen(6)">
+                  <hr class="info2">
+              </ng-container>
+              <section class="info-sections" id="seccion7">
+                <div class="card-content-encabezado" (click)="toggleSection(7)">
+                  <img class="thumb" src="assets/img-menu/ind_unificado.png" alt="Imagen Parametros">
+                  <p><b>ÍNDICE UNIFICADO</b>: Modulo en el que se visualiza Los Índices Unificados, las cuales son brindados por el sistema y están sujeto en base al Decreto Supremos 011-79-VC.</p>
+                  <div class="icono-position">
+                    <i class="icofont-plus-circle cruz-naranja"></i>
+                  </div>
+                </div>
+                <div class="card-content-portada" *ngIf="isSectionOpen(7)">
+                  <div class="contenido-texto">
+                      <b>Índices Unificados</b><br>
+                      <ul  class="ultimo">
+                      <li>Ventana donde se visualiza los índices Unificados, las cuales son asignados por el Sistema.</li>
+                      </ul>
+                      Estos índices Unificados nos sirven tanto para la elaboración como la aplicación de las Fórmulas Polinómicas de los Distintos Proyectos. <br>
+                      Esta opción se presenta de Forma visual no da opción de edición al Usuario.
+                  </div>
+                  <div class="contenido-imagen">
+                    <div class="carousel-contenido">
+                      <div *ngFor="let media of section1Media12; let i = index" class="carousel-contenido-item" [class.active]="i === currentIndex12">
+                        <img  class="responsive-imagen"*ngIf="media.type === 'image'" [src]="media.src" [attr.data-index]="i" (click)="openLightbox(i, 12)" alt="Media {{ i + 1 }}" />
+                        <video  class="responsive-imagen"*ngIf="media.type === 'video'" controls>
+                          <source [src]="media.src" type="video/mp4" />
+                          Tu navegador no soporta videos.
+                        </video>
+                      </div>
+                    </div>
+                    <div class="dots">
+                      <span *ngFor="let media of section1Media12; let i = index" (click)="goToSlide12(i)" [class.active]="i === currentIndex12"></span>
+                    </div>
+                  </div>
+                </div>
+              </section>
+            </div>
+          </div>
+            <!---MODULO PROYECTO CONTENT-->
+          <div class="container modulo-usuario-div"  style="background: linear-gradient(to right,rgba(119, 227, 109,1),transparent,transparent,transparent,transparent,transparent,transparent,transparent,transparent,transparent);" >
+          <div class="container-fluid info3">
+            <div style="background-color: rgba(119, 227, 109,1);padding-left: 40px;padding-right: 30px; color: white;margin-left: -15px;display: inline-flex; "><h1 style="margin:0;padding: 0;"><b>Panel 02 : Modulo de Proyecto</b></h1></div>
+            <section class="info-sections2" id="seccion8">
+              <div class="card-content-encabezado2" (click)="toggleSection(8)">
+                  <img class="thumb" src="assets/img-menu/icaspec1.png" alt="Imagen Catalogos">
+                  <img class="thumb" src="assets/img-menu/icpresu1.png" alt="Imagen Catalogos">
+                  <img class="thumb" src="assets/img-menu/icpresind1.png" alt="Imagen Catalogos">
+                <p><b>PRESUPUESTO DE OBRA</b>:  Modulo en el que se realiza todos los trabajos de elaboración, edición y creación de Costos y Presupuestos de un proyecto. El cual está dividido en tres módulos. "Aspectos Generales", "Edición del Presupuesto" y "Edición del Pie de Presupuesto".</p>
+                <div class="icono-position2">
+                    <i class="icofont-plus-circle cruz-verde"></i>
+                  </div>
+              </div>
+              <div class="card-content-portada" *ngIf="isSectionOpen(8)">
+                <div class="contenido-texto">
+                  <b> Aspectos Generales</b><br>
+                    <ul class="ultimo">
+                      <li>Datos del Proyecto.</li>
+                      <li>Configuración de decimales y visualización del Proyecto.</li>
+                    </ul>
+                    <b>Edición del Presupuesto</b> 
+                    <ul  class="ultimo">
+                      <li>Hoja de Presupuesto.</li>
+                      <li>Análisis de Costos Unitarios.</li>
+                      <li>Relación de Insumos.</li>
+                      <li>Reporte de Clasificación Comercial de Insumos.</li>
+                    </ul>
+                    <b>Edición del Pie de Presupuesto</b>
+                    <ul>
+                      <li>Creación del pie de presupuesto, mediante registro de valores y con fórmulas vinculadas entre ellas. Aquí se Registran los costos indirectos tales como Aspectos generales, Gastos de Supervisión y Liquidación. Gastos de Expediente Técnico. y otros Gastos que sean Necesarios.</li>
+                    </ul>
+                </div>
+                <div class="contenido-imagen">
+                  <div class="carousel-contenido">
+                    <div *ngFor="let media of section1Media4; let i = index" class="carousel-contenido-item" [class.active]="i === currentIndex4">
+                      <img  class="responsive-imagen"*ngIf="media.type === 'image'" [attr.data-index]="i" (click)="openLightbox(i, 4)" [src]="media.src" alt="Media {{ i + 1 }}" />
+                      <video  class="responsive-imagen"*ngIf="media.type === 'video'" controls>
+                        <source [src]="media.src" type="video/mp4" />
+                        Tu navegador no soporta videos.
+                      </video>
+                        <div class="responsive-imagen2 mt-2" *ngIf="media.type === 'youtube'" >
+                        <iframe [src]="media.src" frameborder="0" allowfullscreen></iframe>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="dots">
+                    <span *ngFor="let media of section1Media4; let i = index" (click)=" goToSlide4(i)" [class.active]="i === currentIndex4"></span>
+                  </div>
+                </div>
+              </div>
+            </section>
+            <ng-container *ngIf="isSectionOpen(8)">
+              <hr class="info3">
+            </ng-container>
+            <section class="info-sections2" id="seccion9">
+            <div class="card-content-encabezado3" (click)="toggleSection(9)">
+                <img class="thumb" src="assets/img-menu/icmetra1.png" alt="Imagen Metrado">
+              <p><b>METRADO PROYECTO</b>: Modulo en el que se realiza todos los trabajos de registro y cuantificación del Metrado de un Proyecto. este Modulo tiene dos opciones de Registro. la primera que se registre usando las tabla del mismo Software y el Segundo tipo de Registro es Vinculando la información, donde se tiene que Importar desde una hoja de cálculo - Excel.</p>
+              <div class="icono-position">
+                    <i class="icofont-plus-circle cruz-verde"></i>
+                  </div>
+            </div>
+            <div class="card-content-portada" *ngIf="isSectionOpen(9)">
+                <div class="contenido-texto">
+                    <b>Módulos de Metrado</b><br>
+                    <ul  class="ultimo">
+                      <li>Resumen de Metrado.</li>
+                      <li>Hoja de Metrado.</li>
+                    </ul>
+                    <b>Los Reportes del Módulo de Metrado</b>
+                    <ul  class="ultimo">
+                      <li>Resumen de Metrado</li>
+                      <li>Hoja de Metrado desagregado</li>
+                      <li>Hoja de Metrado de Acero</li>
+                    </ul>
+                    <b>Algunas Ventajas del Modulo</b>
+                    <ul  class="ultimo">
+                     <li>El módulo del Metrado tiene la opción de trabajo Colaborativo en tiempo real, la cual se puede dividir los trabajos por títulos o sub Proyectos.</li>                          
+                    </ul>
+                </div>
+                <div class="contenido-imagen">
+                  <div class="carousel-contenido">
+                    <div *ngFor="let media of section1Media5; let i = index" class="carousel-contenido-item" [class.active]="i === currentIndex5">
+                      <img  class="responsive-imagen"*ngIf="media.type === 'image'" [attr.data-index]="i" (click)="openLightbox(i, 5)" [src]="media.src" alt="Media {{ i + 1 }}" />
+                      <video  class="responsive-imagen"*ngIf="media.type === 'video'" controls>
+                        <source [src]="media.src" type="video/mp4" />
+                        Tu navegador no soporta videos.
+                      </video>
+                        <div class="responsive-imagen2 mt-2" *ngIf="media.type === 'youtube'" >
+                        <iframe  [src]="media.src" frameborder="0" allowfullscreen></iframe>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="dots">
+                    <span *ngFor="let media of section1Media5; let i = index" (click)="goToSlide5(i)" [class.active]="i === currentIndex5"></span>
+                  </div>
+                </div>
+            </div>
+            </section>
+            <ng-container *ngIf="isSectionOpen(9)">
+              <hr class="info3">
+            </ng-container>
+            <section class="info-sections2" id="seccion10">
+              <div class="card-content-encabezado3" (click)="toggleSection(10)">
+                <img class="thumb" src="assets/img-menu/icformula1.png" alt="Imagen Formula">
+                <p><b>FORMULA POLINOMICA</b>: Modulo en el que se realiza todos los trabajos de la elaboración de la Formula Polinómica. en este módulo se puede editar los Índices Unificados de los Insumos, determinar la Cantidad de Formulas Polinómicas y el Agrupamiento de la Formula Polinómica.</p>
+                <div class="icono-position">
+                    <i class="icofont-plus-circle cruz-verde"></i>
+                  </div>
+            </div>
+              <div class="card-content-portada" *ngIf="isSectionOpen(10)">
+                <div class="contenido-texto">
+                    <b>Detalle del Modulo</b><br>
+                    <ul  class="ultimo">
+                      <li>Edición de Índices Unificados de los Insumos del Proyecto.</li>
+                      <li>Resumen de Formulas polinómicas.</li>
+                      <li>Agrupamiento de Monomios.</li>
+                    </ul>
+                    <b>Los Reportes del Módulo de Metrado.</b>
+                    <ul  class="ultimo">
+                      <li>Resumen de Formula Polinómica.</li>
+                      <li>Agrupamiento Preliminar de Monomios.</li>
+                      <li>Relación de Insumos con su Índice Unificado.</li>
+                    </ul>
+                </div>
+                <div class="contenido-imagen">
+                  <div class="carousel-contenido">
+                    <div *ngFor="let media of section1Media6; let i = index" class="carousel-contenido-item" [class.active]="i === currentIndex6">
+                      <img  class="responsive-imagen"*ngIf="media.type === 'image'" [src]="media.src"  [attr.data-index]="i" (click)="openLightbox(i, 6)" alt="Media {{ i + 1 }}" />
+                      <video  class="responsive-imagen"*ngIf="media.type === 'video'" controls>
+                        <source [src]="media.src" type="video/mp4" />
+                        Tu navegador no soporta videos.
+                      </video>
+                        <div class="responsive-imagen2 mt-2" *ngIf="media.type === 'youtube'" >
+                        <iframe  [src]="media.src" frameborder="0" allowfullscreen></iframe>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="dots">
+                    <span *ngFor="let media of section1Media6; let i = index" (click)="goToSlide6(i)" [class.active]="i === currentIndex6"></span>
+                  </div>
+                </div>
+              </div>
+            </section>
+            <ng-container *ngIf="isSectionOpen(10)">
+              <hr class="info3">
+            </ng-container>
+            <section class="info-sections2" id="seccion11">
+              <div class="card-content-encabezado2" (click)="toggleSection(11)">
+                <img class="thumb" src="assets/img-menu/ictiempro1.png" alt="Imagen Catalogos">
+                <img class="thumb" src="assets/img-menu/icprogra1.png" alt="Imagen Catalogos">
+                <p><b>PROGRAMACION DE OBRA</b>: Es un Módulo interactivo, robusto. donde se puede importar y exportar la programación. Esto nos da la opción de realizar estos trabajos de distintas formas.</p>
+                <div class="icono-position2">
+                    <i class="icofont-plus-circle cruz-verde"></i>
+                  </div>
+              </div>
+              <div class="card-content-portada" *ngIf="isSectionOpen(11)">
+                <div class="contenido-texto">
+                    <b>Detalle del módulo 01 y 02</b><br>
+                    <ol>
+                      <li><b>Módulo de Programación de Tiempos</b><br>Se realizar la configuración General de la Programación, así como la edición de configuración de Tiempos en función de la Mano de Obra y Equipos Programados.</li>
+                      <li><b>Módulo de Programación de Obra</b><br>Aquí se podrá elaborar el Diagrama Gantt, Cronograma Valorizado, Cronograma de Adquisiciones, y gráficos de la Curva S y Campana de Gauss.</li>
+                    </ol>
+                    <b>Los reportes de Programación</b> 
+                    <ul  class="ultimo">
+                      <li>Programación de Tiempos.</li>
+                      <li>Diagrama Gantt -  Diagrama de Barras </li>
+                      <li>Cronograma Valorizado.</li>
+                      <li>Cronograma de Adquisiciones.</li>
+                      <li>•	Gráficos  de Curva S y campana de Gauss.</li>
+                    </ul>
+                </div>
+                <div class="contenido-imagen">
+                  <div class="carousel-contenido">
+                    <div *ngFor="let media of section1Media7; let i = index" class="carousel-contenido-item" [class.active]="i === currentIndex7">
+                      <img  class="responsive-imagen"*ngIf="media.type === 'image'" [src]="media.src" [attr.data-index]="i" (click)="openLightbox(i, 7)" alt="Media {{ i + 1 }}" />
+                      <video  class="responsive-imagen"*ngIf="media.type === 'video'" controls>
+                        <source [src]="media.src" type="video/mp4" />
+                        Tu navegador no soporta videos.
+                      </video>
+                        <div class="responsive-imagen2 mt-2" *ngIf="media.type === 'youtube'" >
+                        <iframe  [src]="media.src" frameborder="0" allowfullscreen></iframe>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="dots">
+                    <span *ngFor="let media of section1Media7; let i = index" (click)=" goToSlide7(i)" [class.active]="i === currentIndex7"></span>
+                  </div>
+                </div>
+              </div>
+            </section>
+            <ng-container *ngIf="isSectionOpen(11)">
+              <hr class="info3">
+            </ng-container>
+            <section class="info-sections2" id="seccion12">
+              <div class="card-content-encabezado3" (click)="toggleSection(12)">
+                <img class="thumb" src="assets/img-menu/icespe1.png" alt="Imagen Formula">
+                <p><b>ESPECIFICACIONES TECNICAS</b>: Es un Módulo Inteligente donde analiza e interpreta la información. La cual nos da la opción de poder crear de forma automática las especificaciones Técnicas.</p>
+                <div class="icono-position">
+                    <i class="icofont-plus-circle cruz-verde"></i>
+                  </div>
+              </div>
+              <div class="card-content-portada" *ngIf="isSectionOpen(12)">
+                <div class="contenido-texto">
+                    <b>Detalle del Modulo</b><br>
+                    <ol>
+                      <li><b>Resumen General</b><br>Se visualiza el Resumen General del estado situacional de las partidas, y creación de la Plantilla de Especificaciones Técnicas.</li>
+                      <li><b>Especifciaciones Tecncias por Título</b><br>Aquí se podrá elaborar las Especificaciones Técnicas del proyecto. La cual puede ser de forma automática o de forma manual.</li>
+                    </ol>
+                    <b>Reporte del Módulo de Especificaciones </b>
+                    <ul  class="ultimo">
+                      <li>Especificaciones técnicas por partidas.</li>
+                      <li>Opción de exportar a editor de Texto - Word.</li>
+                    </ul>
+              </div>
+                <div class="contenido-imagen">
+                  <div class="carousel-contenido">
+                    <div *ngFor="let media of section1Media8; let i = index" class="carousel-contenido-item"  [attr.data-index]="i" (click)="openLightbox(i, 8)" [class.active]="i === currentIndex8">
+                      <img  class="responsive-imagen"*ngIf="media.type === 'image'" [src]="media.src" alt="Media {{ i + 1 }}" />
+                      <video  class="responsive-imagen"*ngIf="media.type === 'video'" controls>
+                        <source [src]="media.src" type="video/mp4" />
+                        Tu navegador no soporta videos.
+                      </video>
+                        <div class="responsive-imagen2 mt-2" *ngIf="media.type === 'youtube'" >
+                        <iframe  [src]="media.src" frameborder="0" allowfullscreen></iframe>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="dots">
+                    <span *ngFor="let media of section1Media8; let i = index" (click)="goToSlide8(i)" [class.active]="i === currentIndex8"></span>
+                  </div>
+                </div>
+              </div>
+            </section>
+          </div> 
+          </div>
+        </div>
+        </div>
+      </div>
+      <div class="social">
+        <p>Biplan el Software que te hace ser mas eficiente en la elaboración de tus proyectos.</p>
+        <div class="redes">
+          <a style="margin-left:40px"href="https://www.facebook.com/profile.php?id=61568538622639" target="_blank"> <i class="icofont-facebook"></i></a>
+          <a href="https://www.youtube.com/@biplan.Costos-Presupuestos" target="_blank"><i class="icofont-youtube-play"></i></a>
+          <a href="https://www.instagram.com/biplan.pe/" target="_blank"><i class="icofont-instagram"></i></a>
+          <a href="https://www.tiktok.com/@eduarvq?_t=8rLJe8ro1Sh&_r=1" target="_blank" aria-label="TikTok"><i class="icofont-tiktok"></i></a>
+          <a href="https://wa.me/+51986566443" target="_blank" aria-label="WhatsApp"><i class="icofont-brand-whatsapp"></i></a>
+          <a href="https://linkedin.com" target="_blank" aria-label="LinkedIn"><i class="icofont-linkedin"></i> </a>
+        </div>
+      </div>
+    </div>
+  </main>
+</body>
+
+
+<div id="lightbox" class="lightbox" (click)="closeLightbox()">
+  <span class="close">&times;</span>
+  <img class="lightbox-content" [src]="currentImage2" alt="Lightbox Image">
+</div>
+

@@ -1,0 +1,34 @@
+.viewer-pdf-custom {
+  display: block;
+  height: calc(100% - 50px);
+  width: 100%;
+}
+
+.error {
+  color: #ff4146;
+}
+
+.outline-list li a {
+  cursor: pointer;
+  font-size: 11px;
+}
+
+.outline-list li a:hover {
+  color: #ea1f62;
+}
+
+a.button {
+  display: flex;
+  justify-content: space-evenly;
+}
+
+.outline-list{
+  .titul1{
+    font-weight: bolder;
+  }
+  .titul2{
+    font-style: italic;
+    font-weight: 500;
+  }
+  
+}

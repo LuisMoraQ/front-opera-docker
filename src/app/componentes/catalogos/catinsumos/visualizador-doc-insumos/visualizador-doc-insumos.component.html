@@ -1,0 +1,618 @@
+<div class="container-fluid">
+    <ul ngbNav #nav="ngbNav" [(activeId)]="active" class="custom-tabs nav-tabs" (navChange)="onNavChange($event)">
+        <li [ngbNavItem]="1" [disabled]="active == 0">
+            <a ngbNavLink>DATOS INSUMO</a>
+            <ng-template ngbNavContent>
+                <div class="col-12 card border-secondary px-0" *ngIf="insumo">
+                    <div class="card-header py-0">
+                        <h5>INFORMACIÓN INSUMO</h5>
+                    </div>
+                    <div class="card-body px-0">
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item">
+                                <label class="custom-label-list">Codigo:</label>
+                                <span class="custom-texto-list ml-1 float-xl-right">{{insumo?.codigo}}</span>
+                            </li>
+                        </ul>
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item">
+                                <label class="custom-label-list">DESCRIPCIÓN:</label>
+                                <span class="custom-texto-list ml-1 float-xl-right">{{insumo?.descripcion}}</span>
+                            </li>
+                        </ul>
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item">
+                                <label class="custom-label-list">INDICE UNIFICADO :</label>
+                                <span class="custom-texto-list ml-1 float-xl-right">{{insumo?.desc_indice}}</span>
+                            </li>
+                        </ul>                     
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item">
+                                <label class="custom-label-list">ABREV. INDICE:</label>
+                                <span class="custom-texto-list ml-1 float-xl-right">{{insumo?.abrev_ind}}</span>
+                            </li>
+                        </ul>
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item">
+                                <label class="custom-label-list">CLASIFICACIÓN COMERCIAL:</label>
+                                <span class="custom-texto-list ml-1 float-xl-right">{{insumo?.desc_clasi}}</span>
+                            </li>
+                        </ul>
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item">
+                                <label class="custom-label-list">TIPO INSUMO:</label>
+                                <span class="custom-texto-list ml-1 float-xl-right">{{insumo?.desc_tipo_insumo}}</span>
+                            </li>
+                        </ul>
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item">
+                                <label class="custom-label-list">ABREV. TIPO:</label>
+                                <span class="custom-texto-list ml-1 float-xl-right">{{insumo?.abrev_tipo}}</span>
+                            </li>
+                        </ul>
+                        <ul class="list-group list-group-horizontal">
+                            <li class="list-group-item w-50">
+                                <label class="custom-label-list">UNIDAD:</label>
+                                <span class="custom-texto-list ml-1 float-xl-right">
+                                    {{insumo?.unidad}}
+                                </span>
+                            </li>
+                            <li class="list-group-item w-50">
+                                <label class="custom-label-list">PRECIO :</label>
+                                <span class="custom-texto-list ml-1 float-xl-right"> S/ {{insumo?.precio |
+                                    number:'0.2'}}</span>
+                            </li>
+                        </ul>
+
+                        <ul class="list-group list-group-horizontal">
+                            <li class="list-group-item w-50">
+                                <label class="custom-label-list">FICHA TECNICA:</label>
+                                <span class="custom-texto-list ml-1 float-xl-right" *ngIf="insumo?.ficha_tecninca">
+                                    SI
+                                </span>
+                                <span class="custom-texto-list ml-1 float-xl-right" *ngIf="!insumo?.ficha_tecninca">
+                                    NO
+                                </span>
+                            </li>
+                            <li class="list-group-item w-50">
+                                <label class="custom-label-list">NRO. IMAGENES:</label>
+                                <span class="custom-texto-list ml-1 float-xl-right"> {{insumo?.nroimgs}}</span>
+                            </li>
+                        </ul>
+                        <ul class="list-group list-group-horizontal">
+                            <li class="list-group-item w-50">
+                                <label class="custom-label-list">CATALOGO:</label>
+                                <span class="custom-texto-list ml-1 float-xl-right" *ngIf="insumo?.catalogos">
+                                    SI
+                                </span>
+                                <span class="custom-texto-list ml-1 float-xl-right" *ngIf="!insumo?.catalogos">
+                                    NO
+                                </span>
+                            </li>
+                            <li class="list-group-item w-50">
+                                <label class="custom-label-list">NRO. CATALOGOS:</label>
+                                <span *ngIf="insumo.catalogos" class="custom-texto-list ml-1 float-xl-right">
+                                    {{insumo?.catalogos?.split('|')?.length}}</span>
+                                <span *ngIf="!insumo?.catalogos" class="custom-texto-list ml-1 float-xl-right">0</span>
+                            </li>
+                        </ul>
+                        <ul class="list-group list-group-horizontal">
+                            <li class="list-group-item w-50">
+                                <label class="custom-label-list">MARCAS:</label>
+                                <span class="custom-texto-list ml-1 float-xl-right">{{insumo?.marcas}}</span>
+                            </li>
+
+                            <li class="list-group-item w-50">
+                                <label class="custom-label-list">ESTADO:</label>
+                                <div class="label-main m-0 ml-1 float-xl-right">
+                                    <label *ngIf="insumo?.activo=='1'"
+                                        class="label label-success ancho-50p text-center">Activo</label>
+                                    <label *ngIf="insumo?.activo=='0'"
+                                        class="label label-danger ancho-50p text-center">Inactivo</label>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="col-12 mt-2">
+                        <!-- <div class="row px-0" [ngClass]="{'altura-imagen': dataarchver.length, 'altura-sin-imagen': !dataarchver.length}">
+                            <div class="col-6 h-100 p-1" style="border: 1px solid;">
+                                <ng-container *ngIf="dataarchver.length; else noArchivo">
+                                    <span class="boton-ver-doc" (click)="abrirImagen()"><i
+                                            class="fa fa-2x fa-search-plus"></i></span>
+                                    <img [src]="dataarchver[numeroImagen]?.base" alt="Random first slide"
+                                        class="w-100 h-100">
+                                </ng-container>
+                                <ng-template #noArchivo>
+                                    <div class="row justify-content-center align-content-center">
+                                        <div class="row justify-content-center">
+                                            <ng-container *ngIf="dataarchver.length ; else noVista">
+                                                <img src='assets/icon/search-plomo.svg'
+                                                    class="col-12 imagen-nodata"><br>
+                                                <span class="col-8 text-center letra-nodata mt-2">Ninguna Imagen
+                                                    Seleccionada</span>
+                                            </ng-container>
+                                            <ng-template #noVista>
+                                                <span class="col-8 text-center letra-nodata mt-2">Ninguna Imagen
+                                                    Almacenada</span>
+                                            </ng-template>
+                                        </div>
+                                    </div>
+                                </ng-template>
+                            </div>
+                            <div class="col-6 h-100  p-1">
+                                <div class="col-12 px-0">
+                                    <div class="col-12 px-0 d-flex">
+                                        <div style="margin-top: 7px;">
+                                            <u>IMAGENES GUARDADAS</u>
+                                        </div>
+                                        <div style="position: absolute; right:0">
+                                            <button class="btn btn-sm btn-info float-right" type="button"
+                                                container="body" *ngIf="(verImagenes && !bloquear)"
+                                                ngbTooltip="Subir Imagenes" (click)="modalSubirImangenes()"
+                                                (mouseup)="quitarfoco($event);"><i
+                                                    class="fa fa-cloud-upload icono-but"></i></button>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 p-0 mt-3">
+                                        <ul class="list-group" *ngIf="dataarchver.length; else noImagenes">
+                                            <li class="list-group-item d-flex" container="body"
+                                                [ngClass]="{'list-activo': numeroImagen == i}"
+                                                (click)="seleccionarImagen(i)"
+                                                *ngFor="let item of dataarchver; let i= index"
+                                                ngbTooltip="Ver {{item.nombre}}"><i class="fa mr-1"
+                                                    style="margin-top:5px"
+                                                    [ngClass]="{'fa-check-square text-primary': numeroImagen == i, 'fa-square-o': numeroImagen !== i}"></i>
+                                                <span
+                                                    [ngClass]="{'recortar-text-select': numeroImagen == i, 'recortar-text-imag': numeroImagen !== i}">{{item.nombre}}</span>
+                                                <button class="btn btn-mini btn-danger" placement="top"
+                                                    *ngIf="((numeroImagen == i) && !bloquear)"
+                                                    (click)="eliminarImagen()" ngbTooltip="Eliminar" container="body">
+                                                    <i class="fa fa-remove icono-but"></i>
+                                                </button>
+                                            </li>
+                                        </ul>
+                                        <ng-template #noImagenes>
+                                            <div class="row justify-content-center align-content-center text-center"
+                                                [ngClass]="{'altura-imagen': dataarchver.length}">
+                                                <i class="fa fa-ellipsis-h"></i>
+                                            </div>
+                                        </ng-template>
+                                    </div>
+                                </div>
+                            </div>
+                        </div> -->
+                        <div class="row px-0" [ngClass]="{'altura-sin-imagen': stringImagenes.length==0}"><!-- 'altura-imagen': dataarchver.length>0, -->
+                            <div class="col-6 h-100 p-1" style="border: 1px solid;">
+                                <ng-container *ngIf="dataarchver.length>0; else noArchivo">
+                                    <span class="boton-ver-doc" (click)="abrirImagen()"><i
+                                            class="fa fa-2x fa-search-plus"></i></span>
+                                    <img [src]="dataarchver[numeroImagen]?.base" [ngClass]="{'altura-imagen': dataarchver.length>0}"
+                                        class="w-100 h-100">
+                                </ng-container>
+                                <ng-template #noArchivo>
+                                    <div class="row justify-content-center align-content-center">
+                                        <div class="row justify-content-center">
+                                            <ng-container *ngIf="dataarchver.length>0 ; else noVista">
+                                                <img src='assets/icon/search-plomo.svg'
+                                                    class="col-12 imagen-nodata"><br>
+                                                <span class="col-8 text-center letra-nodata mt-2">Ninguna Imagen
+                                                    Seleccionada</span>
+                                            </ng-container>
+                                            <ng-template #noVista>
+                                                <span class="col-8 text-center letra-nodata mt-2">Ninguna Imagen
+                                                    Almacenada</span>
+                                            </ng-template>
+                                        </div>
+                                    </div>
+                                </ng-template>
+                            </div>
+                            <div class="col-6 h-100  p-1">
+                                <div class="col-12 px-0">
+                                    <div class="col-12 px-0 d-flex">
+                                        <div style="margin-top: 7px;">
+                                            <u>IMAGENES GUARDADAS</u>
+                                        </div>
+                                        <div style="position: absolute; right:0">
+                                            <button class="btn btn-sm btn-info float-right" type="button"
+                                                container="body" *ngIf="(verImagenes && !bloquear)"
+                                                ngbTooltip="Cargar Imagenes" (click)="modalSubirImangenes()"
+                                                (mouseup)="quitarfoco($event);"><i
+                                                    class="fa fa-cloud-upload icono-but"></i></button>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 p-0 mt-3">
+                                        <ul class="list-group" *ngIf="dataarchver.length; else noImagenes">
+                                            <li class="list-group-item d-flex" container="body"
+                                                [ngClass]="{'list-activo': numeroImagen == i}"
+                                                (click)="seleccionarImagen(i)"
+                                                *ngFor="let item of dataarchver; let i= index"
+                                                ngbTooltip="Ver {{item.nombre}}"><i class="fa mr-1"
+                                                    style="margin-top:5px"
+                                                    [ngClass]="{'fa-check-square text-primary': numeroImagen == i, 'fa-square-o': numeroImagen !== i}"></i>
+                                                <span
+                                                    [ngClass]="{'recortar-text-select': numeroImagen == i, 'recortar-text-imag': numeroImagen !== i}">{{item.nombre}}</span>
+                                                <button class="btn btn-mini btn-danger" placement="top"
+                                                    *ngIf="((numeroImagen == i) && !bloquear)"
+                                                    (click)="eliminarImagen()" ngbTooltip="Eliminar" container="body">
+                                                    <i class="fa fa-remove icono-but"></i>
+                                                </button>
+                                            </li>
+                                        </ul>
+                                        <ng-template #noImagenes>
+                                            <div class="row justify-content-center align-content-center text-center">
+                                                <i class="fa fa-ellipsis-h"></i>
+                                            </div>
+                                        </ng-template>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </ng-template>
+        </li>
+        <li [ngbNavItem]="2" [disabled]="active == 0">
+            <a ngbNavLink>FICHA TÉCNICA</a>
+            <ng-template ngbNavContent>
+                <div class="row">
+                    <!-- <div class="col-12 borde-div ml-0" *ngIf="insumo">
+                            <span class="col-12  d-inline-flex px-0">
+                                <i class="fa fa-play" style="margin-top:3px"></i>
+                                <strong class="ml-2">INSUMO:</strong> <span class="ml-1 recortatextlinea"
+                                    [ngbTooltip]="insumo?.descripcion">{{insumo?.descripcion}}</span>
+                            </span>
+                        </div> -->
+                    <!-- <ng-container *ngIf="active ===1"> -->
+                    <div class="col-12 text-right px-0 d-flex">
+                        <!-- <h4><u>FICHA TECNICA</u></h4> -->
+                        <div *ngIf="!bloquear" class="btn-group" style="margin-bottom: 3px;">
+                            <button type="button" class="btn btn-mini btn-group-mini btn-outline-primary" placement="top" ngbTooltip="Agregar Imagen Local"
+                            container="body" (click)="AddImagen()" (mouseup)="quitarfoco($event);" [disabled]="buscaficha">
+                                <i class="icofont icofont-image icono-but"></i>
+                            </button>
+                            <button type="button" class="btn btn-mini btn-group-mini btn-outline-primary" placement="top" ngbTooltip="Agregar Imagen de Link"
+                            container="body" (click)="openImgDrive()" (mouseup)="quitarfoco($event);" [disabled]="buscaficha">
+                                <i class="fa fa-file-image-o icono-but"></i>
+                            </button>
+                        </div>
+                        <input type="file" id="imgUpload" name="imgUpload" accept="image/*"/>
+                        <button class="btn btn-sm btn-success" type="button" (click)="guardarFichaTecnica()"
+                            container="body" *ngIf="!bloquear" style="position: absolute;right: 0;" [disabled]="buscaficha"
+                            ngbTooltip="Guardar Ficha Tecnica">
+                            <i class="fa fa-save"></i>Guardar Ficha</button>
+                    </div>
+                    <div class="col-12 mt-1 px-0  contendor-fichatecnica mt-2 contenedor-texto-ficha" [ngClass]="{'contendor-fichatecnica-sinimg': !dataarchver.length, 'contendor-fichatecnica': dataarchver.length}">
+                        <div *ngIf="buscaficha" class="preloader3 loader-block cargasobre">
+                            <div class="circ1"></div>
+                            <div class="circ2"></div>
+                            <div class="circ3"></div>
+                            <div class="circ4"></div>
+                        </div>
+                        <app-tinymce [(ngModel)]='basicContent' #tinymce='tinymce' *ngIf="!bloquear" [disabled]="buscaficha" [options]='{branding:false}' id="tinyficha">
+                        </app-tinymce>
+                        <div class="w-100 h-100 " *ngIf="bloquear">
+                            <app-ficha-tecnica [fichaTecnica]="basicContent"></app-ficha-tecnica>
+                        </div>
+                    </div>
+                    <!-- </ng-container> -->
+                </div>
+            </ng-template>
+        </li>
+        <li [ngbNavItem]="3" [disabled]="active == 0">
+            <a ngbNavLink>CATALOGO</a>
+            <ng-template ngbNavContent>
+                <!-- <ng-container *ngIf="active ===2"> -->
+                    <button *ngIf="!bloquear" class="btn btn-mini btn-success m-l-5" placement="top" ngbTooltip="Agregar" container="body"
+                    (click)="AbrirAddCat()" (mouseup)="quitarfoco($event);">
+                        <i class="icofont icofont-plus icono-but"></i>
+                    </button>
+                    <button *ngIf="!bloquear" class="btn btn-mini btn-danger m-l-5" placement="top" ngbTooltip="Eliminar Todo" container="body"
+                    (click)="ElimTodoCat()" (mouseup)="quitarfoco($event);">
+                        <i class="fa fa-remove icono-but"></i>
+                    </button>
+                    <div style="overflow: auto;">
+                        <table class="table-bordered tab-10">
+                            <thead class="text-center">
+                                <tr class="headsticky header-custom">
+                                    <th appAnchocol [ancho]="20">N°</th>
+                                    <th appAnchocol [ancho]="200" [detalle]="true">Descripción</th>
+                                    <th appAnchocol [ancho]="200">Link</th>
+                                    <th *ngIf="!bloquear" class="acciones-tabla" appAnchocol [ancho]="60">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-center">
+                                <ng-container *ngIf="arrcatal.length>0">
+                                    <tr *ngFor="let row of arrcatal;let indice=index;" [ngClass]="{'highlight': fila_sel2 == indice}"
+                                    (click)="cambindicesel2(indice)">
+                                        <td appAnchocol [ancho]="20">{{indice+1}}</td>
+                                        <td class="text-left" appAnchocol [ancho]="200" [detalle]="true">
+                                            <div class="row mx-0" ngbTooltip="{{row.descripcion}}" #t="ngbTooltip"
+                                                container="body" triggers="click:blur" (mouseout)="t.close()">
+                                                <span class="recortatext w-100">{{row.descripcion}}</span>
+                                            </div>
+                                        </td>
+                                        <td appAnchocol [ancho]="300" class="text-left">
+                                            <a [href]="row.link" target="_blank" class="small">{{row.link}}</a>
+                                        </td>
+                                        <td *ngIf="!bloquear" appAnchocol [ancho]="60">
+                                            <button class="btn btn-mini2 btn-primary" placement="top"
+                                                ngbTooltip="Editar" container="body" (click)="AbrirAddCat(row,indice)"
+                                                (mouseup)="quitarfoco($event);">
+                                                <i class="fa fa-edit icono-but"></i>
+                                            </button>
+                                            <button class="btn btn-mini2 btn-danger" placement="top"
+                                                ngbTooltip="Eliminar" container="body"
+                                                (click)="eliminaCat(indice)" (mouseup)="quitarfoco($event);">
+                                                <i class="fa fa-remove icono-but"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </ng-container>
+                                <ng-container *ngIf="arrcatal.length<=0">
+                                    <tr>
+                                        <td class="mat-cell text-center" colspan="8">
+                                            <label *ngIf="!buscando">No se encontraron resultados</label>
+                                            <div *ngIf="buscando" class="preloader3 loader-block">
+                                                <div class="circ1"></div>
+                                                <div class="circ2"></div>
+                                                <div class="circ3"></div>
+                                                <div class="circ4"></div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </ng-container>
+                            </tbody>
+                        </table>
+                    </div>
+                <!-- <div class="col-12" *ngIf="arrayNombresDocs.length; else noArchivo">
+                    <div class="row justify-content-center p-0 pt-1">
+                        <mat-form-field appearance="outline" class="mff-reduc col-sm-9 col-9 margin-select pl-0">
+                            <mat-label>Lista Documentos</mat-label>
+                            <select matNativeControl [(ngModel)]="documentoSeleccionado" (change)="abrirPDF()">
+                                <option *ngFor="let documento of arrayNombresDocs; let i = index" [value]="i">
+                                    {{documento.nombre}}
+                                </option>
+                            </select>
+                        </mat-form-field>
+                        <div class="col-3 px-0">
+                            <button class="btn btn-sm btn-outline-info float-right" ngbTooltip="Descargar Documento" container="body"
+                                (click)="descargarDocumento()">
+                                <i class="fa fa-download"></i> Descargar
+                            </button>
+                        </div>
+                    </div>
+                    <div class="row  px-0" style="height: calc(100vh - 250px);">
+                        <div class="col-12 px-0">
+                            <ng-container *ngIf="url; noPdf">
+                                <div class="viewer-pdf-custom ">
+                                    <pdf-viewer class="h-100 w-100" [src]="url" [show-all]="false" [page]="page"
+                                        [zoom]="zoom" [show-borders]="true"
+                                        (after-load-complete)="afterLoadComplete($event)" [original-size]="false"
+                                        [render-text]="true">
+                                    </pdf-viewer>
+                                </div>
+                                <div class="row d-flex justify-content-center align-content-center botones-pdf">
+                                    <button class="option_item" (click)="zoomIn()" title="Aumentar">
+                                        <i class="fa fa-search-plus" aria-hidden="true"></i>
+                                    </button>
+                                    <button class="option_item" (click)="zoomOut()" title="Disminuir">
+                                        <i class="fa fa-search-minus" aria-hidden="true"></i>
+                                    </button>
+                                    <button class="option_item" (click)="previousPage()" [disabled]="page === 1"
+                                        title="Pagina anterior">
+                                        <i class="fa fa-angle-left" aria-hidden="true"></i>
+                                    </button>
+                                    <button class="option_item" (click)="nextPage()"
+                                        [disabled]="totalPages === 1 || page === totalPages" title="Pagina siguiente">
+                                        <i class="fa fa-angle-right" aria-hidden="true"></i>
+                                    </button>
+                                    <div class="pagina-number">{{ page }} / {{ totalPages }}</div>
+                                </div>
+                            </ng-container>
+                            <ng-template #noPdf>
+                                <div class="d-flex align-items-center justify-content-center contenidoNoData"
+                                    *ngIf="ulr != null">
+                                    <div class="row justify-content-center">
+                                        <span class="fa-stack fa-5x">
+                                            <i class="fa fa-file-pdf-o fa-stack-1x "></i>
+                                            <i class="fa fa-ban fa-stack-2x text-danger"></i>
+                                        </span>
+                                        <span class="col-12 text-center letra-nodata mt-2">PDF NO ENCONTRADO</span>
+                                    </div>
+                                </div>
+                            </ng-template>
+                        </div>
+                    </div>
+                    <app-cargando [bloquearTodo]="false" *ngIf="mostrar_carga_body" [contenido]="true">
+                    </app-cargando>
+                </div>
+                <ng-template #noArchivo>
+                    <div class="d-flex align-items-center justify-content-center contenidoNoData w-100">
+                        <div class="row justify-content-center">
+                            <img src='assets/icon/search-plomo.svg' class="col-12 imagen-nodata"><br>
+                            <span class="col-12 text-center letra-nodata mt-2">NINGUN ARCHIVO ENCONTRADO</span>
+                        </div>
+                    </div>
+                </ng-template> -->
+            </ng-template>
+        </li>
+        <!-- <li [ngbNavItem]="4" [disabled]="active == 0">
+            <a ngbNavLink>PRECIOS HISTÓRICOS</a>
+            <ng-template ngbNavContent>
+            </ng-template>
+        </li>
+        <li [ngbNavItem]="5" [disabled]="active == 0">
+            <a ngbNavLink>INSUMOS BIM</a>
+            <ng-template ngbNavContent>
+            </ng-template>
+        </li> -->
+    </ul>
+    <div [ngbNavOutlet]="nav" class="mt-2"></div>
+    <div class="col-12 mt-3 justify-content-center px-4">
+
+    </div>
+    <app-cargando [bloquearTodo]="false" *ngIf="mostrar_carga" [contenido]="true">
+    </app-cargando>
+    <app-cargando [bloquearTodo]="true" *ngIf="mostrar_carga_todo"></app-cargando>
+    <!-- </div> -->
+</div>
+<app-modal-basic #modalVerImagen [dialogClass]="'modal-xl'">
+    <div class="app-modal-header">
+        <h4 class="modal-title tit-modal1"><b> Imagen </b></h4>
+        <button type="button" class="close basic-close" (click)="cerrarImagen()">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+    <div class="app-modal-body">
+        <app-card class="card">
+            <img [src]="dataarchver[numeroImagen]?.base" *ngIf="dataarchver[numeroImagen]?.base" class="w-100 h-100">
+            <span>{{dataarchver[numeroImagen]?.nombre}}</span>
+        </app-card>
+    </div>
+    <div class="app-modal-footer w-100">
+        <div class="row px-3">
+            <button type="button" style="margin-right: 5px;" class="btn btn-sm btn-danger ripple"
+                (click)="cerrarImagen()">Cerrar</button>
+        </div>
+    </div>
+</app-modal-basic>
+
+<app-modal-basic #modalSubirImagen [dialogClass]="'modal-lg'">
+    <div class="app-modal-header">
+        <h4 class="modal-title tit-modal1"><b>Cargar Imagenes</b></h4>
+        <button type="button" class="close basic-close" (click)="modalSalirSubirImangenes()">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+    <div class="app-modal-body">
+        <!-- <div class="col-12">
+            <div class="row justify-content-between pr-0 mt-2">
+                <div class="col-10 d-flex px-0">
+                    <label class="espacios col-form-label">Documento:</label>
+                    <label class="custom-file-upload d-flex ml-1" style="border-radius: 10px;">
+                        <input type="file" id="fileUpload2" name="fileUpload2" accept="image/*" (click)="SubirArchivo()"
+                            multiple />
+                        <i class="icofont icofont-upload-alt icono-but mt-1 ml-1" style="margin-right: 5px;"></i>
+                        Seleccionar
+                    </label>
+                    <i class="fa fa-warning text-danger icono-but ml-2"
+                        style="margin-top: 12px; width: 14px !important;" placement="top" container="body"
+                        ngbTooltip="Maximo {{5 - dataarchver?.length}} Imagenes"></i>
+                    <p style="margin-top: 9px" class="text-danger">Maximo {{5 - dataarchver?.length}} Imagenes</p>
+                </div>
+                <div class="col-2 justify-content-end px-0">
+                </div>
+            </div>
+            <div class="row  justify-content-center imagenes-seleccionadas">
+                <div class="col-6" *ngFor="let imagens of dataarchb64;let indice=index">
+                    <div class="card shadow-lg p-3 mb-2 bg-white rounded">
+                        <span data-effect="fadeOut" style="cursor:pointer" ngbTooltip="Quitar imagen"
+                            container="body"><i class="fa fa-2x fa-times float-right"
+                                (click)="QuitarImagenSubir(indice)"></i></span>
+                        <img [src]="imagens.base" alt="" class="custom-heigth-imagen">
+                        <div class=" recortatext1l" [ngbTooltip]="imagens?.nombre" container="body">
+                            {{imagens?.nombre}}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div> -->
+        <!-- <iframe src="https://drive.google.com/file/d/1IS0rMAXfwNxFbuleXZxSk2BgSno2lOh2/preview" width="476" height="288" frameborder="0" scrolling="no"></iframe> -->
+        <h5 class="sub-title text-center f-w-900 w-100">AGREGAR URL DE IMAGEN</h5>
+        <!-- <div class="col-12">
+            <label>Usar Google Drive :</label>
+            <div class="switch switch-primary d-inline m-r-10" style="margin-left: 10px;">
+                <input type="checkbox" id="switch-p-1" [(ngModel)]='fromdrive'>
+                <label for="switch-p-1" class="cr"></label>
+            </div>
+        </div> -->
+        <div class="d-flex m-t-5">
+            <label class="font-weight-bolder ">Fuente de Url: </label>
+            <mat-radio-group [(ngModel)]="fromdrive" class="ml-2" (change)="cambFromDrive()">
+                <mat-radio-button [value]="1" style="font-size: 10px;">Otros</mat-radio-button>
+                <mat-radio-button [value]="2" style="font-size: 10px;" class="ml-5">Google Drive</mat-radio-button>
+                <mat-radio-button [value]="3" style="font-size: 10px;" class="ml-5">Dropbox</mat-radio-button>
+            </mat-radio-group>
+        </div>
+        <div class="input-container row mx-0" *ngIf="fromdrive!=1">
+            <!-- Ejemplo : <span>https://drive.google.com/file/d/<span class="f-w-900 text-primary">1pwO2R-cMZMTl10OyawrJ_uYJL_3dlFCM</span>/view?usp=drive_link</span> -->
+            <mat-form-field appearance="outline" class="mff-reduc" style="width: calc(100% - 36px);">
+                <mat-label>Ingresar URL compartida</mat-label>
+                <input matInput type="text" autocomplete="off" [(ngModel)]="idimagen" maxlength="21666" (input)="agregaID()">
+            </mat-form-field>
+        </div>
+        <div class="input-container row mx-0">
+            <mat-form-field appearance="outline" class="mff-reduc" style="width: calc(100% - 36px);">
+                <mat-label>{{fromdrive!=1?'Url corregida':'Ingresar una URL'}}</mat-label>
+                <input matInput type="text" autocomplete="off" [(ngModel)]="urlimagen" maxlength="21666" (input)="imagenInvalida = false"
+                [disabled]="fromdrive!=1">
+            </mat-form-field>
+            <div class="p-t-5">
+                <button class="btn btn-mini btn-info m-l-5" placement="top"
+                ngbTooltip="Agregar Url" container="body" (click)="Addimg()" (mouseup)="quitarfoco($event);">
+                    <i class="icofont icofont-plus icono-but"></i>
+                </button>
+            </div>
+        </div>
+        <span *ngIf="!fromdrive" class="text-danger f-s-italic">Solo se admite urls (http o https)</span>
+        <div *ngIf="imagenInvalida" class="error-message image-preview">
+            No se pudo cargar la imagen. Verifica {{fromdrive?'el ID':'la URL'}}.
+        </div>
+        <div *ngIf="urlimagen==''" class="error-message image-preview">
+            Ingresar una url correspondiente a una imagen.
+        </div>
+        <div class="col-12 image-preview" *ngIf="urlimagen"><!--  && !imagenInvalida -->
+            <img [src]="urlimagen" class="w-100 h-100" (error)="imagenInvalida = true"/>
+        </div>
+        <h5 class="sub-title text-center f-w-900 w-100">IMAGENES AGREGADAS</h5>
+        <ul class="list-group" *ngIf="arraddimg.length; else noImagenes">
+            <li class="list-group-item d-flex" container="body" *ngFor="let item of arraddimg; let i= index" ngbTooltip="Ver {{item}}">
+                <span class="recortar-text-select">{{item}}</span>
+                <button class="btn btn-mini btn-danger" placement="top" (click)="QuitarImagArr(i)" ngbTooltip="Quitar" container="body">
+                    <i class="fa fa-remove icono-but"></i>
+                </button>
+            </li>
+        </ul>
+        <ng-template #noImagenes>
+            <div class="row justify-content-center align-content-center text-center">
+                <span>No se agregó ninguna imagen.</span>
+            </div>
+        </ng-template>
+    </div>
+    <div class="app-modal-footer w-100">
+        <div class="row px-3 justify-content-between">
+            <button type="button" style="margin-right: 5px;" class="btn btn-sm btn-danger ripple"
+                (click)="modalSalirSubirImangenes()">Cerrar</button>
+            <button class="btn btn-success btn-sm " type="button" *ngIf="arraddimg.length>0"
+                (click)="almacenarImagenes()" (mouseup)="quitarfoco($event);">Guardar</button>
+        </div>
+    </div>
+</app-modal-basic>
+<app-modal-basic #modalAddCat [dialogClass]="'modal-lg'">
+    <div class="app-modal-header">
+        <h4 class="modal-title tit-modal1"><b> Agregar URL </b></h4>
+        <button type="button" class="close basic-close" (click)="cerrAddCat()">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+    <div class="app-modal-body">
+        <form [formGroup]="formLinkCat">
+            <div class="row ">
+                <mat-form-field appearance="outline" class="mff-reduc col-sm-12 col-12">
+                    <mat-label>Descripcíon</mat-label>
+                    <input matInput type="text" class="mayuscula" autocomplete="off" maxlength="500" formControlName="descripcion">
+                </mat-form-field>
+                <mat-form-field appearance="outline" class="mff-reduc col-sm-12 col-12">
+                    <mat-label>Link</mat-label>
+                    <input matInput type="text" autocomplete="off" maxlength="12000" formControlName="link">
+                </mat-form-field>
+            </div>
+        </form>
+    </div>
+    <div class="app-modal-footer modal-footer justify-content-between">
+        <button type="button" class="btn btn-danger btn-sm" (click)="cerrAddCat()"><i
+                class="fa fa-times"></i>Cerrar</button>
+        <button type="button" class="btn btn-success btn-sm" (click)="guardaCat()"><i
+                class="fa fa-check"></i>Guardar</button>
+    </div>
+</app-modal-basic>

@@ -1,0 +1,695 @@
+<div class="modal-dialog-scrollable modal-md">
+    <div class="modal-content">
+        <div class="app-modal-header  modal-header">
+            <span class="text-white">Programación ({{nombreProyecto}})</span>
+            <button type="button" class="close basic-close" (click)="closeModal()">
+                <span aria-hidden="true" class="mt-2">&times;</span>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div class="row justify-content-center">
+                <div class="col-12" [hidden]="vista == 0 ? false: true">
+                    <div class="d-flex justify-content-between">
+                        <h5 class="mb-0" *ngIf="xmlFormat.length"> <span>Documento Seleccionado:</span><span
+                                class="nombre-documento ml-2">{{nombreArchivo}}</span></h5>
+                        <label class="custom-file-upload d-flex custom-upload">
+                            <input type="file" id="archivo" name="fileUpload2" accept="text/xml"
+                                (change)="importarXML($event, $event.target.files[0].name)"  />
+                            <i class="icofont icofont-upload-alt icono-but mt-1 ml-1" style="margin-right: 5px;"></i>
+                            SeleccionarXML
+                        </label>
+                        <div class="d-flex">
+                            <div class="d-flex" style="padding-top: 3px;">
+
+                            </div>
+                            <div class="nombre-documento d-flex ml-1" *ngIf="xmlFormat.length" container="body"
+                                ngbTooltip="Coincidencias en items y parecido descripcion mayor al 90% con presupuesto del proyecto( {{existentesProg.length}} / {{this.dataPrincipal.length}})">
+                                Coincidencias:
+                                <div class="ml-2"
+                                    [ngClass]="{'text-danger': porcentaje < 90  , 'text-success': porcentaje >= 90}">
+                                    {{porcentaje | number:'0.2-2'}} % <i class="fa"
+                                        [ngClass]="{'fa-ban':porcentaje < 90 , 'fa-check-circle': porcentaje >= 90}"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                    <div class="col-12 d-flex justify-content-between px-0 align-items-center" *ngIf="xmlFormat.length">
+                        <div class="d-flex">
+                            <div class="leyenda-noExiste bg-noexist"></div>
+                            <span class="leyendas-text">No existe en Presupuesto</span>
+                            <div class="leyenda-noExiste existeParecidos"></div>
+                            <span class="leyendas-text">Descripcion Parecida</span>
+                            <div class="leyenda-noExiste hito"></div>
+                            <span class="leyendas-text">Hito</span>
+                        </div>
+                        <div class="d-flex">
+                            <mat-form-field class="mff-reduc alto-35 px-0 mr-1" appearance="outline"
+                                floatLabel="'always'">
+                                <mat-label>Fuente no laborables</mat-label>
+                                <select matNativeControl [(ngModel)]="fuenteFeriados">
+                                    <option value="0">Sistema</option>
+                                    <option value="1">Documento</option>
+                                </select>
+                            </mat-form-field>
+                            <div>
+                                <button class="btn btn-mini btn-info" (click)="modalNoLaborables.show()">
+                                    <i class="fa fa-calendar-times-o icono-but"></i>
+                                </button>
+                            </div>
+
+                        </div>
+                    </div>
+                    <table id="tabla" class="table-bordered tab-10 table-responsive height-tabla">
+                        <thead class="text-center">
+                            <tr class="headsticky header-custom">
+                                <th colspan="8">PROGRAMACIÓN (Documento seleccionado)</th>
+                            </tr>
+                            <tr class="headsticky-2 header-custom">
+                                <th appAnchocol [ancho]="40"> Nº</th>
+                                <th appAnchocol class="w-100" [ancho]="350" [detalle]="true">Partida</th>
+                                <th appAnchocol [ancho]="50">Restri.</th>
+                                <th appAnchocol [ancho]="75">Duración</th>
+                                <th appAnchocol [ancho]="100">Comienzo</th>
+                                <th appAnchocol [ancho]="100"> Fin</th>
+                                <th appAnchocol> Predecesor</th>
+                                <th appAnchocol [ancho]="30">
+                                    <button  *ngIf="xmlFormat.length" class="btn btn-mini2 bg-info" (click)="solucionarmultiple()">
+                                        <i class="fa fa-check-square-o icono-but">
+                                        </i>
+                                    </button>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-center">
+                            <ng-container *ngIf="xmlFormat.length; else noData1">
+                                <tr *ngFor="let item of xmlFormat; let indice = index;" style="height: 22px;">
+                                    <td appAnchocol [ancho]="40"
+                                        [ngClass]="{'existeParecidos': (!item.existePresupuesto && !item.validas?.length && item.parecidas?.length > 0), 
+                                                    'noExistePresu':(!item.existePresupuesto && !item.parecidas?.length), 'hito': !item.existePresupuesto && item.duracion == 0}"
+                                        appPintarfilapre [tipo]="titulo1" [letra]="titulo1letra" [item]="item.item"
+                                        [separador]="'.'" [partida]="item.unidad ?true:false">
+                                        {{item.idgantt !== 'NaN' ? item.idgantt : ''}}</td>
+                                    <td appAnchocol class="w-100" [ancho]="350" [detalle]="true"
+                                        [ngClass]="{'existeParecidos': (!item.existePresupuesto && !item.validas?.length && item.parecidas?.length > 0), 
+                                                    'noExistePresu':(!item.existePresupuesto && !item.parecidas?.length), 'hito': !item.existePresupuesto && item.duracion == 0}"
+                                        appPintarfilapre [tipo]="titulo1" [letra]="titulo1letra" [item]="item.item"
+                                        [separador]="'.'" [partida]="item.unidad ?true:false">
+                                        <div class="recortatextlinea text-left"
+                                            [style.padding-left.px]="((item.item?.split('.').length-1)*5)+(item.unidad?17:0)"
+                                            ngbTooltip="{{item.descripcion}}" #t="ngbTooltip" container="body"
+                                            triggers="click:blur" (mouseout)="t.close()">
+                                            <span
+                                                style="font-weight: 700;">{{item.item}}</span>&nbsp;&nbsp;{{item.descripcion}}
+                                        </div>
+                                    </td>
+                                    <td appAnchocol [ancho]="50"
+                                        [ngClass]="{'existeParecidos': (!item.existePresupuesto && !item.validas?.length && item.parecidas?.length > 0), 
+                                                    'noExistePresu':(!item.existePresupuesto && !item.parecidas?.length), 'hito': !item.existePresupuesto && item.duracion == 0}"
+                                        appPintarfilapre [tipo]="titulo1" [letra]="titulo1letra" [item]="item.item"
+                                        [separador]="'.'" [partida]="item.unidad ?true:false">--
+                                    </td>
+                                    <td appAnchocol [ancho]="75"
+                                        [ngClass]="{'existeParecidos': (!item.existePresupuesto && !item.validas?.length && item.parecidas?.length > 0), 
+                                                    'noExistePresu':(!item.existePresupuesto && !item.parecidas?.length), 'hito': !item.existePresupuesto && item.duracion == 0}"
+                                        appPintarfilapre [tipo]="titulo1" [letra]="titulo1letra" [item]="item.item"
+                                        [separador]="'.'" [partida]="item.unidad ?true:false">
+                                        {{item.duracion}}</td>
+                                    <td appAnchocol [ancho]="100"
+                                        [ngClass]="{'existeParecidos': (!item.existePresupuesto && !item.validas?.length && item.parecidas?.length > 0), 
+                                                    'noExistePresu':(!item.existePresupuesto && !item.parecidas?.length), 'hito': !item.existePresupuesto && item.duracion == 0}"
+                                        appPintarfilapre [tipo]="titulo1" [letra]="titulo1letra" [item]="item.item"
+                                        [separador]="'.'" [partida]="item.unidad ?true:false">
+                                        {{item.fechaini | date:'dd-MM-yyyy'}}</td>
+                                    <td appAnchocol [ancho]="100"
+                                        [ngClass]="{'existeParecidos': (!item.existePresupuesto && !item.validas?.length && item.parecidas?.length > 0), 
+                                                    'noExistePresu':(!item.existePresupuesto && !item.parecidas?.length), 'hito': !item.existePresupuesto && item.duracion == 0}"
+                                        appPintarfilapre [tipo]="titulo1" [letra]="titulo1letra" [item]="item.item"
+                                        [separador]="'.'" [partida]="item.unidad ?true:false">
+                                        {{item.fechafin | date:'dd-MM-yyyy'}}</td>
+                                    <td appAnchocol
+                                        [ngClass]="{'existeParecidos': (!item.existePresupuesto && !item.validas?.length && item.parecidas?.length > 0), 
+                                                    'noExistePresu':(!item.existePresupuesto && !item.parecidas?.length), 'hito': !item.existePresupuesto && item.duracion == 0}"
+                                        appPintarfilapre [tipo]="titulo1" [letra]="titulo1letra" [item]="item.item"
+                                        [separador]="'.'" [partida]="item.unidad ?true:false">
+                                        <ng-container *ngIf="item.refCorregida; else refValida">
+                                            <i class="fa fa-exclamation-circle text-danger" ngbTooltip="Predecesor referenciado a un título"></i>
+                                        </ng-container>
+                                        <ng-template #refValida>
+                                             {{item.referencia}}
+                                        </ng-template>
+                                       </td>
+                                    <td appAnchocol
+                                        [ngClass]="{'existeParecidos': (!item.existePresupuesto && !item.validas?.length && item.parecidas?.length > 0), 
+                                                    'noExistePresu':(!item.existePresupuesto && !item.parecidas?.length), 'hito': !item.existePresupuesto && item.duracion == 0}"
+                                        appPintarfilapre [tipo]="titulo1" [letra]="titulo1letra" [item]="item.item"
+                                        [separador]="'.'" [partida]="item.unidad ?true:false">
+                                        <button class="btn btn-mini2 bg-info" (click)="mostrarCoincidencias(item)"
+                                            *ngIf="item.parecidas?.length">
+                                            <i class="fa fa-list icono-but">
+                                            </i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            </ng-container>
+                            <ng-template #noData1>
+                                <tr class="nodata">
+                                    <td class="mat-cell text-center" colspan="11">
+                                        <label *ngIf="!buscando">No se encontraron resultados</label>
+                                        <div *ngIf="buscando" class="preloader3 loader-block">
+                                            <div class="circ1"></div>
+                                            <div class="circ2"></div>
+                                            <div class="circ3"></div>
+                                            <div class="circ4"></div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </ng-template>
+
+                        </tbody>
+                    </table>
+                </div>
+                <div class="col-12 px-0 " [hidden]="vista == 1 ? false: true">
+
+                    <div class="col-12 d-flex justify-content-between">
+                        <div class="d-flex">
+                            <h5 class="mb-0" *ngIf="tablaFinal.length"> <span>Partida Menor Documento:</span><span
+                                    class="nombre-documento ml-2">{{fiMenor | date:'dd-MM-yyyy'}}</span></h5>
+                            <h5 class="mb-0 ml-3" *ngIf="tablaFinal.length"> <span>Partida Mayor Documento:</span><span
+                                    class="nombre-documento ml-2">{{ffMayor | date:'dd-MM-yyyy'}}</span></h5>
+                        </div>
+
+
+                        <button class="btn btn-mini btn-outline-secondary d-flex float-right" [ngbPopover]="popLeyenda"
+                            [placement]="['left', 'auto']" #p="ngbPopover" [autoClose]="'outside'" container="body"
+                            (mouseup)="quitarfoco($event);">
+                            <i class="fa fa-list "></i>
+                            Leyenda
+                        </button>
+
+                    </div>
+                    <div class="col-12 d-flex">
+                        <table id="tablaProgramacion" class="table-bordered tab-10 table-responsive height-tabla2">
+                            <thead class="text-center">
+                                <tr class="headsticky header-custom">
+                                    <th colspan="1">PRESUPUESTO</th>
+                                    <th colspan="5">XML (Presupuesto existentes)</th>
+                                    <th colspan="5">RESULTANTE</th>
+                                    <th></th>
+                                </tr>
+                                <tr class="headsticky-2 header-custom" style="height: 22px !important;">
+                                    <th appAnchocol class="w-100" [ancho]="350" [detalle]="true">Partida</th>
+                                    <th appAnchocol [ancho]="30">ID</th>
+                                    <th appAnchocol [ancho]="75">Duración</th>
+                                    <th appAnchocol [ancho]="100">Comienzo</th>
+                                    <th appAnchocol [ancho]="100"> Fin</th>
+                                    <th appAnchocol [ancho]="150"> Predecesor</th>
+                                    <th appAnchocol [ancho]="30">ID</th>
+                                    <th appAnchocol [ancho]="75">Duración</th>
+                                    <th appAnchocol [ancho]="100">Comienzo</th>
+                                    <th appAnchocol [ancho]="100"> Fin</th>
+                                    <th appAnchocol [ancho]="150"> Predecesor</th>
+                                    <th appAnchocol [ancho]="30"></th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-center">
+                                <ng-container *ngIf="tablaFinal.length; else noData1">
+                                    <tr *ngFor="let item of tablaFinal; let i=index">
+
+                                        <td appPintarfilapre [tipo]="titulo1" [letra]="titulo1letra" [item]="item.item"
+                                            [separador]="'.'" [partida]="item.unidad ?true:false" class="text-left"
+                                            [ngClass]="{'hito': item.duracion_xml === 0}" appAnchocol [ancho]="350"
+                                            [detalle]="true">
+                                            <div class="recortatextlinea text-left"
+                                                [style.padding-left.px]="((item.item?.split('.').length-1)*5)+(item.unidad?17:0)"
+                                                ngbTooltip="{{item.descripcion}}" #t="ngbTooltip" container="body"
+                                                triggers="click:blur" (mouseout)="t.close()">
+                                                <span style="font-weight: 700;"
+                                                    [ngClass]="{'ocultarHiden': item.duracion_xml === 0 && !item.unidad}">{{item.item}}</span>&nbsp;&nbsp;
+                                                <span
+                                                    [ngClass]="{'font-weight-bold ml-1': item.duracion_xml === 0 && !item.unidad}">{{item.descripcion}}</span>
+                                            </div>
+                                        </td>
+                                        <td appPintarfilapre [tipo]="titulo1" [letra]="titulo1letra" [item]="item.item"
+                                            class="bl-3" [separador]="'.'" [partida]="item.unidad ?true:false"
+                                            [ngClass]="{'bg-noexist': item.duracion_xml === '','hito': item.duracion_xml === 0}">
+                                            <ng-container *ngIf="item.duracion_xml !== ''; else elseTemplate">
+                                                {{item.idgantt_xml}}
+                                            </ng-container>
+                                            <ng-template #elseTemplate>
+                                                <i class="fa fa-ellipsis-h"></i>
+                                            </ng-template>
+                                        </td>
+                                        <td appPintarfilapre [tipo]="titulo1" [letra]="titulo1letra" [item]="item.item"
+                                            [separador]="'.'" [partida]="item.unidad ?true:false"
+                                            [ngClass]="{'bg-noexist': item.duracion_xml === '', 'hito': item.duracion_xml === 0}">
+                                            <ng-container *ngIf="item.duracion_xml !== ''; else elseTemplate2">
+                                                {{item.duracion_xml}}
+                                            </ng-container>
+                                            <ng-template #elseTemplate2>
+                                                <i class="fa fa-ellipsis-h"></i>
+                                            </ng-template>
+                                        </td>
+                                        <td appPintarfilapre [tipo]="titulo1" [letra]="titulo1letra" [item]="item.item"
+                                            [separador]="'.'" [partida]="item.unidad ?true:false"
+                                            [ngClass]="{'bg-noexist': item.duracion_xml === '', 'hito': item.duracion_xml === 0}">
+                                            <ng-container *ngIf="item.duracion_xml !== ''; else elseTemplate3">
+                                                {{item.fechaini_xml | date:'dd-MM-yyyy'}}
+                                            </ng-container>
+                                            <ng-template #elseTemplate3>
+                                                <i class="fa fa-ellipsis-h"></i>
+                                            </ng-template>
+                                        </td>
+                                        <td appPintarfilapre [tipo]="titulo1" [letra]="titulo1letra" [item]="item.item"
+                                            [separador]="'.'" [partida]="item.unidad ?true:false"
+                                            [ngClass]="{'bg-noexist': item.duracion_xml === '', 'hito': item.duracion_xml === 0}">
+                                            <ng-container *ngIf="item.duracion_xml !== ''; else elseTemplate4">
+                                                {{item.fechafin_xml | date:'dd-MM-yyyy'}}
+                                            </ng-container>
+                                            <ng-template #elseTemplate4>
+                                                <i class="fa fa-ellipsis-h"></i>
+                                            </ng-template>
+                                        </td>
+                                        <td appPintarfilapre [tipo]="titulo1" [letra]="titulo1letra" [item]="item.item"
+                                            class="br-3" [separador]="'.'" [partida]="item.unidad ?true:false"
+                                            [ngClass]="{'bg-noexist': item.duracion_xml === '', 'hito': item.duracion_xml === 0}">
+                                            <ng-container *ngIf="item.duracion_xml !== ''; else elseTemplate5">
+                                                {{item.referencia_xml}}
+                                            </ng-container>
+                                            <ng-template #elseTemplate5>
+                                                <i class="fa fa-ellipsis-h"></i>
+                                            </ng-template>
+                                            <i class="fa fa-exclamation-circle text-danger alerta-refmod" container="body" ngbTooltip="tarea predecesora a título eliminada" *ngIf="item.refCorregida == 1"></i>
+                                        </td>
+                                        <td appPintarfilapre [tipo]="titulo1" [letra]="titulo1letra" [item]="item.item"
+                                            class="bl-3" [separador]="'.'" [partida]="item.unidad ?true:false"
+                                            [ngClass]="{'hito': item.duracion_comp == 0}">
+                                            {{item.idgantt_comp}}
+                                        </td>
+                                        <td appPintarfilapre [tipo]="titulo1" [letra]="titulo1letra" [item]="item.item"
+                                            [separador]="'.'" [partida]="item.unidad ?true:false"
+                                            [ngClass]="{'hito': item.duracion_comp == 0}">{{item.duracion_comp}}
+                                        </td>
+                                        <td appPintarfilapre [tipo]="titulo1" [letra]="titulo1letra" [item]="item.item"
+                                            [separador]="'.'" [partida]="item.unidad ?true:false"
+                                            [ngClass]="{'hito': item.duracion_comp == 0}">{{item.fechaini_comp |
+                                            date:'dd-MM-yyyy'}}
+                                        </td>
+                                        <td appPintarfilapre [tipo]="titulo1" [letra]="titulo1letra" [item]="item.item"
+                                            [separador]="'.'" [partida]="item.unidad ?true:false"
+                                            [ngClass]="{'hito': item.duracion_comp == 0}">{{item.fechafin_comp |
+                                            date:'dd-MM-yyyy'}}
+                                        </td>
+                                        <td appPintarfilapre [tipo]="titulo1" [letra]="titulo1letra" [item]="item.item"
+                                            class="br-3" [separador]="'.'" [partida]="item.unidad ?true:false"
+                                            [ngClass]="{'hito': item.duracion_comp == 0}">
+                                            {{item.referencia_comp}}</td>
+                                        <td appPintarfilapre [tipo]="titulo1" [letra]="titulo1letra" [item]="item.item"
+                                            [separador]="'.'" [partida]="item.unidad ?true:false">
+                                            <div class="badge-custom text-center text-white" *ngIf="item.tipoCambio > 0"
+                                                [ngClass]="{'bg-tipoCambio1': item.tipoCambio == 1, 'bg-tipoCambio2': item.tipoCambio == 2,'bg-tipoCambio3': item.tipoCambio == 3, 'bg-tipoCambio4': item.tipoCambio == 4 }">
+                                                <span class *ngIf="item.tipoCambio == 1">PM</span>
+                                                <span class *ngIf="item.tipoCambio == 2">FD</span>
+                                                <span class *ngIf="item.tipoCambio == 3">FI</span>
+                                                <span class *ngIf="item.tipoCambio == 4">FF</span>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </ng-container>
+                                <ng-template #noData1>
+                                    <tr class="nodata">
+                                        <td class="mat-cell text-center" colspan="11">
+                                            <label *ngIf="!buscando">No se encontraron resultados</label>
+                                            <div *ngIf="buscando" class="preloader3 loader-block">
+                                                <div class="circ1"></div>
+                                                <div class="circ2"></div>
+                                                <div class="circ3"></div>
+                                                <div class="circ4"></div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </ng-template>
+                        </table>
+                    </div>
+                </div>
+                <div class="col-12 px-0" [hidden]="vista == 2 ? false: true">
+                    <div class="col-12">
+                        <h5 class="mb-0 col text-center font-weight-bolder">PROGRAMACIÓN RESULTADO</h5>
+                    </div>
+                    <div class="col-12">
+                        <table id="tablaProgramacion" class="table-bordered tab-10 table-responsive height-tabla">
+                            <thead class="text-center">
+                                <tr class="headsticky header-custom">
+                                    <th colspan="7">PROGRAMACIÓN</th>
+                                </tr>
+                                <tr class="headsticky-2 header-custom">
+                                    <th appAnchocol [ancho]="40"> Nº</th>
+                                    <th class="w-100">Partida</th>
+                                    <th appAnchocol [ancho]="50">Restri.</th>
+                                    <th appAnchocol [ancho]="75">Duración</th>
+                                    <th appAnchocol [ancho]="100">Comienzo</th>
+                                    <th appAnchocol [ancho]="100"> Fin</th>
+                                    <th appAnchocol [ancho]="111"> Predecesor</th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-center">
+                                <ng-container *ngIf="tablaFinal.length; else noData1">
+                                    <tr *ngFor="let item of tablaFinal; let indice = index;">
+                                        <td appAnchocol [ancho]="40" appPintarfilapre [tipo]="titulo1"
+                                            [color]="titulo1color" [letra]="titulo1letra" [item]="item.item"
+                                            [separador]="'.'" [partida]="item.unidad ?true:false"
+                                            [hito]="!item.duracion ? true: false">
+                                            {{item.idgantt}}</td>
+                                        <td appAnchocol class="w-100" appPintarfilapre [tipo]="titulo1"
+                                            [color]="titulo1color" [letra]="titulo1letra" [item]="item.item"
+                                            [separador]="'.'" [partida]="item.unidad ?true:false"
+                                            [hito]="!item.duracion ? true: false">
+                                            <div class="recortatextlinea text-left"
+                                                [style.padding-left.px]="((item.item?.split('.').length-1)*5)+(item.unidad?17:0)"
+                                                ngbTooltip="{{item.descripcion}}" #t="ngbTooltip" container="body"
+                                                triggers="click:blur" (mouseout)="t.close()">
+                                                <span style="font-weight: 700;"
+                                                    [ngClass]="{'ocultarHiden': !item.duracion}">{{item.item}}</span>&nbsp;&nbsp;
+                                                <span
+                                                    [ngClass]="{'font-weight-bold ml-1': !item.duracion && !item.unidad}">{{item.descripcion}}</span>
+                                            </div>
+                                        </td>
+                                        <td appAnchocol [ancho]="50" appPintarfilapre [tipo]="titulo1"
+                                            [color]="titulo1color" [letra]="titulo1letra" [item]="item.item"
+                                            [separador]="'.'" [partida]="item.unidad ?true:false"
+                                            [hito]="!item.duracion ? true: false">--
+                                        </td>
+                                        <td appAnchocol [ancho]="75" appPintarfilapre [tipo]="titulo1"
+                                            [color]="titulo1color" [letra]="titulo1letra" [item]="item.item"
+                                            [separador]="'.'" [partida]="item.unidad ?true:false"
+                                            [hito]="!item.duracion ? true: false">
+                                            {{item.duracion}}</td>
+                                        <td appAnchocol [ancho]="100" appPintarfilapre [tipo]="titulo1"
+                                            [color]="titulo1color" [letra]="titulo1letra" [item]="item.item"
+                                            [separador]="'.'" [partida]="item.unidad ?true:false"
+                                            [hito]="!item.duracion ? true: false">
+                                            {{item.fechaini}}</td>
+                                        <td appAnchocol [ancho]="100" appPintarfilapre [tipo]="titulo1"
+                                            [color]="titulo1color" [letra]="titulo1letra" [item]="item.item"
+                                            [separador]="'.'" [partida]="item.unidad ?true:false"
+                                            [hito]="!item.duracion ? true: false">
+                                            {{item.fechafin}}</td>
+                                        <td appAnchocol [ancho]="111" appPintarfilapre [tipo]="titulo1"
+                                            [color]="titulo1color" [letra]="titulo1letra" [item]="item.item"
+                                            [separador]="'.'" [partida]="item.unidad ?true:false"
+                                            [hito]="!item.duracion ? true: false">
+                                            {{item.referencia}}</td>
+                                    </tr>
+                                </ng-container>
+                                <ng-template #noData1>
+                                    <tr class="nodata">
+                                        <td class="mat-cell text-center" colspan="11">
+                                            <label *ngIf="!buscando">No se encontraron resultados</label>
+                                            <div *ngIf="buscando" class="preloader3 loader-block">
+                                                <div class="circ1"></div>
+                                                <div class="circ2"></div>
+                                                <div class="circ3"></div>
+                                                <div class="circ4"></div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </ng-template>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="app-modal-footer modal-footer justify-content-between">
+            <button type="button" class="btn  btn-sm"
+                [ngClass]="{'btn-danger': vista == 0, 'btn-secondary': vista !== 0}"
+                (click)="(vista == 0) ? closeModal() : anterior()"><i class="fa "
+                    [ngClass]="{'fa-times': vista == 0, 'fa-arrow-left': vista !== 0}"></i><span
+                    *ngIf="vista !== 0">Anterior</span><span *ngIf="vista == 0">Cerrar</span></button>
+
+            <button type="button" class="btn btn-success btn-sm" (click)="mostrarTablas()"
+                *ngIf="vista == 0 && xmlFormat.length"><i class="fa fa-arrow-right"></i>Compatibilizar</button>
+
+            <button type="button" class="btn btn-success btn-sm" (click)="guardarProgramacion()" *ngIf="vista == 1"><i
+                    class="fa fa-calendar-check-o"></i>Guardar</button>
+        </div>
+    </div>
+</div>
+<app-cargando [bloquearTodo]="true" *ngIf="mostrar_carga_todo"></app-cargando>
+
+<app-modal-basic #modalDocumentos [dialogClass]="'modal-lg'">
+    <div class="app-modal-header">
+        <h4 class="modal-title tit-modal1"><b>Datos </b></h4>
+        <button type="button" class="close basic-close" (click)="cerrarModal()">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+    <div class="app-modal-body">
+        <div class="row justify-content-center mt-2">
+            <div class="col-10">
+                <mat-form-field class="w-100" appearance="outline" floatLabel="'always'">
+                    <mat-label>Coincidencias Presupuesto</mat-label>
+                    <select matNativeControl (change)="cambioParecido($event.target.value)" [ngModel]="idfilaReemplazo">
+                        <option *ngFor="let tipo of filaComparar?.parecidas" [value]="tipo.indice">
+                            {{tipo.item}} - {{tipo.descripcion}}
+                        </option>
+                    </select>
+                </mat-form-field>
+            </div>
+
+        </div>
+        <div class="row">
+            <div class="col-6 text-center font-weight-bolder">Partida XML</div>
+            <div class="col-6 text-center font-weight-bolder">Partida presupuesto reemplazo</div>
+        </div>
+        <div class="row" style="font-size: 10px;">
+            <div class="col-6 text-left">
+                <span>{{filaComparar?.item}}</span> -
+                <span>{{filaComparar?.descripcion}}</span>
+            </div>
+            <div class="col-6 text-center">
+                <span>{{filaReemplazo?.item}}</span> -
+                <span>{{filaReemplazo?.descripcion}}</span>
+            </div>
+        </div>
+    </div>
+    <div class="app-modal-footer w-100">
+        <div class="row px-3 justify-content-between">
+            <button type="button" style="margin-right: 5px;" class="btn btn-sm btn-danger ripple"
+                (click)="cerrarModal()">Cerrar</button>
+            <button type="button" style="margin-right: 5px;" class="btn btn-sm btn-success ripple"
+                (click)="cambiarDescripcion()">Reemplazar</button>
+        </div>
+    </div>
+</app-modal-basic>
+
+<ng-template #popLeyenda>
+    <div class="m-2" style="font-family: serif;">
+        <div class="d-flex">
+            <span style="margin-right:20px">Predecesor modificado</span>
+            <div style=" background-color: #fc7171;" class="m-t-5 leyenda-item">
+            </div>
+        </div>
+        <div class="d-flex">
+            <span style="margin-right:20px">Fechas modificadas</span>
+            <div style="background-color: #797af9" class="m-t-5 leyenda-item">
+            </div>
+        </div>
+        <div class="d-flex">
+            <span style="margin-right:20px">Fecha inicio modificada</span>
+            <div style=" background-color: #db9840;" class="m-t-5 leyenda-item">
+            </div>
+        </div>
+        <div class="d-flex">
+            <span style="margin-right:20px">Fecha fin modificada</span>
+            <div style="background-color: #8cb7f0;" class="m-t-5 leyenda-item"></div>
+        </div>
+    </div>
+</ng-template>
+
+<app-modal-basic #modalNoLaborables [dialogClass]="'modal-md'">
+    <div class="app-modal-header">
+        <h4 class="modal-title tit-modal1"><b>Lista no laborables {{!fuenteFeriados ? 'SISTEMA':'DOCUMENTO'}}</b></h4>
+        <button type="button" class="close basic-close" (click)="modalNoLaborables.hide()">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+    <div class="app-modal-body">
+        <span class="font-weight-bolder">NO LABORABLES</span>
+
+        <div class="d-flex pl-2 mt-1 mb-1">
+            <ng-container *ngIf="fuenteFeriados; else fuentexml">
+                <ng-container *ngIf="listaNoLaborables.length; else nolabos1">
+                    <ng-container *ngFor="let item of listaNoLaborables">
+                        <span class="badge bg-secondary text-white">{{item}}</span>
+                    </ng-container>
+                </ng-container>
+                <ng-template #nolabos1>
+                    <i class="fa fa-ellipsis-h"></i>
+                </ng-template>
+
+
+            </ng-container>
+            <ng-template #fuentexml>
+                <ng-container *ngIf=" noLaborables?.arrayDiasNoLabEdit.length; else nolabos2">
+                    <ng-container *ngFor="let item of noLaborables?.arrayDiasNoLabEdit">
+                        <span class="badge bg-secondary text-white">{{item}}</span>
+                    </ng-container>
+                </ng-container>
+                <ng-template #nolabos2>
+                    <i class="fa fa-ellipsis-h"></i>
+                </ng-template>
+
+            </ng-template>
+        </div>
+
+
+        <span class="font-weight-bolder ">LISTA FERIADOS</span>
+        <table class="table-bordered tab-10 table-p table-custom mt-1" style="table-layout: fixed;">
+            <thead class="text-center headsticky">
+                <tr class="h-h-custom">
+                    <th appAnchocol [ancho]="30"></th>
+                    <th appAnchocol [ancho]="40" [detalle]=" true">Descripcion</th>
+                    <th appAnchocol [ancho]="80">Fecha</th>
+                </tr>
+            </thead>
+            <tbody>
+                <ng-container *ngIf="!fuenteFeriados; else fuente2">
+                    <ng-container *ngIf="noLaborables?.tablaferiados.length; else nodatos1">
+                        <tr *ngFor="let item of noLaborables?.tablaferiados; let i = index">
+                            <td class="text-center">{{i+1}}</td>
+                            <td>{{item.descripcion}}</td>
+                            <td class="text-center">{{item.fecha |date:'dd-MM-yyyy'}}</td>
+                        </tr>
+                    </ng-container>
+                    <ng-template #nodatos1>
+                        <tr>
+                            <td class="mat-cell text-center" colspan="3">
+                                <label>No se encontraron feriados</label>
+                            </td>
+                        </tr>
+                    </ng-template>
+
+
+
+                </ng-container>
+                <ng-template #fuente2>
+                    <ng-container *ngIf="listaFeriados.length; else nodatos2">
+                        <tr *ngFor="let item of listaFeriados; let i = index">
+                            <td class="text-center">{{i+1}}</td>
+                            <td>{{item.descripcion}}</td>
+                            <td class="text-center">{{item.fecha |date:'dd-MM-yyyy'}}</td>
+                        </tr>
+                    </ng-container>
+                    <ng-template #nodatos2>
+                        <tr>
+                            <td class="mat-cell text-center" colspan="3">
+                                <label>No se encontraron feriados</label>
+                            </td>
+                        </tr>
+                    </ng-template>
+
+                </ng-template>
+
+
+
+            </tbody>
+        </table>
+
+    </div>
+    <div class="app-modal-footer w-100">
+        <div class="row px-3">
+            <button type="button" style="margin-right: 5px;" class="btn btn-sm btn-danger ripple"
+                (click)="modalNoLaborables.hide()">Cerrar</button>
+        </div>
+    </div>
+</app-modal-basic>
+
+<app-modal-basic #modalMultiple [dialogClass]="'modal-lg'">
+    <div class="app-modal-header">
+        <h4 class="modal-title tit-modal1"><b>Datos </b></h4>
+        <button type="button" class="close basic-close" (click)="cerrarModal()">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+    <div class="app-modal-body">
+        <div class="row px-2">
+            <div class="col-12 overflow-auto px-0">
+                <table class="table-bordered tab-10 table-p">
+                    <thead class="text-center headsticky">
+                        <tr>
+                            <th ></th>
+                            <th colspan="2">Partida XML</th>
+                            <th colspan="2">Partida PRESUPUESTO(reemplazante)</th>
+                            <th></th>
+                        </tr>
+                        <tr>
+                            <th  appAnchocol [ancho]="30">#</th>
+                            <th  appAnchocol [ancho]="40">Item</th>
+                            <th appAnchocol [ancho]="300" [detalle]="true">Descripcion</th>
+                            <th  appAnchocol [ancho]="40">Item</th>
+                            <th appAnchocol [ancho]="300" [detalle]="true">Descripcion</th>
+                            <th  appAnchocol [ancho]="20">
+                                <input type="checkbox" [(ngModel)]="todosMarcados" (change)="marcasTodosReemplazo($event.target.checked)">
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let row of this.xmlReemplazo; let i = index">
+                            <td class="text-center">{{i+ 1}}</td>
+                            <td>{{row.item}}</td>
+                            <td>
+                                <div class="recortatext" ngbTooltip="{{row.descripcion}}" #t="ngbTooltip" container="body"
+                                triggers="click:blur" (mouseout)="t.close()">
+                                {{row.descripcion}}
+                              </div>
+                            </td>
+                            <td>{{filasReemplazo[i].item}}</td>
+                            <td>
+                                <div class="recortatext" ngbTooltip="{{row.descripcion}}" #t="ngbTooltip" container="body"
+                                triggers="click:blur" (mouseout)="t.close()">
+                                {{filasReemplazo[i].descripcion}}
+                              </div>
+                            </td>
+                            <td class="text-center align-items-center ">
+                                <input type="checkbox" [checked]="arrReemplazar.includes(i)" (change)="cambioCheckReemplazo($event.target.checked ,i)">
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <!-- <div class="col-6 overflow-auto">
+                <table class="table-bordered tab-10 table-p">
+                    <thead class="text-center headsticky">
+                        <tr>
+                            <th>#</th>
+                            <th>Item</th>
+                            <th>Descripcion</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let row of this.xmlReemplazo; let i = index">
+                            <td>{{i+ 1}}</td>
+                            <td>{{row.item}}</td>
+                            <td>{{row.descripcion}}</td>
+                            <td>
+                                <input type="checkbox" (change)="cambioCheckReemplazo($event.checked ,i)">
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div> -->
+        </div>
+
+    </div>
+
+    <div class="app-modal-footer w-100">
+        <div class="row px-3 justify-content-between">
+            <button type="button" style="margin-right: 5px;" class="btn btn-sm btn-danger ripple"
+                (click)="cerrarModal()">Cerrar</button>
+            <button type="button" style="margin-right: 5px;" class="btn btn-sm btn-success ripple"
+                (click)="reemplazarMultiple()">Reemplazar</button>
+        </div>
+    </div>
+</app-modal-basic>

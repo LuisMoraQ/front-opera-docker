@@ -1,0 +1,118 @@
+<div class="modal-dialog-scrollable modal-lg">
+    <div class="modal-content">
+        <div class="app-modal-header  modal-header">
+            <!-- tipo modal es la accion de para el modal actualizar o guardar -->
+            <h4 class="modal-title tit-modal1">
+                <b>Lista de Clasificación Comercial</b>
+            </h4>
+            <button type="button" class="close basic-close" (click)="closeModal()">
+                <span aria-hidden="true" class="mt-2">&times;</span>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div class="row  p-r-15">
+                <div class="col-sm-5 col-md-5" style="margin-bottom: 10px;">
+                    <mat-form-field class="mff-reduc w-100 alto-35 field-busqueda" appearance="outline">
+                        <mat-label>Buscar</mat-label>
+                        <input matInput type="text" [(ngModel)]="busqueda" (keyup)="applyFilterPrinc($event)" id="inpbusq"
+                            autocomplete="off">
+                        <button *ngIf="busqueda" matSuffix mat-icon-button aria-label="Clear" (click)="limpiarfiltro()">
+                            <mat-icon>close</mat-icon>
+                        </button>
+                    </mat-form-field>
+                </div>
+                <div class="col-5" *ngIf="tipoInsumos.length>0">
+                    <mat-form-field appearance="outline" class="mff-reduc col-12 alto-35 px-0">
+                        <mat-label>Tipo Insumo</mat-label>
+                        <select matNativeControl [(ngModel)]="tipoInsumo" (change)="cambioTipoInsumo()">
+                            <option value="">--Todos--</option>
+                            <option *ngFor="let tipoins of tipoInsumos" [value]="tipoins.id_tipo_insumo">
+                                {{tipoins.desc_tipo_insumo}}
+                            </option>
+                        </select>
+                    </mat-form-field>
+                </div>
+                <button type="button" class="btn btn-success btn-sm light ripple m-b-10 m-r-5" (click)="openModal()"
+                    (mouseup)="quitarfoco($event);">
+                    <i class="fa fa-plus"></i>Agregar
+                </button>
+            </div>
+            <div [style.height.px]="height" class="tabla-limp">
+                <table class="table-bordered tab-10">
+                    <thead>
+                        <tr class="headsticky header-custom">
+                            <th *ngIf="clasipresu" appAnchocol [ancho]="20"></th>
+                            <th appAnchocol [ancho]="80">Abreviatura</th>
+                            <th appAnchocol [ancho]="400" [detalle]="true">Clasificación</th>
+                            <th appAnchocol [ancho]="55">Fuente</th>
+                            <th appAnchocol [ancho]="100">Tipo Insumo</th>
+                            <th appAnchocol [ancho]="64"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <ng-container *ngIf="dataSource.length>0">
+                            <tr *ngFor="let row of dataSource | filtoTablaDesc: busqueda: 'desc_clasi';let indice=index;" (click)="cambindicesel(indice,row)" 
+                            [ngClass]="{'highlight': fila_sel == indice}" (dblclick)="seleccionarTipo(row)">
+                                <td *ngIf="clasipresu" appAnchocol [ancho]="20" style="cursor: pointer;">
+                                    <!-- <mat-checkbox *ngIf="row.existe==1" disabled class="checktabla" [checked]="row.existe==1?true:false"></mat-checkbox> -->
+                                    <span *ngIf="row.existe==1" class="numberCircle backg-success"></span>
+                                </td>
+                                <td appAnchocol [ancho]="80" style="cursor: pointer;">
+                                    {{row.abrev}}
+                                </td>
+                                <td class="text-left" appAnchocol [ancho]="400" [detalle]="true">
+                                    <div class="recortatext" ngbTooltip="{{row.desc_clasi}}" #b="ngbTooltip" container="body" triggers="click:blur" (mouseout)="b.close()">
+                                        {{row.desc_clasi}}
+                                    </div>
+                                </td>
+                                <td appAnchocol [ancho]="55">
+                                    <label class="label" style="font-size:8px;text-align: center;" [ngClass]="{'label-success': row.fuente == '1','label-primary': row.fuente==0 }">
+                                        {{row.fuente=='0'?'SISTEMA':row.fuente=='1'?'USUARIO':''}}
+                                    </label>
+                                </td>
+                                <td appAnchocol [ancho]="100">
+                                    <div class="label-main" style="margin: 1px;">
+                                        <label *ngIf="row.abrev_tipo" class="label" [ngClass]="{'label-success': row.abrev_tipo == 'MO',
+                                        'label-warning-oscuro': row.abrev_tipo == 'MA',
+                                        'label-danger': row.abrev_tipo == 'EQ',
+                                        'label-primary': row.abrev_tipo == 'SC',
+                                        'label-scondary': row.abrev_tipo == 'SP'}">{{row.desc_tipo_insumo}}</label>
+                                    </div>
+                                </td>
+                                <td appAnchocol [ancho]="64">
+                                    <button *ngIf="row.fuente==fuentepasa" class="btn btn-mini2 btn-primary" placement="top" ngbTooltip="Editar"
+                                        container="body" (click)="editarclasi(row)" (mouseup)="quitarfoco($event);">
+                                        <i class="fa fa-pencil icono-but"></i>
+                                    </button>
+                                    <button *ngIf="row.fuente==fuentepasa" class="btn btn-mini2 btn-danger" placement="top" ngbTooltip="Eliminar"
+                                        container="body"(click)="eliminarClasificacionComercial(row)" (mouseup)="quitarfoco($event);">
+                                        <i class="fa fa-remove icono-but"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        </ng-container>
+                        <ng-container *ngIf="dataSource.length<=0">
+                            <tr>
+                                <td class="mat-cell text-center" colspan="8">
+                                    <label *ngIf="!buscando">No se encontraron resultados</label>
+                                    <div *ngIf="buscando" class="preloader3 loader-block">
+                                        <div class="circ1"></div>
+                                        <div class="circ2"></div>
+                                        <div class="circ3"></div>
+                                        <div class="circ4"></div>
+                                    </div>
+                                </td>
+                            </tr>
+                        </ng-container>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="app-modal-footer modal-footer justify-content-between">
+            <button type="button" class="btn btn-danger btn-sm" (click)="closeModal()"><i
+                    class="fa fa-times"></i>Cerrar</button>
+            <button type="button" class="btn btn-success btn-sm" (click)="seleccionarTipo()"><i
+                    class="fa fa-check"></i>Seleccionar</button>
+        </div>
+    </div>
+</div>

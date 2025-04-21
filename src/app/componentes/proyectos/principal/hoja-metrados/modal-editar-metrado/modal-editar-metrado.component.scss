@@ -1,0 +1,404 @@
+.th-custom {
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    font-size: 10px !important;
+    border: 1px solid #fafafa;
+    height: 22px !important;
+}
+
+.td-custom {
+    height: 22px !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    font-size: 10px !important;
+    border: 1px solid #ccc;
+}
+
+
+.celda-header-excel {
+    background-color: #aae9bd !important;
+    color: black !important;
+    border-color: #1a1818 !important;
+}
+
+.bor-bot {
+    border-bottom: 1px solid black !important;
+}
+
+.bor-right {
+    border-right: 1px solid black !important;
+}
+
+.btn-orange {
+    background-color: #ae5229 !important;
+    border-color: #ae5229 !important;
+    color: white !important;
+    float: right !important;
+    height: 26px !important;
+}
+
+.h-principal {
+    height: calc(100vh - 100px);
+}
+
+.h-tabla-principal {
+    height: calc(100vh - 140px);
+}
+
+.h-tabla-sistema {
+    height: calc(100vh - 170px);
+}
+
+.resize-action {
+    border-left: thick solid #ff0000;
+    height: calc(100vh - 140px);
+
+    &:hover,
+    &:active {
+        cursor: col-resize;
+    }
+}
+
+.celda-excel {
+    color: #1a1818 !important;
+    background-color: #f0ebeb !important;
+    border: 1px solid #c4c0c0;
+}
+
+.row-seleccionado {
+    background-color: #bcbcbc !important;
+}
+
+
+$conf-color: #896df1;
+
+.btn-conf {
+    color: #fff;
+    background-color: $conf-color;
+    border-color: $conf-color;
+
+    &:hover {
+        color: #fff;
+        background-color: lighten($conf-color, 10%);
+        border-color: lighten($conf-color, 10%);
+    }
+
+    &:focus {
+        color: #fff;
+        background-color: lighten($conf-color, 10%);
+        border-color: lighten($conf-color, 10%);
+    }
+
+    &:active {
+        color: #fff;
+        background-color: darken($conf-color, 12%);
+        border-color: darken($conf-color, 12%);
+    }
+
+    .disabled {
+        color: #fff;
+        background-color: transparentize($conf-color, 0.12);
+        border-color: transparentize($conf-color, 0.12);
+    }
+}
+
+.custom-popover {
+    width: 65px;
+}
+
+custom-popover2 {
+    width: auto;
+}
+
+// .wrapper-custom .mat-form-field-wrapper {
+//     padding-bottom: 0px !important;
+// }
+
+.mat-form-field.pd0 ::ng-deep .mat-form-field-wrapper {
+    padding-bottom: 0 !important;
+}
+
+::ng-deep .mff-reduc.mat-form-field-appearance-outline .mat-form-field-label {
+    margin-top: -0.4rem !important;
+}
+
+// .mat-checkbox-layout {
+//     margin-bottom: 0px !important;
+// }
+
+.mat-checkbox.custom-mat-checkbox ::ng-deep label {
+    margin-bottom: 0px !important;
+}
+
+.custom-total {
+    position: sticky !important;
+    bottom: 0 !important;
+}
+
+.headsticky2 {
+    position: sticky;
+    top: 21.8px;
+    z-index: 2;
+}
+
+.bg-editado {
+    background-color: #d1f986 !important;
+}
+
+.text-warning2 {
+    color: #b89a1d !important;
+}
+
+.es-metrado {
+    font-weight: 900 !important;
+}
+
+.es-titulo {
+    font-weight: 900 !important;
+    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif !important;
+    text-decoration: underline !important;
+}
+
+.icono-multiple {
+    position: relative !important;
+    right: 3px !important;
+}
+
+.btn-multiple {
+    width: 10px !important;
+}
+
+.btn-agrupado-izq {
+    margin-right: 0px !important;
+    border-radius: 2px 0px 0px 2px !important;
+}
+
+.btn-agrupado-der {
+    margin-left: 0px !important;
+    border-radius: 0px 2px 2px 0px !important;
+}
+
+.switch input[type=checkbox]+.cr {
+    top: 3px !important;
+    background-color: lightgrey;
+}
+
+.badge-option {
+    // position: relative !important;
+    // top: 3px !important;
+    font-size: 11px !important;
+}
+
+.custom-importar {
+    width: 33px !important;
+    height: 30px !important;
+    background-color: #fafafa !important;
+    color: #0764ff !important;
+    line-height: 0px !important;
+    border-radius: 2px !important;
+    cursor: pointer;
+    border: 1px solid #0764ff;
+    text-align: center;
+    font-size: 15px;
+    position: relative;
+    top: 1px;
+    padding-top: 5px;
+}
+
+.custom-importar:hover {
+    color: #fafafa !important;
+    background-color: #448aff !important;
+    border-color: #448aff !important;
+}
+
+.alert-warning-custom {
+    border-color: #ffe100 !important;
+    color: #856404 !important;
+    background-color: #fff3cd !important;
+    position: relative !important;
+    top: 30% !important;
+}
+
+.height-tabla-excel {
+    height: calc(100vh - 200px) !important;
+}
+
+.tr1-sticky {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+}
+
+.tr2-sticky {
+    position: sticky;
+    top: 22px;
+    z-index: 2;
+}
+
+.tr3-sticky {
+    position: sticky;
+    top: 44px;
+    z-index: 2;
+}
+
+.tr4-sticky {
+    position: sticky;
+    top: 66px;
+    z-index: 2;
+}
+
+.es-titulo-excel {
+    font-weight: 900 !important;
+    font-family: 'icofont' !important;
+    text-decoration: underline !important;
+    text-align: center !important;
+    color: brown !important;
+}
+
+
+.es-metrado-excel {
+    font-weight: 700 !important;
+    font-family: 'icofont' !important;
+    color: #03015a !important;
+}
+
+.bg-noExistePresu {
+    background-color: #fba359 !important;
+
+}
+
+.bg-cantidad-diferente {
+    background-color: #e2ff00 !important;
+}
+
+.leyenda-noExiste {
+    height: 14px;
+    width: 25px;
+    border-radius: 5px;
+    margin-top: 2px;
+    margin-right: 5px;
+}
+
+.leyendas-text {
+    margin-right: 5px;
+    font-size: 9px;
+    font-family: ui-monospace;
+}
+
+
+.ng-select.custom ::ng-deep .ng-select-container {
+    min-height: 20px !important;
+}
+
+.ng-select.custom ::ng-deep .ng-select-container {
+    height: 20px !important;
+}
+
+.mb-custom ::ng-deep .mat-checkbox-layout {
+    margin-bottom: 0 !important;
+}
+
+.es-texto {
+    text-align: left !important;
+    color: #878787 !important;
+    font-weight: 600 !important;
+    font-style: italic !important;
+}
+
+.nivel3 {
+    font-weight: 900 !important;
+    font-family: 'icofont' !important;
+    text-decoration: underline !important;
+    color: brown !important;
+}
+
+.nivel2 {
+    // text-align: left !important;
+    color: rgb(93, 8, 100) !important;
+    font-weight: 600 !important;
+    font-style: italic !important;
+}
+
+.nivel1 {
+    font-weight: unset !important;
+    font-family: 'icofont' !important;
+    text-decoration: unset !important;
+    color: unset !important;
+}
+
+.c-select {
+    background-color: #fdfdf1 !important;
+    border: 3px solid #c18861 !important;
+    border-style: double !important;
+}
+
+.d-select {
+    background-color: #f2fcfe !important;
+    border: 3px solid #459ab8 !important;
+    border-style: double !important;
+}
+
+.e-select {
+    background-color: #f9f4fa !important;
+    border: 3px solid #60407b !important;
+    border-style: double !important;
+}
+
+.f-select {
+    background-color: #f4fbf7 !important;
+    border: 3px solid #3b9061 !important;
+    border-style: double !important;
+}
+
+.g-select {
+    background-color: #fcf0fd !important;
+    border: 3px solid #b352a4 !important;
+    border-style: double !important;
+}
+
+.oculto {
+    position: absolute;
+    left: -9999999px;
+    top: -999999px;
+}
+
+.noresize {
+    resize: none;
+    height: 17px !important;
+    line-height: 1;
+    font-size: 12px;
+    border: none;
+    margin: 0;
+    padding: 0;
+}
+
+.celdaSeleccionada {
+    background-color: rgb(243, 243, 93) !important;
+}
+
+.celdaTabla {
+    background-color: rgb(103, 197, 221) !important;
+}
+
+.pos-r-3 {
+    position: relative !important;
+    left: 2.5px !important;
+}
+
+.color-icon {
+    color: #444342 !important;
+    font-size: 7px;
+}
+
+.cursivanegrita {
+    font-weight: bold !important;
+    font-style: italic !important;
+}
+
+.cursiva {
+    font-style: italic !important;
+}
+
+.negrita {
+    font-weight: bold !important;
+}

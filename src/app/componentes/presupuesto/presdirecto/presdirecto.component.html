@@ -1,0 +1,956 @@
+<!-- <h4 class="sub-title text-center p-b-0">PRESUPUESTO DIRECTO</h4> -->
+<app-cargando [bloquearTodo]="true" *ngIf="mostrar_carga_todo"></app-cargando>
+<app-cargando [bloquearTodo]="false" *ngIf="mostrar_carga"></app-cargando>
+  <div class="row px-3">
+    <div class="col-12 c-titi-but" style="padding-right: 5px;">
+      <div class="row" style="margin-bottom: 2px;width: 100%;">
+        <div id="divbut" style="width: calc(100% - 165px);margin-right: 18px;" class="hidescroll">
+          <span *ngIf="scrollbut" class="icscrol-l" (click)="rigthDivBut()"><i class="icofont icofont-caret-left icono-but"></i></span>
+          <div class="row" style="width: 990px;margin-right: 0px;margin-left: 0px;" [style.width.px]="solover?375:990">
+            <div class="btn-group" style="margin-bottom: 3px;">
+              <button *ngIf="cargacomp && datasourcePri.length==0 && !existetemp && !solover" type="button" class="btn btn-success btn-mini btn-group-mini"
+                ngbTooltip="Importar Presupuesto" (click)="ImportarPresu()" (mouseup)="quitarfoco($event);" container="body">
+                <i class="fa fa-upload icono-but"></i>
+              </button>
+            </div>&nbsp;
+            <div *ngIf="!solover" class="btn-group" style="margin-bottom: 3px;">
+              <button type="button" class="btn btn-mini btn-group-mini btn-outline-primary" placement="top" ngbTooltip="Agregar Titulo(s)"
+              container="body" (click)="OpenmodalAddTitulo()" (mouseup)="quitarfoco($event);">
+                  <i class="icofont icofont-brand-tango icono-but"></i>
+              </button>
+              <button type="button" class="btn btn-mini btn-group-mini btn-outline-primary" placement="top" ngbTooltip="Agregar Subtitulo(s)"
+              container="body" (click)="OpenmodalAddsubTitulo()" (mouseup)="quitarfoco($event);">
+                  <i class="fa fa-scribd icono-but"></i>
+              </button>
+              <button type="button" class="btn btn-mini btn-group-mini btn-outline-primary" placement="top" ngbTooltip="Agregar Partida(s)"
+              container="body" (click)="OpenmodalAddPartida()" (mouseup)="quitarfoco($event);">
+                  <i class="icofont icofont-pandora icono-but"></i>
+              </button>
+              <button type="button" class="btn btn-mini btn-group-mini btn-outline-primary btn-2icon" style="text-transform: none;" placement="top" ngbTooltip="Agregar SubTitulo Rapido"
+              container="body" (click)="SubtituloBlanco()" (mouseup)="quitarfoco($event);">
+                  <i class="fa fa-bolt icoizq"></i><span class="icoder">s</span>
+              </button>
+              <button type="button" class="btn btn-mini btn-group-mini btn-outline-primary btn-2icon" style="text-transform: none;" placement="top" ngbTooltip="Agregar Partida Rapida"
+              container="body" (click)="PartidaBlanco()" (mouseup)="quitarfoco($event);">
+                  <i class="fa fa-bolt icoizq"></i><span class="icoder">p</span>
+              </button>
+              <button type="button" class="btn btn-mini btn-group-mini btn-outline-primary" placement="top" ngbTooltip="Buscar en Proyectos"
+              container="body"  (mouseup)="quitarfoco($event);" (click)="OpenmodaddData()">
+                  <i class="icofont icofont-database icono-but"></i>
+              </button>
+            </div>&nbsp;&nbsp;&nbsp;
+            <div *ngIf="!solover" class="btn-group" style="margin-bottom: 3px;">
+              <button type="button" class="btn btn-mini btn-group-mini btn-outline-primary btn-2icon" placement="top" [ngbTooltip]="colselpri2?'Deshabilitar Seleccion Multiple Subtitulos':'Habilitar Seleccion Multiple Subtitulos'" [ngClass]="{'btn-primary': !colselpri2,'btn-danger': colselpri2}"
+                container="body" (click)="HabSelPri2()" (mouseup)="quitarfoco($event);">
+                <i class="fa icoizq" [ngClass]="{'fa-check': !colselpri2,'fa-ban': colselpri2}"></i>
+                <i class="fa fa-scribd icoder"></i>
+                <!-- <i class="fa icono-but" [ngClass]="{'fa-check-square-o': !colselpri2,'fa-ban': colselpri2}"></i> -->
+              </button>
+              <button type="button" class="btn btn-mini btn-group-mini btn-outline-primary btn-2icon" placement="top" [ngbTooltip]="colselpri?'Deshabilitar Seleccion Multiple Partidas':'Habilitar Seleccion Multiple Partidas'" [ngClass]="{'btn-primary': !colselpri,'btn-danger': colselpri}"
+                container="body" (click)="HabSelPri()" (mouseup)="quitarfoco($event);">
+                <i class="fa icoizq" [ngClass]="{'fa-check': !colselpri,'fa-ban': colselpri}"></i>
+                <i class="icofont icofont-pandora icoder"></i>
+              </button>
+              <button type="button" class="btn btn-mini btn-group-mini btn-outline-primary" placement="top" ngbTooltip="Copiar"
+                container="body" (click)="Copiar()" (mouseup)="quitarfoco($event);">
+                <i class="icofont icofont-ui-copy icono-but"></i>
+              </button>
+              <button type="button" class="btn btn-mini btn-group-mini btn-outline-primary" placement="top" ngbTooltip="Cortar"
+              container="body" (mouseup)="quitarfoco($event);" (click)="Cortar()">
+                  <i class="icofont icofont-ui-cut icono-but"></i>
+              </button>
+              <button type="button" class="btn btn-mini btn-group-mini btn-outline-primary" placement="top" ngbTooltip="Pegar"
+                container="body" (click)="PegarBut()" (mouseup)="quitarfoco($event);">
+                <i class="icofont icofont-ui-clip-board icono-but"></i>
+              </button>
+              <button type="button" class="btn btn-mini btn-group-mini btn-outline-primary btn-gru-multiple" placement="bottom" container="body" [ngbPopover]="opcpegar"
+                (mouseup)="quitarfoco($event);">
+                <i class="fa fa-caret-down icono-but"></i>
+              </button>
+              <ng-template #opcpegar>
+                <div class="btn-group-vertical">
+                  <button type="button" ngbDropdownItem class="btn btn-sm" (click)="Pegar(0)">Al Inicio</button>
+                  <button type="button" ngbDropdownItem class="btn btn-sm" (click)="Pegar(1)">Al Final</button>
+                  <button *ngIf="tablaacusel[this.filaSelacu]?.num_det!=0" type="button" ngbDropdownItem class="btn btn-sm" (click)="Pegar(2)">Sobre Selección</button>
+                  <button *ngIf="tablaacusel[this.filaSelacu]?.num_det!=0" type="button" ngbDropdownItem class="btn btn-sm" (click)="Pegar(3)">Bajo Selección</button>
+                </div>
+              </ng-template>
+              <button type="button" class="btn btn-mini btn-group-mini btn-outline-primary" placement="top" ngbTooltip="Eliminar"
+                container="body" (click)="EliminarFila()" (mouseup)="quitarfoco($event);">
+                <i class="fa fa-remove icono-but"></i>
+              </button>
+            </div>&nbsp;&nbsp;&nbsp;
+            <div class="btn-group" style="margin-bottom: 3px;">
+              <button *ngIf="!solover" type="button" class="btn btn-mini btn-group-mini btn-outline-primary" placement="top" ngbTooltip="Subir"
+                container="body" (click)="SubirFila()" (mouseup)="quitarfoco($event);">
+                <i class="fa fa-arrow-up icono-but"></i>
+              </button>
+              <button *ngIf="!solover" type="button" class="btn btn-mini btn-group-mini btn-outline-primary" placement="top" ngbTooltip="Bajar"
+                container="body" (click)="BajarFila()" (mouseup)="quitarfoco($event);">
+                <i class="fa fa-arrow-down icono-but"></i>
+              </button>
+              <button *ngIf="!solover" type="button" class="btn btn-mini btn-group-mini btn-outline-primary" placement="top" ngbTooltip="Izquierda"
+                container="body" (click)="MovIzqui()" (mouseup)="quitarfoco($event);">
+                <i class="fa fa-arrow-left icono-but"></i>
+              </button>
+              <button *ngIf="!solover" type="button" class="btn btn-mini btn-group-mini btn-outline-primary" placement="top" ngbTooltip="Derecha"
+                container="body" (click)="MovDerec()" (mouseup)="quitarfoco($event);">
+                <i class="fa fa-arrow-right icono-but"></i>
+              </button>
+              <button type="button" class="btn btn-mini btn-group-mini btn-outline-primary" placement="top" ngbTooltip="Expandir Contenido de la Seleccion"
+              container="body" (click)="Expandetodo()" (mouseup)="quitarfoco($event);">
+              <i class="icofont icofont-rounded-expand icono-but"></i>
+              </button>
+              <button type="button" class="btn btn-mini btn-group-mini btn-outline-primary" placement="top" ngbTooltip="Contraer Contenido de la Seleccion"
+              container="body" (click)="ContraeTodo()" (mouseup)="quitarfoco($event);">
+              <i class="icofont icofont-rounded-collapse icono-but"></i>
+              </button>
+              <!-- <button type="button" class="btn btn-mini btn-group-mini btn-outline-primary btn-gru-multiple" placement="bottom" container="body" [ngbPopover]="opcgrupos"
+                (mouseup)="quitarfoco($event);">
+                <i class="fa fa-caret-down icono-but"></i>
+              </button>
+              <ng-template #opcgrupos>
+                <div class="btn-group-vertical">
+                  <button type="button" ngbDropdownItem class="btn btn-sm" (click)="Expandetodo(0)">Expandir Todo de la Seleccion</button>
+                  <button type="button" ngbDropdownItem class="btn btn-sm" (click)="ContraeTodo(1)">Contraer Todo de la Seleccion</button>
+                </div>
+              </ng-template> -->
+            </div>&nbsp;&nbsp;&nbsp;
+            <div class="btn-group" style="margin-bottom: 3px;">
+              <button *ngIf="!vistagrande || expanded" type="button" class="btn btn-mini btn-group-mini btn-outline-primary" placement="top" ngbTooltip="Ver Partida" 
+                container="body" (click)="openModal()" (mouseup)="quitarfoco($event);">
+                <i class="fa fa-search icono-but"></i>
+              </button>
+              <button type="button" class="btn btn-mini btn-group-mini " placement="top" [ngbTooltip]="acuxmetrado?'Desactivar ACU x Metrado':'Ver ACU x Metrado'" style="font-family: fantasy;"
+              container="body"  (mouseup)="quitarfoco($event);" (click)="MetradoAcu()" [ngClass]="{'btn-outline-primary': !acuxmetrado,'btn-outline-danger': acuxmetrado}">
+                  <!-- <i class="icofont icofont-brand-tango icono-but"></i> -->ACU
+              </button>
+              <button *ngIf="!solover" type="button" class="btn btn-mini btn-group-mini btn-outline-primary btn-primary" placement="top" [ngbTooltip]="edicionacu?'Deshabilitar Edicion Costos Unitarios':'Habilitar Edicion Costos Unitarios'"
+              container="body" (click)="changeEdicion()" (mouseup)="quitarfoco($event);">
+              <i class="icofont icono-but" [ngClass]="{'icofont-lock': !edicionacu,'icofont-unlocked': edicionacu}"></i>
+              </button>
+              <button *ngIf="!solover" type="button" class="btn btn-mini btn-group-mini btn-outline-primary" placement="top" ngbTooltip="Vincular/Desvincular Partidas"
+              container="body"  (mouseup)="quitarfoco($event);" (click)="openModalVinculo()">
+                  <i class="fa fa-code-fork fa-rotate-270 icono-but"></i>
+              </button>
+            </div>&nbsp;&nbsp;&nbsp;
+            <div class="btn-group" style="margin-bottom: 3px;">
+              <button type="button" class="btn btn-mini btn-group-mini" placement="top" ngbTooltip="Mostrar Costos Indirectos"
+              container="body"  (mouseup)="quitarfoco($event);" (click)="ListarIndirecto()" [ngClass]="{'btn-outline-primary': !mostindir,'btn-primary': mostindir}">
+                  <i class="icofont icofont-pie-alt icono-but"></i>
+              </button>
+              <button type="button" class="btn btn-mini btn-group-mini btn-outline-primary" placement="top" ngbTooltip="Relación de Insumos" 
+                container="body" (click)="relacionInsumosProy()" (mouseup)="quitarfoco($event);">
+                <i class="icofont-listing-number icono-but"></i>
+              </button>
+              <button *ngIf="!solover" type="button" class="btn btn-mini btn-group-mini" placement="top" ngbTooltip="Edicion Precio Insumo ->"
+                container="body" (mouseup)="quitarfoco($event);" [ngClass]="{'btn-primary': butselprecio=='1','btn-info': butselprecio=='2','btn-success': butselprecio=='3','btn-inverse': butselprecio=='4'}">EPI
+              </button>
+              <button *ngIf="!solover" type="button" class="btn btn-mini btn-group-mini btn-outline-primary btn-gru-multiple" placement="bottom" container="body" [ngbPopover]="opcepi"
+                (mouseup)="quitarfoco($event);">
+                <i class="fa fa-caret-down icono-but"></i>
+              </button>
+              <ng-template #opcepi>
+                <div class="btn-group-vertical">
+                  <button type="button" ngbDropdownItem class="btn btn-sm" (click)="CambEditaPrecio(1)">Partida Actual</button>
+                  <button type="button" ngbDropdownItem class="btn btn-sm" (click)="CambEditaPrecio(2)">En Titulo</button>
+                  <button type="button" ngbDropdownItem class="btn btn-sm" (click)="CambEditaPrecio(3)">En Proyecto</button>
+                  <!-- <button type="button" ngbDropdownItem class="btn btn-sm" (click)="CambEditaPrecio(4)">Usar Precio de Mercado</button> -->
+                </div>
+              </ng-template>
+              <button type="button" class="btn btn-mini btn-group-mini btn-outline-primary" placement="top" ngbTooltip="Clasificación Comercial de Insumos" 
+                container="body" (click)="ClasiComerProy()" (mouseup)="quitarfoco($event);">
+                <i class="icofont icofont-sub-listing icono-but"></i>
+              </button>
+            </div>&nbsp;&nbsp;&nbsp;
+            <div class="btn-group" style="margin-bottom: 3px;">
+              <button type="button" class="btn btn-mini btn-group-mini" placement="top" [ngbTooltip]="lineas2?'Mostrar Descripción en 1 linea':'Mostra Descripción en 2 lineas'"
+              container="body"  (mouseup)="quitarfoco($event);" (click)="CambioLineas()" [ngClass]="{'btn-outline-primary': !lineas2,'btn-primary': lineas2}">
+                  <i class="icofont icono-but" [ngClass]="{'icofont-ui-remove':lineas2,'icofont-ui-pause':!lineas2,'icofont-rotate-90':!lineas2}"></i>
+              </button>
+            </div>&nbsp;&nbsp;&nbsp;
+            <div class="btn-group" style="margin-bottom: 3px;">
+              <button type="button" class="btn btn-mini btn-group-mini btn-outline-primary" placement="bottom" container="body" [ngbPopover]="opcimpr"
+              container="body"  (mouseup)="quitarfoco($event);">
+                  <i class="icofont icofont-print icono-but"></i>
+              </button>
+              <ng-template #opcimpr>
+                <div class="btn-group-vertical">
+                  <button type="button" ngbDropdownItem class="btn btn-sm" (click)="Imprime()">Presupuesto General</button>
+                  <button type="button" ngbDropdownItem class="btn btn-sm" (click)="imprdesagre()">Presupuesto Disgregado</button>
+                  <button type="button" ngbDropdownItem class="btn btn-sm" (click)="imprAcu()">Costos Unitarios</button>
+                  <button type="button" ngbDropdownItem class="btn btn-sm" (click)="imprAcuxMet()">Costos Unitarios x Metrado</button>
+                  <button type="button" ngbDropdownItem class="btn btn-sm" (click)="imprSubp()">Relacion de Subpartidas</button>
+                  <button type="button" ngbDropdownItem class="btn btn-sm" (click)="imprrelins()">Relacion de Insumos</button>
+                  <button type="button" ngbDropdownItem class="btn btn-sm" (click)="imprClasi()">Clasificacion Comercial</button>
+                </div>
+              </ng-template>
+              <!-- <button *ngIf="!solover" type="button" class="btn btn-mini btn-group-mini btn-outline-primary" placement="top" ngbTooltip="Exportar"
+              container="body"  (mouseup)="quitarfoco($event);">
+                  <i class="fa fa-file-excel-o icono-but"></i>
+              </button> -->
+            </div>
+            <span *ngIf="existetemp && solover" class="text-danger m-l-10">Existen Cambios sin Guardar.</span>
+          </div>
+          <span *ngIf="scrollbut" class="icscrol-r" (click)="leftDivBut()"><i class="icofont icofont-caret-right icono-but"></i></span>
+        </div>
+        <div style="width: 145px;">
+            <button *ngIf="vistagrande" type="button" class="btn btn-outline-secondary btn-mini"
+            [ngbTooltip]="expanded ? 'Reducir' : 'Expandir'" (click)="cambioExpande()" (mouseup)="quitarfoco($event);" container="body">
+              <i class="fa icono-but" [ngClass]="{'fa-long-arrow-right': !expanded,'fa-long-arrow-left': expanded}"></i>
+            </button>
+            <button *ngIf="!solover" type="button" class="btn btn-mini btn-orange" placement="top" ngbTooltip="Recalcular Montos"
+              container="body"  (mouseup)="quitarfoco($event);" (click)="RecalculaPresu()">
+                  <i class="icofont icofont-safety icono-but"></i>
+            </button>
+            <button *ngIf="!solover" type="button" class="btn btn-mini btn-inverse" ngbTooltip="Reiniciar Presupuesto" 
+              container="body" (click)="ReiniciaPresu()" (mouseup)="quitarfoco($event);">
+              <i class="icofont icofont-bin icono-but"></i>
+            </button>
+            <button *ngIf="!solover" type="button" class="btn btn-mini btn-success" ngbTooltip="Guardar Cambios" 
+              container="body" (click)="guardarCambiosPresu()" (mouseup)="quitarfoco($event);">
+              <i class="fa fa-save icono-but"></i>
+              <span *ngIf="existetemp" class="badge ballalert balert-danger"></span>
+            </button>
+            <button *ngIf="!solover" type="button" class="btn btn-mini btn-danger" ngbTooltip="Descartar Cambios" 
+              container="body" (click)="descartaCambiosPresu()" (mouseup)="quitarfoco($event);">
+              <i class="fa fa-power-off icono-but"></i>
+            </button>
+        </div>
+      </div>
+      <i *ngIf="running" class="fa fa-cloud-upload runtemp" ngbTooltip="Sus cambios se estan guardando temporalmente." container="body"></i>
+    </div>
+    <div [ngClass]="{'col-md-6 col-sm-12': !expanded, 'col-md-12 col-sm-12': expanded}" class="px-2 p-t-5">
+      <div [style.height.px]="height" id="Tabpresu" class="w-100 tabla-limp" style="min-height: 150px;">
+        <table class="table-bordered tab-10">
+          <thead>
+            <tr class="headsticky header-custom">
+              <th appAnchocol [ancho]="30"></th>
+              <th appAnchocol [ancho]="220" [detalle]="true">
+                <div class="d-flex">
+                  <a style="padding: 0px 2px;cursor: pointer;" ngbTooltip="Expandir Todo"
+                      container="body" (click)="maxtodo()"><i
+                          class="icofont icofont-caret-down"></i></a>
+                  <a style="padding: 0px 2px;cursor: pointer;" ngbTooltip="Contraer Todo"
+                      container="body" (click)="mintodo()"><i
+                          class="icofont icofont-caret-up"></i></a>
+                  <span style="width: calc(100% - 35px);">Descripción</span>
+                </div>
+              </th>
+              <th appAnchocol [ancho]="44">Unidad</th>
+              <th appAnchocol [ancho]="90">Metrado</th>
+              <th appAnchocol [ancho]="90">Precio</th>
+              <th appAnchocol [ancho]="100">Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- <ng-container *cdkVirtualFor="let row of dataSource.data"> -->
+              <ng-container *ngIf="datasourcePri.length>0">
+                <tr (click)="cambindiceselpresu(indice)" *ngFor="let row of datasourcePri;let indice=index;" [hidden]="row.mostrar == 0"><!-- [ngStyle]="{'display': row.mostrar == 1 ? null : 'none'}" -->
+                  <td class="cellsinpadding" [ngStyle]="{'background': row.colorvin??'#f8f8f8'}"
+                  appAnchocol [ancho]="30"><!-- [ngClass]="{'highlight': filaSel == indice}" -->
+                    <span *ngIf="!colselpri && !colselpri2">{{indice+1}}</span>
+                    <mat-checkbox *ngIf="(row.unidad!='' && colselpri) || (row.unidad=='' && colselpri2 && row.tipofila!=0)" class="checktabla" [checked]="row.seleccion==0?false:true" (change)="$event ? Cambioseltpri(row,indice) : null"></mat-checkbox>
+                  </td>
+                  <td class="text-left cellsinpadding" appAnchocol [ancho]="220" [detalle]="true" [ngClass]="{'highlight': filaSel == indice}"
+                  appPintarfilapre [tipo]="titulo1" [color]="titulo1color" [letra]="titulo1letra" [item]="row.item" [separador]="'.'" [partida]="row.unidad!=''?true:false">
+                    <div class="d-flex">
+                      <div *ngIf="row.editar1==0" class="celdaadvcero" [style.padding-left.px]="((row.item.toString().split('.').length-1)*5)+(row.unidad!=''?17:0)"
+                      ngbTooltip="{{row.descripcion}}" #t="ngbTooltip" container="body" (dblclick)="EditarDesc(indice)"
+                      triggers="click:blur" (mouseout)="t.close()">
+                        <div [ngClass]="{'recortatext':lineas2,'recortatextlinea':!lineas2}">
+                          <a *ngIf="row.unidad=='' && row.icomost=='0'"
+                            style="padding: 0px 2px;color:#06bb06;cursor: pointer;"
+                            (click)="toggleOnpresu(row.item,indice)">
+                            <i class="icofont icofont-caret-down"></i>
+                          </a>
+                          <a *ngIf="row.unidad=='' && row.icomost=='1'"
+                            style="padding: 0px 2px;color:red;cursor: pointer;"
+                            (click)="toggleOffpresu(row.item,indice)">
+                            <i class="icofont icofont-caret-up"></i>
+                          </a><span style="font-weight: 700;">{{row.item}}</span>&nbsp;&nbsp;{{row.descripcion}}
+                        </div>
+                      </div>
+                      <i *ngIf="row.editar1==0 && !solover" class="fa fa-pencil" style="cursor: pointer;" ngbTooltip="{{Editar}}" container="body" (click)="EditarDesc(indice)"></i>
+                    </div>
+                    <input *ngIf="row.editar1==1" type="text" class="formcontrol w-100 d-flex mayuscula" autocomplete="off" value="{{row.descripcion}}"
+                      appAutoFocus maxlength="500" (keyup)="presenterDesc($event,indice)" (blur)="caneditarDesc($event.target.value,indice)">
+                  </td>
+                  <td appAnchocol [ancho]="44" [ngClass]="{'highlight': filaSel == indice}"
+                  appPintarfilapre [tipo]="titulo1" [color]="titulo1color" [letra]="titulo1letra" [item]="row.item" [separador]="'.'" [partida]="row.unidad!=''?true:false">
+                    {{row.unidad}}
+                  </td>
+                  <td appAnchocol [ancho]="90" [ngClass]="{'highlight': filaSel == indice}"
+                  appPintarfilapre [tipo]="titulo1" [color]="titulo1color" [letra]="titulo1letra" [item]="row.item" [separador]="'.'" [partida]="row.unidad!=''?true:false">
+                    <span *ngIf="row.editar2==0" class="float-right" [ngClass]="{'celdaadvcero':(row.cantidad==0 || !(row.ed_pre===1)),'celdanocero':row.cantidad!=0 && (row.ed_pre===1)}" (click)="EditarCant(indice)">{{row.cantidad | number: mask_metrado }}</span>
+                    <i *ngIf="(!(row.ed_pre===1) || row.cantidad===0) && row.editar2==0" class="fa" [ngClass]="{'fa-exclamation-triangle': (row.ed_pre===1),'c-alert':(row.ed_pre===1),'text-primary':!(row.ed_pre===1),'fa-th-list':!(row.ed_pre===1)}"></i>
+                    <input *ngIf="row.editar2==1"
+                      [textMask]="this.dec_metrado == 4? this.formService.maskUsAmountDecimal4 : (this.dec_metrado==3? this.formService.maskUsAmountDecimal3:this.formService.maskUsAmountDecimal2)" type="text"
+                      class="formcontrol w-100 d-flex text-center" autocomplete="off" value="{{row.cantidad}}"
+                      appAutoFocus (keyup)="presenterCant($event,indice)" (blur)="caneditarCant($event.target.value,indice)">
+                  </td>
+                  <td appAnchocol [ancho]="90" [ngClass]="{'highlight': filaSel == indice}"
+                  appPintarfilapre [tipo]="titulo1" [color]="titulo1color" [letra]="titulo1letra" [item]="row.item" [separador]="'.'" [partida]="row.unidad!=''?true:false">
+                  <span *ngIf="row.unidad!=''" class="float-left">{{simbolo}}<i *ngIf="(row.advceros=='1' || row.precio==0) && row.unidad!=''" class="fa fa-exclamation-triangle c-alert"></i></span>
+                    <span class="float-right">{{row.precio | number: mask_precio}}</span>
+                  </td>
+                  <td appAnchocol [ancho]="100" [ngClass]="{'highlight': filaSel == indice}"
+                  appPintarfilapre [tipo]="titulo1" [color]="titulo1color" [letra]="titulo1letra" [item]="row.item" [separador]="'.'" [partida]="row.unidad!=''?true:false">
+                    <span class="float-left">{{simbolo}}</span>
+                    <span class="float-right">{{row.parcial | number: mask_parcial}}</span>
+                  </td>
+                </tr>
+              </ng-container>
+              <ng-container *ngIf="datasourcePri.length<=0">
+                <tr>
+                  <td class="mat-cell text-center" colspan="8">
+                      <label *ngIf="!buscando">No se encontraron resultados</label>
+                      <div *ngIf="buscando" class="preloader3 loader-block">
+                          <div class="circ1"></div>
+                          <div class="circ2"></div>
+                          <div class="circ3"></div>
+                          <div class="circ4"></div>
+                      </div>
+                  </td>
+                </tr>
+              </ng-container>
+            <!-- </ng-container> -->
+          </tbody>
+        </table>
+      </div>
+      <div *ngIf="mostindir" [style.height.px]="heightind" [style.padding-right.px]="padscrollpri" class="w-100 tabla-limp">
+        <table class="table-bordered tab-10">
+          <thead>
+            <tr class="headsticky header-custom">
+              <th appAnchocol [ancho]="28">N°</th>
+              <th appAnchocol [ancho]="220" [detalle]="true">DISEÑO DE PIE DE PRESUPUESTO</th>
+              <th appAnchocol [ancho]="44">RES</th>
+              <th appAnchocol [ancho]="90">Formula</th>
+              <th appAnchocol [ancho]="190">MONTO</th>
+            </tr>
+          </thead>
+          <tbody>
+              <ng-container *ngIf="tabindir.length>0">
+                <tr (click)="cambindiceselind(indice)" *ngFor="let row of tabindir;let indice=index;" [hidden]="row.mostrar == 0">
+                  <td class="cellsinpadding" appAnchocol [ancho]="28" [ngClass]="{'f-w-900':row.tipo_registro==3 || row.tipo_registro==2}">
+                    {{indice+1}}
+                  </td>
+                  <td class="text-left cellsinpadding" appAnchocol [ancho]="220" [detalle]="true" [ngClass]="{'highlight': filaselind == indice,'f-w-900':row.tipo_registro==3 || row.tipo_registro==2}">
+                    <div class="recortatextlinea celdaadvcero div-celdavac" style="cursor: pointer;"
+                    ngbTooltip="{{row.descripcion}}" #t="ngbTooltip" container="body"
+                    triggers="click:blur" (mouseout)="t.close()">
+                      <span class="w-100 recortatext">{{row.descripcion}}</span>
+                    </div>
+                  </td>
+                  <th class="cellsinpadding" [ngClass]="{'highlight': filaselind == indice,'f-w-900':row.tipo_registro==3 || row.tipo_registro==2}">
+                    {{row.abrev}}
+                  </th>
+                  <th class="cellsinpadding" [ngClass]="{'highlight': filaselind == indice,'f-w-900':row.tipo_registro==3 || row.tipo_registro==2}">
+                    <ng-container *ngIf="row.tipo_registro==4;else prueba">
+                      <span class="mt-1 font-weight-bolder" >{{row.abrev}}/{{row.formula==''?abretotal:row.formula}}={{( row.formula==''?totaldir:findabrev(row.formula))==0?'0.00':(row.monto * 100 /( row.formula==''?totaldir:findabrev(row.formula))).toFixed(2)}}%</span>
+                    </ng-container>
+                    <ng-template #prueba>
+                      {{row.formula}}
+                    </ng-template>
+                  </th>
+                  <td appAnchocol [ancho]="190" [ngClass]="{'highlight': filaselind == indice,'f-w-900':row.tipo_registro==3 || row.tipo_registro==2}">
+                    <div style="cursor: pointer;" class="float-right w-100">
+                      <span class="float-left">{{simbolo}}<i *ngIf="row.monto==0" class="fa fa-exclamation-triangle c-alert"></i></span>
+                      <span class="float-right">{{row.monto | number: mask_parcial}}</span>
+                    </div>
+                  </td>
+                </tr>
+              </ng-container>
+              <ng-container *ngIf="tabindir.length<=0">
+                <tr>
+                  <td class="mat-cell text-center" colspan="10">
+                      <label *ngIf="!buscandoind">No se encontraron resultados</label>
+                      <div *ngIf="buscandoind" class="preloader3 loader-block">
+                          <div class="circ1"></div>
+                          <div class="circ2"></div>
+                          <div class="circ3"></div>
+                          <div class="circ4"></div>
+                      </div>
+                  </td>
+                </tr>
+              </ng-container>
+            <!-- </ng-container> -->
+          </tbody>
+        </table>
+      </div>
+      <!-- </cdk-virtual-scroll-viewport> -->
+    </div>
+    <!-- costos unitarios -->
+    <div *ngIf="vistagrande && !expanded" [ngClass]="{'col-12 col-md-6 pl-0 px-2': !expanded, 'd-none': expanded}" class="c-bord-left p-t-5">
+      <ng-container *ngTemplateOutlet="popContent"></ng-container>
+    </div>
+    <app-modal-basic #modalDetalles [dialogClass]="'modal-lg'">
+      <div class="app-modal-header">
+          <h4 class="modal-title tit-modal1"><b>Datos </b></h4>
+          <button type="button" class="close basic-close" (click)="cerrarModal()">
+              <span aria-hidden="true">&times;</span>
+          </button>
+      </div>
+      <div class="app-modal-body">
+          <ng-container *ngTemplateOutlet="popContent"></ng-container>
+      </div>
+      <div class="app-modal-footer w-100">
+          <div class="row px-3">
+              <button type="button" style="margin-right: 5px;" class="btn btn-sm btn-danger ripple"
+                  (click)="cerrarModal()">Cerrar</button>
+          </div>
+      </div>
+    </app-modal-basic>
+    <ng-template #popContent>
+      <div class="row justify-content-between">
+        <div class="col-12 d-flex justify-content-between">
+            <h4 *ngIf="!esgruposel && !acuxmetrado" class="sub-title text-center p-b-0">Analisis de Costos Unitarios</h4>
+            <h4 *ngIf="esgruposel" class="sub-title text-center p-b-0">Relación de Insumos</h4>
+            <h4 *ngIf="!esgruposel && acuxmetrado" class="sub-title text-center p-b-0">Costos Unitarios x Metrado</h4>
+            <div>
+              <label *ngIf="!solover" class="label" style="text-align: center;" placement="left" ngbTooltip="Edicion Precio Insumo"
+              [ngClass]="{'btn-primary': butselprecio=='1','btn-info': butselprecio=='2','btn-success': butselprecio=='3','btn-inverse': butselprecio=='4'}">
+                {{butselprecio=='1'?'Partida Actual':butselprecio=='2'?'En Titulo':butselprecio=='3'?'En Proyecto':butselprecio=='4'?'Usar Precio de Mercado':''}}
+              </label>
+            </div>
+        </div>
+      </div>
+      <div class="modal-body">
+          <form [formGroup]="formDataPartida">
+              <div class="row">
+                <mat-form-field appearance="outline" class="mff-reduc my-form-field col-sm-2 col-6 custpad-col"
+                  [ngClass]="{'mat-form-field-disa': formDataPartida.disabled}">
+                  <mat-label>Item</mat-label>
+                  <input matInput type="text" [value]="item.value" disabled>
+                </mat-form-field>
+                <div class="col-12 col-sm-10 custpad-col">
+                  <mat-form-field appearance="outline" class="mff-reduc my-form-field" style="width: calc(100% - 35px);"
+                      [ngClass]="{'mat-form-field-disa': formDataPartida.disabled}">
+                      <mat-label>Descripción</mat-label>
+                      <input matInput autocomplete="off" class="mayuscula" formControlName="descripcion" maxlength="500" (blur)="CambDescUndtoPri(1)">
+                  </mat-form-field>
+                  <button type="button" class="btn btn-mini btn-secondary m-l-5" placement="top" ngbTooltip="Restaurar Descripcion"
+                    container="body" (click)="RestauraDesc()" (mouseup)="quitarfoco($event);" [disabled]="!edicionacu">
+                    <i class="fa fa-reply icono-but"></i>
+                  </button>
+                </div>
+                  <div *ngIf="!esgruposel && !acuxmetrado" class="col-12 col-sm-4 col-lg-3 d-flex">
+                    <div class="custom-row" style="width: calc(100% - 36px);padding-bottom: 10px;">
+                      <span class="span-sobre" [ngClass]="{'invalidspan':(unidad.invalid && unidad.touched)}">Unidad</span>
+                      <ng-select [ngClass]="{'invalidsel':(unidad.invalid && unidad.touched)}" [appendTo]="'body'"
+                        [clearable]="false" formControlName="unidad" (change)="cambUnidad()"><!-- [loading]="true" --><!-- <ng-option value="">--Seleccionar--</ng-option> -->
+                        <ng-option *ngFor="let medi of medidas" [value]="medi.id_unidad">
+                          <b>{{medi.unidad}}</b> ({{medi.descripcion}})
+                        </ng-option>
+                      </ng-select>
+                    </div>
+                    <div style="width: 36px; padding: 0;z-index: 990;" class="mff-reduc">
+                      <button type="button" class="btn btn-mini btn-success w-100" style="height: 35px;" placement="top"
+                        ngbTooltip="Ver Unidades" (click)="abrirmodalUnidades()" container="body" [disabled]="!formDataPartida.enabled">
+                        <i class="fa fa-search icono-but"></i>
+                      </button>
+                    </div>
+                  </div>
+                  <div class="col-12 col-sm-4 col-lg-3 custpad-col">
+                    <mat-form-field *ngIf="!esgruposel && !acuxmetrado" appearance="outline" class="mff-reduc my-form-field w-100"
+                      [ngClass]="{'mat-form-field-disa': formDataPartida.disabled}">
+                      <mat-label>Rendimiento</mat-label>
+                      <input matInput type="text" autocomplete="off" formControlName="rendimiento" [textMask]="this.formService.maskUsAmountDecimal2" 
+                      (blur)="verificarDecimales()" (keyup)="presentertRendi($event)" onClick="this.select();" maxlength="18">
+                      <span class="spanund" matSuffix>{{undrendimiento.value?(undrendimiento.value=='GLOBAL'?undrendimiento.value:undconcatrendi+'/'+undrendimiento.value):''}}</span>
+                    </mat-form-field>
+                  </div>
+                  <!-- <mat-form-field *ngIf="!esgruposel && !acuxmetrado" appearance="outline" class="mff-reduc my-form-field col-sm-3 col-md-3 col-12 custpad-col"
+                      [ngClass]="{'mat-form-field-disa': undrendimiento.disabled}">
+                      <mat-label>Unidad Rendimiento</mat-label>
+                      <select matNativeControl formControlName="undrendimiento" (change)="Cambioundren($event.target.value)">
+                          <option value="DIA">{{undconcatrendi!=''?undconcatrendi +' / ':''}}DIA</option>
+                          <option value="HORA">{{undconcatrendi!=''?undconcatrendi +' / ':''}}HORA</option>
+                          <option value="GLOBAL">GLOBAL</option>
+                      </select>
+                  </mat-form-field> -->
+                  <div *ngIf="!esgruposel && !acuxmetrado" class="col-sm-4 col-lg-3 col-12 custpad-col">
+                    <mat-checkbox *ngIf="edicionacu" class="checktabla" [checked]="editajor" (change)="$event ? CambioEditajor() : null" placement="top" ngbTooltip="Editar Jornada" style="margin-right: 4px;"></mat-checkbox>
+                    <mat-form-field  appearance="outline" class="mff-reduc my-form-field" style="width: calc(100% - 20px);"
+                      [ngClass]="{'mat-form-field-disa': jornada.disabled}">
+                      <mat-label>Jornada</mat-label>
+                      <input matInput type="text" class="text-center" autocomplete="off" formControlName="jornada" [textMask]="this.formService.maskUsAmountDecimal" 
+                      (blur)="verificarDecimalesJor()" (keyup)="presentertRendi($event)" onClick="this.select();" maxlength="5">
+                    </mat-form-field>
+                  </div>
+                  <div *ngIf="!esgruposel && !acuxmetrado" class="col-12 col-lg-3 custpad-col oculta-div">
+                    <mat-form-field  appearance="outline" class="mff-reduc my-form-field w-100" [ngClass]="{'mat-form-field-disa': ratio.disabled}">
+                      <mat-label>RUP</mat-label>
+                      <input matInput type="text" autocomplete="off" formControlName="ratio">
+                      <span class="spanund" matSuffix>{{undconcatrendi?'hh/'+undconcatrendi:''}}</span>
+                    </mat-form-field>
+                    <!-- <span class="spanund">{{unidad.value?'hh/'+unidad.value:''}}</span> -->
+                  </div>
+                  <!-- <mat-form-field *ngIf="!esgruposel && !acuxmetrado" appearance="outline" class="mff-reduc my-form-field col-12 col-sm-3"
+                    [floatLabel]="selprecio.disabled ? 'always' : 'auto'" [ngClass]="{'mat-form-field-disa': selprecio.disabled}">
+                    <mat-label>Edición Precio de Insumo</mat-label>
+                    <select matNativeControl formControlName="selprecio">
+                      <option value="1">Fila Actual</option>
+                      <option value="2">Actualizar en Titulo</option>
+                      <option value="3">Actualizar en Proyecto</option>
+                      <option value="4">Utilizar Precio de Mercado</option>
+                    </select>
+                  </mat-form-field> -->
+              </div>
+          </form>
+      </div>
+      <div *ngIf="!solover" class="w-100 d-flex" style="margin-bottom: 3px;">
+        <button type="button" class="btn btn-mini btn-success m-r-0" [disabled]="!edicionacu || esgruposel || acuxmetrado" (click)="AgregarFilaBut()" (mouseup)="quitarfoco($event);"
+        [disableTooltip]="!minimbut" placement="top" ngbTooltip="Agregar" container="body">
+          <i class="fa fa-plus m-r-3" [ngClass]="{'icono-but':minimbut}"></i><span [ngClass]="{'hide-ele':minimbut}">Agregar</span>
+        </button>
+        <div ngbDropdown container="body" class="sinflecha">
+          <button type="button" class="btn btn-mini btn-success btn-multiple h-100" id="dropdownAdd" ngbDropdownToggle [disabled]="!edicionacu || esgruposel || acuxmetrado"
+            (mouseup)="quitarfoco($event);">
+            <i class="fa fa-caret-down icono-but"></i>
+          </button>
+          <div class="cust-ddm" ngbDropdownMenu aria-labelledby="dropdownAdd">
+            <button type="button" ngbDropdownItem class="btn-sm" (click)="AgregarFilaIns(0)">Al Inicio</button>
+            <div class="dropdown-divider"></div>
+            <button type="button" ngbDropdownItem class="btn-sm" (click)="AgregarFilaIns(1)">Al Final</button>
+            <div *ngIf="tablaacusel[this.filaSelacu]?.num_det!=0" class="dropdown-divider"></div>
+            <button *ngIf="tablaacusel[this.filaSelacu]?.num_det!=0" type="button" ngbDropdownItem class="btn-sm" (click)="AgregarFilaIns(2)">Sobre Selección</button>
+            <div *ngIf="tablaacusel[this.filaSelacu]?.num_det!=0" class="dropdown-divider"></div>
+            <button *ngIf="tablaacusel[this.filaSelacu]?.num_det!=0" type="button" ngbDropdownItem class="btn-sm" (click)="AgregarFilaIns(3)">Bajo Selección</button>
+          </div>
+        </div>
+        <button type="button" class="btn btn-mini btn-info" [disableTooltip]="!minimbut" placement="top" ngbTooltip="Reemplazar" container="body"
+          container="body" (click)="ReemplazarIns()" (mouseup)="quitarfoco($event);" [disabled]="!edicionacu || esgruposel || acuxmetrado">
+          <i class="fa fa-retweet m-r-3" [ngClass]="{'icono-but':minimbut}"></i><span [ngClass]="{'hide-ele':minimbut}">Reemplazar</span>
+        </button>
+        <button type="button" class="btn btn-mini btn-danger" [disableTooltip]="!minimbut" placement="top" ngbTooltip="Eliminar" container="body"
+          container="body" (click)="EliminarIns()" (mouseup)="quitarfoco($event);" [disabled]="!edicionacu || esgruposel || acuxmetrado">
+          <i class="fa fa-remove" [ngClass]="{'icono-but':minimbut}"></i><span [ngClass]="{'hide-ele':minimbut}">Eliminar</span>
+        </button>
+        <button type="button" class="btn btn-mini btn-primary" [disableTooltip]="!minimbut" placement="top" ngbTooltip="Sel. Multiple" container="body"
+          container="body" (click)="HabSelAcu()" (mouseup)="quitarfoco($event);" [disabled]="!edicionacu || esgruposel || acuxmetrado">
+          <i class="fa m-r-3" [ngClass]="{'fa-check': !colselacu,'fa-ban': colselacu,'icono-but':minimbut}"></i><span [ngClass]="{'hide-ele':minimbut}">Sel. Multiple</span>
+        </button>
+        &nbsp;&nbsp;&nbsp;
+        <button type="button" class="btn btn-mini btn-inverse" [disableTooltip]="!minimbut" placement="top" ngbTooltip="Subir" container="body"
+          container="body" (click)="SubirFilaIns()" (mouseup)="quitarfoco($event);" [disabled]="!edicionacu || esgruposel || acuxmetrado">
+          <i class="fa fa-level-up m-r-3" [ngClass]="{'icono-but':minimbut}"></i><span [ngClass]="{'hide-ele':minimbut}">Subir</span>
+        </button>
+        <button type="button" class="btn btn-mini btn-inverse" [disableTooltip]="!minimbut" placement="top" ngbTooltip="Bajar" container="body"
+          container="body" (click)="BajarFilaIns()" (mouseup)="quitarfoco($event);" [disabled]="!edicionacu || esgruposel || acuxmetrado">
+          <i class="fa fa-level-down m-r-3" [ngClass]="{'icono-but':minimbut}"></i><span [ngClass]="{'hide-ele':minimbut}">Bajar</span>
+        </button>
+        <div ngbDropdown  container="body">
+          <button type="button" class="btn btn-mini btn-primary" id="dropdownConfig" ngbDropdownToggle [disabled]="!edicionacu" (mouseup)="quitarfoco($event);"
+          [disableTooltip]="!minimbut" placement="top" ngbTooltip="Codigo" container="body">
+            <i class="icofont icofont-eye-alt m-r-3" [ngClass]="{'icono-but':minimbut}"></i><span [ngClass]="{'hide-ele':minimbut}">Codigo</span>
+          </button>
+          <div class="cust-ddm" ngbDropdownMenu aria-labelledby="dropdownConfig">
+            <button type="button" ngbDropdownItem class="btn-sm" (click)="OpcCodigo(1)">Ver Codigo</button>
+            <div class="dropdown-divider"></div>
+            <button type="button" ngbDropdownItem class="btn-sm" (click)="OpcCodigo(2)">Ver Indice Unificado</button>
+            <div class="dropdown-divider"></div>
+            <button type="button" ngbDropdownItem class="btn-sm" (click)="OpcCodigo(3)">Ocultar</button>
+          </div>
+        </div>
+      </div>
+      <div [style.height.px]="heightacu-35" [style.margin-bottom.px]="-paddingscroll2" class="tabla-limp" id="tableBody" (scroll)="SyncScroll()">
+        <table class="table-bordered tab-10">
+          <thead>
+            <tr class="headsticky header-custom">
+              <th appAnchocol [ancho]="30">N°</th>
+              <th appAnchocol [ancho]="56" [ngClass]="{'cust-col-20': codsoloiu, 'cust-col-50': !codsoloiu}" [hidden]="!mcodigo">{{codsoloiu?'IU':'Codigo'}}</th>
+              <th appAnchocol [ancho]="200" [detalle]="true">
+                <div class="d-flex">
+                  <span style="width: calc(100% - 35px);">Descripción</span>
+                  <a style="padding: 0px 2px;cursor: pointer;" ngbTooltip="Orden Descendente" [hidden]="!edicionacu"
+                      container="body" (click)="OrdendescRelins()"><i
+                          class="icofont icofont-caret-down"></i></a>
+                  <a style="padding: 0px 2px;cursor: pointer;" ngbTooltip="Orden Ascendente" [hidden]="!edicionacu"
+                      container="body" (click)="OrdenascRelins()"><i
+                          class="icofont icofont-caret-up"></i></a>
+                </div>
+              </th>
+              <th appAnchocol [ancho]="44">Unidad</th>
+              <th appAnchocol [ancho]="90" [hidden]="esgruposel || acuxmetrado">Cuadrilla</th>
+              <th appAnchocol [ancho]="90">Cantidad</th>
+              <th appAnchocol [ancho]="90">Precio</th>
+              <th appAnchocol [ancho]="100">
+                <div class="d-flex">
+                  <span style="width: calc(100% - 35px);">Parcial</span>
+                  <a style="padding: 0px 2px;cursor: pointer;" ngbTooltip="Orden Descendente" [hidden]="!edicionacu"
+                      container="body" (click)="OrdenParcdescRelins()"><i
+                          class="icofont icofont-caret-down"></i></a>
+                  <a style="padding: 0px 2px;cursor: pointer;" ngbTooltip="Orden Ascendente" [hidden]="!edicionacu"
+                      container="body" (click)="OrdenParcascRelins()"><i
+                          class="icofont icofont-caret-up"></i></a>
+                </div>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <ng-container *ngIf="tablaacusel.length>0">
+              <tr *ngFor="let row of tablaacusel;let indice=index;" [hidden]="row.mostrar == 0" (click)="cambindiceselacu(indice)" 
+              [ngClass]="{'highlight': filaSelacu == indice,'filagrupo':row.unidad==''}">
+                <td appAnchocol [ancho]="30" style="cursor: pointer;">
+                    <span *ngIf="row.unidad!='' && !colselacu">{{row.num_det}}</span>
+                    <mat-checkbox *ngIf="row.num_det>0 && colselacu" class="checktabla" [checked]="row.seleccion==0?false:true" (change)="$event ? Cambioseltacu(row) : null"></mat-checkbox>
+                    <a *ngIf="row.unidad=='' && row.icomost=='0'" style="color:#06bb06; width: 14px;" (click)="toggleOn(row.id_tipo_insumo,indice)">
+                        <i class="icofont icofont-caret-down"></i>
+                    </a>
+                    <a *ngIf="row.unidad=='' && row.icomost=='1'" style="color:red; width: 14px;" (click)="toggleOff(row.id_tipo_insumo,indice)">
+                        <i class="icofont icofont-caret-up"></i>
+                    </a>
+                </td>
+                <td class="cellsinpadding" appAnchocol [ancho]="56" style="font-size:9px !important" [ngClass]="{'cust-col-50': !codsoloiu,'cust-col-20': codsoloiu}" [hidden]="!mcodigo">
+                  {{row.codigo | recortacodigo : codsoloiu }}
+                </td>
+                <td class="cellsinpadding text-left" appAnchocol [ancho]="200" [detalle]="true">
+                  <div class="recortatext celdaadvcero" ngbTooltip="{{row.descripcion}}" #b="ngbTooltip" container="body" triggers="click:blur" (mouseout)="b.close()">
+                    {{row.descripcion}}
+                  </div><i *ngIf="row.esinsumo==0 && row.num_det!=0 && !esgruposel" class="fa fa-search" style="cursor: pointer;" ngbTooltip="Ver Subpartida" container="body" (click)="OpenSubpartida(row,indice)"></i>
+                </td>
+                <td class="cellsinpadding" appAnchocol [ancho]="44">
+                  {{row.unidad}}
+                </td>
+                <td class="cellsinpadding" appAnchocol [ancho]="90" [hidden]="esgruposel || acuxmetrado">
+                  <div *ngIf="((row.editar3??0)==0 || formDataPartida.disabled) && row.operador!='%' && row.afcuadrilla==1 && Anumero(rendimiento.value)!=0" style="cursor: pointer;" class="float-right w-100" (click)="editarceldat2(indice)">
+                    <span [ngClass]="{'celdaadvcero':row.cuadrilla==0,'celdanocero':row.cuadrilla!=0}">{{row.cuadrilla | formatoDec}}</span><i *ngIf="!(row.cuadrilla!=0) && datasourcePri[filaSel]?.unidad!=''" class="fa fa-exclamation-triangle c-alert"></i>
+                  </div>
+                  <input *ngIf="((row.editar3??0)==1 && row.operador!='%' && row.afcuadrilla==1 && !formDataPartida.disabled)"
+                      [textMask]="this.formService.maskUsAmountDecimal8" type="text"
+                      class="formcontrol w-100 d-flex text-center" autocomplete="off" value="{{row.cuadrilla}}"
+                      appAutoFocus (keyup)="presentert2($event,indice)" (blur)="caneditarceldat2($event.target.value,indice)">
+                </td>
+                <td class="cellsinpadding" appAnchocol [ancho]="90">
+                  <!-- <div *ngIf="row.afcuadrilla==1 && row.operador!='%'" class="float-right w-100">{{row.cantidad | number: mask_cant}}<span *ngIf="row.operador=='%' && datasourcePri[filaSel]?.unidad!='' && !acuxmetrado"> % </span></div> -->
+                  <div *ngIf="(row.editar==0 || formDataPartida.disabled)" class="float-right w-100"
+                      (click)="editarceldat1(indice)" style="cursor: pointer;"><!--  && (row.afcuadrilla==0 || (row.afcuadrilla==1 && row.operador=='%')) -->
+                      <span [ngClass]="{'celdaadvcero':row.cantidad==0,'celdanocero':row.cantidad!=0}">{{row.cantidad | number: mask_cant}}<span *ngIf="row.operador=='%' && datasourcePri[filaSel]?.unidad!='' && !acuxmetrado"> % </span></span>
+                      <i *ngIf="!(row.cantidad!=0)" class="fa fa-exclamation-triangle c-alert"></i>
+                  </div>
+                  <input *ngIf="row.editar==1 && !formDataPartida.disabled"
+                      [textMask]="this.dec_cant == 4? this.formService.maskUsAmountDecimal4 : (this.dec_cant==3? this.formService.maskUsAmountDecimal3:this.formService.maskUsAmountDecimal2)" type="text"
+                      class="formcontrol w-100 d-flex text-center" autocomplete="off" value="{{row.cantidad}}"
+                      appAutoFocus (keyup)="presentert1($event,indice)" (blur)="caneditarceldat1($event.target.value,indice)"><!--  && (row.afcuadrilla==0 || (row.afcuadrilla==1 && row.operador=='%')) -->
+                </td>
+                <td class="cellsinpadding" appAnchocol [ancho]="90">
+                  <div *ngIf="(row.editar2==0 || formDataPartida.disabled)" style="cursor: pointer;"
+                    class="float-right w-100" (click)="editarceldat3(indice)">
+                    <span *ngIf="row.unidad!=''" class="float-left">{{simbolo}}<i *ngIf="(row.advceros=='1' || row.precio==0) && row.unidad!=''" class="fa fa-exclamation-triangle c-alert"></i></span>
+                    <span class="float-right">{{row.precio | number: mask_precio}}</span>
+                  </div>
+                  <input *ngIf="(row.editar2==1 && !formDataPartida.disabled)"
+                    [textMask]="this.dec_precio == 4? this.formService.maskUsAmountDecimal4 : (this.dec_precio==3? this.formService.maskUsAmountDecimal3:this.formService.maskUsAmountDecimal2)"
+                    type="text" class="formcontrol w-100 d-flex text-center" autocomplete="off" value="{{row.precio}}" appAutoFocus
+                    (keyup)="presentert3($event,indice)" (blur)="caneditarceldat3($event.target.value,indice)">
+                </td>
+                <td class="cellsinpadding" appAnchocol [ancho]="100">
+                  <span class="float-left">{{simbolo}}</span>
+                  <span class="float-right">{{row.parcial | number: mask_precio}}</span>
+                </td>
+              </tr>
+            </ng-container>
+            <ng-container *ngIf="tablaacusel.length<=0">
+              <tr>
+                <td class="mat-cell text-center" colspan="8">
+                    <label *ngIf="!buscando">No se encontraron resultados</label>
+                    <div *ngIf="buscando" class="preloader3 loader-block">
+                        <div class="circ1"></div>
+                        <div class="circ2"></div>
+                        <div class="circ3"></div>
+                        <div class="circ4"></div>
+                    </div>
+                </td>
+              </tr>
+            </ng-container>
+          </tbody>
+        </table>
+      </div>
+      <div class="tare-footer footer-tabla tabla-limp m-b-5" [style.padding-right.px]="paddingscroll" id="tableFoot" (scroll)="SyncScroll2()">
+        <table class="table-bordered tab-10" style="position: sticky; bottom: 1px;">
+          <tfoot>
+            <tr>
+              <th [hidden]="esgruposel || acuxmetrado" class="cellsinpadding" appAnchocol [ancho]="600" [detalle]="true" [ngClass]="{'cust-foota': mcodigo && !codsoloiu,'cust-footb': mcodigo && codsoloiu, 'cust-footc': !mcodigo}">
+                Total
+              </th>
+              <th [hidden]="!(esgruposel || acuxmetrado)" class="cellsinpadding" appAnchocol [ancho]="600" [detalle]="true" [ngClass]="{'cust-footd': mcodigo && !codsoloiu,'cust-foote': mcodigo && codsoloiu, 'cust-footf': !mcodigo}">
+                Total
+              </th>
+              <th class="cellsinpadding" appAnchocol [ancho]="100">
+                <span class="float-left" *ngIf="precio.value">{{simbolo}}</span><span class="float-right font-weight-bolder"
+                  *ngIf="precio.value">{{precio.value | number : mask_precio}}</span>
+              </th>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </ng-template>
+  </div>
+  <!-- <app-modal-basic #modalDetalleProyecto [dialogClass]="'modal-lg modalgrande'">
+    <div class="app-modal-header">
+      <h4 class="modal-title tit-modal1"><b> Detalle Proyecto </b></h4>
+      <button type="button" class="close basic-close" (click)="cerrarModalDetalle()">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    <div class="app-modal-body">
+      <app-card class="card">
+        <app-detalle-proyecto [rowSeleccionado]="proyectoSeleccionado" [active]="active"></app-detalle-proyecto>
+      </app-card>
+    </div>
+    <div class="app-modal-footer w-100">
+      <div class="row px-3">
+        <button type="button" style="margin-right: 5px;" class="btn btn-sm btn-danger ripple"
+          (click)="cerrarModalDetalle()">Cerrar</button>
+      </div>
+    </div>
+  </app-modal-basic> -->
+<app-modal-basic #mdVerSubpart [dialogClass]="'modal-lg'">
+  <div class="app-modal-header">
+    <h4 class="modal-title tit-modal1"><b>Subpartidas</b></h4>
+    <button type="button" class="close basic-close" (click)="closeModal()">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="app-modal-body">
+    <form [formGroup]="formTabs">
+      <ul ngbNav #nav="ngbNav" [(activeId)]="active" class="nav-tabs" (navChange)="cambioTab($event)">
+        <ng-container formArrayName="formSubPartida">
+          <ng-container *ngFor="let tab of formSubPartida.controls;  index as numb">
+            <ng-container [formGroupName]="numb">
+              <li [ngbNavItem]="tab.get('indice_tab').value"
+                  style="width: 11rem; border-right: 1px solid #ccc;">
+                <a ngbNavLink>
+                  <span style="width: calc(100% - 20px);" class="recortatextlinea"
+                    container="body" ngbTooltip="{{tab.get('data_partida').value.descripcion}}">
+                    {{tab.get('data_partida').value.descripcion}}
+                  </span>
+                  <span class="ms-2  ml-1 float-right" style="cursor: pointer;">
+                    <i class="fa fa-times icono-but " (click)="cerrarPestana($event, numb)"></i>
+                  </span>
+                </a>
+                <ng-template ngbNavContent>
+                  <ng-container formGroupName="data_partida">
+                    <div class="row mt-2">
+                      <mat-form-field appearance="outline" class="mff-reduc my-form-field col-sm-10 col-10">
+                        <mat-label>Descripción</mat-label>
+                        <input matInput autocomplete="off" class="mayuscula" formControlName="descripcion" maxlength="500">
+                      </mat-form-field>
+                      <div class="col-2">
+                        <button type="button" *ngIf="tab.get('data_partida').dirty || tab.get('tabla_editada').value" ngbTooltip="Guardar Cambios"
+                          container="body" (click)="actualizarsubp(numb)" class="btn btn-success btn-sm light ripple  float-right" (mouseup)="quitarfoco($event);">
+                          <i class="fa fa-save icono-but"></i>
+                        </button>
+                        <button type="button" *ngIf="tab.get('data_partida').dirty || tab.get('tabla_editada').value" ngbTooltip="Decartar Cambios"
+                          (click)="descartarsubp(numb)" container="body" class="btn btn-secondary btn-sm light ripple  float-right" (mouseup)="quitarfoco($event);">
+                          <i class="fa fa-undo icono-but"></i>
+                        </button>
+                      </div>
+                      <div class="col-12 col-sm-4 col-lg-3 d-flex">
+                        <div class="custom-row" style="width: calc(100% - 36px);padding-bottom: 18px;">
+                          <span class="span-sobre" [ngClass]="{'invalidspan':(tab.get('data_partida').get('unidad').invalid && tab.get('data_partida').get('unidad').touched)}">Unidad</span>
+                          <ng-select [ngClass]="{'invalidsel':(tab.get('data_partida').get('unidad').invalid && tab.get('data_partida').get('unidad').touched)}" [appendTo]="'body'"
+                            [clearable]="false" formControlName="unidad" (change)="cambUnidadsubp(numb)">
+                            <ng-option value="">--Seleccionar--</ng-option>
+                            <ng-option *ngFor="let medi of medidas" [value]="medi.id_unidad">
+                              <b>{{medi.unidad}}</b> ({{medi.descripcion}})
+                            </ng-option>
+                          </ng-select>
+                        </div>
+                        <div style="width: 36px; padding: 0;z-index: 990;" class="mff-reduc">
+                          <button type="button" class="btn btn-mini btn-success w-100" style="height: 35px;" placement="top"
+                            ngbTooltip="Ver Unidades" (click)="abrirUndsubp(numb)" container="body" [disabled]="!tab.get('data_partida').enabled">
+                            <i class="fa fa-search icono-but"></i>
+                          </button>
+                        </div>
+                      </div>
+                      <mat-form-field appearance="outline" class="mff-reduc my-form-field col-12 col-sm-4 col-lg-3">
+                        <mat-label>Rendimiento</mat-label>
+                        <input matInput type="text" autocomplete="off" formControlName="rendimiento" [textMask]="this.formService.maskUsAmountDecimal2"
+                            (blur)="verifDecsubp(numb)" (keyup)="presentertRendi($event)" onClick="this.select();" maxlength="18">
+                          <span class="spanund" matSuffix>{{tab.get('data_partida').get('undrendimiento').value?(tab.get('data_partida').get('undrendimiento').value=='GLOBAL'?
+                            tab.get('data_partida').get('undrendimiento').value:tab.get('undconcatrendi').value+'/'+tab.get('data_partida').get('undrendimiento').value):''}}</span>
+                      </mat-form-field>
+                      <div class="col-sm-4 col-lg-3 col-12 custpad-col">
+                        <mat-checkbox class="checktabla" [checked]="tab.get('editajor').value" (change)="$event ? CambEditjorsubp(numb) : null" placement="top" 
+                        ngbTooltip="Editar Jornada" style="margin-right: 4px;"></mat-checkbox>
+                        <mat-form-field appearance="outline" class="mff-reduc my-form-field" style="width: calc(100% - 20px);"
+                        [ngClass]="{'mat-form-field-disa': !tab.get('editajor').value}">
+                          <mat-label>Jornada</mat-label>
+                          <input matInput type="text" autocomplete="off" formControlName="jornada" [textMask]="this.formService.maskUsAmountDecimal" class="text-center"
+                            (blur)="verifDecJorsubp(numb)" (keyup)="presentertRendi($event)" onClick="this.select();" maxlength="5">
+                        </mat-form-field>
+                      </div>
+                      <div class="col-12 col-lg-3 custpad-col oculta-div">
+                        <mat-form-field  appearance="outline" class="mff-reduc my-form-field w-100" [ngClass]="{'mat-form-field-disa': tab.get('data_partida').get('ratio').disabled}">
+                          <mat-label>RUP</mat-label>
+                          <input matInput type="text" class="text-center" autocomplete="off" formControlName="ratio" readonly>
+                          <span class="spanund" matSuffix>{{tab.get('undconcatrendi').value?'hh/'+tab.get('undconcatrendi').value:''}}</span>
+                        </mat-form-field>
+                      </div>
+                    </div>
+                    <div class="w-100 d-flex" style="margin-bottom: 3px;">
+                      <button type="button" class="btn btn-mini btn-success m-r-0" (click)="AddFilaButsubp(numb)"
+                      [disableTooltip]="!minimbut2" placement="top" ngbTooltip="Agregar" container="body">
+                        <i class="fa fa-plus" [ngClass]="{'icono-but':minimbut2}"></i><span [ngClass]="{'hide-ele':minimbut2}">Agregar</span>
+                      </button>
+                      <div ngbDropdown container="body" class="sinflecha">
+                        <button type="button" class="btn btn-mini btn-success btn-multiple h-100" id="dropdownAdd" ngbDropdownToggle
+                          (mouseup)="quitarfoco($event);">
+                          <i class="fa fa-caret-down icono-but"></i>
+                        </button>
+                        <div class="cust-ddm" ngbDropdownMenu aria-labelledby="dropdownAdd">
+                          <button type="button" ngbDropdownItem class="btn-sm" (click)="AddFilaInsSubp(0,numb)">Al Inicio</button>
+                          <div class="dropdown-divider"></div>
+                          <button type="button" ngbDropdownItem class="btn-sm" (click)="AddFilaInsSubp(1,numb)">Al Final</button>
+                          <div *ngIf="tab.get('data_tabla').value[tab.get('filasel').value]?.num_det!=0" class="dropdown-divider"></div>
+                          <button *ngIf="tab.get('data_tabla').value[tab.get('filasel').value]?.num_det!=0" type="button" ngbDropdownItem class="btn-sm" (click)="AddFilaInsSubp(2,numb)">Sobre Selección</button>
+                          <div *ngIf="tab.get('data_tabla').value[tab.get('filasel').value]?.num_det!=0" class="dropdown-divider"></div>
+                          <button *ngIf="tab.get('data_tabla').value[tab.get('filasel').value]?.num_det!=0" type="button" ngbDropdownItem class="btn-sm" (click)="AddFilaInsSubp(3,numb)">Bajo Selección</button>
+                        </div>
+                      </div>
+                      <button type="button" class="btn btn-mini btn-info" [disableTooltip]="!minimbut2" placement="top" ngbTooltip="Reemplazar"
+                        container="body" (click)="ReplaceInsSubp(numb)" (mouseup)="quitarfoco($event);">
+                        <i class="fa fa-retweet" [ngClass]="{'icono-but':minimbut2}"></i><span [ngClass]="{'hide-ele':minimbut2}">Reemplazar</span>
+                      </button>
+                      <button type="button" class="btn btn-mini btn-danger" [disableTooltip]="!minimbut2" placement="top" ngbTooltip="Eliminar"
+                        container="body" (click)="DelInsSubp(numb)" (mouseup)="quitarfoco($event);">
+                        <i class="fa fa-remove" [ngClass]="{'icono-but':minimbut2}"></i><span [ngClass]="{'hide-ele':minimbut2}">Eliminar</span>
+                      </button>
+                      <button type="button" class="btn btn-mini btn-primary" [disableTooltip]="!minimbut2" placement="top" ngbTooltip="Sel. Multiple"
+                        container="body" (click)="HabSelAcuSubp(numb)" (mouseup)="quitarfoco($event);">
+                        <i class="fa" [ngClass]="{'fa-check': !tab.get('colselacu').value,'fa-ban': tab.get('colselacu').value,'icono-but':minimbut2}"></i><span [ngClass]="{'hide-ele':minimbut2}">Sel. Multiple</span>
+                      </button>
+                      &nbsp;&nbsp;&nbsp;
+                      <button type="button" class="btn btn-mini btn-inverse" [disableTooltip]="!minimbut2" placement="top" ngbTooltip="Subir"
+                        container="body" (click)="SubFilaInsSubp(numb)" (mouseup)="quitarfoco($event);">
+                        <i class="fa fa-level-up" [ngClass]="{'icono-but':minimbut2}"></i><span [ngClass]="{'hide-ele':minimbut2}">Subir</span>
+                      </button>
+                      <button type="button" class="btn btn-mini btn-inverse" [disableTooltip]="!minimbut2" placement="top" ngbTooltip="Bajar"
+                        container="body" (click)="BajFilaInsSubp(numb)" (mouseup)="quitarfoco($event);">
+                        <i class="fa fa-level-down" [ngClass]="{'icono-but':minimbut2}"></i><span [ngClass]="{'hide-ele':minimbut2}">Bajar</span>
+                      </button>
+                      <div ngbDropdown  container="body">
+                        <button type="button" class="btn btn-mini btn-primary" id="dropdownConfig" ngbDropdownToggle
+                        [disableTooltip]="!minimbut2" placement="top" ngbTooltip="Codigo" container="body">
+                          <i class="icofont icofont-eye-alt" [ngClass]="{'icono-but':minimbut2}"></i><span [ngClass]="{'hide-ele':minimbut2}">Codigo</span>
+                        </button>
+                        <div class="cust-ddm" ngbDropdownMenu aria-labelledby="dropdownConfig">
+                          <button type="button" ngbDropdownItem class="btn-sm" (click)="OpcCodSubp(1,numb)">Ver Codigo</button>
+                          <div class="dropdown-divider"></div>
+                          <button type="button" ngbDropdownItem class="btn-sm" (click)="OpcCodSubp(2,numb)">Ver Indice Unificado</button>
+                          <div class="dropdown-divider"></div>
+                          <button type="button" ngbDropdownItem class="btn-sm" (click)="OpcCodSubp(3,numb)">Ocultar</button>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-12 px-2">
+                      <div class="height-tabla tabla-limp" [style.margin-bottom.px]="-paddingscroll2sbp" id="tableBodysubp" (scroll)="SyncScrollsubp()">
+                        <table class="table-bordered tab-10">
+                          <thead>
+                            <tr class="headsticky">
+                              <th appAnchocol [ancho]="30"> Nº</th>
+                              <th appAnchocol [ancho]="56" [ngClass]="{'cust-col-20': tab.get('codsoloiu').value, 'cust-col-50': !tab.get('codsoloiu').value}" 
+                                [hidden]="!tab.get('mcodigo').value">{{tab.get('codsoloiu').value?'IU':'Codigo'}}</th>
+                              <th appAnchocol [ancho]="200" [detalle]="true">Descripcion</th>
+                              <th appAnchocol [ancho]="44">Unidad</th>
+                              <th appAnchocol [ancho]="90">Cuadrilla</th>
+                              <th appAnchocol [ancho]="90">Cantidad</th>
+                              <th appAnchocol [ancho]="90">Precio </th>
+                              <th appAnchocol [ancho]="90">Parcial</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr *ngFor="let row of tab.get('data_tabla').value; let i = index" [hidden]="!row.mostrar" [ngClass]="{'highlight': tab.get('filasel').value == i,'filagrupo':row.unidad==''}"
+                            (click)="cambindselacusubp(i,numb)">
+                              <td appAnchocol [ancho]="30" style="cursor: pointer;">
+                                <span *ngIf="row.unidad!='' && !tab.get('colselacu').value">{{row.num_det}}</span>
+                                <mat-checkbox *ngIf="row.num_det>0 && tab.get('colselacu').value" class="checktabla" [checked]="row.seleccion==0?false:true" (change)="$event ? Cambseltacusubp(row,numb) : null"></mat-checkbox>
+                                <a *ngIf="row.unidad=='' && row.icomost=='0'" style="color:#06bb06; width: 14px;" (click)="toggleOnsubp(row.id_tipo_insumo,i,numb)">
+                                  <i class="icofont icofont-caret-down"></i>
+                                </a>
+                                <a *ngIf="row.unidad=='' && row.icomost=='1'" style="color:red; width: 14px;" (click)="toggleOffsubp(row.id_tipo_insumo,i,numb)">
+                                  <i class="icofont icofont-caret-up"></i>
+                                </a>
+                              </td>
+                              <td class="cellsinpadding" appAnchocol [ancho]="56" [ngClass]="{'cust-col-50': !tab.get('codsoloiu').value,'cust-col-20': tab.get('codsoloiu').value}" 
+                              [hidden]="!tab.get('mcodigo').value" style="font-size:9px !important">
+                                {{row.codigo | recortacodigo : tab.get('codsoloiu').value }}
+                              </td>
+                              <td appAnchocol [ancho]="200" [detalle]="true" class="text-left">
+                                <div class="recortatext celdaadvcero" ngbTooltip="{{row.descripcion}}" #b="ngbTooltip" container="body" triggers="click:blur" (mouseout)="b.close()">
+                                  {{row.descripcion}}
+                                </div><i *ngIf="row.esinsumo==0 && row.num_det!=0" class="fa fa-search" style="cursor: pointer;" ngbTooltip="Ver Subpartida" container="body" (click)="abrirDetalleTab(row,numb)"></i>
+                              </td>
+                              <td appAnchocol [ancho]="44"> {{row.unidad}}</td>
+                              <td appAnchocol [ancho]="90">
+                                <div *ngIf="(row.editar3??0)==0  && row.operador!='%' && row.afcuadrilla==1  && Anumero(tab.get('data_partida').value.rendimiento)!=0" style="cursor: pointer;" (click)="editceldat2subp(i, numb)" class="float-right w-100">
+                                  <span [ngClass]="{'celdaadvcero':row.cuadrilla==0,'celdanocero':row.cuadrilla!=0}">
+                                    {{row.cuadrilla | formatoDec}}</span>
+                                  <i *ngIf="!(row.cuadrilla!=0)" class="fa fa-exclamation-triangle c-alert"></i>
+                                </div>
+                                <input *ngIf="(row.editar3??0)==1 && row.operador!='%' && row.afcuadrilla==1 && row.unidad" [textMask]="this.formService.maskUsAmountDecimal8" type="text"
+                                  class="formcontrol w-100 d-flex text-center" autocomplete="off" value="{{row.cuadrilla}}" appAutoFocus (keyup)="presentert2subp($event,i, numb)"
+                                  (blur)="caneditceldat2subp($event.target.value,i, numb)">
+                              </td>
+                              <td appAnchocol [ancho]="90">
+                                <div *ngIf="row.editar==0" class="float-right w-100" (click)="editceldat1subp(i, numb)" style="cursor: pointer;">
+                                  <span [ngClass]="{'celdaadvcero':row.cantidad==0,'celdanocero':row.cantidad!=0}">
+                                    {{row.cantidad | number: mask_cant}}<span *ngIf="row.operador=='%'"> % </span>
+                                  </span>
+                                  <i *ngIf="!(row.cantidad!=0)" class="fa fa-exclamation-triangle c-alert"></i>
+                                </div>
+                                <input *ngIf="row.editar==1" type="text" class="formcontrol w-100 d-flex text-center" autocomplete="off"
+                                  [textMask]="this.dec_cant == 4? this.formService.maskUsAmountDecimal4 : (this.dec_cant==3? this.formService.maskUsAmountDecimal3:this.formService.maskUsAmountDecimal2)"
+                                  value="{{row.cantidad}}" appAutoFocus (keyup)="presentert1subp($event,i, numb)" (blur)="caneditceldat1subp($event.target.value,i, numb)">
+                              </td>
+                              <td appAnchocol [ancho]="90">
+                                <div *ngIf="(row.editar2==0)" style="cursor: pointer;" class="float-right w-100" (click)="editceldat3subp(i,numb)">
+                                  <span *ngIf="row.unidad!=''" class="float-left">{{simbolo}}<i *ngIf="(row.advceros===1 || row.precio==0) && row.unidad!=''" class="fa fa-exclamation-triangle c-alert"></i></span>
+                                  <span class="float-right">{{row.precio | number: mask_precio}}</span>
+                                </div>
+                                <input *ngIf="(row.editar2==1)"
+                                  [textMask]="this.dec_precio == 4? this.formService.maskUsAmountDecimal4 : (this.dec_precio==3? this.formService.maskUsAmountDecimal3:this.formService.maskUsAmountDecimal2)"
+                                  type="text" class="formcontrol w-100 d-flex text-center" autocomplete="off" value="{{row.precio}}" appAutoFocus
+                                  (keyup)="presentert3subp($event,i,numb)" (blur)="caneditceldat3subp($event.target.value,i,numb)">
+                              </td>
+                              <td appAnchocol [ancho]="90">
+                                <span class="float-left">{{simbolo}}</span>
+                                <span class="float-right">{{row.parcial | number: mask_precio}}</span>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div class="tare-footer footer-tabla tabla-limp m-b-5" [style.padding-right.px]="paddingscrollsbp" id="tableFootsubp" (scroll)="SyncScroll2subp()">
+                        <table class="table-bordered tab-10" style="position: sticky; bottom: 1px;">
+                          <tfoot>
+                            <tr class="sticky-foot">
+                                <th appAnchocol [ancho]="600" [attr.colspan]="tab.get('mcodigo').value?'7':'6'" [detalle]="true" 
+                                [ngClass]="{'cust-foota': tab.get('mcodigo').value && !tab.get('codsoloiu').value,'cust-footb': tab.get('mcodigo').value && tab.get('codsoloiu').value, 'cust-footc': !tab.get('mcodigo').value}">
+                                  Total
+                                </th>
+                                <th appAnchocol [ancho]="90">
+                                  <span class="float-left">{{simbolo}}</span><span class="float-right font-weight-bolder">{{tab.get('precio').value | number : mask_precio}}</span>
+                                </th>
+                            </tr>
+                          </tfoot>
+                        </table>
+                      </div>
+                    </div>
+                  </ng-container>
+                </ng-template>
+              </li>
+            </ng-container>
+          </ng-container>
+        </ng-container>
+      </ul>
+      <div [ngbNavOutlet]="nav"></div>
+    </form>
+  </div>
+  <div class="app-modal-footer">
+    <button type="button" class="btn btn-danger btn-sm" (click)="closeModal()"><i
+      class="fa fa-times"></i>Cerrar</button>
+  </div>
+</app-modal-basic>

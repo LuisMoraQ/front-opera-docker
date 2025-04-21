@@ -1,0 +1,129 @@
+.span-container {
+  position: relative;
+  max-width: 100%;
+  padding: 0 !important;
+  display: -webkit-flex;
+  display: -moz-flex;
+  display: flex;
+  vertical-align: text-bottom !important;
+}
+
+.span-ellipsis {
+  // position: absolute;
+  white-space: nowrap;
+  overflow-y: visible;
+  overflow-x: hidden;
+  text-overflow: Ellipsis;
+  -ms-text-overflow: Ellipsis;
+  -o-text-overflow: Ellipsis;
+  max-width: 100%;
+  min-width: 0;
+  width: 100%;
+  top: 0;
+  left: 0;
+
+}
+
+.span-container:after,
+.span-ellipsis:after {
+  content: '-';
+  display: inline;
+  visibility: hidden;
+  width: 0;
+}
+
+.nav-link {
+  padding: 0rem 1rem;
+  padding-top: 3px;
+  display: flex;
+  cursor: alias !important;
+}
+
+.custom-position {
+  position: absolute;
+  right: 0;
+  margin-right: 1rem;
+}
+
+// .custom-bt {
+//   width: 160px!important;
+// }
+
+
+// .contenido-menu {
+//   width: calc(100% - 190px);
+//   margin-left: 5px;
+// }
+
+.tabla-general{
+  tr.mat-row{
+    height: 22px !important;
+  }
+}
+
+.boton-conf {
+  width: 36px;
+  height: 36px;
+  margin-left: 4px;
+}
+
+//quitar espacio al inicio de la tabla
+.tabla-general td.mat-cell:first-of-type{
+  padding-left:0px !important;
+}
+.tabla-general td.mat-cell.cellsinpadding{
+  padding-left:0px !important;
+  padding-right:0px !important;
+}
+
+.w-grupo {
+  width: calc(100% - 40px);
+}
+
+.height-tab {
+  // display: none;
+  height: calc(100vh - 90px) !important;
+}
+
+.boton-ocultar-menu {
+  position: absolute;
+  z-index: 1;
+  left: 10px;
+}
+
+.espacio-boton {
+  margin-left: 20px;
+}
+/* Estilos para motores Webkit y blink (Chrome, Safari, Opera... )*/
+
+.texto-fila{
+  padding-top: 8px !important; padding-bottom: 8px !important;
+}
+.texto-fila-neg{
+  padding-top: 8px !important; padding-bottom: 8px !important;
+  font-weight: bold;
+}
+//padings datos
+.espacios{
+  padding-left: 15px;
+  padding-right: 15px;
+}
+.height-subpresu{
+  min-height: 200px;
+  height: calc(100vh - 296px);
+}
+.height-aspectos{
+  min-height: 200px;
+  height: calc(100vh - 415px);
+}
+.filafoot{
+  background-color: #D8EFFD;
+}
+
+.mat-input-element[type=date]::after {
+  content: "" !important;
+}
+
+.mat-form-field-appearance-outline .mat-form-field-subscript-wrapper {
+  padding: 0 0.1em !important
+}

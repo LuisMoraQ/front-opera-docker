@@ -1,0 +1,19 @@
+<div class="modal-dialog-scrollable modal-md">
+    <div class="modal-content">
+        <div class="app-modal-header  modal-header">
+            <span class="text-white">Especificacion tecnica</span>
+            <button type="button" class="close basic-close" (click)="closeModal()">
+                <span aria-hidden="true" class="mt-2">&times;</span>
+            </button>
+        </div>
+        <div class="modal-body">
+            <app-tinymce [(ngModel)]='especificacion' #tinymce2='tinymce' [options]='{ readonly:true, statusbar: false,
+                toolbar: false }'>
+            </app-tinymce>
+        </div>
+        <div class="app-modal-footer modal-footer justify-content-between">
+            <button type="button" class="btn btn-danger btn-sm" (click)="closeModal()"><i
+                    class="fa fa-times"></i>Cerrar</button>
+        </div>
+    </div>
+</div>

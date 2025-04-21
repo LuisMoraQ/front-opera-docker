@@ -1,0 +1,74 @@
+.f-size-t {
+  font-size: 15px !important;
+}
+
+label {
+  margin-bottom: 0;
+}
+
+.h-celda2 {
+  height: 30px !important;
+}
+
+.h-input {
+  height: 20px !important;
+}
+
+
+.ng-clear-wrapper {
+  display: none;
+}
+
+.ng-select .ng-select-container {
+  min-height: 30px !important;
+}
+
+.ng-select.ng-select-single .ng-select-container {
+  height: 30px !important;
+}
+
+.ng-select.ng-select-single .ng-select-container .ng-value-container .ng-input {
+  top: 0px !important;
+}
+
+ng-select.required.ng-invalid.ng-touched .ng-select-container {
+
+  border-color: #dc3545;
+  box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 0 3px #fde6e8;
+}
+
+ng-select.required.ng-invalid.ng-untouched .ng-select-container {
+
+  border-color: #dc3545;
+  box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 0 3px #fde6e8;
+}
+
+.requerido {
+  border: 1px solid !important;
+  border-color: #dc3545 !important;
+}
+
+.f-s-9 {
+  font-size: 9px !important;
+}
+
+.contenido-p {
+  height: 30px !important;
+  opacity: 0.5 !important;
+}
+
+.borde-contenido {
+  border: 1px solid #bbbcbd;
+    border-radius: 10px;
+}
+
+.custom .ng-dropdown-panel {
+  z-index: 9999 !important;
+}
+.ng-dropdown-panel {
+  max-height: 300px;  /* Limitar la altura */
+  overflow-y: auto;   /* Agregar desplazamiento */
+  position: absolute !important;
+  z-index: 9999;
+  overflow: visible !important;
+}

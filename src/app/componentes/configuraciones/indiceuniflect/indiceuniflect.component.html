@@ -1,0 +1,149 @@
+<div class="page-body">
+  <div class="card" >
+  <div class="row">
+    <div class="col-sm-4 col-md-4">
+      <div class="titulo-contenido">
+        <h2>Indice Unificado</h2>
+      </div>
+      <app-card class="card col-md-12 card-principal">
+        <div class="row justify-content-between p-r-15">
+          <div class="col-sm-5 col-md-7" style="margin-bottom: 10px">
+            <mat-form-field
+              class="mff-reduc w-100 alto-35 field-busqueda"
+              appearance="outline">
+              <mat-label>Buscar</mat-label>
+              <input
+                matInput
+                type="text"
+                [(ngModel)]="busqueda"
+                (keyup)="applyFilterPrinc($event)"
+                autocomplete="off"
+              />
+              <button
+                *ngIf="busqueda"
+                matSuffix
+                mat-icon-button
+                aria-label="Clear"
+                (click)="limpiarfiltro()"
+              >
+                <mat-icon>close</mat-icon>
+              </button>
+            </mat-form-field>
+          </div>
+
+        </div>
+        <div class="table-responsive" [style.height.px]="height">
+          <table
+            #table1
+            class="tabla-general"
+            mat-table
+            [dataSource]="dataSource"
+            matSort
+            multiTemplateDataRows
+          >
+            <ng-container matColumnDef="id_indice">
+              <th
+                mat-header-cell
+                *matHeaderCellDef
+                mat-sort-header
+                appAnchocol
+                [ancho]="55"
+              >
+                ID
+              </th>
+              <td mat-cell *matCellDef="let row" appAnchocol [ancho]="55">
+                {{ row.id_indice }}
+              </td>
+            </ng-container>
+            <ng-container matColumnDef="desc_indice">
+              <th
+                mat-header-cell
+                *matHeaderCellDef
+                mat-sort-header
+                appAnchocol
+                [ancho]="200"
+                [detalle]="true"
+              >
+                Descripción
+              </th>
+              <td
+                mat-cell
+                *matCellDef="let row"
+                class="text-left"
+                appAnchocol
+                [ancho]="200"
+                [detalle]="true"
+              >
+                <div
+                  class="recortatext"
+                  placement="top"
+                  ngbTooltip="{{ row.desc_indice }}"
+                  container="body"
+                >
+                  {{ row.desc_indice }}
+                </div>
+              </td>
+            </ng-container>
+            <ng-container matColumnDef="abrev">
+              <th
+                mat-header-cell
+                *matHeaderCellDef
+                mat-sort-header
+                appAnchocol
+                [ancho]="90"
+              >
+                Abrev
+              </th>
+              <td mat-cell *matCellDef="let row" appAnchocol [ancho]="90">
+                {{ row.abrev }}
+              </td>
+            </ng-container>
+            <tr
+              mat-header-row
+              class="header-custom"
+              *matHeaderRowDef="displayedColumn; sticky: true"
+            ></tr>
+            <tr
+              mat-row
+              *matRowDef="let row; let i = dataIndex; columns: displayedColumn"
+              [ngClass]="{ highlight: fila_sel == i }"
+              (click)="cambindicesel(i)"
+            ></tr>
+            <tr *matNoDataRow class="nodata">
+              <td class="mat-cell text-center" colspan="11">
+                <label *ngIf="!buscando">No se encontraron resultados</label>
+                <div *ngIf="buscando" class="preloader3 loader-block">
+                  <div class="circ1"></div>
+                  <div class="circ2"></div>
+                  <div class="circ3"></div>
+                  <div class="circ4"></div>
+                </div>
+              </td>
+            </tr>
+          </table>
+        </div>
+      </app-card>
+    </div>
+    <div class="sm-8 col-md-8">
+      <div class="titulo-contenido">
+        <h2>Normativas de Indice Unificado</h2>
+      </div>
+      <div class="col-md-12 sm-12 " [style.height.px]="height+90">
+        <!-- <iframe [src]="documentopdf | safePipe:'resourceUrl'" width="100%" height="100%"></iframe> -->
+        <div class="viewer-pdf-custom ">
+          <pdf-viewer class="w-100 h-100" [src]="documentopdf" [zoom]="zoom"
+                  [render-text]="true" [original-size]="false"></pdf-viewer><!-- (after-load-complete)="afterLoadComplete($event)" -->
+        </div>
+        <div class="row d-flex justify-content-center align-content-center botones-pdf">
+          <button class="option_item" (click)="zoomIn()" title="Aumentar">
+              <i class="fa fa-search-plus" aria-hidden="true"></i>
+          </button>
+          <button class="option_item" (click)="zoomOut()" title="Disminuir">
+              <i class="fa fa-search-minus" aria-hidden="true"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>

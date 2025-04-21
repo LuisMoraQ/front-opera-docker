@@ -1,0 +1,250 @@
+<div class="modal-dialog-scrollable modal-md">
+  <div class="modal-content">
+    <div class="app-modal-header  modal-header">
+      <span class="text-white">INDICES UNIFICADOS</span>
+      <button type="button" class="close basic-close" (click)="closeModal()">
+        <span aria-hidden="true" class="mt-2">&times;</span>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="row px-3">
+        <div class="col-9 px-0">
+          <mat-form-field class="mff-reduc w-100 alto-35 field-busqueda" appearance="outline">
+            <mat-label>Buscar (Descripción, Indice Unificado)</mat-label>
+            <input matInput type="text" [(ngModel)]="busqueda" autocomplete="off"
+              id="inpbusq"><!-- (keyup)="applyFilterPrinc($event)"  -->
+            <button *ngIf="busqueda" matSuffix mat-icon-button aria-label="Clear" (click)="busqueda=''">
+              <mat-icon>close</mat-icon>
+            </button>
+          </mat-form-field>
+        </div>
+        <div class="col-3 pr-0">
+          <button class="btn btn-mini btn-outline-secondary  d-flex float-right m-t-5" type="button" container="body"
+            [disabled]="disabAcciones" *ngIf="!buscando2 && !solover" (mouseup)="quitarfoco($event);"
+            ngbTooltip="Restarurar indice unificado de la tabla" (click)="restaurarEditadosIU()">
+
+            <i class="fa fa-undo icono-but"></i>Restaurar
+          </button>
+          <button class="btn btn-mini btn-outline-secondary  d-flex float-right m-t-5" type="button" container="body" 
+            [disabled]="disabAcciones" *ngIf="!buscando2 && !solover" (mouseup)="quitarfoco($event);"
+            ngbTooltip="Editar Multiple indice unificado tabla completa" (click)="activarindTipIns(null, null,true)">
+
+            <i class="fa fa-edit icono-but" ></i>Edicion
+          </button>
+          <button class="btn btn-mini btn-outline-secondary  d-flex float-right m-t-5" type="button" container="body"
+            style
+          [disabled]="disabAcciones" *ngIf="!buscando2" (mouseup)="quitarfoco($event);"
+          ngbTooltip="Reporte indices unificados" (click)="reporteIndicesUnificados()">
+          <i class="fa fa-print icono-but" style="font-size: 14px;margin-left: 5px;" ></i>
+        </button>
+        </div>
+        <div class="col-12 px-0 height-tabla-insumo overflow-auto">
+          <table class="table-bordered tab-10">
+            <thead class="text-center headsticky">
+              <tr class="headsticky">
+                <th appAnchocol [ancho]="30">N°</th>
+                <th appAnchocol [ancho]="35">
+                  <div class="d-flex" *ngIf="!solover">
+                    <a style="padding: 0px 2px;cursor: pointer;" ngbTooltip="Expandir Todo" container="body"
+                      (click)="maxtodoEdicionUI()"><i class="icofont icofont-caret-down"></i></a>
+                    <a style="padding: 0px 2px;cursor: pointer;" ngbTooltip="Contraer Todo" container="body"
+                      (click)="mintodoEdicionUI()"><i class="icofont icofont-caret-up"></i></a>
+                  </div>
+                </th>
+                <th appAnchocol [ancho]="350">
+                  DESCRIPCIÓN
+                </th>
+                <th appAnchocol [ancho]="30">
+                  UND
+                </th>
+                <!-- <th appAnchocol [ancho]="100">CANTIDAD</th>-->
+                <th appAnchocol [ancho]="50">PRECIO</th> 
+                <th appAnchocol [ancho]="70">PARCIAL</th>
+                <th appAnchocol [ancho]="60">ORIGEN <br>INSUMO</th>
+                <th appAnchocol [ancho]="300" [detalle]="true">INDICE UNIFICADO</th>
+                <th appAnchocol [ancho]="30" [hidden]="indTipIns == null">
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <ng-container *ngIf="this.listaInsumos.length ; else noInsumos">
+                <tr
+                  *ngFor="let insumo of this.listaInsumos | filtroBusqTabla: busqueda : arrayBusqueda; let idx = index" (click)="insumo.unidad == '' ? null : this.filaSelect = idx">
+                  <ng-container *ngIf="insumo.mostrar">
+                    <td [ngClass]="{'titulo-grupo-iu': insumo.unidad == '', 'filaSe': filaSelect == idx}" class="text-center">
+                      {{idx +1 }}
+                    </td>
+                    <td class="text-center" [ngClass]="{'titulo-grupo-iu': insumo.unidad == '', 'filaSe': filaSelect == idx}">
+                      <ng-container *ngIf=" insumo.unidad !== ''; else toggle">
+                        {{insumo.ind_grupo}}
+                      </ng-container>
+                      <ng-template #toggle>
+                        <a *ngIf="insumo.icomost == 0" style="
+                      padding: 0px 2px;
+                      color: #06bb06;
+                      cursor: pointer;
+                    " (click)="toggleOnEdicionUI(idx)">
+                          <i class="icofont icofont-caret-down"></i>
+                        </a>
+                        <a *ngIf="insumo.icomost == 1" (click)="toggleOffEdicionUI(idx)"
+                          style="padding: 0px 2px; color: red; cursor: pointer">
+                          <i class="icofont icofont-caret-up"></i> </a>
+                      </ng-template>
+                    </td>
+                    <td appAnchocol [ancho]="250" [ngClass]="{'titulo-grupo-iu': insumo.unidad == '', 'filaSe': filaSelect == idx}" appAnchocol [ancho]="450" >
+                      <div class="d-flex justify-content-between">
+                        <div class="recortatextlinea" container="body" [ngbTooltip]="insumo.unidad ? insumo.descripcion: ''" >
+                          {{insumo.descripcion}}
+                           <!-- <ng-container *ngIf="insumo.unidad !== ''">- {{insumo.precio}}</ng-container> -->
+                        </div>
+                        <div *ngIf="!insumo.unidad && !solover" >
+                          <i class="fa fa-sort-alpha-asc icono-sort ml-2" (click)="ordenarAscendente(idx,'desc')" ngbTooltip="Orden Ascendente" container="body"></i>
+                          <i class="fa fa-sort-alpha-desc icono-sort ml-2" (click)="ordenarDescendente(idx,'desc')" ngbTooltip="Orden Descendente" container="body"></i>
+                        </div>
+                      </div>
+
+
+                    </td>
+                    <td class="text-center" [ngClass]="{'titulo-grupo-iu': insumo.unidad == '', 'filaSe': filaSelect == idx}">
+                      <ng-container *ngIf=" insumo.unidad !== ''">
+                        {{insumo.unidad}}
+                      </ng-container>
+                    </td>
+                    <!-- <td class="text-right" [ngClass]="{'titulo-grupo-iu': insumo.unidad == ''}">
+                      <ng-container *ngIf=" insumo.unidad !== ''">
+                        {{insumo.cantidad}}
+                      </ng-container>
+                    </td>-->
+                    <td class="text-right" [ngClass]="{'titulo-grupo-iu': insumo.unidad == '', 'filaSe': filaSelect == idx}">
+                      <ng-container *ngIf=" insumo.unidad !== ''">
+                        <div class="d-flex justify-content-between">
+                          <div>
+                            {{moneda}}
+                          </div>
+                          <div>
+                            {{insumo.precio}}
+                          </div>
+                        </div>
+                        
+                      </ng-container>
+                    </td> 
+                    <td class="text-right" [ngClass]="{'titulo-grupo-iu': insumo.unidad == '', 'filaSe': filaSelect == idx}">
+                      <ng-container *ngIf=" insumo.unidad !== ''">
+                        <div class="d-flex justify-content-between">
+                          <div>
+                            {{moneda}}
+                          </div>
+                          <div>
+                            {{insumo.parcial}}
+                          </div>
+                        </div>     
+                      </ng-container>
+                    </td>
+                    <td class="text-center" [ngClass]="{'titulo-grupo-iu': insumo.unidad == '', 'filaSe': filaSelect == idx}">
+                      <ng-container *ngIf=" insumo.unidad !== ''">
+
+                        <div class="w-100">
+                          <span class="badge"
+                            [ngClass]="{'bg-orange': insumo.fuente == 0, 'bg-info': insumo.fuente == 1, 'bg-custom text-white':insumo.fuente != 1 && insumo.fuente != 0 }">
+                            {{insumo.fuente == 0 ? 'SISTEMA' : (insumo.fuente == 1 ?
+                            'USUARIO' : 'IMPORTADO')}}
+                          </span>
+                        </div>
+                      </ng-container>
+                    </td>
+                    <td [ngClass]="{'titulo-grupo-iu': insumo.unidad == '', 'filaSe': filaSelect == idx}">
+                      <ng-container *ngIf="insumo.unidad !== '';else noTitGrup">
+                        <div class="d-flex justify-content-between">
+                          <div>
+                            {{insumo.id_indice}} -
+                            {{insumo.nuevo_indice ? insumo.nuevo_indice.desc_indice :
+                            insumo.desc_indice
+                            }}
+                          </div>
+                          <div class="icon-action" *ngIf="!solover">
+                            <i class="fa fa-undo " ngbTooltip="Restaurar I.U." container="body"
+                              *ngIf="insumo.nuevo_indice" (click)="restaurarEditadosIU(idx)"></i>
+                          </div>
+
+                        </div>
+
+                      </ng-container>
+                      <ng-template #noTitGrup>
+                        <div class="w-100 text-center " *ngIf="!solover">
+                          <button class="btn btn-mini2 bg-secondary text-white " type="button" container="body"
+                            [disabled]="disabAcciones" (mouseup)="quitarfoco($event);"
+                            [ngbTooltip]="'Habilitar edicion I.U. en: ' + insumo.descripcion"
+                            (click)="activarindTipIns(insumo.id_tipo_insumo, idx)">
+                            <i class="fa fa-edit icono-but"></i>
+                          </button>
+                          <i class="fa fa-sort-alpha-asc icono-sort ml-2" (click)="ordenarAscendente(idx, 'indUni')" ngbTooltip="Orden Ascendente" container="body"></i>
+                          <i class="fa fa-sort-alpha-desc icono-sort ml-2" (click)="ordenarDescendente(idx,'indUni')" ngbTooltip="Orden Descendente" container="body"></i>
+                        </div>
+                      </ng-template>
+                    </td>
+                    <td class="text-center" [hidden]="indTipIns == null"
+                      [ngClass]="{'titulo-grupo-iu': insumo.unidad == '', 'filaSe': filaSelect == idx}">
+                      <mat-checkbox [checked]="insumo.sel_mult"
+                        *ngIf="(insumo.id_tipo_insumo == indTipIns && insumo.unidad !== '') ||(indTipIns == -1 && insumo.unidad !== '')"
+                        (change)="cambioMultiple($event.checked, insumo.ind)">
+                      </mat-checkbox>
+                    </td>
+                  </ng-container>
+                </tr>
+              </ng-container>
+              <ng-template #noInsumos>
+                <tr>
+                  <td class="mat-cell text-center" colspan="8">
+                    <label *ngIf="!buscando2">No se encontraron resultados</label>
+                    <div *ngIf="buscando2" class="preloader3 loader-block">
+                      <div class="circ1"></div>
+                      <div class="circ2"></div>
+                      <div class="circ3"></div>
+                      <div class="circ4"></div>
+                    </div>
+                  </td>
+                </tr>
+              </ng-template>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="app-modal-footer modal-footer justify-content-between">
+      <button type="button" class="btn btn-danger btn-sm" (click)="closeModal()"><i
+          class="fa fa-times"></i>Cerrar</button>
+
+      <button type="button" class="btn btn-success btn-sm" [disabled]="disabAcciones" 
+        (click)="guardarCambiosPrincipal()" *ngIf="!buscando2 && !solover"><i class="fa fa-calendar-check-o"></i>Guardar</button>
+    </div>
+  </div>
+</div>
+
+<p-dialog [(visible)]="displayBasic2" [style]="{width: '25rem'}" closeOnEscape="false" (onHide)="cerrarModal()">
+  <p-header>
+    Lista Indices Unificados
+  </p-header>
+  <div class="d-flex">
+    <div class="col-12 px-0">
+      <ng-select [appendTo]="'body'" [clearable]="false" [(ngModel)]="indUniSeleccionado"placeholder="ingrese descripcion..."
+        [items]="listaIndicesUnificados" bindLabel="desc_indice">
+        <ng-template ng-label-tmp let-item="item">
+          <span >{{ item.id_indice + '-' + item.desc_indice }}</span>
+      </ng-template>
+      <ng-template ng-option-tmp let-item="item" let-search="searchTerm" let-index="index">
+            <span >{{ item.id_indice + '-' + item.desc_indice }}</span>
+      </ng-template>
+    
+      </ng-select>
+    </div>
+  </div>
+  <p-footer class="pr-0">
+    <div class="col-12">
+      <button class="btn btn-sm bg-success d-flex float-right" type="button" (click)="verificarAsignados()" 
+        (mouseup)="quitarfoco($event);">
+        <i class="fa fa-save icono-but"></i> GUARDAR
+      </button>
+    </div>
+  </p-footer>
+</p-dialog>
+<app-cargando [bloquearTodo]="true" *ngIf="mostrar_carga_todo"></app-cargando>

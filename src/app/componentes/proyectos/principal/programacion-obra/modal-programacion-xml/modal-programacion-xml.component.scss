@@ -1,0 +1,176 @@
+table {
+    padding-bottom: 0px !important;
+}
+
+.height-tabla {
+    height: calc(100vh - 215px) !important;
+}
+
+.height-tabla2 {
+    height: calc(100vh - 185px) !important;
+}
+
+.nombre-documento {
+    font-family: system-ui !important;
+    font-weight: 600 !important;
+}
+
+.slider-class {
+    position: fixed !important;
+    top: 6rem !important;
+}
+
+.switch input[type=checkbox]+.cr {
+    top: 4px !important;
+    background-color: #b2a3a3 !important;
+}
+
+.width-tabla2 {
+    width: 41%;
+}
+
+.width-acciones {
+    width: 4%;
+    display: inherit;
+    justify-content: center;
+}
+
+.width-tabla {
+    width: 55%;
+}
+
+// .existeXML {
+//     background-color: yellow !important;
+// }
+
+// .existePresupuesto {
+//     background-color: yellow !important;
+// }
+
+.existeParecidos {
+    background-color: rgb(235, 235, 74) !important;
+}
+
+.noExistePresu {
+    background-color: #fdbfbf !important;
+}
+
+.hito {
+    background-color: #c6ffc8 !important;
+}
+
+.custom-upload {
+    padding: 0px 10px !important;
+    font-size: 9px !important;
+    background-color: #448aff !important;
+    color: white !important;
+    border-color: #448aff !important;
+    border-radius: 2px !important;
+}
+
+.leyenda-coincidencias {
+    width: 15px;
+    height: 15px;
+    border-radius: 4px;
+    margin-top: 3px;
+    border: 1px #ccc solid;
+    background-color: yellow;
+}
+
+.mat-form-field {
+    font-size: 10px !important;
+    line-height: 1.8 !important
+}
+
+.alto-30 {
+    height: 30px !important;
+}
+
+.custom-title-center {
+    align-self: center !important;
+    margin-left: 20vw !important;
+    font-weight: 700 !important;
+}
+
+.is-hidden {
+    display: none !important;
+}
+
+.font-9 {
+    font-size: 9px !important;
+}
+
+.ocultarHiden {
+    visibility: hidden !important;
+}
+
+.bg-noexist {
+    background-color: #f7c1c1 !important;
+}
+
+.bl-3 {
+    border-left: 3px solid #aba2a2 !important;
+}
+
+.br-3 {
+    border-right: 3px solid #aba2a2 !important;
+}
+
+.leyenda-item {
+    width: 20px;
+    height: 10px;
+    border-radius: 5px;
+    right: 0;
+    position: absolute;
+    margin-right: 5px;
+}
+
+.bg-tipoCambio1{
+    background-color: #fc7171 !important;
+    height: 20px !important;
+    padding: 0;
+}
+.bg-tipoCambio2{
+    background-color: #797af9 !important;
+    height: 20px !important;
+    padding: 0;
+}
+.bg-tipoCambio3{
+    background-color: #db9840 !important;
+    height: 20px !important;
+    padding: 0;
+}
+.bg-tipoCambio4{
+    background-color: #8cb7f0 !important;
+    height: 20px !important;
+    padding: 0;
+}
+
+.leyenda-noExiste {
+    height: 14px;
+    width: 25px;
+    border-radius: 5px;
+    margin-top: 2px;
+    margin-right: 5px;
+}
+
+.leyendas-text {
+    margin-right: 5px;
+    font-size: 9px;
+    font-family: ui-monospace;
+}
+
+mat-checkbox label {
+    margin-bottom: 0px !important;
+}
+.headsticky-2 {
+    position: sticky !important;
+    top: 23px !important;
+}
+
+.alerta-refmod {
+    position: relative;
+    right: 6px;
+    float: right;
+    top: 3px;
+}

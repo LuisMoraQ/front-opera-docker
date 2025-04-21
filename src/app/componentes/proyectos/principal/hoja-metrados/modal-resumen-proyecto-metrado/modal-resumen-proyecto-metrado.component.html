@@ -1,0 +1,361 @@
+<!-- <div class="container-fluid">
+  <div class="row">
+    <div class="col-8">
+      <div class="col-12 px-0 d-flex">
+        <span class="badge bg-danger" *ngIf="dataTemporal"
+          >NO EDITABLE(Cambios Hojas Metrado no guardados)</span
+        >
+      </div>
+      <div class="col-12 px-0 h-registros overflow-auto mt-2">
+        <table class="table-bordered tab-10">
+          <thead class="headsticky">
+            <tr class="text-center">
+              <th colspan="7">ESTADO REGISTRO HOJAS METRADO</th>
+            </tr>
+            <tr class="text-center">
+              <th appAnchocol [ancho]="25">Item</th>
+              <th appAnchocol [ancho]="300">DETALLE DE HORAS DE METRADO</th>
+              <th appAnchocol [ancho]="55">ESTADO DE REGISTRO</th>
+              <th appAnchocol [ancho]="80">VINCULADO CON PRESUP.</th>
+              
+              <th appAnchocol [ancho]="100">
+                <div class="d-flex justify-content-evenly">
+                  TIPO DE REGISTRO
+                  <i
+                    class="fa fa-info text-white align-content-center"
+                    container="body"
+                    ngbTooltip="Partidas registradas en hoja metrado con total metrado diferente a 0"
+                  >
+                  </i>
+                </div>
+              </th>
+              <th appAnchocol [ancho]="150">EDITOR</th>
+              <th appAnchocol [ancho]="70" class="text-center">
+                <button
+                class="btn btn-mini2 btn-success"
+                placement="top"
+                *ngIf="permVinculo"
+                style="z-index: 3"
+                (mouseup)="quitarfoco($event)"
+                ngbTooltip="Vincular todos los titulos"
+                container="body"
+                (click)="vincular(null)"
+              >
+                <i class="fa fa-exchange icono-but"></i>
+              </button>
+              </th>
+            </tr>
+          </thead>
+          <tbody class="text-center">
+            <ng-container *ngIf="listaTitulos.length; else noData">
+              <tr
+                *ngFor="let titulo of listaTitulos; let i = index"
+                class="h-39-celdas"
+                (click)="listarInformacionTitulo(titulo, true)"
+              >
+                <td
+                  appAnchocol
+                  [ancho]="25"
+                  [ngClass]="{ highlight: tituloSeleccionado == titulo }"
+                >
+                  {{ titulo.item }}
+                </td>
+                <td
+                  appAnchocol
+                  [ancho]="300"
+                  [ngClass]="{ highlight: tituloSeleccionado == titulo }"
+                  class="text-left recortatextlinea"
+                >
+                  {{ titulo.descripcion }}
+                </td>
+                <td
+                  appAnchocol
+                  [ancho]="55"
+                  [ngClass]="{ highlight: tituloSeleccionado == titulo }"
+                >
+                  <div class="barra-estado text-center">
+                    <div
+                      [style.width.px]="titulo.estado_metrado/2"
+                      class="barra-registro text-center"
+                    ></div>
+                    <div class="porcentaje">{{ titulo.estado_metrado }}%</div>
+                  </div>
+                </td>
+                <td
+                  appAnchocol
+                  [ancho]="80"
+                  [ngClass]="{ highlight: tituloSeleccionado == titulo }"
+                >
+                  <span class="badge bg-success pos-badge" style="padding-top: 4px;"
+                  *ngIf="titulo.vinculado">SI</span>
+                  <span class="badge bg-danger pos-badge"  style="padding-top: 4px;"
+                  *ngIf="!titulo.vinculado">NO</span>
+                </td>
+                <td
+                  appAnchocol
+                  [ancho]="100"
+                  [ngClass]="{ highlight: tituloSeleccionado == titulo }"
+                >
+                  <ng-container
+                    *ngIf="
+                      titulo.estado_metrado > 0 || dataTemporal || this.solover || !titulo.edicion;
+                      else bloqueado
+                    "
+                  >
+                    <div
+                      class="d-flex justify-content-between"
+                      style="padding: 0 0.2rem 0 0.7rem"
+                    >
+                      <span>
+                        {{
+                          titulo.tipo_registro == 1 ? "HOJA CALCULO" : "SISTEMA"
+                        }}
+                      </span>
+                      <i
+                        class="fa fa-info text-danger"
+                        container="body"
+                        style="cursor: pointer"
+                        *ngIf="!dataTemporal && titulo.edicion"
+                        ngbTooltip="No editable tipo registro, titulo con registros de metrado"
+                      ></i>
+                    </div>
+                  </ng-container>
+                  <ng-template #bloqueado>
+                    <ng-select
+                      [appendTo]="'body'"
+                      [clearable]="false"
+                      class="custom"
+                      [ngClass]="{
+                        'class-disabled':
+                          titulo.estado_metrado > 0 || dataTemporal
+                      }"
+                      [readonly]="
+                        dataTemporal ? true : false || titulo.estado_metrado > 0 || !titulo.edicion
+                      "
+                      [ngModel]="titulo.tipo_registro"
+                      [items]="tiposRegistro"
+                      bindLabel="tipo_registro"
+                      bindValue="id_tipo"
+                      (change)="cambioTipoRegistro($event, i, titulo)"
+                    >
+                    </ng-select>
+                  </ng-template>
+                </td>
+                <td
+                appAnchocol
+                [ancho]="150"
+                [ngClass]="{ highlight: tituloSeleccionado == titulo }"
+                class="text-center recortatextlinea"
+              >
+                {{ titulo.nombres }}
+              </td>
+                <td
+                  appAnchocol
+                  [ancho]="70"
+                  [ngClass]="{ highlight: tituloSeleccionado == titulo }"
+                >
+                  <div class="d-flex justify-content-center text-center">
+                    <button
+                      class="btn btn-mini2 btn-secondary"
+                      placement="top"
+                      style="z-index: 3"
+                      (mouseup)="quitarfoco($event)"
+                      ngbTooltip="Ver Registro"
+                      container="body"
+                      (click)="verHojaMetrado(titulo)"
+                    >
+                      <i class="fa fa-search-plus  icono-but"></i>
+                    </button>
+                    <button
+                    class="btn btn-mini2 btn-success"
+                    placement="top"
+                    style="z-index: 3"
+                    *ngIf="permVinculo"
+                    (mouseup)="quitarfoco($event)"
+                    ngbTooltip="Vincular metrado titulo a presupuesto"
+                    container="body"
+                    (click)="vincular(titulo, i)"
+                  >
+                    <i class="fa fa-exchange icono-but"></i>
+                  </button>
+                  </div>
+                </td>
+              </tr>
+            </ng-container>
+            <ng-template #noData>
+              <tr>
+                <td class="mat-cell text-center" colspan="11">
+                  <label *ngIf="!buscando">No se encontraron resultados</label>
+                  <div *ngIf="buscando" class="preloader3 loader-block">
+                    <div class="circ1"></div>
+                    <div class="circ2"></div>
+                    <div class="circ3"></div>
+                    <div class="circ4"></div>
+                  </div>
+                </td>
+              </tr>
+            </ng-template>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="col-4 overflow-auto h-registros">
+      <div class="col-12 px-0">
+        <div class="card-header bg-new h-st">
+          <h5>
+            INFORMACIÓN DE REGISTRO
+            <div
+              *ngIf="tituloSeleccionado"
+              ngbTooltip="tituloSeleccionado?.descripcion"
+              class="font-weight-bolder text-primary"
+              container="body"
+            >
+              {{ tituloSeleccionado?.item }} -
+              {{ tituloSeleccionado?.descripcion }}
+            </div>
+          </h5>
+        </div>
+        <div class="col-12 col-md-12 pt-2" *ngIf="tablaInformacion.length">
+          <ng-container *ngFor="let item of tablaInformacion; let i = index">
+            <table class="table" style="margin-bottom: 0px">
+              <tbody>
+                <tr>
+                  <th scope="row" class="texto-fila-neg">Item</th>
+                  <td class="texto-fila td-data">
+                    <span *ngIf="tituloSeleccionado" class="fs-11">{{
+                      tituloSeleccionado?.item
+                    }}</span>
+                    <span *ngIf="!item.item" class="fs-11"
+                      ><i class="fa fa-ellipsis-h"></i
+                    ></span>
+                  </td>
+                </tr>
+                <tr>
+                  <th scope="row" class="texto-fila-neg">
+                    <ng-container
+                      *ngIf="
+                        tituloSeleccionado?.tipo_registro == 1;
+                        else tipoSipaed
+                      "
+                    >
+                      Denominación Archivo
+                    </ng-container>
+                    <ng-template #tipoSipaed> Sub Titulo </ng-template>
+                  </th>
+                  <td class="texto-fila td-data">
+                    <ng-container
+                      *ngIf="item?.tipo_registro == 1; else tipoSistema"
+                    >
+                      <i
+                        class="fa fa-file-excel-o text-success"
+                        style="margin-top: 2px"
+                      ></i>
+                      <span
+                        class="texto-documento"
+                        style="margin-left: 5px"
+                        class="fs-11"
+                        >{{ item.subtitulo }}</span
+                      >
+                    </ng-container>
+                    <ng-template #tipoSistema>
+                      <span class="fs-11">{{ item.subtitulo }}</span>
+                    </ng-template>
+                  </td>
+                </tr>
+                <tr>
+                  <th scope="row" class="texto-fila-neg">Ultimo Registro</th>
+                  <td class="texto-fila td-data">
+                    <span *ngIf="item.fechamod" class="fs-11">{{
+                      item.fechamod | date : "dd/MM/yyyy"
+                    }}</span>
+                    <span *ngIf="!item.fechamod" class="fs-11"
+                      ><i class="fa fa-ellipsis-h"></i
+                    ></span>
+                  </td>
+                </tr>
+                <tr>
+                  <th scope="row" class="texto-fila-neg">Hora Registro</th>
+                  <td class="texto-fila td-data">
+                    <span *ngIf="item.fechamod" class="fs-11">{{
+                      item.fechamod | date : "h:mma"
+                    }}</span>
+                    <span *ngIf="!item.fechamod" class="fs-11"
+                      ><i class="fa fa-ellipsis-h"></i
+                    ></span>
+                  </td>
+                </tr>
+                <tr>
+                  <th scope="row" class="texto-fila-neg">Plantilla</th>
+                  <td class="texto-fila td-data">
+                    <ng-container
+                      *ngIf="item.tipo_registro == 1; else sistemaPlantilla"
+                    >
+                      <div class="w-100 recortatext1l fs-11">
+                        {{ item.nom_plantilla }}
+                      </div>
+                    </ng-container>
+                    <ng-template #sistemaPlantilla>
+                      <span
+                        class="badge bg-secondary pos-badge text-white"
+                        *ngIf="item.plantilla == 0"
+                        >SISTEMA</span
+                      >
+                      <span
+                        class="badge bg-info pos-badge"
+                        *ngIf="item.plantilla !== 0"
+                        >ACEROS</span
+                      >
+                    </ng-template>
+                  </td>
+                </tr>
+                <tr *ngIf="tituloSeleccionado?.tipo_registro == 1">
+                  <th scope="row" class="texto-fila-neg">Hoja Excel</th>
+                  <td class="texto-fila td-data">
+                    <span *ngIf="item.nom_hoja" class="fs-11">{{
+                      item.nom_hoja
+                    }}</span>
+                    <span *ngIf="!item.nom_hoja" class="fs-11"
+                      ><i class="fa fa-ellipsis-h"></i
+                    ></span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <hr
+              class="hr-cust"
+              *ngIf="
+                tablaInformacion.length > 1 && i + 1 < tablaInformacion.length
+              "
+            />
+          </ng-container>
+        </div>
+        <div
+          class="col-12 col-md-12 d-flex justify-content-center"
+          *ngIf="!tablaInformacion.length && tituloSeleccionado"
+        >
+          <div class="align-self-center">
+            <label *ngIf="!buscando2" class="mt-2"
+              >No se encontraron resultados.</label
+            >
+            <div *ngIf="buscando2" class="preloader3 loader-block">
+              <div class="circ1"></div>
+              <div class="circ2"></div>
+              <div class="circ3"></div>
+              <div class="circ4"></div>
+            </div>
+          </div>
+        </div>
+        <div
+          class="col-12 col-md-12 d-flex justify-content-center"
+          *ngIf="!tituloSeleccionado"
+        >
+          <div class="align-self-center">
+            <label class="mt-2">Ningun título seleccionado.</label>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<app-cargando [bloquearTodo]="true" *ngIf="mostrar_carga_todo"></app-cargando>
+ -->

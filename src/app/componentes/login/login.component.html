@@ -1,0 +1,121 @@
+    <body>
+      <main class="portada">
+        <div class="sidebar">
+          <div class="bim">
+            <h2>Biplan</h2>
+            <h3>Software de Costos y Presupuesto</h3>
+          </div>
+        </div>
+        <div class="container-login">
+          <div class='box' style="position: absolute;">
+          <div class='wave -one'></div>
+          <div class='wave -two'></div>
+          <div class='wave -three'></div>
+          <div class="row mx-0 padding-contenedor">
+              <div class="col-sm-12 padding-contenido after-login">
+                <div class="col-md-12 centrar-logo">
+                  <h2 class="text-center " style="margin-bottom: 0px">Iniciar Sesión</h2>
+                </div>
+                <div class="col-md-12" style="display: flex; justify-content:center;">
+                  <i class="icofont icofont-user-alt-3  f-60"></i>
+                </div>
+              </div>
+              <div class="col-sm-12 padding-contenido padding-contenido2">
+                <div class="container-login100 px-4">
+                  <form [formGroup]="loginF" class="create-account-form md-float-material form-material">
+                    <div class="wrap-login100">
+                      <div class="wrap-input100 validate-input" data-validate="Valid email is required: ex@abc.xyz"
+                        [ngClass]="{'input-incorrecto': (f.login.invalid && submitted) }">
+                        <input class="input100" id="inlogin" type="text" formControlName="login" name="email"
+                          placeholder="Usuario" autocomplete="off">
+                        <span class="symbol-input100">
+                          <i class="fa fa-envelope" [ngClass]="{'text-danger': (f.login.invalid && submitted) }"
+                            aria-hidden="true"></i>
+                        </span>
+                      </div>
+                      <div class="wrap-input100 validate-input" data-validate="Password is required"
+                        [ngClass]="{'input-incorrecto': (f.clave.invalid && submitted) }">
+                        <input class="input100" type="password" name="pass" placeholder="Contraseña"
+                          formControlName="clave">
+                        <span class="symbol-input100">
+                          <i class="fa fa-lock" aria-hidden="true"
+                            [ngClass]="{'text-danger': (f.clave.invalid && submitted) }"></i>
+                        </span>
+                      </div>
+                      <div class="text-center">
+                        <button class="login100-form-btn" (click)="onLogin()">
+                          Ingresar
+                        </button>
+                      </div>
+                      <div style="width: 100%;text-align: right;">
+                        <span class="et-version" style="font-size: 9px;">v-2025-04-19-v1</span>
+                      </div>
+                      <div class="w-100 m-t-5">
+                        <a href="#" style="font-size: 10px;" (click)="openModRenovar()">Olvido su contraseña?</a>
+                      </div>
+                      <div class="w-100">
+                        <a routerLink="/pasarela" style="font-size: 10px;">Aun no tiene cuenta?Registrate</a>
+                      </div>
+                    </div>
+                  </form>
+                </div>
+              </div>
+          </div>
+        </div>
+      </div>
+        <div class="main-content">
+          <div class="image-container">
+            <div class="container">
+              <div  class="titulo-overlay">
+                <h1>Biplan el software</h1>
+                <p>Que Integra tus proyectos, Diseñado</p>
+                <p>de Acuerdo a tus Necesidades.</p>
+              </div>
+            </div>
+          </div>
+          <div class="social">
+            <p>Biplan el Software que te hace ser mas eficiente en la elaboración de tus proyectos.</p>
+            <div class="redes">
+              <a style="margin-left:40px"href="https://www.facebook.com/profile.php?id=61568538622639" target="_blank"> <i class="icofont-facebook"></i></a>
+              <a href="https://www.youtube.com/@biplan.Costos-Presupuestos" target="_blank"><i class="icofont-youtube-play"></i></a>
+              <a href="https://www.instagram.com/biplan.pe/" target="_blank"><i class="icofont-instagram"></i></a>
+              <a href="https://www.tiktok.com/@eduarvq?_t=8rLJe8ro1Sh&_r=1" target="_blank" aria-label="TikTok"><i class="icofont-tiktok"></i></a>
+              <a href="https://wa.me/+51986566443" target="_blank" aria-label="WhatsApp"><i class="icofont-brand-whatsapp"></i></a>
+              <a href="https://linkedin.com" target="_blank" aria-label="LinkedIn"><i class="icofont-linkedin"></i> </a>
+            </div>
+          </div>
+        </div>
+      </main>
+    </body>
+
+  
+<app-modal-basic #modRecupera>
+  <div class="app-modal-header">
+      <h4 class="modal-title tit-modal1"><b>Recuperar Contraseña</b></h4>
+      <button type="button" class="close basic-close" (click)="cerrarModal2()">
+      <span aria-hidden="true">&times;</span>
+      </button>
+  </div>
+  <div class="app-modal-body">
+    <form [formGroup]="formUsuario" class="p-t-5">
+      <mat-form-field appearance="outline" class="mff-reduc col-12">
+        <mat-label>Login</mat-label>
+        <input id="logrec" matInput autocomplete="off" formControlName="Rlogin" maxlength="200">
+      </mat-form-field>
+      <mat-form-field appearance="outline" class="mff-reduc col-12">
+        <mat-label>Correo</mat-label>
+        <input matInput autocomplete="off" formControlName="Rcorreo" (keyup)="verificarCorreo()" maxlength="200">
+        <mat-error>{{errorcorreo}}</mat-error>
+      </mat-form-field>
+      <span>Revisar su <strong>Bandeja de Correos</strong> o la carpeta <strong>Spam</strong>.</span>
+    </form>
+  </div>
+  <div class="app-modal-footer w-100">
+    <div class="row px-3 justify-content-between d-flex">
+      <button type="button" style="margin-right: 5px;" class="btn btn-sm btn-danger ripple" (click)="cerrarModal2()">Cerrar</button>
+      <button type="button" style="margin-right: 5px;" class="btn btn-sm btn-success ripple" (click)="EnviaClave()">Enviar Clave</button>
+    </div>
+  </div>
+</app-modal-basic>
+
+<app-cargando [bloquearTodo]="true" *ngIf="mostrar_carga_todo"></app-cargando>

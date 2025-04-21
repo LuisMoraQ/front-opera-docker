@@ -1,0 +1,20 @@
+.tabla-1-fila{
+  min-height: 50px;
+}
+.custfileup2{
+  background-color: indigo;
+  color: white;
+  padding: 5px 10px;
+  line-height: 14px;
+  font-size: 10px;
+  border-radius: 5px !important;
+  cursor: pointer;
+  margin-bottom: 2px;
+}
+.cust-col-import{
+  min-width: 20px;
+  max-width: 250px;
+  white-space: unset;
+  overflow-wrap: break-word;
+  line-height: calc(1em + 1px);
+}

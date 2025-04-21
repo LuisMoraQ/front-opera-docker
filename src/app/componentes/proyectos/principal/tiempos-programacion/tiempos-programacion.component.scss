@@ -1,0 +1,51 @@
+.titulo-grupo-iu {
+    font-weight: bolder !important;
+    background-color: #dddddd !important;
+    border: 1px solid #fafafa !important;
+}
+
+.h-contenedores {
+    height: calc(100vh - 180px);
+}
+.h-custom-celda {
+    height: 22px !important;
+}
+
+.bg-incorrecto {
+    background-color: #f3bbbb !important;
+}
+.mar-10 {
+    margin-right: 15px !important;
+}
+.mar-0 {
+    margin-right: 0px !important;
+}
+
+.option{
+    padding: 5px 5px 5px 5px !important;
+    width: 20px !important;
+    height: 20px !important;
+}
+
+::ng-deep .select-custom .ng-arrow-wrapper {
+    display: none !important;
+}
+
+::ng-deep .select-custom  .ng-value {
+    width: 28px !important;
+}
+::ng-deep .cust-mr-4 .mat-checkbox-inner-container {
+    margin-right: 4px !important;
+}
+
+
+@media (max-width: 768px) {
+    .c-ml-3 {
+        margin-left: 3px !important;
+    }
+}
+@media (min-width: 769px) {
+    .c-ml-3 {
+        margin-left: 1rem !important;
+    }
+}

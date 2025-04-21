@@ -1,0 +1,185 @@
+.viewer-pdf-custom {
+    display: block;
+    height: calc(100% - 50px);
+    width: 100%;
+}
+
+.botones-pdf {
+    height: 50px;
+}
+
+.position_btn {
+    position: absolute;
+    right: 1em;
+    top: 1em;
+    z-index: 1;
+}
+
+.options {
+    position: fixed;
+    padding: 10px;
+    left: 87%;
+    bottom: 9%;
+    transform: translate(-50%, -10px);
+    z-index: 1;
+    display: flex;
+
+}
+
+.option_item {
+    width: 40px;
+    height: 40px;
+    padding: 10px;
+    margin: 5px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: rgba(56, 56, 56, 0.7);
+    border-radius: 50%;
+    color: white;
+    border: none;
+}
+
+.option_item:hover {
+    background: rgba(104, 104, 104, 0.7);
+}
+
+.pagina-number {
+    width: 80px;
+    height: 40px;
+    padding: 10px;
+    margin: 5px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: white;
+    border-radius: 50%;
+    color: rgba(56, 56, 56, 0.7);
+    border: 2px solid rgba(56, 56, 56, 0.7);
+    font-weight: bolder;
+}
+
+.custom-carousel {
+    height: 350px !important;
+    width: 100%;
+}
+
+.imagen-custom {
+    width: 100%;
+    height: 300px;
+    object-fit: contain;
+}
+
+
+
+// .mat-form-field-wrapper {
+//     padding-bottom: 0px !important;
+// }
+
+.altura-imagen {
+    //height: 200px !important;
+    max-height: 350px;
+}
+
+.altura-sin-imagen {
+    height: 100px !important;
+}
+.image-preview{
+    min-height: 150px;
+}
+
+.list-group-item {
+    position: relative;
+    display: block;
+    padding: 0.25rem 0.25rem !important;
+    background-color: #fff;
+    border: 1px solid #6c757d !important;
+    cursor: pointer;
+}
+
+.list-group-item:hover {
+    background-color: #6c757d !important;
+    color: #fff !important;
+}
+
+.list-activo {
+    background-color: #37474f !important;
+    color: #fff !important;
+}
+
+.contendor-fichatecnica {
+    min-height: 268px;
+    height: calc(100vh - 210px);
+    overflow-x: hidden;
+}
+.contendor-fichatecnica-sinimg {
+    min-height: 268px;
+    height: calc(100vh - 210px);
+    overflow-x: hidden;
+}
+
+.boton-ver-doc {
+    position: absolute !important;
+    right: 0 !important;
+    top: 0 !important;
+    border: 1px solid;
+    background-color: black;
+    cursor: pointer;
+}
+
+@media (max-width: 768px) {
+    .contendor-fichatecnica {
+        min-height: 250px;
+        height: 250px;
+        overflow-x: hidden;
+    }
+}
+
+.custom-heigth-imagen {
+    height: 160px !important;
+}
+
+.recortar-text-select {
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    width: calc(100% - 40px);
+    margin-top: 3px;
+}
+
+.recortar-text-imag {
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    width: calc(100% - 10px);
+    margin-top: 3px;
+}
+
+
+.custom-tabs .nav-link {
+    display: block;
+    padding: 0.1rem 0.6rem;
+}
+
+.custom-tabs a {
+    font-size: 8px;
+}
+
+.custom-texto-list {
+    font-size: 10px;
+}
+
+.custom-label-list {
+    margin-bottom: 0 !important;
+    font-size: 11px;
+    font-weight: 700;
+    font-family: serif;
+}
+
+.cargasobre{
+    //top:80px;
+    position: absolute;
+    z-index: 1;
+    width: 100%;
+    height: 270px;
+}

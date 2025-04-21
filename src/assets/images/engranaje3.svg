@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   version="1.0"
+   width="79.000000pt"
+   height="78.000000pt"
+   viewBox="0 0 79.000000 78.000000"
+   preserveAspectRatio="xMidYMid meet"
+   id="svg429"
+   sodipodi:docname="plomo"
+   inkscape:version="1.2.1 (0f2f062aeb, 2022-09-21, custom)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs433" />
+  <sodipodi:namedview
+     id="namedview431"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="pt"
+     showgrid="false"
+     inkscape:zoom="5.0192308"
+     inkscape:cx="52.597701"
+     inkscape:cy="52"
+     inkscape:window-width="1366"
+     inkscape:window-height="703"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="g427" />
+  <metadata
+     id="metadata423">
+Created by potrace 1.16, written by Peter Selinger 2001-2019
+</metadata>
+  <g
+     transform="translate(0.000000,78.000000) scale(0.100000,-0.100000)"
+     fill="#000000"
+     stroke="none"
+     id="g427">
+    <path
+       d="M261 761 c-64 -22 -72 -33 -58 -76 9 -30 7 -35 -24 -64 -21 -18 -40 -28 -49 -24 -53 22 -66 16 -88 -35 -29 -66 -28 -79 8 -97 27 -14 30 -20 30 -63 0 -45 -2 -49 -36 -65 -33 -16 -35 -20 -29 -50 16 -76 46 -102 100 -84 15 5 27 -2 49 -30 26 -32 28 -39 18 -66 -8 -21 -8 -34 -1 -43 11 -13 93 -54 108 -54 5 0 18 16 30 35 19 32 23 34 63 30 41 -4 68 -24 68 -51 0 -20 24 -22 70 -7 66 22 73 30 66 78 -6 36 -3 44 24 70 26 25 32 27 55 17 14 -7 32 -12 40 -12 17 0 53 57 61 98 5 27 2 32 -25 46 -28 15 -31 21 -31 64 0 45 2 49 35 65 40 19 40 18 19 80 -21 62 -35 72 -76 58 -31 -11 -34 -10 -64 26 -30 35 -31 39 -18 69 13 31 12 34 -14 52 -33 23 -91 44 -103 36 -5 -3 -16 -18 -24 -34 -13 -26 -18 -28 -57 -23 -24 3 -47 12 -53 20 -36 54 -35 54 -94 34z m202 -312 c33 -36 35 -76 6 -113 -30 -38 -64 -49 -105 -36 -80 27 -86 136 -10 174 40 21 74 13 109 -25z"
+       id="path425"
+       style="fill:#808080" />
+  </g>
+</svg>

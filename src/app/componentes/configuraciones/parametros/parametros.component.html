@@ -1,0 +1,139 @@
+<div class="page-body">
+  <!-- <div class="titulo-contenido">
+    <h2>PARAMETROS GENERALES</h2>
+  </div> -->
+  <ul ngbNav #nav="ngbNav" [(activeId)]="tabSeleccionado" class="nav-tabs">
+    <li [ngbNavItem]="1">
+      <a ngbNavLink>Parametros Generales</a>
+      <ng-template ngbNavContent>
+        <div class="card">
+          <div class="card-header">
+            <div class="row justify-content-between px-3">
+              <h5 class="card-header-text">Configurar Decimales</h5>
+              <button type="button" class="btn btn-success btn-sm" (click)="Guardar()"><i
+                class="fa fa-check"></i>Guardar Todo
+              </button>
+            </div>
+          </div>
+          <div class="card-body" style="padding-top: 10px;padding-bottom: 5px;padding-right: 10px; padding-left: 10px;">
+            <form [formGroup]='Frmdecimales'>
+              <div class="row">
+                <mat-form-field class="mff-reduc my-form-field w-100 col-sm-3" appearance="outline">
+                  <mat-label>Decimales Metrado</mat-label>
+                  <select matNativeControl formControlName="metrado">
+                    <option value="2">2&nbsp;&nbsp;-->&nbsp;&nbsp;#,###.00</option>
+                    <option value="3">3&nbsp;&nbsp;-->&nbsp;&nbsp;#,###.000</option>
+                    <option value="4">4&nbsp;&nbsp;-->&nbsp;&nbsp;#,###.0000</option>
+                  </select>
+                </mat-form-field>
+                <mat-form-field class="mff-reduc my-form-field w-100 col-sm-3" appearance="outline">
+                  <mat-label>Decimales Precio</mat-label>
+                  <select matNativeControl formControlName="precio">
+                    <option value="2">2&nbsp;&nbsp;-->&nbsp;&nbsp;#,###.00</option>
+                    <option value="3">3&nbsp;&nbsp;-->&nbsp;&nbsp;#,###.000</option>
+                    <option value="4">4&nbsp;&nbsp;-->&nbsp;&nbsp;#,###.0000</option>
+                  </select>
+                </mat-form-field>
+                <mat-form-field class="mff-reduc my-form-field w-100 col-sm-3" appearance="outline">
+                  <mat-label>Decimales Total Presupuesto</mat-label>
+                  <select matNativeControl formControlName="parcial">
+                    <option value="2">2&nbsp;&nbsp;-->&nbsp;&nbsp;#,###.00</option>
+                    <option value="3">3&nbsp;&nbsp;-->&nbsp;&nbsp;#,###.000</option>
+                    <option value="4">4&nbsp;&nbsp;-->&nbsp;&nbsp;#,###.0000</option>
+                  </select>
+                </mat-form-field>
+                <mat-form-field class="mff-reduc my-form-field w-100 col-sm-3" appearance="outline">
+                  <mat-label>Decimales Cantidad Costos Unitarios</mat-label>
+                  <select matNativeControl formControlName="cantidad">
+                    <option value="2">2&nbsp;&nbsp;-->&nbsp;&nbsp;#,###.00</option>
+                    <option value="3">3&nbsp;&nbsp;-->&nbsp;&nbsp;#,###.000</option>
+                    <option value="4">4&nbsp;&nbsp;-->&nbsp;&nbsp;#,###.0000</option>
+                  </select>
+                </mat-form-field>
+              </div>
+            </form>
+          </div>
+        </div>
+        <app-card class="card col-md-12 card-principal">
+          <div class="card-header">
+            <h5 class="card-header-text">Opciones de Visualización</h5>
+          </div>
+          <div class="card-body" style="padding-top: 10px;padding-bottom: 5px;padding-right: 10px; padding-left: 10px;">
+            <div class="table-responsive">
+              <table #table1 class="tabla-general" mat-table [dataSource]="dataSourceColor" matSort multiTemplateDataRows>
+                  <ng-container matColumnDef="detalle">
+                      <th mat-header-cell *matHeaderCellDef>Detalle de Estructura</th>
+                      <td mat-cell *matCellDef="let row"> {{row.detalle}} </td>
+                  </ng-container>
+                  <ng-container matColumnDef="presupuestoletra">
+                    <th mat-header-cell *matHeaderCellDef>Color Letra</th>
+                    <td mat-cell *matCellDef="let element; let i = dataIndex;">
+                      <input type="color" matInput autocomplete="off" [value]="element.presupuestoletra=='unset'?'#000000':element.presupuestoletra" style="width: 40px;" (input)="reasignarColor($event,i)">
+                        <!-- <select  value="{{element.presupuestoletra}}" [style.color]="element.presupuestoletra +'!important'" (change)="cambiarcolor($event.target.value,i,'presupuestoletra')"  >
+                            <option *ngFor="let colletra of colorletra" [value]="colletra.id" [style.color]="colletra.id!='unset'?colletra.id +'!important':'#000000'">{{colletra.nombre}}</option>
+                        </select> -->
+                    </td>
+                  </ng-container>
+                  <ng-container matColumnDef="presupuestotipo">
+                    <th mat-header-cell *matHeaderCellDef>Tipo Letra</th>
+                    <td mat-cell *matCellDef="let element; let i = dataIndex;">
+                        <select  value="{{element.presupuestotipo}}" style="width: 130px;" [ngClass]="{'normal': element.presupuestotipo=='1','cursiva':element.presupuestotipo=='2','negrita':element.presupuestotipo=='3','cursivanegrita':element.presupuestotipo=='4'}" (change)="cambiarcolor($event.target.value,i,'presupuestotipo')"  >
+                            <option *ngFor="let tipletra of tipoletra" [value]="tipletra.id" [ngClass]="{'normal': tipletra.id=='1','cursiva':tipletra.id=='2','negrita':tipletra.id=='3','cursivanegrita':tipletra.id=='4'}">{{tipletra.nombre}}</option>
+                        </select>
+                    </td>
+                  </ng-container>
+                  <ng-container matColumnDef="presupuesto">
+                    <th mat-header-cell *matHeaderCellDef>Color Fondo</th>
+                    <td mat-cell *matCellDef="let element; let i = dataIndex;">
+                      <input type="checkbox" id="switch-p-3" [checked]="element.presupuesto=='none'" (change)="Sincolor1($event,i)"> Sin Fondo | 
+                      <input type="color" matInput autocomplete="off" [value]="element.presupuesto=='none'?'#ffffff':element.presupuesto" style="width: 40px;" [disabled]="element.presupuesto=='none'"
+                        [ngStyle]="{ opacity: element.presupuesto=='none'?'0.4':'1' }" (input)="reasignarColor1($event,i)">
+                        <!-- <select  value="{{element.presupuesto}}" [style.background]="element.presupuesto" (change)="cambiarcolor($event.target.value,i,'presupuesto')"  >
+                            <option *ngFor="let colfondo of colorfondo" [value]="colfondo.id" [style.background]="colfondo.id!='none'?colfondo.id:'#ffffff'">{{colfondo.nombre}}</option>
+                        </select> -->
+                    </td>
+                  </ng-container>
+                  <ng-container matColumnDef="presuver">
+                    <th mat-header-cell *matHeaderCellDef>Previsualizar</th>
+                    <td mat-cell *matCellDef="let element; let i = dataIndex;" [style.color]="element.presupuestoletra+' !important'" [style.background]="element.presupuesto" [ngClass]="{'normal': element.presupuestotipo=='1','cursiva':element.presupuestotipo=='2','negrita':element.presupuestotipo=='3','cursivanegrita':element.presupuestotipo=='4'}">
+                      {{element.detalle}}
+                    </td>
+                  </ng-container>
+                  <ng-container matColumnDef="header-row-group1">
+                    <th mat-header-cell *matHeaderCellDef [attr.colspan]="1">
+                    </th>
+                  </ng-container>
+                  <ng-container matColumnDef="header-row-group2">
+                      <th mat-header-cell *matHeaderCellDef [attr.colspan]="4" style="text-align: center;">PRESUPUESTO</th>
+                  </ng-container>
+                  <tr mat-header-row *matHeaderRowDef="['header-row-group1','header-row-group2'];"></tr>
+                  <tr mat-header-row class="header-custom" *matHeaderRowDef="displayedColumnsColor; sticky: true"></tr>
+                  <tr mat-row *matRowDef="let row; let i = dataIndex; columns: displayedColumnsColor;" [ngClass]="{'highlight': filaorg_sel == i}" ></tr><!-- (click)="cambindicesel(i)" -->
+                  <tr *matNoDataRow class="nodata">
+                      <td class="mat-cell text-center" colspan="11">
+                          <label *ngIf="!buscando1">No se encontraron resultados</label>
+                          <div *ngIf="buscando1" class="preloader3 loader-block">
+                              <div class="circ1"></div>
+                              <div class="circ2"></div>
+                              <div class="circ3"></div>
+                              <div class="circ4"></div>
+                          </div>
+                      </td>
+                  </tr>
+              </table>
+            </div>
+          </div>
+        </app-card>
+      </ng-template>
+    </li>
+    <li [ngbNavItem]="2">
+      <a ngbNavLink>Clasificación de Proyectos</a>
+      <ng-template ngbNavContent>
+        <app-clasificacion ></app-clasificacion>
+      </ng-template>
+    </li>
+  </ul>
+  <div [ngbNavOutlet]="nav" class="mt-2"></div>
+  <app-cargando [bloquearTodo]="true" *ngIf="mostrar_carga_todo"></app-cargando>
+  <app-cargando [bloquearTodo]="false" *ngIf="mostrar_carga"></app-cargando>
+</div>

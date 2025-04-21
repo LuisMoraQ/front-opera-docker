@@ -1,0 +1,55 @@
+<!-- <button (click)="enviarMensaje()">Enviar Mensaje</button>
+<iframe #iframe src="http://localhost:4200" style="width: 100%;height: calc(100vh - 150px);"></iframe> -->
+<div class="titulo-contenido">
+  <h2>MANUAL DE USUARIO</h2>
+</div>
+<div class="col-12 row px-0">
+  <div class="d-none d-md-block col-md-3">
+    <h4 class="sub-title h4-grupo w-100 f-w-900">Contenido</h4>
+    <ng-container *ngIf="outline.length<=0">
+        <div *ngIf="buscando" class="preloader3 loader-block">
+          <div class="circ1"></div>
+          <div class="circ2"></div>
+          <div class="circ3"></div>
+          <div class="circ4"></div>
+        </div>
+    </ng-container>
+    <div *ngIf="outline.length>0" style="overflow: auto;" [style.height.px]="height+40">
+      <ul *ngFor="let item of outline" class="outline-list" >
+        <li>
+          <a class="titul1" (click)="navigateTo(item.dest)">
+            {{ item.title }}
+          </a>
+          <ul *ngFor="let child of item.items" class="m-l-10">
+            <li>
+              <a class="titul2" (click)="navigateTo(child.dest)">
+                {{ child.title }}
+              </a>
+              <ul *ngFor="let child of item.items" class="m-l-10">
+                <li>
+                  <a (click)="navigateTo(child.dest)">
+                    {{ child.title }}
+                  </a>
+                </li>
+              </ul>
+            </li>
+          </ul>
+        </li>
+      </ul>
+    </div>
+  </div>
+  <div class="col-12 col-md-9 " [style.height.px]="height+70">
+    <div class="viewer-pdf-custom ">
+      <pdf-viewer class="w-100 h-100" [src]="documentopdf" [zoom]="zoom" (after-load-complete)="afterLoadComplete($event)"
+              [render-text]="true" [original-size]="false"></pdf-viewer>
+    </div>
+    <div class="row d-flex justify-content-center align-content-center botones-pdf">
+      <button class="option_item" (click)="zoomIn()" title="Aumentar">
+          <i class="fa fa-search-plus" aria-hidden="true"></i>
+      </button>
+      <button class="option_item" (click)="zoomOut()" title="Disminuir">
+          <i class="fa fa-search-minus" aria-hidden="true"></i>
+      </button>
+    </div>
+  </div>
+</div>

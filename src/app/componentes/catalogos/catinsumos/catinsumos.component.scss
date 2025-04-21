@@ -1,0 +1,27 @@
+.visor-data-insumo {
+    width: 200px;
+    height: 100%;
+    background-color: aqua;
+}
+
+@media only screen and (max-width: 576px) {
+    .componente-documentos {
+        position: absolute !important;
+        top: -9999px !important;
+    }
+}
+
+@media (min-width: 1200px) {
+    .custom-height {
+        height: calc(100vh - 110px) !important;
+    }
+}
+
+.custom-labels {
+    width: 22.17px !important
+}
+
+
+.tabla-limp table tr td {
+    height: 25px;
+}

@@ -1,0 +1,68 @@
+.modal-body {
+    height: 100vh;
+}
+
+.custom-borde {
+    border: 1px solid;
+    border-radius: 10px;
+}
+
+
+
+
+@media (min-width: 768px) and (max-width: 992px) {
+    .contenido-tabla-catalogos {
+        height: calc(100% - 130px);
+    }
+    
+    .contenido-catalogos-seleccionados {
+        height: 130px;
+    }
+    .custom-chip {
+        width: 160px;
+        min-width: 160px;
+        max-height: 160px;
+    }
+    .viewer-pdf-custom {
+        display: block;
+        height: calc(100% - 160px);
+        width: 100%;
+    }
+}
+@media (max-width: 768px) {
+    .contenido-tabla-catalogos {
+        height: calc(100% - 170px);
+    }
+    
+    .contenido-catalogos-seleccionados {
+        height: 170px;
+    }
+    .custom-chip {
+        width: 100%;
+        min-width: 160px;
+    }
+    .viewer-pdf-custom {
+        display: block;
+        height: 550px;
+        width: 100%;
+    }
+}
+
+@media (min-width: 992px) {
+    .contenido-tabla-catalogos {
+        height: calc(100% - 130px);
+    }
+    
+    .contenido-catalogos-seleccionados {
+        height: 130px;
+    }
+    .custom-chip {
+        min-width: 160px;
+        max-height: 30%;
+    }
+    .viewer-pdf-custom {
+        display: block;
+        height: calc(100% - 135px);
+        width: 100%;
+    }
+}

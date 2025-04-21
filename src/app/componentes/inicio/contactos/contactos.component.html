@@ -1,0 +1,129 @@
+  <main class="portada">
+    <div class="main-content full-width">
+      <div class="image-container">
+        <div class="container">
+        <div  class="overlay">
+          <div class="container-fluid" style="background-color:rgba(255, 255, 255, 1)">
+            <h2 class="header-section4">Panel de Consultas</h2>
+            <div class="container-fluid row">
+              <div class="container-fluid col-sm-12 col-md-8 col-lg-6" style=" margin-bottom: 20px;">
+                <div class="ventajas-texto" style="padding: 0px;">
+                  <p><b>Consultas Generales del Software</b><br>
+                    Realiza tus consultas, Llena el formulario y nuestros asesores se pondrán en contacto contigo a la brevedad.</p>
+                </div>
+                    <div class="full-paragragh">
+                        <div class="base-form-portada">
+                          <div class="form-background" style="z-index: -1; margin-top: 12px; margin-left: 0px; opacity: 0.75;"></div>
+                          <div class="form-background" style="z-index: -2; margin-top: 24px; margin-left: -12px; opacity: 0.5;"></div>
+                          <div class="base-form2">
+                            <form [formGroup]="formularioContacto" (ngSubmit)="EnviarMensaje()">
+                              <div class="mt-3">
+                                <mat-form-field class="mff-reduc w-100 alto-35" appearance="outline">
+                                  <mat-label>Nombre Completo</mat-label>
+                                  <input matInput  style="width: 98%;" formControlName="nombre" >
+                                </mat-form-field>
+                              </div>
+                              <div class="mt-3">
+                                <mat-form-field class="mff-reduc w-100 alto-35" appearance="outline">
+                                  <mat-label>Correo Electronico</mat-label>
+                                  <input matInput  style="width: 98%;" formControlName="correo_electronico" placeholder="example@hotmail.com"/>
+                                </mat-form-field>
+                              </div>
+                              <div class="mt-3 row">
+                                <div class="col-sm-12 col-md-12 col-lg-6 mt-2" style="display: flex;">
+                                  <div class="img-bandera" *ngIf="seleccion">
+                                    <img [src]="seleccion.bandera" alt="pais" style="width: 20px;height: 10px;">
+                                  </div>
+                                  <mat-form-field class="mff-reduc w-100 alto-35" appearance="outline">
+                                    <mat-label>Pais</mat-label>
+                                    <input matInput [formControl]="paisControl" placeholder="Selecciona un país" (blur)="onInputBlur()" />
+                                    <ul *ngIf="filteredPaises.length > 0" class="autocomplete-list">
+                                      <li *ngFor="let pais of filteredPaises" (click)="onSelectPais(pais)">
+                                        <img [src]="pais.bandera" alt="{{ pais.nombre }}" style="width: 20px; height: auto;"> {{ pais.nombre }}
+                                      </li>
+                                    </ul>
+                                  </mat-form-field>
+                                </div>
+                                <div class="col-sm-12 col-md-12 col-lg-6 mt-2">
+                                  <mat-form-field class="mff-reduc w-100 alto-35" appearance="outline">
+                                    <mat-label>Celular</mat-label>
+                                    <input matInput style="width: 90%;" formControlName="celular" />
+                                  </mat-form-field>
+                                  <div class="errores-divs" *ngIf="celular?.hasError('pattern')">El celular debe contener solo números y, opcionalmente, el signo "+" al principio.</div>
+                                  <div class="errores-divs" *ngIf="celular?.hasError('minlength')">El celular debe tener al menos 9 caracteres.</div>
+                                  <div class="errores-divs" *ngIf="celular?.hasError('maxlength')">El celular no puede tener un maximo de 18 caracteres.</div>                        
+                                </div>
+                              </div>   
+                                <div class="mt-3">
+                                    <mat-form-field appearance="outline" class="mff-reduc  w-100 alto-35">
+                                      <mat-label >Asunto</mat-label>
+                                      <select matNativeControl formControlName="asunto" style="width: 100%;">
+                                          <option value="">Selecione :</option>
+                                          <option value="SOLICITAR DEMOSTRACION">1.- SOLICITAR DEMOSTRACION</option>
+                                          <option value="REGISTRARSE COMO PROVEDOR">2.- REGISTRARSE COMO PROVEDOR</option>
+                                          <option value="COMPRAR LICENCIA">3.- COMPRAR LICENCIA</option>
+                                          <option value="SOLICITAR CAMBIO DE PLAN">4.-SOLICITAR CAMBIO DE PLAN</option>
+                                          <option value="OTRAS CONSULTAS">5.-OTRAS CONSULTAS</option>
+                                      </select>
+                                  </mat-form-field>       
+                                </div>
+                                <div class="mt-3">
+                                  <mat-form-field appearance="outline" class="mff-reduc w-100 alto-35" >
+                                    <mat-label>Mensaje:</mat-label>
+                                    <textarea matInput autocomplete="off" formControlName="mensaje" style="height: 100px; width:100% ;"></textarea>
+                                  </mat-form-field>
+                                </div>      
+                                <input type="hidden" formControlName="captcha" />
+                                <div class="mt-3" >
+                                  <button class="button-form-portada"  style="margin-right: 5px" type="submit">Enviar</button>
+                                </div>
+                            </form>
+                          </div>
+                        </div>
+                    </div>
+              </div>
+              <div class="informacion-5 container-fluid col-sm-12 col-md-4 col-lg-6" >
+                <div>
+                  <p><b>Comunicate con Nosotros de Forma Directa</b><br>
+                    Realiza tus consultas, de forma Directa, comunicate al Whatpsap, o correo electronico.</p>
+                </div>
+                <div>
+                      <b>Area de Ventas, a nivel Nacional (Peru)</b> <br>
+                        <div class="container">
+                          <div class="imagen-textopac"><a href="https://wa.me/+51989182177"  target="_blank"><i class="icofont-whatsapp fa-2x" style="color:green;"></i> &nbsp; &nbsp; <b> +51 989182177</b></a>
+                              <p style="padding-left: 20px;">Atencion de Lunes a Sabado de 7:00AM a 7:00PM</p>
+                          </div>
+                          <!-- <div><i class="fa fa-envelope"></i>&nbsp; &nbsp; <b> biplan.ventas&#64;hotmail.com</b> <a style="text-decoration: none;" href="mailto:infogunzxd@gmail.com"> &nbsp;&nbsp; email</a>
+                          </div> <br> -->
+                        </div> <br>
+                        <b>Soporte tecnico</b> <br>
+                        <div class="container">
+                          <div class="imagen-textopac"><a href="https://wa.me/+51986566443"  target="_blank">
+                            <i class="icofont-whatsapp fa-2x" style="color:green;"></i> &nbsp; &nbsp; <b>  +51 986566443</b></a><br>
+                            <p style="padding-left: 20px;">Atencion de Lunes a Sabado de 7:00AM a 7:00PM</p>
+                          </div>
+                          <!-- <div >
+                            <i class="fa fa-envelope"></i> &nbsp; &nbsp; <b> biplan.soporte&#64;hotmail.com</b> <a style="text-decoration: none;" href="mailto:biplan.soporte@hotmail.com"> &nbsp;&nbsp; email</a>
+                          </div> <br> -->
+                        </div>
+                  </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        </div>
+      </div>
+      <div class="social">
+        <p>Biplan el Software que te hace ser mas eficiente en la elaboración de tus proyectos.</p>
+        <div class="redes">
+          <a style="margin-left:40px"href="https://www.facebook.com/profile.php?id=61568538622639" target="_blank"> <i class="icofont-facebook"></i></a>
+          <a href="https://www.youtube.com/@biplan.Costos-Presupuestos" target="_blank"><i class="icofont-youtube-play"></i></a>
+          <a href="https://www.instagram.com/biplan.pe/" target="_blank"><i class="icofont-instagram"></i></a>
+          <a href="https://www.tiktok.com/@eduarvq?_t=8rLJe8ro1Sh&_r=1" target="_blank" aria-label="TikTok"><i class="icofont-tiktok"></i></a>
+          <a href="https://wa.me/+51986566443" target="_blank" aria-label="WhatsApp"><i class="icofont-brand-whatsapp"></i></a>
+          <a href="https://linkedin.com" target="_blank" aria-label="LinkedIn"><i class="icofont-linkedin"></i> </a>
+        </div>
+      </div>
+    </div>
+  </main>
+  <app-cargando [bloquearTodo]="true" *ngIf="mostrar_carga_todo"></app-cargando>

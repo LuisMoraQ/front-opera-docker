@@ -1,0 +1,246 @@
+<!-- <div class="modal-dialog-scrollable modal-md">
+    <div class="modal-content">
+        <div class="app-modal-header  modal-header">
+            <span class="text-white">Plantilla de Especificaciones Tecnicas</span>
+            <button type="button" class="close basic-close" (click)="closeModal()">
+                <span aria-hidden="true" class="mt-2">&times;</span>
+            </button>
+        </div>
+        <div class="modal-body"> -->
+<div class="col-12 d-flex mt-1">
+  <button type="button" container="body" ngbTooltip="Guardar cambios" class="btn btn-success btn-mini"
+    (mouseup)="quitarfoco($event)" style="margin-left: 2px;" (click)="guardar()">
+    <i class="fa fa-save icono-but "></i>
+  </button>
+</div>
+<div class="row mt-1" style="height: calc(100vh - 220px);">
+
+  <div class="col-8 overflow-auto h-100">
+    <form [formGroup]="formEspecif">
+      <div class="row px-3">
+        <div class="col-12 px-0 overflow-auto">
+          <table class="table-bordered table-p">
+            <thead class="text-center headsticky">
+              <tr class="h-celda2">
+                <th appAnchocol [ancho]="30"></th>
+                <th appAnchocol [ancho]="90"></th>
+                <th appAnchocol [ancho]="120" id="h-colInf">Informacion</th>
+                <th appAnchocol [ancho]="350" [detalle]="true">
+                  Detalle Partidas
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <ng-container formArrayName="tablaDetalle">
+                <ng-container [formGroupName]="i" *ngFor="let item of tablaDetalle.controls; let i = index">
+                  <tr class="font-weight-bolder h-celda2">
+                    <td class="f-s-9">
+                      <ng-container *ngIf="!item.get('tipo').value">
+                        <div class="d-flex justify-content-center">
+                          <mat-checkbox formControlName="seleccion"></mat-checkbox>
+                        </div>
+                      </ng-container>
+                    </td>
+                    <td class="f-s-9">{{ item.get("partida").value }}</td>
+                    <td class="f-s-9">
+                      <ng-container *ngIf="!item.get('tipo').value; else noTitulo">
+                        {{ item.get("informacion").value }}
+                      </ng-container>
+                      <ng-template #noTitulo>
+                        <ng-container>
+                          <ng-select [appendTo]="'body'" [dropdownPosition]="'auto'" class="custom"
+                            (change)="cambioInformacion(i)" formControlName="informacion" [items]="opciones">
+                          </ng-select>
+                        </ng-container>
+                      </ng-template>
+                    </td>
+                    <td class="f-s-9">
+                      <div [ngClass]="{
+                          requerido:
+                            item.get('tipo').value &&
+                            item.get('informacion').value ==
+                              'UNIDAD DE MEDIDA' &&
+                            item.get('detalle').invalid &&
+                            submit == true
+                        }">
+                        <span style="opacity: 0.4" *ngIf="item.get('informacion').value == 'TEXTO'">
+                          Editable en especificacion tecnica</span>
+                        <ng-container *ngIf="!item.get('tipo').value">
+                          <ng-container *ngIf="
+                              item.get('editarDetalle').value;
+                              else noeditDetalle
+                            ">
+                            <input #inputdetalle type="text" formControlName="detalle" appAutoFocus
+                              class="w-100 mayuscula h-input" autocomplete="off" maxlength="100"
+                              (focus)="inputdetalle.select()" (blur)="activarEdicion(i, 0, 'tablaDetalle')"
+                              (keydown.enter)="
+                                activarEdicion(i, 0, 'tablaDetalle')
+                              " />
+                          </ng-container>
+                          <ng-template #noeditDetalle>
+                            <div class="d-flex justify-content-between">
+                              <div>
+                                {{ item.get("detalle").value }}
+                              </div>
+                              <div>
+                                <i class="fa fa-pencil icono-but" (click)="activarEdicion(i, 1, 'tablaDetalle')"
+                                  style="font-size: 14px; cursor: pointer" ngbTooltip="Editar Detalle"
+                                  container="body"></i>
+                              </div>
+                            </div>
+                          </ng-template>
+                        </ng-container>
+                        <ng-container *ngIf="
+                            item.get('tipo').value &&
+                            item.get('informacion').value == 'INSUMOS'
+                          ">
+                          <ng-select [appendTo]="'body'" [dropdownPosition]="'auto'" [items]="tiposInsumos"
+                            class="custom" (change)="cambioDetalleInsumo(i)" [ngClass]="{
+                              required:
+                                item.get('detalle').invalid &&
+                                item.get('detalle').touched
+                            }" [multiple]="true" formControlName="detalle">
+                          </ng-select>
+                        </ng-container>
+                        <ng-container *ngIf="
+                            item.get('tipo').value &&
+                            item.get('informacion').value == 'UNIDAD DE MEDIDA'
+                          ">
+                          <ng-container *ngIf="
+                              item.get('editarDetalle').value;
+                              else noeditDetalle2
+                            ">
+                            <input #inputunidad type="text" formControlName="detalle" appAutoFocus
+                              class="w-100 mayuscula h-input" autocomplete="off" maxlength="100"
+                              (focus)="inputunidad.select()" (blur)="activarEdicion(i, 0, 'tablaDetalle')"
+                              (keydown.enter)="
+                                activarEdicion(i, 0, 'tablaDetalle')
+                              " />
+                          </ng-container>
+                          <ng-template #noeditDetalle2>
+                            <div class="d-flex justify-content-between">
+                              <div>
+                                {{ item.get("detalle").value }}
+                                <span style="opacity: 0.4" *ngIf="
+                                    item.get('informacion').value ==
+                                    'UNIDAD DE MEDIDA'
+                                  ">unidad de la partida</span>
+                              </div>
+                              <div>
+                                <i class="fa fa-pencil icono-but" style="font-size: 14px; cursor: pointer"
+                                  (click)="activarEdicion(i, 1, 'tablaDetalle')" ngbTooltip="Editar Detalle"
+                                  container="body"></i>
+                              </div>
+                            </div>
+                          </ng-template>
+                        </ng-container>
+                      </div>
+                    </td>
+                  </tr>
+                </ng-container>
+              </ng-container>
+            </tbody>
+          </table>
+          <hr style="height: 1px" />
+          <table class="table-bordered tab-10 table-p f-s-9">
+            <ng-container formArrayName="parentesco">
+              <ng-container [formGroupName]="i" *ngFor="let item of parentesco.controls; let i = index">
+                <tr class="font-weight-bolder h-celda2">
+                  <td class="f-s-9" appAnchocol [ancho]="120">
+                    {{ item.get("partida").value }}
+                  </td>
+                  <td class="f-s-9" appAnchocol [ancho]="137.78">
+                    <ng-select [appendTo]="'body'" [dropdownPosition]="'auto'" class="custom"
+                      (change)="cambioInformacion2(i)" formControlName="informacion" [items]="opciones2">
+                    </ng-select>
+                  </td>
+                  <td class="f-s-9" [ancho]="350" [detalle]="true">
+                    <div [ngClass]="{
+                        requerido:
+                          item.get('informacion').value == 'IDEM' &&
+                          item.get('detalle').invalid &&
+                          submit == true
+                      }">
+                      <ng-container *ngIf="item.get('informacion').value == 'IDEM'">
+                        <ng-container *ngIf="
+                            item.get('editarDetalle').value;
+                            else noeditDetalle
+                          ">
+                          <input #inputdetalle type="text" formControlName="detalle" appAutoFocus
+                            class="w-100 mayuscula h-input" autocomplete="off" maxlength="100"
+                            (focus)="inputdetalle.select()" (blur)="activarEdicion(i, 0, 'parentesco')"
+                            (keydown.enter)="activarEdicion(i, 0, 'parentesco')" />
+                        </ng-container>
+                        <ng-template #noeditDetalle>
+                          <div class="d-flex justify-content-between">
+                            <div>
+                              {{ item.get("detalle").value }}
+                              <span style="opacity: 0.4">
+                                item de la partida vinculada</span>
+                            </div>
+                            <div>
+                              <i class="fa fa-pencil icono-but" (click)="activarEdicion(i, 1, 'parentesco')"
+                                style="font-size: 14px; cursor: pointer" ngbTooltip="Editar Detalle"
+                                container="body"></i>
+                            </div>
+                          </div>
+                        </ng-template>
+                      </ng-container>
+                      <ng-container *ngIf="item.get('informacion').value !== 'IDEM'">
+                        <span style="opacity: 0.4"></span>
+                      </ng-container>
+                    </div>
+                  </td>
+                </tr>
+              </ng-container>
+            </ng-container>
+          </table>
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="col-4">
+    <div class="col-12">PREVISUALIZADOR</div>
+    <div class="col-12 borde-contenido mt-2">
+
+      <div *ngFor="let row of this.tablaDetalle.value; let i = index" style="font-size: 10px !important">
+        <ng-container *ngIf="row.seleccion && row.tipo == 0">
+          <div class="mt-3">
+            <strong><u>{{ row.detalle }}</u></strong>
+          </div>
+        </ng-container>
+        <ng-container *ngIf="row.tipo == 1 && row.informacion === 'TEXTO'">
+          <div class="contenido-p align-content-center" *ngIf="this.tablaDetalle.value[i-1]?.seleccion">
+            Editable en especificacion tecnica
+          </div>
+        </ng-container>
+        <ng-container *ngIf="row.tipo == 1 && row.informacion == 'INSUMOS'">
+          <ul *ngIf="this.tablaDetalle.value[i-1]?.seleccion">
+            <li *ngFor="let list of row.detalle">
+              {{ list }}
+            </li>
+          </ul>
+        </ng-container>
+        <ng-container *ngIf="row.tipo == 1 && row.informacion == 'UNIDAD DE MEDIDA'">
+          <div class="d-flex align-content-center" *ngIf="this.tablaDetalle.value[i-1]?.seleccion">
+            {{ row.detalle }}
+            <div class="contenido-p">
+              unidad de la partida
+            </div>
+          </div>
+        </ng-container>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- </div>
+        <div class="app-modal-footer modal-footer justify-content-between">
+            <button type="button" class="btn btn-danger btn-sm" (click)="closeModal()"><i
+                    class="fa fa-times"></i>Cerrar</button>
+            <button type="button" class="btn btn-success btn-sm" (click)="guardar()"><i
+                    class="fa fa-save"></i>Guardar</button>
+        </div>
+    </div>
+</div> -->
+<app-cargando [bloquearTodo]="true" *ngIf="mostrar_carga_todo"></app-cargando>
