@@ -22,7 +22,6 @@ import { MatTreeModule} from '@angular/material/tree';
 import {MatDatepickerModule} from '@angular/material/datepicker'
 import { TextMaskModule } from 'angular2-text-mask';
 import { ModalMantusuarioComponent } from 'src/app/componentes/configuraciones/manteusuarios/modal-mantusuario/modal-mantusuario.component';
-import { TransportabilidadComponent } from './transportabilidad/transportabilidad.component';
 import { ManteusuariosComponent } from './manteusuarios/manteusuarios.component';
 import { UsuariosecComponent } from './perfil/usuariosec/usuariosec.component';
 import { IndiceuniflectComponent } from './indiceuniflect/indiceuniflect.component';
@@ -32,7 +31,7 @@ import { MonpaisComponent } from './monpais/monpais.component';
 import { AnchocolModule } from 'src/app/directivas/anchocol.module';
 
 @NgModule({
-  declarations: [ParametrosComponent, PerfilComponent,  ModalMantusuarioComponent, TransportabilidadComponent, ManteusuariosComponent, UsuariosecComponent, IndiceuniflectComponent,MonpaisComponent],
+  declarations: [ParametrosComponent, PerfilComponent,  ModalMantusuarioComponent, ManteusuariosComponent, UsuariosecComponent, IndiceuniflectComponent,MonpaisComponent],
   imports: [
     AnchocolModule,
     CommonModule,

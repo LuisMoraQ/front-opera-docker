@@ -1,19 +1,16 @@
 import { BuscaaddunidadmedComponent } from './../../../catalogos/unidadesuser/buscaaddunidadmed/buscaaddunidadmed.component';
-import { ModalCrudClasificacionComercialComponent } from './../modal-crud-clasificacion-comercial/modal-crud-clasificacion-comercial.component';
 import { ModalListaClasificacionComponent } from './../modal-lista-clasificacion/modal-lista-clasificacion.component';
 import { AsociarCatalogosComponent } from './../../../catalogos/catinsumos/asociar-catalogos/asociar-catalogos.component';
 import { Component, Input, OnInit, ViewChild } from '@angular/core';
 import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
 import { NgbActiveModal, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ToastrService } from 'ngx-toastr';
-import { Observable } from 'rxjs';
 import { ConfiguracionService } from 'src/app/servicios/configuracion.service';
 import { EncriptadorService } from 'src/app/servicios/encriptador.service';
 import { FormsService } from 'src/app/servicios/forms.service';
 import { SwalService } from 'src/app/servicios/swal.service';
 import { ModalBasicComponent } from 'src/app/shared/modal-basic/modal-basic.component';
 import { ModalIndiceListaComponent } from './../modal-indice-lista/modal-indice-lista.component';
-import { map, startWith } from 'rxjs/operators';
 import { CatalogosService } from 'src/app/servicios/catalogos.service';
 import { AdministradorService } from 'src/app/servicios/administrador.service';
 
@@ -654,26 +651,6 @@ export class ModalDataInsumoComponent implements OnInit {
     if (result) {
       this.id_tipo.setValue(result.id_tipo)
       await this.listarClasificacionInsumo();
-      await this.cambioTipoInsumo()
-      this.id_clasi.setValue(result.id_clasificacion)
-    }
-  }
-
-  async abrirModalClasificacionAdministrador() {
-    this.mostrar_carga_todo = true
-    const modalRef = await this.modalService.open(ModalCrudClasificacionComercialComponent, {
-      size: 'lg',
-      backdrop: 'static',
-      windowClass: 'pcoded',
-      keyboard: false//no cerrar el modal con ESC
-    })
-    // modalRef.componentInstance.clasiInsumos = this.clasiInsumos
-    modalRef.componentInstance.tipoInsumos = this.tipoInsumos
-    this.mostrar_carga_todo = false
-    const result = await modalRef.result
-    if (result) {
-      this.clasiInsumos = result.clasiInsumos
-      this.id_tipo.setValue(result.id_tipo)
       await this.cambioTipoInsumo()
       this.id_clasi.setValue(result.id_clasificacion)
     }

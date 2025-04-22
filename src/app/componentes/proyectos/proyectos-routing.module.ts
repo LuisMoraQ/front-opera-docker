@@ -1,7 +1,5 @@
-import { MenuProyectosComponent } from './menu-proyectos/menu-proyectos.component';
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-
 import { ClasificacionComponent } from './../proyectos/clasificacion/clasificacion.component';
 import { PrincipalComponent } from './../proyectos/principal/principal.component';
 import { CatpartidasComponent } from '../catalogos/catpartidas/catpartidas.component';
@@ -21,10 +19,6 @@ const routes: Routes = [
       {
         path: 'clasificacion',
         component: ClasificacionComponent
-      },
-      {
-        path: 'menuproyecto',
-        component: MenuProyectosComponent
       },
       {
         path: 'catpartidas',

@@ -24,7 +24,6 @@ import { MatTreeModule } from '@angular/material/tree';
 import { MatDatepickerModule } from '@angular/material/datepicker'
 import { AnchocolModule } from '../../directivas/anchocol.module';
 import { PintarfilapreModule } from 'src/app/directivas/pintarfilapre.module';
-import { MenuProyectosComponent } from './menu-proyectos/menu-proyectos.component';
 import { AgrupacionProyectosComponent } from './agrupacion-proyectos/agrupacion-proyectos.component';
 import { ModalProyectoComponent } from './principal/modal-proyecto/modal-proyecto.component';
 import { DetalleProyectoComponent } from './principal/detalle-proyecto/detalle-proyecto.component';
@@ -35,22 +34,16 @@ import { ProgramacionObraComponent } from './principal/programacion-obra/program
 import { ScrollingModule } from '@angular/cdk/scrolling';
 import { TableModule } from 'primeng/table';
 import { TextMaskModule } from 'angular2-text-mask';
-import { ModalPredecesorComponent } from './principal/programacion-obra/modal-predecesor/modal-predecesor.component';
 import { DialogModule } from 'primeng/dialog';
 import { ButtonModule } from 'primeng/button';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { AutoFocusModule } from 'src/app/directivas/auto-focus.module';
-import { AspectosproyComponent } from './principal/aspectosproy/aspectosproy.component';
-import { ModalferiadoComponent } from './principal/aspectosproy/modalferiado/modalferiado.component';
 import { ModalProgramacionXmlComponent } from './principal/programacion-obra/modal-programacion-xml/modal-programacion-xml.component';
 import { ModalHitoComponent } from './principal/programacion-obra/modal-hito/modal-hito.component';
 import { HojaMetradosComponent } from './principal/hoja-metrados/hoja-metrados.component';
-import { ModalEditarMetradoComponent } from './principal/hoja-metrados/modal-editar-metrado/modal-editar-metrado.component';
 import { ModalMetradoExcelComponent } from './principal/hoja-metrados/modal-metrado-excel/modal-metrado-excel.component';
 import { ModalPlantillaComponent } from './principal/hoja-metrados/modal-plantilla/modal-plantilla.component';
-import { TablaAcerosComponent } from './principal/hoja-metrados/tabla-aceros/tabla-aceros.component';
 import { ModalPesosComercialesComponent } from './principal/hoja-metrados/modal-pesos-comerciales/modal-pesos-comerciales.component';
-import { ModalResumenProyectoMetradoComponent } from './principal/hoja-metrados/modal-resumen-proyecto-metrado/modal-resumen-proyecto-metrado.component';
 import { FormulaPolinomicaComponent } from './principal/formula-polinomica/formula-polinomica.component';
 import { ModalCantidadEdicionFpComponent } from './principal/formula-polinomica/modal-cantidad-edicion-fp/modal-cantidad-edicion-fp.component';
 import { ModalNoLaborablesComponent } from './principal/programacion-obra/modal-no-laborables/modal-no-laborables.component';
@@ -71,39 +64,23 @@ import { ColaboraproyComponent } from './colaboraproy/colaboraproy.component';
 import { VisorDePlanoComponent } from './principal/visor-de-plano/visor-de-plano.component';
 // import { IfcViewerModule } from 'ngx-ifc-viewer';
 import { ChartModule } from 'angular2-chartjs';
-import { ProgramacionOpcionalComponent } from './principal/programacion-opcional/programacion-opcional.component';
 import { ConfproyimprComponent } from './principal/confproyimpr/confproyimpr.component';
-// import { PortadaComponent } from '../inicio/portada/portada.component';
-// import { NosotrosComponent } from '../inicio/nosotros/nosotros.component';
-// import { ModulosComponent } from '../inicio/modulos/modulos.component';
-// import { PlanesComponent } from '../inicio/planes/planes.component';
-// import { VentajasComponent } from '../inicio/ventajas/ventajas.component';
-// import { ContactosComponent } from '../inicio/contactos/contactos.component';
-// import { PasarelaComponent } from '../inicio/pasarela/pasarela.component';
-
 
 @NgModule({
   declarations: [
     ClasificacionComponent,
     PrincipalComponent,
-    MenuProyectosComponent,
     AgrupacionProyectosComponent,
     ModalProyectoComponent,
     DetalleProyectoComponent,
     AspectosGeneralesComponent,
     ProgramacionObraComponent,
-    ModalPredecesorComponent,
-    AspectosproyComponent,
-    ModalferiadoComponent,
     ModalProgramacionXmlComponent,
     ModalHitoComponent,
     HojaMetradosComponent,
-    ModalEditarMetradoComponent,
     ModalMetradoExcelComponent,
     ModalPlantillaComponent,
-    TablaAcerosComponent,
     ModalPesosComercialesComponent,
-    ModalResumenProyectoMetradoComponent,
     FormulaPolinomicaComponent,
     ModalCantidadEdicionFpComponent,
     ModalNoLaborablesComponent,
@@ -120,15 +97,7 @@ import { ConfproyimprComponent } from './principal/confproyimpr/confproyimpr.com
     ProysistemaComponent,
     ColaboraproyComponent,
     VisorDePlanoComponent,
-    ProgramacionOpcionalComponent,
     ConfproyimprComponent,
-    // PortadaComponent,
-    // NosotrosComponent,
-    // ModulosComponent,
-    // PlanesComponent,
-    // VentajasComponent,
-    // ContactosComponent,
-    // PasarelaComponent,
   ],
   imports: [
     CommonModule,
@@ -153,7 +122,6 @@ import { ConfproyimprComponent } from './principal/confproyimpr/confproyimpr.com
     MatDatepickerModule,
     AnchocolModule,
     PresupuestoModule,
-    //TableVirtualScrollModule,
     ScrollingModule,
     TableModule,
     TextMaskModule,

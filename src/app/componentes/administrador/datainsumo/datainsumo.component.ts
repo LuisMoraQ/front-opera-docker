@@ -10,9 +10,7 @@ import { AdministradorService } from './../../../servicios/administrador.service
 import { ConfiguracionService } from 'src/app/servicios/configuracion.service';
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
 import { ModalImagenesInsumoComponent } from './modal-imagenes-insumo/modal-imagenes-insumo.component';
-import { VisualizadorPdfComponent } from './../../../shared/visualizador-pdf/visualizador-pdf.component';
 import { TinymceComponent } from 'angular2-tinymce';
-
 import * as XLSX from 'xlsx';
 import { ModalBasicComponent } from 'src/app/shared/modal-basic/modal-basic.component';
 import { _fixedSizeVirtualScrollStrategyFactory } from '@angular/cdk/scrolling';

@@ -1,10 +1,8 @@
 import { Component, OnInit, Input, ViewChild, HostListener } from '@angular/core';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { MatSort } from '@angular/material/sort';
 import { ModalBasicComponent } from 'src/app/shared/modal-basic/modal-basic.component';
 import { paises, rowacu, rowpresu, tiposEstado, tiposMoneda, monedas, modalidades, estados } from '../principal/parametros-principal';
-import { Subscription } from 'rxjs';
-import { UntypedFormArray, FormControl, UntypedFormGroup, Validators, FormBuilder } from '@angular/forms';
+import { UntypedFormArray, UntypedFormGroup, Validators } from '@angular/forms';
 import { EncriptadorService } from 'src/app/servicios/encriptador.service';
 import { ToastrService } from 'ngx-toastr';
 import { PrincipalService } from 'src/app/servicios/principal.service';

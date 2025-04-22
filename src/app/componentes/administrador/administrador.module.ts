@@ -47,7 +47,6 @@ import { NgSelectModule } from '@ng-select/ng-select';
 import { CatalogosModule } from '../catalogos/catalogos.module';
 import { TextMaskModule } from 'angular2-text-mask';
 import { ModalListaClasificacionComponent } from './datainsumo/modal-lista-clasificacion/modal-lista-clasificacion.component';
-import { ModalCrudClasificacionComercialComponent } from './datainsumo/modal-crud-clasificacion-comercial/modal-crud-clasificacion-comercial.component';
 import { ProveedoresComponent } from './proveedores/proveedores.component';
 import { ModalProveedoresComponent } from './proveedores/modal-proveedores/modal-proveedores.component';
 import { PartidasSistemaComponent } from './partidas-sistema/partidas-sistema.component';
@@ -76,7 +75,6 @@ import { PdfViewerModule } from 'ng2-pdf-viewer';
     ModalClasificacionComercialComponent,
     ClasificacionComercialComponent,
     ModalListaClasificacionComponent,
-    ModalCrudClasificacionComercialComponent,
     ProveedoresComponent,
     ModalProveedoresComponent,
     PartidasSistemaComponent,

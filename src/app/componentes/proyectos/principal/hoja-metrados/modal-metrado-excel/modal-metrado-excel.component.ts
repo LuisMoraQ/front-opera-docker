@@ -1,4 +1,3 @@
-import { tipo } from './../modal-resumen-proyecto-metrado/modal-resumen-proyecto-metrado.component';
 import { Component, Input, OnInit, ViewChild, ViewEncapsulation } from '@angular/core';
 import { MatStepper } from '@angular/material/stepper';
 import { NgbActiveModal, NgbModal } from '@ng-bootstrap/ng-bootstrap';

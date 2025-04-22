@@ -2,7 +2,6 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { ParametrosComponent } from '../configuraciones/parametros/parametros.component';
 import { PerfilComponent } from '../configuraciones/perfil/perfil.component';
-import { TransportabilidadComponent } from '../configuraciones/transportabilidad/transportabilidad.component';
 import { ProveedoresComponent } from '../administrador/proveedores/proveedores.component';
 import { IndiceuniflectComponent } from './indiceuniflect/indiceuniflect.component';
 import { ManualusComponent } from '../administrador/manualus/manualus.component';
@@ -27,10 +26,6 @@ const routes: Routes = [
       {
         path: 'manuser',
         component: ManualusComponent
-      },
-      {
-        path: 'transporta',
-        component : TransportabilidadComponent
       },
       {
         path: 'proveedlect',

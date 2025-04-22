@@ -28,7 +28,6 @@ import {TinymceModule} from 'angular2-tinymce';
 import { AutoFocusModule } from 'src/app/directivas/auto-focus.module';
 import { TextMaskModule } from 'angular2-text-mask';
 import { NgSelectModule } from '@ng-select/ng-select';
-import { ModaladdtituloComponent } from './modaladdtitulo/modaladdtitulo.component';
 import { PintarfilapreModule } from 'src/app/directivas/pintarfilapre.module';
 import { PresdirectoComponent } from './presdirecto/presdirecto.component';
 import { BusqTitSubtPresuComponent } from './busq-tit-subt-presu/busq-tit-subt-presu.component';
@@ -46,7 +45,6 @@ import { PresindirComponent } from './presindir/presindir.component';
 
 @NgModule({
   declarations: [
-    ModaladdtituloComponent,
     PresdirectoComponent,
     BusqTitSubtPresuComponent,
     BusqPartidasPresuComponent,
@@ -94,6 +92,6 @@ import { PresindirComponent } from './presindir/presindir.component';
     // TableModule,
     MinmaxnumModule,
   ],
-  exports: [ ModaladdtituloComponent,PresdirectoComponent,PresindirComponent ]
+  exports: [ PresdirectoComponent,PresindirComponent ]
 })
 export class PresupuestoModule { }
