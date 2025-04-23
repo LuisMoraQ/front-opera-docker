@@ -9,7 +9,7 @@ export const itemsMenu = [
     },
     {
         "id": 2,
-        "name": "Edición del Presupuesto",
+        "name": "Data del Proyecto",
         "position": 2,
         "icon": "fa fa-2x fa-building",
         "imagen": "icpresu1.png",
@@ -17,23 +17,23 @@ export const itemsMenu = [
     },
     {
         "id": 3,
-        "name": "Diseño de Costos Indirectos",
+        "name": "Registro de Actividades",
         "position": 3,
         "icon": "fa fa-2x fa-building",
         "imagen": "icpresind1.png",
         "verImagen":true
     },
-    /* {
+    {
         "id": 4,
-        "name": "Cotizaciones de Insumos",
+        "name": "Registro Financiero",
         "position": 4,
         "icon": "fa fa-2x fa-building",
         "imagen": "",
         "verImagen":true
-    }, */
+    },
     {
         "id": 5,
-        "name": "Hoja de Metrados",
+        "name": "Procura y Logistica",
         "position": 5,
         "icon": "fa fa-2x fa-building",
         "imagen": "icmetra1.png",
@@ -41,7 +41,7 @@ export const itemsMenu = [
     },
     {
         "id": 6,
-        "name": "Formula Polinomica",
+        "name": "Movimiento Almacen",
         "position": 6,
         "icon": "fa fa-2x fa-building",
         "imagen": "icformula1.png",
@@ -49,7 +49,7 @@ export const itemsMenu = [
     },
     {
         "id": 7,
-        "name": "Tiempo de Programación",
+        "name": "Equipos y Herramientas",
         "position": 7,
         "icon": "fa fa-2x fa-building",
         "imagen": "ictiempro1.png",
@@ -57,7 +57,7 @@ export const itemsMenu = [
     },
     {
         "id": 8,
-        "name": "Programacion de Obra",
+        "name": "Recursos Humanos",
         "position": 8,
         "icon": "fa fa-2x fa-building",
         "imagen": "icprogra1.png",
@@ -65,7 +65,7 @@ export const itemsMenu = [
     },
     {
         "id": 9,
-        "name": "Especificaciones Tecnicas",
+        "name": "Cuaderno de Obra",
         "position": 9,
         "icon": "fa fa-2x fa-building",
         "imagen": "icespe1.png",
@@ -73,10 +73,10 @@ export const itemsMenu = [
     } ,
     {
         "id": 10,
-        "name": "Visor de Planos",
+        "name": "Informes y Reportes",
         "position": 10,
         "icon": "fa fa-2x fa-building",
-        "imagen": "",
+        "imagen": "icespe1.png",
         "verImagen":true
     } 
 ]

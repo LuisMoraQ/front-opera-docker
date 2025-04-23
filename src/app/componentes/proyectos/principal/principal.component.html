@@ -540,24 +540,24 @@
                             <ng-container *ngIf="tab.get('menu_proyecto_seleccionado').value == 3">
                               <app-hoja-metrados [tabproyecto]="tab"></app-hoja-metrados>
                             </ng-container>
-                            <ng-container *ngIf="tab.get('menu_proyecto_seleccionado').value == 4">
+                            <ng-container *ngIf="tab.get('menu_proyecto_seleccionado').value == 5">
                               <app-formula-polinomica [idProyecto]="tab.get('id_proyecto').value"
                                 [tabproyecto]="tab"></app-formula-polinomica>
                             </ng-container>
-                            <ng-container *ngIf="tab.get('menu_proyecto_seleccionado').value == 5">
+                            <ng-container *ngIf="tab.get('menu_proyecto_seleccionado').value == 6">
                               <app-tiempos-programacion [tabproyecto]="tab"></app-tiempos-programacion>
                             </ng-container>
-                            <ng-container *ngIf="tab.get('menu_proyecto_seleccionado').value == 6">
+                            <ng-container *ngIf="tab.get('menu_proyecto_seleccionado').value == 7">
                               <app-programacion-obra [idProyecto]="tab.get('id_proyecto').value" [tabproyecto]="tab"
                                 [ocultarMenu]="ocultarMenu"
                                 [nombreProyecto]="tab.get('nombre_proyecto').value"></app-programacion-obra>
                             </ng-container>
-                            <ng-container *ngIf="tab.get('menu_proyecto_seleccionado').value == 7">
+                            <ng-container *ngIf="tab.get('menu_proyecto_seleccionado').value == 8">
                               <app-especificaciones-tecnicas [idProyecto]="tab.get('id_proyecto').value"
                                 [tabproyecto]="tab">
                               </app-especificaciones-tecnicas>
                             </ng-container>
-                            <ng-container *ngIf="tab.get('menu_proyecto_seleccionado').value == 8">
+                            <ng-container *ngIf="tab.get('menu_proyecto_seleccionado').value == 9">
                               <app-visor-de-plano [idProyecto]="tab.get('id_proyecto').value" [tabproyecto]="tab">
                               </app-visor-de-plano>
                             </ng-container>
