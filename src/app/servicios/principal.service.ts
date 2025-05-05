@@ -1130,4 +1130,32 @@ export class PrincipalService {
       catchError(err => throwError(err))
     ).toPromise()
   }
+  BuscarProyBiplan(params = {}): any {//id_proyecto
+    let formData: FormData = new FormData();
+    Object.entries(params).forEach(([key, value]) => {
+      formData.append(key, value as string);
+    });
+    const url = this.enviUrl + '/api/proyectos/datosProyBiplan';
+    return this.http.post<any>(url, formData).pipe(
+      map(res => {
+        if (!res) {
+          throw new Error
+        }
+        return res
+      }),
+      catchError(err => throwError(err))
+    ).toPromise()
+  }
+  AgregarProyBiplan(body :any): any {//JSON(id_proyecto,estadoitem,datos1)
+    const url = this.enviUrl + '/api/proyectos/addProyBiplan';
+    return this.http.post<any>(url, body, { headers: this.httpHeaders }).pipe(
+      map(res => {
+        if (!res) {
+          throw new Error
+        }
+        return res
+      }),
+      catchError(err => throwError(err))
+    ).toPromise()
+  }
 }

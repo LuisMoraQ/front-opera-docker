@@ -27,6 +27,11 @@ export class ComparteproyComponent implements OnInit {
     { id: 0, nombre: 'DIRECTA' },
     { id: 1, nombre: 'CONTRATA' }
   ]
+  estados = [
+    { id: 0, nombre: 'BORRADOR' },
+    { id: 1, nombre: 'APROBADO' },
+    { id: 2, nombre: 'EVALUACIÓN' }
+  ]
   paises=[]
   monedas=[]
   OtroPais:boolean=false

@@ -66,6 +66,7 @@ import { VisorDePlanoComponent } from './principal/visor-de-plano/visor-de-plano
 import { ChartModule } from 'angular2-chartjs';
 import { ConfproyimprComponent } from './principal/confproyimpr/confproyimpr.component';
 import { DataProyectoComponent } from './principal/data-proyecto/data-proyecto.component';
+import { AddproybiplanComponent } from './addproybiplan/addproybiplan.component';
 
 @NgModule({
   declarations: [
@@ -100,6 +101,7 @@ import { DataProyectoComponent } from './principal/data-proyecto/data-proyecto.c
     VisorDePlanoComponent,
     ConfproyimprComponent,
     DataProyectoComponent,
+    AddproybiplanComponent
   ],
   imports: [
     CommonModule,
