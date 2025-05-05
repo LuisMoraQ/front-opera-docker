@@ -540,6 +540,9 @@
                             <ng-container *ngIf="tab.get('menu_proyecto_seleccionado').value == 3">
                               <app-hoja-metrados [tabproyecto]="tab"></app-hoja-metrados>
                             </ng-container>
+                            <ng-container *ngIf="tab.get('menu_proyecto_seleccionado').value == 4">
+                              <app-data-proyecto [tabproyecto]="tab"></app-data-proyecto>
+                            </ng-container>
                             <ng-container *ngIf="tab.get('menu_proyecto_seleccionado').value == 5">
                               <app-formula-polinomica [idProyecto]="tab.get('id_proyecto').value"
                                 [tabproyecto]="tab"></app-formula-polinomica>

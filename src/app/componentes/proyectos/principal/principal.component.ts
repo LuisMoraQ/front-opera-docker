@@ -322,6 +322,7 @@ export class PrincipalComponent implements OnInit, OnDestroy {
     catch {
       this.buscando = false;
     }
+    console.log(this.dataSourceorg)
   }
   async close(event: MouseEvent, toRemove: number) {
     // if (event) {

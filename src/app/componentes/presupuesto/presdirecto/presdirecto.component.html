@@ -13,90 +13,8 @@
                 <i class="fa fa-upload icono-but"></i>
               </button>
             </div>&nbsp;
-            <div *ngIf="!solover" class="btn-group" style="margin-bottom: 3px;">
-              <button type="button" class="btn btn-mini btn-group-mini btn-outline-primary" placement="top" ngbTooltip="Agregar Titulo(s)"
-              container="body" (click)="OpenmodalAddTitulo()" (mouseup)="quitarfoco($event);">
-                  <i class="icofont icofont-brand-tango icono-but"></i>
-              </button>
-              <button type="button" class="btn btn-mini btn-group-mini btn-outline-primary" placement="top" ngbTooltip="Agregar Subtitulo(s)"
-              container="body" (click)="OpenmodalAddsubTitulo()" (mouseup)="quitarfoco($event);">
-                  <i class="fa fa-scribd icono-but"></i>
-              </button>
-              <button type="button" class="btn btn-mini btn-group-mini btn-outline-primary" placement="top" ngbTooltip="Agregar Partida(s)"
-              container="body" (click)="OpenmodalAddPartida()" (mouseup)="quitarfoco($event);">
-                  <i class="icofont icofont-pandora icono-but"></i>
-              </button>
-              <button type="button" class="btn btn-mini btn-group-mini btn-outline-primary btn-2icon" style="text-transform: none;" placement="top" ngbTooltip="Agregar SubTitulo Rapido"
-              container="body" (click)="SubtituloBlanco()" (mouseup)="quitarfoco($event);">
-                  <i class="fa fa-bolt icoizq"></i><span class="icoder">s</span>
-              </button>
-              <button type="button" class="btn btn-mini btn-group-mini btn-outline-primary btn-2icon" style="text-transform: none;" placement="top" ngbTooltip="Agregar Partida Rapida"
-              container="body" (click)="PartidaBlanco()" (mouseup)="quitarfoco($event);">
-                  <i class="fa fa-bolt icoizq"></i><span class="icoder">p</span>
-              </button>
-              <button type="button" class="btn btn-mini btn-group-mini btn-outline-primary" placement="top" ngbTooltip="Buscar en Proyectos"
-              container="body"  (mouseup)="quitarfoco($event);" (click)="OpenmodaddData()">
-                  <i class="icofont icofont-database icono-but"></i>
-              </button>
-            </div>&nbsp;&nbsp;&nbsp;
-            <div *ngIf="!solover" class="btn-group" style="margin-bottom: 3px;">
-              <button type="button" class="btn btn-mini btn-group-mini btn-outline-primary btn-2icon" placement="top" [ngbTooltip]="colselpri2?'Deshabilitar Seleccion Multiple Subtitulos':'Habilitar Seleccion Multiple Subtitulos'" [ngClass]="{'btn-primary': !colselpri2,'btn-danger': colselpri2}"
-                container="body" (click)="HabSelPri2()" (mouseup)="quitarfoco($event);">
-                <i class="fa icoizq" [ngClass]="{'fa-check': !colselpri2,'fa-ban': colselpri2}"></i>
-                <i class="fa fa-scribd icoder"></i>
-                <!-- <i class="fa icono-but" [ngClass]="{'fa-check-square-o': !colselpri2,'fa-ban': colselpri2}"></i> -->
-              </button>
-              <button type="button" class="btn btn-mini btn-group-mini btn-outline-primary btn-2icon" placement="top" [ngbTooltip]="colselpri?'Deshabilitar Seleccion Multiple Partidas':'Habilitar Seleccion Multiple Partidas'" [ngClass]="{'btn-primary': !colselpri,'btn-danger': colselpri}"
-                container="body" (click)="HabSelPri()" (mouseup)="quitarfoco($event);">
-                <i class="fa icoizq" [ngClass]="{'fa-check': !colselpri,'fa-ban': colselpri}"></i>
-                <i class="icofont icofont-pandora icoder"></i>
-              </button>
-              <button type="button" class="btn btn-mini btn-group-mini btn-outline-primary" placement="top" ngbTooltip="Copiar"
-                container="body" (click)="Copiar()" (mouseup)="quitarfoco($event);">
-                <i class="icofont icofont-ui-copy icono-but"></i>
-              </button>
-              <button type="button" class="btn btn-mini btn-group-mini btn-outline-primary" placement="top" ngbTooltip="Cortar"
-              container="body" (mouseup)="quitarfoco($event);" (click)="Cortar()">
-                  <i class="icofont icofont-ui-cut icono-but"></i>
-              </button>
-              <button type="button" class="btn btn-mini btn-group-mini btn-outline-primary" placement="top" ngbTooltip="Pegar"
-                container="body" (click)="PegarBut()" (mouseup)="quitarfoco($event);">
-                <i class="icofont icofont-ui-clip-board icono-but"></i>
-              </button>
-              <button type="button" class="btn btn-mini btn-group-mini btn-outline-primary btn-gru-multiple" placement="bottom" container="body" [ngbPopover]="opcpegar"
-                (mouseup)="quitarfoco($event);">
-                <i class="fa fa-caret-down icono-but"></i>
-              </button>
-              <ng-template #opcpegar>
-                <div class="btn-group-vertical">
-                  <button type="button" ngbDropdownItem class="btn btn-sm" (click)="Pegar(0)">Al Inicio</button>
-                  <button type="button" ngbDropdownItem class="btn btn-sm" (click)="Pegar(1)">Al Final</button>
-                  <button *ngIf="tablaacusel[this.filaSelacu]?.num_det!=0" type="button" ngbDropdownItem class="btn btn-sm" (click)="Pegar(2)">Sobre Selección</button>
-                  <button *ngIf="tablaacusel[this.filaSelacu]?.num_det!=0" type="button" ngbDropdownItem class="btn btn-sm" (click)="Pegar(3)">Bajo Selección</button>
-                </div>
-              </ng-template>
-              <button type="button" class="btn btn-mini btn-group-mini btn-outline-primary" placement="top" ngbTooltip="Eliminar"
-                container="body" (click)="EliminarFila()" (mouseup)="quitarfoco($event);">
-                <i class="fa fa-remove icono-but"></i>
-              </button>
-            </div>&nbsp;&nbsp;&nbsp;
+
             <div class="btn-group" style="margin-bottom: 3px;">
-              <button *ngIf="!solover" type="button" class="btn btn-mini btn-group-mini btn-outline-primary" placement="top" ngbTooltip="Subir"
-                container="body" (click)="SubirFila()" (mouseup)="quitarfoco($event);">
-                <i class="fa fa-arrow-up icono-but"></i>
-              </button>
-              <button *ngIf="!solover" type="button" class="btn btn-mini btn-group-mini btn-outline-primary" placement="top" ngbTooltip="Bajar"
-                container="body" (click)="BajarFila()" (mouseup)="quitarfoco($event);">
-                <i class="fa fa-arrow-down icono-but"></i>
-              </button>
-              <button *ngIf="!solover" type="button" class="btn btn-mini btn-group-mini btn-outline-primary" placement="top" ngbTooltip="Izquierda"
-                container="body" (click)="MovIzqui()" (mouseup)="quitarfoco($event);">
-                <i class="fa fa-arrow-left icono-but"></i>
-              </button>
-              <button *ngIf="!solover" type="button" class="btn btn-mini btn-group-mini btn-outline-primary" placement="top" ngbTooltip="Derecha"
-                container="body" (click)="MovDerec()" (mouseup)="quitarfoco($event);">
-                <i class="fa fa-arrow-right icono-but"></i>
-              </button>
               <button type="button" class="btn btn-mini btn-group-mini btn-outline-primary" placement="top" ngbTooltip="Expandir Contenido de la Seleccion"
               container="body" (click)="Expandetodo()" (mouseup)="quitarfoco($event);">
               <i class="icofont icofont-rounded-expand icono-but"></i>
@@ -105,16 +23,6 @@
               container="body" (click)="ContraeTodo()" (mouseup)="quitarfoco($event);">
               <i class="icofont icofont-rounded-collapse icono-but"></i>
               </button>
-              <!-- <button type="button" class="btn btn-mini btn-group-mini btn-outline-primary btn-gru-multiple" placement="bottom" container="body" [ngbPopover]="opcgrupos"
-                (mouseup)="quitarfoco($event);">
-                <i class="fa fa-caret-down icono-but"></i>
-              </button>
-              <ng-template #opcgrupos>
-                <div class="btn-group-vertical">
-                  <button type="button" ngbDropdownItem class="btn btn-sm" (click)="Expandetodo(0)">Expandir Todo de la Seleccion</button>
-                  <button type="button" ngbDropdownItem class="btn btn-sm" (click)="ContraeTodo(1)">Contraer Todo de la Seleccion</button>
-                </div>
-              </ng-template> -->
             </div>&nbsp;&nbsp;&nbsp;
             <div class="btn-group" style="margin-bottom: 3px;">
               <button *ngIf="!vistagrande || expanded" type="button" class="btn btn-mini btn-group-mini btn-outline-primary" placement="top" ngbTooltip="Ver Partida" 
@@ -125,10 +33,10 @@
               container="body"  (mouseup)="quitarfoco($event);" (click)="MetradoAcu()" [ngClass]="{'btn-outline-primary': !acuxmetrado,'btn-outline-danger': acuxmetrado}">
                   <!-- <i class="icofont icofont-brand-tango icono-but"></i> -->ACU
               </button>
-              <button *ngIf="!solover" type="button" class="btn btn-mini btn-group-mini btn-outline-primary btn-primary" placement="top" [ngbTooltip]="edicionacu?'Deshabilitar Edicion Costos Unitarios':'Habilitar Edicion Costos Unitarios'"
+              <!-- <button *ngIf="!solover" type="button" class="btn btn-mini btn-group-mini btn-outline-primary btn-primary" placement="top" [ngbTooltip]="edicionacu?'Deshabilitar Edicion Costos Unitarios':'Habilitar Edicion Costos Unitarios'"
               container="body" (click)="changeEdicion()" (mouseup)="quitarfoco($event);">
               <i class="icofont icono-but" [ngClass]="{'icofont-lock': !edicionacu,'icofont-unlocked': edicionacu}"></i>
-              </button>
+              </button> -->
               <button *ngIf="!solover" type="button" class="btn btn-mini btn-group-mini btn-outline-primary" placement="top" ngbTooltip="Vincular/Desvincular Partidas"
               container="body"  (mouseup)="quitarfoco($event);" (click)="openModalVinculo()">
                   <i class="fa fa-code-fork fa-rotate-270 icono-but"></i>
@@ -143,9 +51,9 @@
                 container="body" (click)="relacionInsumosProy()" (mouseup)="quitarfoco($event);">
                 <i class="icofont-listing-number icono-but"></i>
               </button>
-              <button *ngIf="!solover" type="button" class="btn btn-mini btn-group-mini" placement="top" ngbTooltip="Edicion Precio Insumo ->"
+              <!-- <button *ngIf="!solover" type="button" class="btn btn-mini btn-group-mini" placement="top" ngbTooltip="Edicion Precio Insumo ->"
                 container="body" (mouseup)="quitarfoco($event);" [ngClass]="{'btn-primary': butselprecio=='1','btn-info': butselprecio=='2','btn-success': butselprecio=='3','btn-inverse': butselprecio=='4'}">EPI
-              </button>
+              </button> -->
               <button *ngIf="!solover" type="button" class="btn btn-mini btn-group-mini btn-outline-primary btn-gru-multiple" placement="bottom" container="body" [ngbPopover]="opcepi"
                 (mouseup)="quitarfoco($event);">
                 <i class="fa fa-caret-down icono-but"></i>
@@ -247,8 +155,8 @@
             <!-- <ng-container *cdkVirtualFor="let row of dataSource.data"> -->
               <ng-container *ngIf="datasourcePri.length>0">
                 <tr (click)="cambindiceselpresu(indice)" *ngFor="let row of datasourcePri;let indice=index;" [hidden]="row.mostrar == 0"><!-- [ngStyle]="{'display': row.mostrar == 1 ? null : 'none'}" -->
-                  <td class="cellsinpadding" [ngStyle]="{'background': row.colorvin??'#f8f8f8'}"
-                  appAnchocol [ancho]="30"><!-- [ngClass]="{'highlight': filaSel == indice}" -->
+                  <td class="cellsinpadding" appAnchocol [ancho]="30"><!--[ngStyle]="{'background': row.colorvin??'#f8f8f8'}"-->
+                          <!-- [ngClass]="{'highlight': filaSel == indice}" -->
                     <span *ngIf="!colselpri && !colselpri2">{{indice+1}}</span>
                     <mat-checkbox *ngIf="(row.unidad!='' && colselpri) || (row.unidad=='' && colselpri2 && row.tipofila!=0)" class="checktabla" [checked]="row.seleccion==0?false:true" (change)="$event ? Cambioseltpri(row,indice) : null"></mat-checkbox>
                   </td>
@@ -419,7 +327,8 @@
           <form [formGroup]="formDataPartida">
               <div class="row">
                 <mat-form-field appearance="outline" class="mff-reduc my-form-field col-sm-2 col-6 custpad-col"
-                  [ngClass]="{'mat-form-field-disa': formDataPartida.disabled}">
+                  [ngClass]="{'mat-form-field-disa': formDataPartida.disabled}"
+                  >
                   <mat-label>Item</mat-label>
                   <input matInput type="text" [value]="item.value" disabled>
                 </mat-form-field>

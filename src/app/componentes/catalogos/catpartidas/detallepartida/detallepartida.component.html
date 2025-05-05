@@ -51,7 +51,7 @@
                 <div class="custom-row" style="width: calc(100% - 36px);padding-bottom: 18px;">
                   <span class="span-sobre" [ngClass]="{'invalidspan':(unidad.invalid && unidad.touched)}">Unidad</span>
                   <ng-select [ngClass]="{'invalidsel':(unidad.invalid && unidad.touched)}" [appendTo]="'body'"
-                    [clearable]="false" formControlName="unidad" (change)="cambUnidad()">
+                    [clearable]="false" formControlName="unidad" (change)="cambUnidad()" class="css-dark-select">
                     <!-- [loading]="true" -->
                     <ng-option value="">--Seleccionar--</ng-option>
                     <ng-option *ngFor="let medi of medidas" [value]="medi.id_unidad">

@@ -220,8 +220,6 @@ export class AspectosGeneralesComponent implements OnInit {
   async cambioSubMenu(opcionSubmenu) {
     this.idnav = opcionSubmenu;
     if (opcionSubmenu == '3') {
-      this.mostrar_carga = true;
-      this.mostrar_carga = false;
     } else if (opcionSubmenu == '2') {
       this.cargarDatosConf(this.id_proyecto);
     } else if (opcionSubmenu == '1') {
@@ -494,7 +492,6 @@ export class AspectosGeneralesComponent implements OnInit {
   }
   async cargarDatosConf(idproy) {
     try {
-      this.mostrar_carga = true;
       this.bloqconf = true;
       this.dataSourceColor = this.filastabla;
       let respuesta = await this.principalService.ListarConfigProy({
@@ -523,11 +520,9 @@ export class AspectosGeneralesComponent implements OnInit {
         }
       }
       this.bloqconf = false;
-      this.mostrar_carga = false;
     } catch (ex) {
       console.log(ex);
       this.bloqconf = false;
-      this.mostrar_carga = false;
     }
   }
   constructor(
@@ -618,7 +613,6 @@ export class AspectosGeneralesComponent implements OnInit {
   grupos = [];
   provincias = [];
   async CrearGrupo(carga=false) {
-    this.mostrar_carga=true
     const usuarioEncontrado = JSON.parse(JSON.stringify(this.prueba))
     const form = this.myGroup;
     form.get('descripcion').setValue(usuarioEncontrado.descripcion);
@@ -686,7 +680,6 @@ export class AspectosGeneralesComponent implements OnInit {
     form.get('fecha_inicio').setValue(fecha_inicio);
     form.get('fecha_culmina').setValue(fecha_culmina);
     form.disable();
-    this.mostrar_carga=false
   }
   TeclaCalcFin(event: any) {
     if (event.keyCode.toString() == "13") {
@@ -694,6 +687,7 @@ export class AspectosGeneralesComponent implements OnInit {
     }
   }
   async ngOnInit() {
+    this.mostrar_carga_todo=true
     await this.onResize(null);
     this.idUadmin = await this.encriptadorService.recuperarlocalstory('id_admin');
     this.permiso = (!this.solover||this.idUadmin== this.idUsuario)? true:false
@@ -712,6 +706,7 @@ export class AspectosGeneralesComponent implements OnInit {
     await this.listarClasificacionProyectos();
     await this.listarGrupos();
     await this.CrearGrupo()
+    this.mostrar_carga_todo=false
   }
   totaldir
   abretotal
@@ -874,123 +869,177 @@ export class AspectosGeneralesComponent implements OnInit {
         }
       }
     }
-  async actualizarDatosProyecto(nroProyecto) {
-    const datosProyecto = this.prueba
-    const formulario=this.myGroup.value
+  // async actualizarDatosProyecto2() {
+  //   const datosProyecto = this.prueba
+  //   try {
+  //     let fechainicioInvalida = false;
+  //     var fechaSeleccionado = new Date(datosProyecto.fecha_inicio);
+  //     const Fi = moment(datosProyecto.fecha_inicio).format('YYYY-MM-DD');
+  //     const arrayDays = ['Lunes','Martes','Miercoles','Jueves','Viernes','Sábado','Domingo',];
+  //     var nombreDia = arrayDays[fechaSeleccionado.getDay()];
+  //     let encontrado1 = false;
+  //     let encontrado = false;
+  //     const aspectos = await this.principalService.ListarAspectosDiasProy({
+  //       id_proyecto: datosProyecto.id_proyecto,
+  //     });
+  //     if (aspectos[0].length > 0) {
+  //       let diasnolabo = aspectos[0][0].nolabo1? aspectos[0][0].nolabo1.toString().includes('|')? aspectos[0][0].nolabo1.toString().split('|'): [aspectos[0][0].nolabo1.toString()]: [];
+  //       if (aspectos[0][0]) {
+  //         encontrado1 = diasnolabo.find((ele) => ele == nombreDia.toUpperCase())? true: false;
+  //       }
+  //     }
+  //     if (aspectos[1]) {
+  //       encontrado = aspectos[1].find(
+  //         (ele) => moment(ele.fecha).format('YYYY-MM-DD') == Fi && !ele.laborado
+  //       );
+  //     }
+  //     fechainicioInvalida = encontrado || encontrado1 ? true : false;
+  //     if (this.myGroup.invalid) {
+  //       this.myGroup.markAllAsTouched();
+  //       SwalService.error('Advertencia', 'Datos Incompletos');
+  //       return;
+  //     } else if (fechainicioInvalida) {
+  //       this.toaster.error('La Fecha Inicio Seleccionada es  dia no laborable','Advertencia',{closeButton: false,positionClass: 'toast-bottom-right',timeOut: 5000,});
+  //     } else {
+  //       this.mostrar_carga_todo = true;
+  //       const fiAnterior = moment(datosProyecto.fecha_inicio).format('YYYY-MM-DD');
+  //       const fiform = moment(this.myGroup.get('fecha_inicio').value).format('YYYY-MM-DD');
+  //       if (fiAnterior !== fiform) {
+  //         const sw = await SwalService.multiple('Estas seguro?','El cambio de fecha inicio modificara la programación');
+  //         if (sw.isConfirmed) {
+  //           let progratemp =
+  //             await this.principalService.listarCambiosTemporalesProgramacion({id_proyecto: this.id_proyecto,id_usuario: '',});
+  //           if (progratemp) {
+  //             this.toaster.error('Existen cambios que no se guardaron en Programación. No puede hacer cambios hasta guardar los de Programación.','Advertencia',{closeButton: false,positionClass: 'toast-bottom-right',timeOut: 5000,});
+  //             this.mostrar_carga_todo = false;
+  //             return;
+  //           } else {
+  //             const objeto = {
+  //               id_proyecto: this.id_proyecto,
+  //               duracion: '',
+  //               fechaini: fiAnterior > fiform ? fiform : fiAnterior,
+  //               fechafin: fiAnterior > fiform ? fiAnterior : fiform,
+  //               posterior: 0,
+  //             };
+  //             const response = await this.principalService.fechaDespuesDuracion( objeto);
+  //             const diasModificados =fiAnterior < fiform? Number(response.duracion) * 1: Number(response.duracion) * -1;
+  //             await this.principalService.desplazarProgramacion({id_proyecto: this.id_proyecto,diasmodificados: diasModificados,iniproy:fiform});
+  //           }
+  //         } else {
+  //           await this.cancelarEditarDatosProyecto();
+  //           this.mostrar_carga_todo = false;
+  //           return;
+  //         }
+  //       }
+  //       let descpasa = this.myGroup.get('descripcion').value.toString().toUpperCase().trim().replace(/\s+/g, ' ');
+  //       const modificarProyecto = {
+  //         id_proyecto: this.id_proyecto,
+  //         cui:this.myGroup.get('cod_pais').value===227? '':this.myGroup.get('otrodepartamento').value+'|'+ this.myGroup.get('otraprovincia').value+'|'+ this.myGroup.get('otrodistrito').value,
+  //         descripcion: descpasa,
+  //         id_clasificacion: this.myGroup.get('id_clasificacion').value,
+  //         modalidad: this.myGroup.get('modalidad').value,
+  //         id_grupo: this.myGroup.get('id_grupo').value,
+  //         moneda: this.myGroup.get('moneda').value,
+  //         estado: this.myGroup.get('estado').value,
+  //         cod_pais: this.myGroup.get('cod_pais').value? this.myGroup.get('cod_pais').value: '',
+  //         id_localidad: this.myGroup.get('distrito').value? this.myGroup.get('distrito').value: '',
+  //         direccion: this.myGroup.get('direccion').value? this.myGroup.get('direccion').value: '',
+  //         fecha_elaboracion: this.myGroup.get('fecha_elaboracion').value? this.myGroup.get('fecha_elaboracion').value: '',
+  //         plazo: this.myGroup.get('plazo').value? this.myGroup.get('plazo').value: '',
+  //         fecha_inicio: this.myGroup.get('fecha_inicio').value? this.myGroup.get('fecha_inicio').value: '',
+  //         fecha_culmina: this.myGroup.get('fecha_culmina').value? this.myGroup.get('fecha_culmina').value: '',
+  //         id_usuario: this.idUsuario,
+  //       };
+  //       const response = await this.principalService.modificarProyecto(modificarProyecto);
+  //       if (response.id == '1') {
+  //         this.moneda=this.monedas.find((item)=>item.id_moneda==modificarProyecto.moneda).simbolo
+  //         SwalService.success();
+  //         await this.habilitarEdicionDatosProyecto();
+  //         const emitir = {
+  //           campo: 'datos_recuperado',
+  //           valor: response,
+  //           tab: this.indice_tab,
+  //         };
+  //         await this.tabChange.emit(emitir);
+  //         this.onListar();
+  //         this.mostrar_carga_todo = false;
+  //       } else {
+  //         SwalService.error('Advertencia', response.mensaje);
+  //       }
+  //     }
+  //   } catch (e) {
+  //     this.mostrar_carga_todo = false;
+  //     console.log(e);
+  //     SwalService.error();
+  //   }
+  // }
+  async actualizarDatosProyecto() {
     try {
-      let fechainicioInvalida = false;
-      var fechaSeleccionado = new Date(formulario.fecha_inicio);
-      const Fi = moment(formulario.fecha_inicio).format('YYYY-MM-DD');
-      const arrayDays = [
-        'Lunes',
-        'Martes',
-        'Miercoles',
-        'Jueves',
-        'Viernes',
-        'Sábado',
-        'Domingo',
-      ];
+      // const formProyecto = (this.formProyecto.controls[nroProyecto] as UntypedFormGroup)
+      // const aspectos_generales = (formProyecto.get('aspectos_generales') as UntypedFormGroup)
+      // const datosProyectoForm = (aspectos_generales.get('datos_proyecto') as UntypedFormGroup)
+      // const datosProyecto = datosProyectoForm.getRawValue()
+      const datosProyecto = this.prueba
+      let fechainicioInvalida = false
+      var fechaSeleccionado = new Date(datosProyecto.fecha_inicio)
+      const Fi = moment(datosProyecto.fecha_inicio).format('YYYY-MM-DD')
+      const arrayDays = ['Lunes', 'Martes', 'Miercoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
       var nombreDia = arrayDays[fechaSeleccionado.getDay()];
-      let encontrado1 = false;
-      let encontrado = false;
-      const aspectos = await this.principalService.ListarAspectosDiasProy({
-        id_proyecto: datosProyecto.id_proyecto,
-      });
-      if (aspectos[0].length > 0) {
-        let diasnolabo = aspectos[0][0].nolabo1
-          ? aspectos[0][0].nolabo1.toString().includes('|')
-            ? aspectos[0][0].nolabo1.toString().split('|')
-            : [aspectos[0][0].nolabo1.toString()]
-          : [];
+      let encontrado1 = false
+      let encontrado = false
+      const aspectos = await this.principalService.ListarAspectosDiasProy({ id_proyecto:this.id_proyecto })
+      if(aspectos[0].length>0){
+        let diasnolabo=aspectos[0][0].nolabo1?(aspectos[0][0].nolabo1.toString().includes('|')?aspectos[0][0].nolabo1.toString().split('|'):[aspectos[0][0].nolabo1.toString()]):[];
         if (aspectos[0][0]) {
-          encontrado1 = diasnolabo.find((ele) => ele == nombreDia.toUpperCase())
-            ? true
-            : false;
+          encontrado1 = diasnolabo.find(ele => ele==nombreDia.toUpperCase())?true:false;
         }
       }
       if (aspectos[1]) {
-        encontrado = aspectos[1].find(
-          (ele) => moment(ele.fecha).format('YYYY-MM-DD') == Fi && !ele.laborado
-        );
+        encontrado = aspectos[1].find(ele => moment(ele.fecha).format('YYYY-MM-DD') == Fi && !ele.laborado)
       }
-      fechainicioInvalida = encontrado || encontrado1 ? true : false;
+      fechainicioInvalida = encontrado || encontrado1 ? true : false
       if (this.myGroup.invalid) {
-        this.myGroup.markAllAsTouched();
-        SwalService.error('Advertencia', 'Datos Incompletos');
-        return;
+        this.myGroup.markAllAsTouched()
+        SwalService.error('Advertencia', 'Datos Incompletos')
+        return
       } else if (fechainicioInvalida) {
-        this.toaster.error(
-          'La Fecha Inicio Seleccionada es  dia no laborable',
-          'Advertencia',
-          {
-            closeButton: false,
-            positionClass: 'toast-bottom-right',
-            timeOut: 5000,
-          }
-        );
+        this.toaster.error('La Fecha Inicio Seleccionada es  dia no laborable', 'Advertencia', {closeButton: false,positionClass: 'toast-bottom-right',timeOut: 5000})
       } else {
         this.mostrar_carga_todo = true;
-        const fiAnterior = moment(formulario.fecha_inicio).format(
-          'YYYY-MM-DD'
-        );
-        const fiform = moment(this.myGroup.get('fecha_inicio').value).format(
-          'YYYY-MM-DD'
-        );
+        const fiAnterior = moment(this.prueba.fecha_inicio).format('YYYY-MM-DD')
+        console.log(fiAnterior)
+        const fiform = moment(this.myGroup.get('fecha_inicio').value).format('YYYY-MM-DD')
+        console.log(fiform)
         if (fiAnterior !== fiform) {
-          const sw = await SwalService.multiple(
-            'Estas seguro?',
-            'El cambio de fecha inicio modificara la programación'
-          );
+          const sw = await SwalService.multiple('Estas seguro?', 'El cambio de fecha inicio modificara la programación')
           if (sw.isConfirmed) {
-            let progratemp =
-              await this.principalService.listarCambiosTemporalesProgramacion({
-                id_proyecto: this.id_proyecto,
-                id_usuario: '',
-              });
-            if (progratemp) {
-              this.toaster.error(
-                'Existen cambios que no se guardaron en Programación. No puede hacer cambios hasta guardar los de Programación.',
-                'Advertencia',
-                {
-                  closeButton: false,
-                  positionClass: 'toast-bottom-right',
-                  timeOut: 5000,
-                }
-              );
-              this.mostrar_carga_todo = false;
+            let progratemp = await this.principalService.listarCambiosTemporalesProgramacion({ id_proyecto: this.id_proyecto, id_usuario: '' })
+            if(progratemp){
+              this.toaster.error('Existen cambios que no se guardaron en Programación. No puede hacer cambios hasta guardar los de Programación.', 'Advertencia', { closeButton: false, positionClass: 'toast-bottom-right', timeOut: 5000 });
+              this.mostrar_carga_todo=false;
               return;
-            } else {
+            }
+            else{
               const objeto = {
                 id_proyecto: this.id_proyecto,
                 duracion: '',
                 fechaini: fiAnterior > fiform ? fiform : fiAnterior,
                 fechafin: fiAnterior > fiform ? fiAnterior : fiform,
-                posterior: 0,
-              };
-              const response = await this.principalService.fechaDespuesDuracion(
-                objeto
-              );
-              const diasModificados =
-                fiAnterior < fiform
-                  ? Number(response.duracion) * 1
-                  : Number(response.duracion) * -1;
-              await this.principalService.desplazarProgramacion({
-                id_proyecto: this.id_proyecto,
-                diasmodificados: diasModificados,
-              });
+                posterior: 0
+              }
+              const response = await this.principalService.fechaDespuesDuracion(objeto)
+              console.log(response)
+              const diasModificados = fiAnterior < fiform ? Number(response.duracion) * 1 : Number(response.duracion) * -1
+              console.log(diasModificados)
+              await this.principalService.desplazarProgramacion({ id_proyecto: this.id_proyecto, diasmodificados: diasModificados,iniproy:fiform})
             }
           } else {
             await this.cancelarEditarDatosProyecto();
             this.mostrar_carga_todo = false;
-            return;
+            return
           }
         }
-        let descpasa = this.myGroup
-          .get('descripcion')
-          .value.toString()
-          .toUpperCase()
-          .trim()
-          .replace(/\s+/g, ' '); //quitar saltos y espacios, solo mayuscula
+        let descpasa = this.myGroup.get('descripcion').value.toString().toUpperCase().trim().replace(/\s+/g, ' ');
         const modificarProyecto = {
           id_proyecto: this.id_proyecto,
           cui:this.myGroup.get('cod_pais').value===227? '':this.myGroup.get('otrodepartamento').value+'|'+ this.myGroup.get('otraprovincia').value+'|'+ this.myGroup.get('otrodistrito').value,
@@ -1000,31 +1049,21 @@ export class AspectosGeneralesComponent implements OnInit {
           id_grupo: this.myGroup.get('id_grupo').value,
           moneda: this.myGroup.get('moneda').value,
           estado: this.myGroup.get('estado').value,
-          cod_pais: this.myGroup.get('cod_pais').value
-            ? this.myGroup.get('cod_pais').value
-            : '',
-          id_localidad: this.myGroup.get('distrito').value
-            ? this.myGroup.get('distrito').value
-            : '',
-          direccion: this.myGroup.get('direccion').value
-            ? this.myGroup.get('direccion').value
-            : '',
-          fecha_elaboracion: this.myGroup.get('fecha_elaboracion').value
-            ? this.myGroup.get('fecha_elaboracion').value
-            : '',
-          plazo: this.myGroup.get('plazo').value
-            ? this.myGroup.get('plazo').value
-            : '',
-          fecha_inicio: this.myGroup.get('fecha_inicio').value
-            ? this.myGroup.get('fecha_elaboracion').value
-            : '',
-          fecha_culmina: this.myGroup.get('fecha_culmina').value
-            ? this.myGroup.get('fecha_culmina').value
-            : '',
+          cod_pais: this.myGroup.get('cod_pais').value? this.myGroup.get('cod_pais').value: '',
+          id_localidad: this.myGroup.get('distrito').value? this.myGroup.get('distrito').value: '',
+          direccion: this.myGroup.get('direccion').value? this.myGroup.get('direccion').value: '',
+          fecha_elaboracion: this.myGroup.get('fecha_elaboracion').value? this.myGroup.get('fecha_elaboracion').value: '',
+          plazo: this.myGroup.get('plazo').value? this.myGroup.get('plazo').value: '',
+          fecha_inicio: this.myGroup.get('fecha_inicio').value? this.myGroup.get('fecha_inicio').value: '',
+          fecha_culmina: this.myGroup.get('fecha_culmina').value? this.myGroup.get('fecha_culmina').value: '',
           id_usuario: this.idUsuario,
         };
-        const response = await this.principalService.modificarProyecto(modificarProyecto);
+        console.log(modificarProyecto.fecha_inicio)
+        console.log(modificarProyecto.fecha_culmina)
+        const response = await this.principalService.modificarProyecto(modificarProyecto)
+        this.mostrar_carga_todo = false;
         if (response.id == '1') {
+          console.log(response)
           this.moneda=this.monedas.find((item)=>item.id_moneda==modificarProyecto.moneda).simbolo
           SwalService.success();
           await this.habilitarEdicionDatosProyecto();
@@ -1043,9 +1082,10 @@ export class AspectosGeneralesComponent implements OnInit {
     } catch (e) {
       this.mostrar_carga_todo = false;
       console.log(e);
-      SwalService.error();
+      SwalService.error()
     }
   }
+  
   ngAfterContentChecked(): void {
     this.changeDetector.detectChanges();
   }

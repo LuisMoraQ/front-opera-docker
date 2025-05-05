@@ -65,6 +65,7 @@ import { VisorDePlanoComponent } from './principal/visor-de-plano/visor-de-plano
 // import { IfcViewerModule } from 'ngx-ifc-viewer';
 import { ChartModule } from 'angular2-chartjs';
 import { ConfproyimprComponent } from './principal/confproyimpr/confproyimpr.component';
+import { DataProyectoComponent } from './principal/data-proyecto/data-proyecto.component';
 
 @NgModule({
   declarations: [
@@ -98,6 +99,7 @@ import { ConfproyimprComponent } from './principal/confproyimpr/confproyimpr.com
     ColaboraproyComponent,
     VisorDePlanoComponent,
     ConfproyimprComponent,
+    DataProyectoComponent,
   ],
   imports: [
     CommonModule,

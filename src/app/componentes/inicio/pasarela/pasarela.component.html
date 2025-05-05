@@ -21,13 +21,13 @@
                             <div class="circle">3</div>
                             <div class="label-circle">Paso 3</div>
                           </div>
-                          <div class="line" [class.completed]="step >= 4"></div>
+                          <!-- <div class="line" [class.completed]="step >= 4"></div>
                           <div class="step" [class.completed]="step >= 4" (click)="goToStep(4)">
                             <div class="circle">4</div>
                             <div class="label-circle">Paso 4</div>
-                          </div>
+                          </div> -->
                         </div>
-                          <form [formGroup]="myGroup" (ngSubmit)="EnviarMensaje()">
+                          <form [formGroup]="myGroup">
                           <ng-container *ngIf="step === 1">
                             <h2>DATOS PERSONALES</h2>
                             <div class="mt-3 row">
@@ -37,7 +37,7 @@
                                     <select matNativeControl formControlName="tipo_compra" style="width: 100%;" (change)="MostrarCampo($event.target.value)">
                                         <option value="Licencia Nueva">Licencia Nueva</option>
                                         <option value="Renovacion">Renovacion</option>
-                                        <option value="Demo">Demo</option>
+                                        <!-- <option value="Demo">Demo</option> -->
                                     </select>
                                 </mat-form-field>
                                 </div>
@@ -56,12 +56,24 @@
                                 <mat-label>Nombre Completo</mat-label>
                                 <input matInput  style="width: 98%;" formControlName="nombre" >
                               </mat-form-field>
+                              <mat-error
+                                *ngIf=" nombre?.hasError('required')&& nombre?.touched">
+                                Campo Obligatorio.
+                              </mat-error>
                             </div>
                             <div class="mt-3">
                               <mat-form-field class="mff-reduc w-100 alto-35" appearance="outline">
                                 <mat-label>Correo Electronico</mat-label>
                                 <input matInput  style="width: 98%;" formControlName="correo_electronico" placeholder="example@hotmail.com"/>
                               </mat-form-field>
+                              <mat-error
+                                *ngIf=" correo_electronico?.hasError('required')&& correo_electronico?.touched">
+                                Campo Obligatorio.
+                              </mat-error>
+                              <mat-error
+                                *ngIf=" correo_electronico?.hasError('email')&& correo_electronico?.touched">
+                                Deber ser un Correo Electronico.
+                              </mat-error>
                             </div>
                             <div class="mt-3 row">
                               <div class="col-sm-6 col-12 mt-2">
@@ -69,6 +81,22 @@
                                   <mat-label>Celular</mat-label>
                                   <input matInput  style="width: 93%;" formControlName="celular"/>
                                 </mat-form-field>
+                                <mat-error
+                                *ngIf=" celular?.hasError('required')&& celular?.touched">
+                                Campo Obligatorio.
+                                </mat-error>
+                                <mat-error
+                                  *ngIf=" celular?.hasError('pattern')&& celular?.touched">
+                                  Formato numerico requerido
+                                </mat-error>
+                                <mat-error
+                                  *ngIf=" celular?.hasError('minLength')&& celular?.touched">
+                                  Minimo 9 caracteres
+                                </mat-error>
+                                <mat-error
+                                  *ngIf=" celular?.hasError('maxLength')&& celular?.touched">
+                                  Maximo 18 caracteres
+                                </mat-error>
                               </div>
                             </div>       
                             <div class="mt-3">
@@ -122,11 +150,90 @@
                               </mat-form-field>
                             </div>
                             </div> 
+                            <h2>LICENCIAS</h2>
+                            <table  class="mi-tabla">
+                              <thead>
+                                <th class="header">Licencia</th>
+                                <th class="header">Tiempo</th>
+                                <th class="header">Cantidad</th>
+                              </thead>
+                              <tbody>
+                                <tr>
+                                  <td>Versión Profesional :</td>
+                                  <td>
+                                    <select matNativeControl formControlName="tiempolicestudiantil" class="select-box2"  (change)="updateCart()">
+                                      <option value="0">--</option>
+                                      <option value="12">Anual</option>
+                                      <option value="6">Semestral</option>
+                                    </select>
+                                  </td>
+                                  <td><input matInput
+                                    type="number"
+                                    min="0"
+                                    formControlName="licestudiantil"
+                                    (change)="updateCart()"
+                                    class="cont-info">
+                                  </td>
+                                </tr>
+                                <tr>
+                                  <td>Versión Consultor :</td>
+                                  <td>
+                                    <select matNativeControl formControlName="tiempolicprofesional" class="select-box2"  (change)="updateCart()">
+                                      <option value="0">--</option>
+                                      <option value="12">Anual</option>
+                                      <option value="6">Semestral</option>
+                                    </select>
+                                  </td>
+                                  <td>
+                                    <input matInput
+                                    type="number"
+                                    min="0"
+                                    formControlName="licprofesional"
+                                    (change)="updateCart()"
+                                    class="cont-info">
+                                  </td>
+                                </tr>
+                                <tr>
+                                  <td>Versión BIM :</td>
+                                  <td> <select matNativeControl formControlName="tiempolicbim" class="select-box2"  (change)="updateCart()" >
+                                    <option value="0">--</option>
+                                    <option value="12">Anual</option>
+                                    <option value="6">Semestral</option>
+                                  </select>
+                                  </td>
+                                  <td>  <input matInput
+                                    type="number"
+                                    min="0"
+                                    formControlName="licbim"
+                                    (change)="updateCart()"
+                                    class="cont-info">
+                                  </td>
+                                </tr>
+                                <tr>
+                                  <td>Versión Empresarial :</td>
+                                  <td>
+                                    <select matNativeControl formControlName="tiempolicempresarial" class="select-box2"  (change)="updateCart()">
+                                      <option value="0">--</option>
+                                      <option value="12">Anual</option>
+                                      <option value="6">Semestral</option>
+                                    </select>
+                                  </td>
+                                  <td>
+                                    <input matInput
+                                    type="number"
+                                    min="0"
+                                    formControlName="licempresarial"
+                                    (change)="updateCart()"
+                                    class="cont-info">
+                                  </td>
+                                </tr>
+                              </tbody>
+                            </table>
                             <div class="form-group mt-3" style="text-align: center;">
-                              <button class="nextto" (click)="nextStep()"><span class="fa fa-arrow-right"> Siguiente</span></button>
+                              <button class="nextto" (click)="nextStep()" [ngbTooltip]=" !myGroup.valid?'Complete el Formulario':!myGroup.value.total||myGroup.value.total==0 ? 'Seleccione una Licencia':''" ><span class="fa fa-arrow-right"> Siguiente</span></button>
                             </div>
                           </ng-container>
-                          <ng-container *ngIf="step === 2">
+                          <!-- <ng-container *ngIf="step === 2">
                                 <h1 style="color:black; text-align: center;padding: 0;margin: 0;"><b>Confirmar Compra</b></h1>
                                 <ng-container *ngIf="this.myGroup.get('tipo_compra').value!=='Demo'">
                                   <div class="container-planes">
@@ -144,7 +251,7 @@
                                           <p><u>Tipo de Licencia</u></p>
                                           <p>01 Licencia Monousuario <br>(01 Usuario Principal)</p>
                                           <del><p style="text-align: center;font-size: 20px;">Precio: $95.00</p></del>
-                                          <p style="text-align: center;color: gold;font-size: 20px;">Precio: $85.50</p>
+                                          <p style="text-align: center;color: gold;font-size: 20px;">Precio: $6.25</p>
                                           <p style="text-align: center;">Plazo de Licencia: 12 Meses</p> 
                                           <p style="text-align: center;">Cantidad de Proyectos: Limitado</p> 
                                           <div class="container-fluid">
@@ -169,7 +276,7 @@
                                         <p><u>Tipo de Licencia</u></p>
                                         <p>01 Licencia Monousuario <br>(01 Usuario Principal)</p>
                                         <del><p style="text-align: center;font-size: 20px;">Precio: $170.00</p></del>
-                                        <p style="text-align: center;color: gold;font-size: 20px;">Precio: $136.00</p>
+                                        <p style="text-align: center;color: gold;font-size: 20px;">Precio: $8.75.00</p>
                                         <p style="text-align: center;">Plazo de Licencia: 12 Meses</p>
                                         <p style="text-align: center;">Cantidad de Proyectos: Ilimitado</p> 
                                         <div class="container-fluid">
@@ -197,7 +304,7 @@
                                           <li>02 Usuario Secundarios</li>
                                         </ol></p>
                                         <del><p style="text-align: center;font-size: 20px;">Precio: $240.00</p></del>
-                                        <p style="text-align: center;color: gold;font-size: 20px;">Precio: $192.00</p>
+                                        <p style="text-align: center;color: gold;font-size: 20px;">Precio: $12.08.00</p>
                                         <p style="text-align: center;">Plazo de Licencia: 12 Meses</p>
                                         <p style="text-align: center;">Cantidad de Proyectos: Ilimitado</p> 
                                         <div class="container-fluid">
@@ -234,23 +341,10 @@
                                         </div>
                                       </div>
                                     </div>
-                                    <!-- <div *ngIf="TotalCompras>=3" class="container-fluid" style="color:red;	background-color:  rgb(255, 255, 255);padding: 10px 50PX;">
-                                      <h2 style="text-align: center;">Al adquirir 3 o más licencias. Usted cuenta con un descuento de 15%. ¡Felicidades y Muchas Gracias!</h2>
-                                    </div> -->
+                                  
                                   </div>
                                     <div class="form-group" style="text-align: center;font-weight: bold;background-color:  rgb(255, 255, 255);">
-                                      <!-- <ng-container *ngIf="myGroup.get('total').value>0 && TotalCompras>=3">
-                                        <label style="font-size: 20px;margin-right: 20px;margin-right: 20px;">Subtotal: ${{Subtotal| number: '1.2-2' }}</label>
-                                        <label style="font-size: 20px;margin-right: 20px;margin-right: 20px;">Cambio Dólar: {{cambiodolar}}</label>
-                                        <label style="font-size: 20px;margin-right: 20px;margin-right: 20px;">Descuento: ${{descuento | number: '1.2-2'}}</label>
-                                        <label style="font-size: 20px;margin-right: 20px;margin-right: 20px;">Total Dólares: ${{myGroup.value.total | number: '1.2-2'}}</label>
-                                        <label style="font-size: 20px;"> Total Soles: S/.{{myGroup.value.total*cambiodolar | number: '1.2-2'}}</label>
-                                      </ng-container> -->
-                                      <!-- <ng-container *ngIf="myGroup.get('total').value>0 &&TotalCompras<3">
-                                        <label style="font-size: 20px;margin-right: 20px;">Total: ${{myGroup.value.total | number: '1.2-2' }}</label>
-                                        <label style="font-size: 20px;margin-right: 20px;">Cambio Dólar: {{cambiodolar}}</label>
-                                        <label style="font-size: 20px;">Total Soles : S/.{{myGroup.value.total*cambiodolar | number: '1.2-2'}}</label>
-                                      </ng-container> -->
+                                     
                                       <ng-container *ngIf="myGroup.get('total').value>0">
                                         <label style="font-size: 20px;margin-right: 20px;">Total: ${{myGroup.value.total | number: '1.2-2' }}</label>
                                         <label style="font-size: 20px;margin-right: 20px;">Cambio Dólar: {{cambiodolar}}</label>
@@ -281,51 +375,118 @@
                                         </div>
                                     </div>
                                   </div>
-                                    <!-- <div class="form-group" style="text-align: center;font-weight: bold;background-color:  rgb(255, 255, 255);">
-                                        <label style="font-size: 20px;margin-right: 20px;">Total: $ 0.00</label>
-                                        <label style="font-size: 20px;margin-right: 20px;">Cambio Dólar: {{cambiodolar}}</label>
-                                        <label style="font-size: 20px;">Total Soles : S/. 0.00</label>
-                                    </div> -->
+                                    
                                 </ng-container>
                                   <div class="form-group mt-3" style="text-align: center;">
                                     <button class="nextto"  (click)="previousStep()"><span class="fa fa-arrow-left"> Anterior</span></button>
                                     <button class="nextto" (click)="nextStep()"><span class="fa fa-arrow-right"> Siguiente</span></button>
                                   </div>
-                          </ng-container>
-                          <ng-container *ngIf="step === 3">
+                          </ng-container> -->
+                          <ng-container *ngIf="step === 2">
                             <div class="container-fluid">
                               <div class="row mt-2">
                                 <div class="col-sm-12 col-md-12 col-lg-3">
                                   <div class="informacion-1" >
-                                    <h2 style="text-align: center;">INFORMACION DE LA  SOLICITUD</h2>
+                                    <h2 style="text-align: center;">INFORMACION DE LA   SOLICITUD</h2>
                                     <p> SOLICITANTE :</p>
                                     <label>Nombre:  {{myGroup.value.nombre}}</label><br>
                                     <label>Correo:  {{myGroup.value.correo_electronico}}</label><br>
                                     <label>Celular: {{myGroup.value.celular}}</label><br>
                                     <label>Dirección: {{direcciontotal}}</label>
                                     <p>INFORMACION DEL PEDIDO</p>
-                                    <p>Tipo de Licencia Solicitada</p>
+                                    <p>Tipo/ Tiempo / Cantidad de Licencia(s) :</p>
+                                    <div class="contenedor-info">
+                                      <mat-label>Versión Profesional :</mat-label>
+                                      <select matNativeControl formControlName="tiempolicestudiantil" class="select-box"  (change)="updateCart()">
+                                        <option value="0">--</option>
+                                        <option value="12">Anual</option>
+                                        <option value="6">Semestral</option>
+                                      </select>
+                                      <input matInput
+                                             type="number"
+                                             min="0"
+                                             formControlName="licestudiantil"
+                                             (change)="updateCart()"
+                                             class="cont-info">
+                                    </div>
+                                    <div class="contenedor-info">
+                                      <mat-label>Versión Consultor :</mat-label>
+                                      <select matNativeControl formControlName="tiempolicprofesional" class="select-box"  (change)="updateCart()" style="margin-left: 10px;">
+                                        <option value="0">--</option>
+                                        <option value="12">Anual</option>
+                                        <option value="6">Semestral</option>
+                                      </select>
+                                      <input matInput
+                                             type="number"
+                                             min="0"
+                                             formControlName="licprofesional"
+                                             (change)="updateCart()"
+                                             class="cont-info">
+                                    </div>
+                                    <div class="contenedor-info">
+                                      <mat-label>Versión BIM :</mat-label>
+                                      <select matNativeControl formControlName="tiempolicbim" class="select-box"  (change)="updateCart()" style="margin-left: 45px;">
+                                        <option value="0">--</option>
+                                        <option value="12">Anual</option>
+                                        <option value="6">Semestral</option>
+                                      </select>
+                                      <input matInput
+                                             type="number"
+                                             min="0"
+                                             formControlName="licbim"
+                                             (change)="updateCart()"
+                                             class="cont-info">
+                                    </div>
+                                    <div class="contenedor-info">
+                                      <mat-label>Versión Empresarial :</mat-label>
+                                      <select matNativeControl formControlName="tiempolicempresarial" class="select-box"  (change)="updateCart()">
+                                        <option value="0">--</option>
+                                        <option value="12">Anual</option>
+                                        <option value="6">Semestral</option>
+                                      </select>
+                                      <input matInput
+                                             type="number"
+                                             min="0"
+                                             formControlName="licempresarial"
+                                             (change)="updateCart()"
+                                             class="cont-info">
+                                    </div>
+                                    <!-- <mat-label>Versión Consultor</mat-label>
+                                    <mat-form-field class="mff-reduc w-30 alto-25" appearance="outline">
+                                      <mat-label style="color: white;">Cantidad</mat-label>
+                                      <input matInput style="background-color: white;color: black;width: 25%;height: 30px;padding-left: 15px;font-size:18px;" type="number" min="0" formControlName="licprofesional" (change)="updateCart()"/>
+                                    </mat-form-field>
+                                    <mat-label>Versión BIM</mat-label>
+                                    <mat-form-field class="mff-reduc w-30 alto-25" appearance="outline">
+                                      <mat-label style="color: white;">Cantidad</mat-label>
+                                      <input matInput style="background-color: white;color: black;width: 25%;height: 30px;padding-left: 15px;font-size:18px;" type="number" min="0" formControlName="licbim" (change)="updateCart()"/>
+                                    </mat-form-field>
+                                    <mat-label>Versión Empresarial</mat-label>
+                                    <mat-form-field class="mff-reduc w-30 alto-25" appearance="outline">
+                                      <mat-label style="color: white;">Cantidad</mat-label>
+                                      <input matInput style="background-color: white;color: black;width: 25%;height: 30px;padding-left: 15px;font-size:18px;" type="number" min="0" formControlName="licempresarial" (change)="updateCart()"/>
+                                    </mat-form-field> -->
                                     <ng-container *ngIf="this.myGroup.get('tipo_compra').value!=='Demo'">
                                       <b><label>Cabmio Dolar : {{cambiodolar}}</label></b><br>
-                                      <div class="ml-2" *ngIf="myGroup.value.licestudiantil>0">
-                                        <label style="font-weight: bold;">"Versión Profesional":  {{myGroup.value.licestudiantil}} Unidades</label> <br>
-                                        <label >Monto Total Soles    : S/.{{myGroup.value.licestudiantil*cambiodolar*85.50 | number: '1.2-2' }}</label><br>
-                                        <label >Monto Total Dólares  : $ {{myGroup.value.licestudiantil*85.50 | number: '1.2-2' }}</label>
+                                      <div class="ml-2" *ngIf="myGroup.value.licestudiantil>0&&myGroup.value.tiempolicestudiantil>0">
+                                        <label style="font-weight: bold;">"Versión Profesional":  {{myGroup.value.licestudiantil}} Unidad(es)&nbsp;&nbsp;-- {{myGroup.value.tiempolicestudiantil>0?myGroup.value.tiempolicestudiantil:''}} Mes(es)</label> <br>
+                                        <label >Monto Total Soles    : S/.{{myGroup.value.licestudiantil*myGroup.value.tiempolicestudiantil*cambiodolar*6.25 | number: '1.2-2' }}</label><br>
+                                        <label >Monto Total Dólares  : $ {{myGroup.value.licestudiantil*myGroup.value.tiempolicestudiantil*6.25 | number: '1.2-2' }}</label>
                                       </div>
-                                      <div class="ml-2" *ngIf="myGroup.value.licprofesional>0">
-                                        <label style="font-weight: bold;">"Versión Consultor":  {{myGroup.value.licprofesional}} Unidades</label> <br>
-                                        <label >Monto Total Soles    : S/.{{myGroup.value.licprofesional*cambiodolar*136 | number: '1.2-2' }}</label><br>
-                                        <label >Monto Total Dólares  : $ {{myGroup.value.licprofesional*136 | number: '1.2-2' }}</label>
+                                      <div class="ml-2" *ngIf="myGroup.value.licprofesional>0&&myGroup.value.tiempolicprofesional>0">
+                                        <label style="font-weight: bold;">"Versión Consultor":  {{myGroup.value.licprofesional}} Unidad(es)&nbsp;&nbsp;-- {{myGroup.value.tiempolicprofesional>0?myGroup.value.tiempolicprofesional:''}} Mes(es)</label> <br>
+                                        <label >Monto Total Soles    : S/.{{myGroup.value.licprofesional*myGroup.value.tiempolicprofesional*cambiodolar*8.75 | number: '1.2-2' }}</label><br>
+                                        <label >Monto Total Dólares  : $ {{myGroup.value.licprofesional*myGroup.value.tiempolicprofesional*8.75 | number: '1.2-2' }}</label>
                                       </div>
-                                      <div class="ml-2" *ngIf="myGroup.value.licbim>0">
-                                        <label style="font-weight: bold;">"Versión BIM":  {{myGroup.value.licbim}} Unidades</label> <br>
-                                        <label >Monto Total Soles    : S/.{{myGroup.value.licbim*cambiodolar*192 | number: '1.2-2' }}</label><br>
-                                        <label >Monto Total Dólares  : $ {{myGroup.value.licbim*192 | number: '1.2-2' }}</label>
+                                      <div class="ml-2" *ngIf="myGroup.value.licbim>0&&myGroup.value.tiempolicbim>0">
+                                        <label style="font-weight: bold;">"Versión BIM":  {{myGroup.value.licbim}} Unidad(es)&nbsp;&nbsp;-- {{myGroup.value.tiempolicbim>0?myGroup.value.tiempolicbim:''}} Mes(es)</label> <br>
+                                        <label >Monto Total Soles    : S/.{{myGroup.value.licbim*myGroup.value.tiempolicbim*cambiodolar*12.08 | number: '1.2-2' }}</label><br>
+                                        <label >Monto Total Dólares  : $ {{myGroup.value.licbim*myGroup.value.tiempolicbim*12.08 | number: '1.2-2' }}</label>
                                       </div>
-                                      <div class="ml-2" *ngIf="myGroup.value.licempresarial>0">
-                                        <label style="font-weight: bold;">"Versión Empresarial":  {{myGroup.value.licempresarial}} Unidades</label> <br>
-                                        <label >Monto Total Soles    : S/.{{myGroup.value.licempresarial*cambiodolar*480| number: '1.2-2' }}</label><br>
-                                        <label >Monto Total Dólares  : $ {{myGroup.value.licempresarial*480| number: '1.2-2' }}</label>
+                                      <div class="ml-2" *ngIf="myGroup.value.licempresarial>0&&myGroup.value.tiempolicempresarial>0">
+                                        <label style="font-weight: bold;">"Versión Empresarial":  {{myGroup.value.licempresarial}} Unidad(es)&nbsp;&nbsp;-- {{myGroup.value.tiempolicempresarial>0?myGroup.value.tiempolicempresarial:''}} Mes(es)</label> <br>
+                                        <label >Monto Total Soles    : S/.{{myGroup.value.licempresarial*myGroup.value.tiempolicempresarial*cambiodolar*25| number: '1.2-2' }}</label><br>
+                                        <label >Monto Total Dólares  : $ {{myGroup.value.licempresarial*myGroup.value.tiempolicempresarial*25| number: '1.2-2' }}</label>
                                       </div>
                                       <!-- <div class="ml-2" *ngIf="myGroup.get('total').value>0 && TotalCompras>=3">
                                         <label style="font-weight: bold;">Subtotal    :    ${{this.Subtotal| number: '1.2-2' }}</label> 
@@ -401,7 +562,7 @@
                                         <div style=" display: flex;justify-content: center; align-items: center;">
                                           <img [src]="safeUrl4" alt="YAPE">
                                         </div>
-                                      <p>N° de Telefono : + 51 989 182177</p>
+                                      <p>N° de Telefono : + 51 984 777941</p>
                                       <p style="color: blue;">A nombre de : Eduar Vargas Quispe</p>
                                     </div>
                                     <div class="info-bancos" style="border: 2px solid skyblue;">
@@ -428,10 +589,10 @@
                             </div>
                             <div class="form-group mt-3" style="text-align: center;">
                               <button class="nextto"  (click)="previousStep()"><span class="fa fa-arrow-left"> Anterior</span></button>
-                              <button class="nextto" (click)="nextStep()"><span class="fa fa-arrow-right"> Siguiente</span></button>
+                              <button class="nextto" (click)="nextStep()" [ngbTooltip]="!myGroup.value.total||myGroup.value.total==0 ? 'Seleccione una Licencia':''"><span class="fa fa-arrow-right"> Siguiente</span></button>
                             </div>
                           </ng-container>
-                          <ng-container *ngIf="step === 4">
+                          <ng-container *ngIf="step === 3">
                             <h2>Paso 4 - Resumen</h2>
                             <div class="row">
                               <div class="col-sm-12 col-md-12 col-lg-6">
@@ -447,25 +608,25 @@
                                   <p>Tipo de Licencia Solicitada</p>
                                   <ng-container *ngIf="this.myGroup.get('tipo_compra').value!=='Demo'">
                                     <b><label>Cabmio Dolar : {{cambiodolar}}</label></b><br>
-                                    <div class="ml-2" *ngIf="myGroup.value.licestudiantil>0">
-                                      <label style="font-weight: bold;">"Versión Empresarial:  {{myGroup.value.licestudiantil}} Unidades</label> <br>
-                                      <label >Monto Total Soles    : S/.{{myGroup.value.licestudiantil*cambiodolar*85.50 | number: '1.2-2' }}</label><br>
-                                      <label >Monto Total Dólares  : $ {{myGroup.value.licestudiantil*85.50 | number: '1.2-2' }}</label>
+                                    <div class="ml-2" *ngIf="myGroup.value.licestudiantil>0&&myGroup.value.tiempolicestudiantil>0">
+                                      <label style="font-weight: bold;">"Versión Empresarial:  {{myGroup.value.licestudiantil}} Unidad(es)&nbsp;&nbsp;-- {{myGroup.value.tiempolicestudiantil>0?myGroup.value.tiempolicestudiantil:''}} Mes(es) </label> <br>
+                                      <label >Monto Total Soles    : S/.{{myGroup.value.licestudiantil*myGroup.value.tiempolicestudiantil*cambiodolar*6.25 | number: '1.2-2' }}</label><br>
+                                      <label >Monto Total Dólares  : $ {{myGroup.value.licestudiantil*myGroup.value.tiempolicestudiantil*6.25 | number: '1.2-2' }}</label>
                                     </div>
-                                    <div class="ml-2" *ngIf="myGroup.value.licprofesional>0">
-                                      <label style="font-weight: bold;">"Versión Consultor":  {{myGroup.value.licprofesional}} Unidades</label> <br>
-                                      <label >Monto Total Soles    : S/.{{myGroup.value.licprofesional*cambiodolar*136 | number: '1.2-2' }}</label><br>
-                                      <label >Monto Total Dólares  : $ {{myGroup.value.licprofesional*136 | number: '1.2-2' }}</label>
+                                    <div class="ml-2" *ngIf="myGroup.value.licprofesional>0&&myGroup.value.tiempolicprofesional>0">
+                                      <label style="font-weight: bold;">"Versión Consultor":  {{myGroup.value.licprofesional}} Unidad(es)&nbsp;&nbsp;-- {{myGroup.value.tiempolicprofesional>0?myGroup.value.tiempolicprofesional:''}} Mes(es) </label> <br>
+                                      <label >Monto Total Soles    : S/.{{myGroup.value.licprofesional*myGroup.value.tiempolicprofesional*cambiodolar*8.75 | number: '1.2-2' }}</label><br>
+                                      <label >Monto Total Dólares  : $ {{myGroup.value.licprofesional*myGroup.value.tiempolicprofesional*8.75 | number: '1.2-2' }}</label>
                                     </div>
-                                    <div class="ml-2" *ngIf="myGroup.value.licbim>0">
-                                      <label style="font-weight: bold;">"Versión BIM":  {{myGroup.value.licbim}} Unidades</label> <br>
-                                      <label >Monto Total Soles    : S/.{{myGroup.value.licbim*cambiodolar*192 | number: '1.2-2' }}</label><br>
-                                      <label >Monto Total Dólares  : $ {{myGroup.value.licbim*192 | number: '1.2-2' }}</label>
+                                    <div class="ml-2" *ngIf="myGroup.value.licbim>0&&myGroup.value.tiempolicbim>0">
+                                      <label style="font-weight: bold;">"Versión BIM":  {{myGroup.value.licbim}} Unidad(es)&nbsp;&nbsp;-- {{myGroup.value.tiempolicbim>0?myGroup.value.tiempolicbim:''}} Mes(es) </label> <br>
+                                      <label >Monto Total Soles    : S/.{{myGroup.value.licbim*myGroup.value.tiempolicbim*cambiodolar*12.08 | number: '1.2-2' }}</label><br>
+                                      <label >Monto Total Dólares  : $ {{myGroup.value.licbim*myGroup.value.tiempolicbim*12.08 | number: '1.2-2' }}</label>
                                     </div>
-                                    <div class="ml-2" *ngIf="myGroup.value.licempresarial>0">
-                                      <label style="font-weight: bold;">"Versión Empresarial":  {{myGroup.value.licempresarial}} Unidades</label> <br>
-                                      <label >Monto Total Soles    : S/.{{myGroup.value.licempresarial*cambiodolar*480| number: '1.2-2' }}</label><br>
-                                      <label >Monto Total Dólares  : $ {{myGroup.value.licempresarial*480| number: '1.2-2' }}</label>
+                                    <div class="ml-2" *ngIf="myGroup.value.licempresarial>0&&myGroup.value.tiempolicempresarial>0">
+                                      <label style="font-weight: bold;">"Versión Empresarial":  {{myGroup.value.licempresarial}} Unidad(es)&nbsp;&nbsp;-- {{myGroup.value.tiempolicempresarial>0?myGroup.value.tiempolicempresarial:''}} Mes(es) </label> <br>
+                                      <label >Monto Total Soles    : S/.{{myGroup.value.licempresarial*myGroup.value.tiempolicempresarial*cambiodolar*25| number: '1.2-2' }}</label><br>
+                                      <label >Monto Total Dólares  : $ {{myGroup.value.licempresarial*myGroup.value.tiempolicempresarial*25| number: '1.2-2' }}</label>
                                     </div>
                                     <!-- <div class="ml-2" *ngIf="myGroup.get('total').value>0 && TotalCompras>=3">
                                       <label style="font-weight: bold;">Subtotal    :    ${{this.Subtotal| number: '1.2-2' }}</label> 
@@ -476,7 +637,6 @@
                                       <label style="font-weight: bold;">TOTAL SOLES:   S/.{{(myGroup.value.total)*cambiodolar| number: '1.2-2' }}</label> 
                                     </div>
                                     <p>INFORMACION DE LA LICENCIA</p>
-                                      <p>Plazo de Licencia : 12 Meses</p>
                                       <label>Licencia solicitada : {{myGroup.value.tipo_compra}}</label><br>
                                       <i>Una vez realizado el depósito hacer clic en siguiente. para así subir la copia o copias de Boucher del Deposito realizado.</i>        
                                   </ng-container>  
@@ -530,7 +690,7 @@
                             </div>
                             <div class="form-group mt-3" style="text-align: center;">
                               <button class="nextto"  (click)="previousStep()"><span class="fa fa-arrow-left"> Anterior</span></button>
-                              <button class="nextto" ><span class="fa fa-arrow-right" type="submit"> Enviar</span></button>
+                              <button class="nextto" (click)="EnviarMensaje()" [ngbTooltip]="files2.length<=0 ? 'Importe Imagen de Comprobante':''" ><span class="fa fa-arrow-right" type="submit"> Enviar</span></button>
                             </div>
                           </ng-container>
                           </form>
@@ -545,7 +705,7 @@
               <a href="https://www.youtube.com/@biplan.Costos-Presupuestos" target="_blank"><i class="icofont-youtube-play"></i></a>
               <a href="https://www.instagram.com/biplan.pe/" target="_blank"><i class="icofont-instagram"></i></a>
               <a href="https://www.tiktok.com/@eduarvq?_t=8rLJe8ro1Sh&_r=1" target="_blank" aria-label="TikTok"><i class="icofont-tiktok"></i></a>
-              <a href="https://wa.me/+51986566443" target="_blank" aria-label="WhatsApp"><i class="icofont-brand-whatsapp"></i></a>
+              <a href="https://wa.me/+51989182177" target="_blank" aria-label="WhatsApp"><i class="icofont-brand-whatsapp"></i></a>
               <a href="https://linkedin.com" target="_blank" aria-label="LinkedIn"><i class="icofont-linkedin"></i> </a>
             </div>
           </div>

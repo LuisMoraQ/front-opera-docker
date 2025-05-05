@@ -1,0 +1,44 @@
+.contenedor-info{
+    width: 100%; 
+    display: flex; 
+    justify-content: space-between; 
+    margin: 10px;
+}
+.cont-info{
+    background-color: white; 
+    color: black; 
+    width: 20%; 
+    height: 20px;
+    margin-right: 5px;
+    text-align: end;
+}
+.select-box{
+    background-color: white;
+    width: 25%;
+    height: 100%;
+    margin-top: 10px;
+    text-align: center;
+    padding-top: 5px;
+}
+.select-box2{
+  background-color: white;
+  width: 50%;
+  height: 100%;
+  text-align: center;
+  padding:1px;
+}
+.mi-tabla td{
+  padding: 8px;
+  font-size: 14px;
+}
+.header{
+  padding: 8px;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  opacity: 1; /* Asegura que sean visibles */
+}

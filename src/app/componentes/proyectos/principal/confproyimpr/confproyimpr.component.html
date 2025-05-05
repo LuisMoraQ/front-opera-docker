@@ -7,7 +7,7 @@
           type="button"
           class="btn btn-sm btn-success float-right"
           (click)="GuardarConfiguracion()"
-          [disabled]="bloqconf">
+          [disabled]="!canedit">
           <i class="fa fa-save icono-but"></i>Guardar
         </button>
           <button
@@ -42,59 +42,27 @@
                 </div>
               </div>
             </ng-container>
-            <ng-container *ngIf="!bloqconf">
-              <!-- <mat-checkbox
-                class="mff-reduc my-form-field col-sm-1"
-                style="margin: auto"
-                appearance="outline"
-                formControlName="prefijobtn"
-                (change)="Checkboxpre()"
-              ></mat-checkbox> -->
-              <!-- <mat-form-field
-                class="mff-reduc my-form-field w-100 col-sm-3"
-                appearance="outline"
-              >
-                <mat-label>Prefijo</mat-label>
-                <input matInput type="text" formControlName="prefijo" (change)="AddItemsPrefijo()" />
-              </mat-form-field> -->
-              <!-- <mat-checkbox
-                class="mff-reduc my-form-field col-sm-1"
-                style="margin: auto"
-                appearance="outline"
-                formControlName="sufijobtn"
-                (change)="Checkboxsufi()"
-              ></mat-checkbox> -->
-              <!-- <mat-form-field
-                class="mff-reduc my-form-field w-100 col-sm-3"
-                appearance="outline"
-              >
-                <mat-label>Sufijo</mat-label>
-                <input matInput type="text" formControlName="sufijo" (change)="AddItemsSufijo()" />
-              </mat-form-field> -->
-                <div class="col-sm-6 col-md-3 c-titi-but" style="padding-right: 5px;padding-top: 10px;">
-                  <div class="row" style="margin-bottom: 2px;width: 100%;justify-content: center;align-items: center;">
-                    <div id="divbut" style="width: calc(100% - 165px);margin-right: 18px;" class="hidescroll">
-                      <div class="row" style="justify-content: center;align-items: center;">
-                        <span>Contraer/Expandir: </span>&nbsp;&nbsp;
-                        <div class="btn-group" style="margin-bottom: 3px;">
-                          <button type="button" class="btn btn-mini btn-group-mini btn-outline-primary" placement="top" ngbTooltip="Expandir Contenido de la Seleccion"
-                          container="body" (click)="Expandetodo()" (mouseup)="quitarfoco($event);">
-                          <i class="icofont icofont-rounded-expand icono-but"></i>
-                          </button>
-                          <button type="button" class="btn btn-mini btn-group-mini btn-outline-primary" placement="top" ngbTooltip="Contraer Contenido de la Seleccion"
-                          container="body" (click)="ContraeTodo()" (mouseup)="quitarfoco($event);">
-                          <i class="icofont icofont-rounded-collapse icono-but"></i>
-                          </button>
-                        </div>&nbsp;&nbsp;&nbsp;
-                      </div>
-                    </div>
-                  </div>
+            <ng-container *ngIf="!bloqconf&&canedit">
+                <div class="col-sm-6 col-md-6 col-lg-3" style="padding-right: 5px;padding-top: 10px;">
+                  <div class="row" style="justify-content: center;align-items: center;">
+                    <span>Contraer/Expandir: </span>&nbsp;&nbsp;
+                    <div class="btn-group" style="margin-bottom: 3px;">
+                      <button type="button" class="btn btn-mini btn-group-mini btn-outline-primary" placement="top" ngbTooltip="Expandir Contenido de la Seleccion"
+                      container="body" (click)="Expandetodo()" (mouseup)="quitarfoco($event);">
+                      <i class="icofont icofont-rounded-expand icono-but"></i>
+                      </button>
+                      <button type="button" class="btn btn-mini btn-group-mini btn-outline-primary" placement="top" ngbTooltip="Contraer Contenido de la Seleccion"
+                      container="body" (click)="ContraeTodo()" (mouseup)="quitarfoco($event);">
+                      <i class="icofont icofont-rounded-collapse icono-but"></i>
+                      </button>
+                    </div>&nbsp;&nbsp;&nbsp;
+                  </div>       
                 </div>
-                <div class="col-sm-6 col-md-3">
+                <div class="col-sm-6 col-md-6 col-lg-3">
                   <label>Activar Rango de Selecion :</label>
                   <mat-checkbox class="mff-reduc my-form-field col-sm-1" style="padding-top: 15px;" appearance="outline" formControlName="variablebtn" (change)="Checkboxvariable()"></mat-checkbox>
                 </div>
-                <div class="col-sm-6 col-md-3">
+                <div class="col-sm-6 col-md-6 col-lg-3">
                   <mat-form-field class="mff-reduc my-form-field w-150 " style="margin-top: 10px;" appearance="outline">
                 <mat-label>Tipo de Valor:</mat-label>
                   <select matNativeControl formControlName="variable">
@@ -104,7 +72,7 @@
                   </select>
                 </mat-form-field>
                 </div>
-                <div class="col-sm-6 col-md-3">
+                <div class="col-sm-6 col-md-6 col-lg-3">
                   <mat-form-field class="mff-reduc my-form-field w-100" appearance="outline" style="margin-top: 10px;">
                   <mat-label>Valor</mat-label>
                   <input class="mayuscula" matInput type="text" formControlName="valor" (change)="AddItemsSuccesion()" />
@@ -143,10 +111,10 @@
             <tbody>
               <ng-container *ngIf="datasourcePri.length > 0 && canedit==true">
                 <tr (click)="cambindiceselpresu(indice)" *ngFor="let row of datasourcePri;let indice=index;" [hidden]="row.mostrar == 0">
-                  <td [ngStyle]="{ background: row.colorvin ?? '#f8f8f8' }" appAnchocol [ancho]="30"[ngClass]="{'highlight': filaSel == indice}" [hidden]="!MostrarCheck ? true : false">
+                  <td appAnchocol [ancho]="30"[ngClass]="{'highlight': filaSel == indice}" [hidden]="!MostrarCheck ? true : false" >
                     <mat-checkbox   class="mb-custom" *ngIf="getDepth(row.item) <= profundidad && row.unidad===''" [checked]="selectedItems.has(indice)?true:false" (change)="toggleCheckbox(indice,row.item)" ></mat-checkbox>
                   </td>
-                  <td class="cellsinpadding" [ngStyle]="{ background: row.colorvin ?? '#f8f8f8' }" appAnchocol [ancho]="30" [ngClass]="{'highlight': filaSel == indice}">
+                  <td class="cellsinpadding"  appAnchocol [ancho]="30" [ngClass]="{'highlight': filaSel == indice}" appPintarfilapre>
                     <span *ngIf="!colselpri && !colselpri2">{{indice + 1}}</span>
                   </td>
                   <td class="text-left cellsinpadding" appAnchocol [ancho]="220" [detalle]="true" [ngClass]="{ highlight: filaSel == indice }" 

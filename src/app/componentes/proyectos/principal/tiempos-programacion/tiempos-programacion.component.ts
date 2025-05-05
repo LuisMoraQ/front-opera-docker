@@ -245,6 +245,7 @@ export class TiemposProgramacionComponent implements OnInit {
       SwalService.error();
       console.log(error);
     }
+    this.calcularHorasPorDia()
   }
 
   async permisosUsuario() {
@@ -788,6 +789,24 @@ export class TiemposProgramacionComponent implements OnInit {
       : '';
     this.nolab1.setValue(value);
   }
+  totalhorasxdia:any
+  calcularHorasPorDia() {
+    const dias = ["lun", "mar", "mie", "jue", "vie", "sab", "dom"];
+    const resultado = [{
+        lun: 0, mar: 0, mie: 0, jue: 0, vie: 0, sab: 0, dom: 0
+    }]
+    for (const dia of dias) {
+        const fecha = moment(this.dataProyecto.fecha_inicio).format('YYYY-MM-DD');
+        const ingresoManana = this.tabla1[0][dia]? fecha + ' ' + this.tabla1[0][dia] + ':00':0
+        const salidaManana = this.tabla1[1][dia]?fecha + ' ' + this.tabla1[1][dia] + ':00':0
+        const salidaTarde = this.tabla2[0][dia]?fecha + ' ' + this.tabla2[0][dia] + ':00':0
+        const ingresoTarde =this.tabla2[1][dia] ? fecha + ' ' + this.tabla2[1][dia] + ':00':0
+        const horasManana = this.restahoras(ingresoManana, salidaManana);
+        const horasTarde = this.restahoras(salidaTarde, ingresoTarde);
+        resultado[0][dia] = this.minutesToString(horasManana + horasTarde)
+    }
+    this.totalhorasxdia=resultado
+  }
 
   calcularTothoras() {
     let suma1 = 0;
@@ -815,6 +834,7 @@ export class TiemposProgramacionComponent implements OnInit {
     }
     this.horaslabo = this.minutesToString(suma1 + suma2);
   }
+  
 
   restahoras(dia1, dia2) {
     try {
@@ -825,7 +845,6 @@ export class TiemposProgramacionComponent implements OnInit {
       return 0;
     }
   }
-
   minutesToString(minutes) {
     let signo = minutes >= 0 ? '' : '-';
     let multi = minutes >= 0 ? 1 : -1;
@@ -1129,6 +1148,7 @@ export class TiemposProgramacionComponent implements OnInit {
           );
         }
       }
+      this.calcularHorasPorDia()
     } catch (e) {
       this.mostrar_carga_todo = false;
       SwalService.error();
