@@ -4830,7 +4830,7 @@ export class ProgramacionObraComponent implements OnInit, OnDestroy {
       const obj: filaGantt = {
         cuadrillaEQ: '',
         cuadrillaMQ: '',
-        custom_class: row.unidad ? null : 'bar-milestone2',
+        custom_class: row.unidad ? (row.duracion == 0 ? 'bar-hito ' : null) : 'bar-milestone2',
         dependencies: dependencies.join(','),
         end: moment(row.fechafin).format('YYYY-MM-DD'),
         start: moment(row.fechaini).format('YYYY-MM-DD'),

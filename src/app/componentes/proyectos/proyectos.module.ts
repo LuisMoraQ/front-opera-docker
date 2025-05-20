@@ -67,6 +67,8 @@ import { ChartModule } from 'angular2-chartjs';
 import { ConfproyimprComponent } from './principal/confproyimpr/confproyimpr.component';
 import { DataProyectoComponent } from './principal/data-proyecto/data-proyecto.component';
 import { AddproybiplanComponent } from './addproybiplan/addproybiplan.component';
+import { ProcuraModule } from '../procura/procura.module';
+import { MetradosModule } from '../metrados/metrados.module';
 
 @NgModule({
   declarations: [
@@ -126,6 +128,8 @@ import { AddproybiplanComponent } from './addproybiplan/addproybiplan.component'
     MatDatepickerModule,
     AnchocolModule,
     PresupuestoModule,
+    ProcuraModule,
+    MetradosModule,
     ScrollingModule,
     TableModule,
     TextMaskModule,

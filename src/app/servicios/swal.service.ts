@@ -515,6 +515,15 @@ export class SwalService {
     mostrarAlertaSiguiente()
   }
   
+  static showTable2(atitle: string,aicon:any, htmlContent: string): void {
+    Swal.fire({
+      title: atitle,
+      icon: aicon==0?'success':aicon==1?'error':'info',
+      html: htmlContent,
+      width: 630,
+    })
+  }
+
   static closeAlert() {
     Swal.close()
   }

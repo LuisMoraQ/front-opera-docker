@@ -26,6 +26,7 @@ import { MetradoService } from 'src/app/servicios/metrado.service';
 import { Router } from '@angular/router';
 import { ReportesComponent } from '../reportes/reportes.component';
 import { SignalrcustomService } from 'src/app/servicios/signalrcustom.service';
+import { AddproybiplanComponent } from '../addproybiplan/addproybiplan.component';
 
 @Component({
   selector: 'app-principal',
@@ -163,7 +164,7 @@ export class PrincipalComponent implements OnInit, OnDestroy {
   ];
   dataSourceColor = [];
   cargocompo = true;
-  arrmenuproy=[1,0,0,0,0,0,0,0];
+  arrmenuproy=[1,0,0,0,0,0,0,0,0,0];
 
   constructor(
     private configuracionService: ConfiguracionService,
@@ -2302,6 +2303,46 @@ export class PrincipalComponent implements OnInit, OnDestroy {
       datosRecuperado.setValue(nuevoTab.valor)
       localStorage.setItem('tabs', JSON.stringify(this.formProyecto.value))
       const tabs = JSON.parse(localStorage.getItem('tabs')||'[]')
+    }
+  }
+  async ImportaBiplan(){
+    try {
+      //debe seleccionar una fila, para juntarlo a su agrupacion
+
+      let maxproys = this.encriptadorService.recuperarlocalstory('maxproy');
+      if(!isNaN(Number(maxproys))){
+        let cont=0;
+        for(let rows1 of this.dataSourceorg){
+          if(rows1.id_proyecto!=''){
+            cont++;
+          }
+        }
+        cont=cont+this.datasourcepap.length;
+        if(cont>=maxproys){
+          this.toaster.error('Ya no puede crear proyectos. Su maximo permitido es '+maxproys+' incluidos los de la papelera.', 'Advertencia', { closeButton: false, positionClass: 'toast-bottom-right', timeOut: 10000 })
+          return
+        }
+      }
+      this.mostrar_carga_todo=true;
+      await this.listarClasificacionProyectos()
+      await this.listarGrupos()
+      const departamentos = await this.listardepa()
+      this.mostrar_carga_todo=false;
+      const modalRef = this.modalService.open(AddproybiplanComponent, { size: 'lg', backdrop: 'static', windowClass: 'pcoded', keyboard: false })
+      modalRef.componentInstance.clasificaciones = this.clasificaciones
+      modalRef.componentInstance.grupoprinc = 1//id_de agrupacion, recuperar de la fila seleccionada
+      modalRef.componentInstance.idprincipal = 3//id_proyecto principal, recuperar de la fila seleccionada
+      modalRef.componentInstance.departamentos = departamentos
+      const result = await modalRef.result
+      if(result=='listar'){
+        this.onListar();
+      }
+    }
+    catch (e) {
+      console.log(e)
+      this.mostrar_carga_todo = false;
+      this.toaster.error('No se pudo terminar la copia del proyecto. Revisar si existe en Mis Proyectos y eliminarlo antes de volver a duplicar.', 'Advertencia', { closeButton: false, positionClass: 'toast-bottom-right', timeOut: 10000 })
+      this.onListar();
     }
   }
 }

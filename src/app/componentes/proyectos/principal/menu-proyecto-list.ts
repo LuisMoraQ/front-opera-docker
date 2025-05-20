@@ -1,7 +1,7 @@
 export const itemsMenu = [
     {
         "id": 1,
-        "name": "Aspectos Generales Proyecto",
+        "name": "Configuracion General",
         "position": 1,
         "icon": "fa fa-2x fa-building",
         "imagen": "icaspec1.png",
@@ -25,7 +25,7 @@ export const itemsMenu = [
     },
     {
         "id": 4,
-        "name": "Registro Financiero",
+        "name": "Registro de Metrados",
         "position": 4,
         "icon": "fa fa-2x fa-building",
         "imagen": "",
@@ -33,50 +33,58 @@ export const itemsMenu = [
     },
     {
         "id": 5,
-        "name": "Procura y Logistica",
+        "name": "Registro Financiero",
         "position": 5,
+        "icon": "fa fa-2x fa-building",
+        "imagen": "",
+        "verImagen":true
+    },
+    {
+        "id": 6,
+        "name": "Procura y Logistica",
+        "position": 6,
         "icon": "fa fa-2x fa-building",
         "imagen": "icmetra1.png",
         "verImagen":true
     },
     {
-        "id": 6,
+        "id": 7,
         "name": "Movimiento Almacen",
-        "position": 6,
+        "position": 7,
         "icon": "fa fa-2x fa-building",
         "imagen": "icformula1.png",
         "verImagen":true
     },
     {
-        "id": 7,
+        "id": 8,
         "name": "Equipos y Herramientas",
-        "position": 7,
+        "position": 8,
         "icon": "fa fa-2x fa-building",
         "imagen": "ictiempro1.png",
         "verImagen":true
     },
     {
-        "id": 8,
+        "id": 9,
         "name": "Recursos Humanos",
-        "position": 8,
+        "position": 9,
         "icon": "fa fa-2x fa-building",
         "imagen": "icprogra1.png",
         "verImagen":true
     },
     {
-        "id": 9,
+        "id": 10,
         "name": "Cuaderno de Obra",
-        "position": 9,
+        "position": 10,
         "icon": "fa fa-2x fa-building",
         "imagen": "icespe1.png",
         "verImagen":true
     } ,
     {
-        "id": 10,
+        "id": 11,
         "name": "Informes y Reportes",
-        "position": 10,
+        "position": 11,
         "icon": "fa fa-2x fa-building",
         "imagen": "icespe1.png",
         "verImagen":true
-    } 
+    }
 ]

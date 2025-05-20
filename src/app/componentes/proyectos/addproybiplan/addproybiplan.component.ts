@@ -191,6 +191,15 @@ async CambiarPais(id) {
   }
   async Duplicaproy(){
     try{
+      if(!this.dataproy){
+        this.toaster.error('Buscar los datos del proyecto que antes de Importar.', 'Advertencia', { closeButton: false,positionClass: 'toast-bottom-right',timeOut: 5000 })
+        return
+      }
+      if (this.formProyecto.invalid) {
+        this.formProyecto.markAllAsTouched()
+        this.toaster.error('Datos incompletos o erroneos', 'Advertencia', { closeButton: false,positionClass: 'toast-bottom-right',timeOut: 5000 })
+        return
+      }
       let arrpermite=[];
       let dupli=0;
       let valido=true;
@@ -257,8 +266,47 @@ async CambiarPais(id) {
               console.timeEnd('timetemp')
               this.mostrar_carga_todo = false;
               if (resp.id == "1") {
-                SwalService.success('Correcto', resp.mensaje)
-                this.modal.close('listar')
+                if(resp.observacion){
+                  let prueba=JSON.parse(resp.observacion);
+                  let datos='';
+                  for(let rowp of prueba){
+                    let valos=rowp.split('|');
+                    datos+='<tr><td>'+valos[0]+'</td><td>'+valos[1]+'</td><td>'+valos[2]+'</td></tr>'//mostrar con decimales
+                  }
+                  SwalService.showTable2('Se importo con Observaciones','0',
+                  `<style>
+                    .tablaswall {
+                      border-collapse: collapse;
+                      width:570px;
+                    }
+                    .tablaswall th, .tablaswall td {
+                      border: 1px solid #ccc;
+                      padding: 2px 8px;
+                      text-align: left;
+                      font-size: 11px;
+                    }
+                    .tablaswall th {
+                      text-align: center;
+                      font-weight: bolder;
+                      background-color:rgb(216, 216, 216);
+                    }
+                  </style>
+                  <div style="font-size:13px">No se pudo agregar Metrados ya que no son compatibles con Presupuesto, en las siguientes partidas:<br><br>
+                  <table class="tablaswall">
+                    <tr>
+                      <th style="width:180px">ITEM</th>
+                      <th style="width:200px">METRADO PRESUPUESTO</th>
+                      <th>METRADO</th>
+                    </tr>`+
+                    datos
+                    +`</table></div>`
+                  )
+                  this.modal.close('listar')
+                }
+                else{
+                  SwalService.success('Correcto', resp.mensaje)
+                  this.modal.close('listar')
+                }
               }
               else {
                 SwalService.error('Advertencia', resp.mensaje)
@@ -363,8 +411,9 @@ async CambiarPais(id) {
   //   }
   // }
   async BuscarProy(){
-    //buscar en otro proy
+    // buscar en otro proy
     if(!this.codigo.value){
+      this.toaster.error('Ingresar el codigo del Proyecto para buscar.', 'Advertencia', { closeButton: false, positionClass: 'toast-bottom-right', timeOut: 5000 })
       return;
     }
     let codigost=this.codigo.value.toString();
@@ -402,8 +451,8 @@ async CambiarPais(id) {
       }
     }
     else{
+      this.dataproy=null;
       this.toaster.error(detalleProyecto.mensaje, 'Advertencia', { closeButton: false, positionClass: 'toast-bottom-right', timeOut: 5000 })
     }
   }
-
 }
