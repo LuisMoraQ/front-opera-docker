@@ -65,10 +65,10 @@
           container="body" (click)="HabSelAcu()" (mouseup)="quitarfoco($event);">
           <i class="fa" [ngClass]="{'fa-check': !colselacu,'fa-ban': colselacu}"></i>Sel. Multiple
         </button> -->
-        <button *ngIf="!solover" type="button" class="btn btn-mini btn-inverse"
+        <!-- <button *ngIf="!solover" type="button" class="btn btn-mini btn-inverse"
           container="body" (click)="CambClasi()" (mouseup)="quitarfoco($event);">
           <i class="icofont icofont-ui-rotation"></i>Cambiar Clasifiación
-        </button>
+        </button> -->
         <button type="button" class="btn btn-mini btn-outline-primary" [disabled]="!(rowsel?.unidad=='' && rowsel?.agruclasi!='1')"
           container="body" (click)="toggleonAgru()" (mouseup)="quitarfoco($event);">
           <i class="fa fa-toggle-down"></i>Maximiza Grupo
@@ -144,7 +144,8 @@
               [ngClass]="{'highlight': filaSelacu == indice,'filagrupo':row.unidad=='' && row.agruclasi!='1','f-w-900':row.agruclasi=='1'}">
                 <td appAnchocol [ancho]="38" style="cursor: pointer;">
                     <!-- <span *ngIf="row.unidad!=''">{{row.num_det}}</span> -->
-                    <mat-checkbox [disabled]="row.selvin==1" *ngIf="row.unidad!='' && !solover" class="checktabla" [checked]="row.seleccion==0?false:true" (change)="$event ? Cambioseltacu(row) : null"></mat-checkbox>
+                    <!-- <mat-checkbox [disabled]="row.selvin==1" *ngIf="row.unidad!='' && !solover" class="checktabla" [checked]="row.seleccion==0?false:true" (change)="$event ? Cambioseltacu(row) : null"></mat-checkbox> -->
+                    <span *ngIf="row.unidad!==''">{{row.indiceLocal}}</span>
                     <a *ngIf="row.unidad=='' && row.icomost=='0'" style="color:#06bb06; width: 14px;" (click)="toggleOn(row)">
                         <i class="icofont icofont-caret-down"></i>
                     </a>
@@ -168,7 +169,7 @@
                   <div class="float-right w-100">{{row.cantidad | number: mask_metrado}}</div>
                 </td>
                 <td class="cellsinpadding" appAnchocol [ancho]="90">
-                  <div *ngIf="row.editar2==0" style="cursor: pointer;" class="float-right w-100">
+                  <div style="cursor: pointer;" class="float-right w-100">
                     <span *ngIf="row.unidad!=''" class="float-left">{{moneda}}<i *ngIf="(row.advceros===1 || row.precio==0) && row.unidad!=''" class="fa fa-exclamation-triangle c-alert"></i></span>
                     <span class="float-right">{{row.precio | number: mask_precio}}</span>
                   </div>

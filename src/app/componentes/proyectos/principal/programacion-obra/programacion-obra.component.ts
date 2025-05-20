@@ -423,16 +423,16 @@ export class ProgramacionObraComponent implements OnInit, OnDestroy {
         this.mask_cant = '0.' + arrdec[3];
       }
       this.token = await this.encriptadorService.recuperarlocalstory('token'); //temporales
-
       this.onResize();
       this.pintar();
       await this.permisosUsuario();
+      console.log(this.submitModal)
       await this.iniciarProyecto();
       this.hTablasDinamico();
+      console.log(this.dataPrincipal)
       this.tablaDetalle.valueChanges.subscribe(
         async (data) => await this.referenciaActualModal()
       );
-
       // this.mostrar_carga_todo = false;
     } catch (error) {
       this.mostrar_carga_todo = false;
@@ -2445,6 +2445,7 @@ export class ProgramacionObraComponent implements OnInit, OnDestroy {
           windowClass: 'pcoded',
           keyboard: false, //no cerrar el modal con ESC
         });
+        console.log(prograSinHitos)
         modalRef.componentInstance.titulo1 = this.titulo1;
         modalRef.componentInstance.titulo1color = this.titulo1color;
         modalRef.componentInstance.titulo1letra = this.titulo1letra;
@@ -4565,6 +4566,7 @@ export class ProgramacionObraComponent implements OnInit, OnDestroy {
           arrayProgRecuperados,
           false
         );
+        console.log(this.dataPrincipal)
         this.dataPrincipal.map((ele) => (arrayUIDsOrdenados[ele.uid] = ele));
         this.uidsOrdenados = arrayUIDsOrdenados;
         if (arrayHitos.length) {

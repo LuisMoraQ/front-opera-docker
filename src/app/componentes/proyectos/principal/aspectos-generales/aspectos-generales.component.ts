@@ -1007,9 +1007,7 @@ export class AspectosGeneralesComponent implements OnInit {
       } else {
         this.mostrar_carga_todo = true;
         const fiAnterior = moment(this.prueba.fecha_inicio).format('YYYY-MM-DD')
-        console.log(fiAnterior)
         const fiform = moment(this.myGroup.get('fecha_inicio').value).format('YYYY-MM-DD')
-        console.log(fiform)
         if (fiAnterior !== fiform) {
           const sw = await SwalService.multiple('Estas seguro?', 'El cambio de fecha inicio modificara la programación')
           if (sw.isConfirmed) {
@@ -1058,12 +1056,9 @@ export class AspectosGeneralesComponent implements OnInit {
           fecha_culmina: this.myGroup.get('fecha_culmina').value? this.myGroup.get('fecha_culmina').value: '',
           id_usuario: this.idUsuario,
         };
-        console.log(modificarProyecto.fecha_inicio)
-        console.log(modificarProyecto.fecha_culmina)
         const response = await this.principalService.modificarProyecto(modificarProyecto)
         this.mostrar_carga_todo = false;
         if (response.id == '1') {
-          console.log(response)
           this.moneda=this.monedas.find((item)=>item.id_moneda==modificarProyecto.moneda).simbolo
           SwalService.success();
           await this.habilitarEdicionDatosProyecto();

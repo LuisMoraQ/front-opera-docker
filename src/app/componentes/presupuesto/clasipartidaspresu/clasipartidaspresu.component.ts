@@ -133,6 +133,7 @@ export class ClasipartidaspresuComponent implements OnInit {
       }
     }
     this.tablaacusel=arraux;
+    this.NuevoInd(this.tablaacusel)
     this.buscando=false;
 
     this.preciototal=this.total;
@@ -148,6 +149,18 @@ export class ClasipartidaspresuComponent implements OnInit {
         this.preciototal=Number(this.formService.redondeo(data.total,this.dec_parcial));
       }
     }); */
+  }
+   NuevoInd(arr) {
+    let contador = 1;
+    arr.forEach((row) => {
+      if (row.unidad === '') {
+        row.indiceLocal = ''; // vacío porque no queremos mostrar número
+        contador = 1; // reinicia contador
+      } else {
+        row.indiceLocal = contador;
+        contador++;
+      }
+    });
   }
   ngOnDestroy(): void {
     this.varGlobalesService.editaClasi.next(null);

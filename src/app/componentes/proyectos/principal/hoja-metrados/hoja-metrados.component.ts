@@ -822,6 +822,8 @@ export class HojaMetradosComponent implements OnInit, OnDestroy, AfterViewInit {
       id_proyecto: this.idProyecto,
     };
     const response = await this.metradoService.listarTitulosDeMetrados(obj);
+    // let res= await this.presuservice.listarTopPresupuesto({id_proyecto:this.idProyecto});
+    // const response = res[0].filter(ite => ite.item.split('.').length < 2);
     if (response.length) {
       let i = 0;
       for (const element of response) {
@@ -831,7 +833,7 @@ export class HojaMetradosComponent implements OnInit, OnDestroy, AfterViewInit {
           (ele) => ele.ind == element.indice
         );
         element.vinculado = vinculado;
-        element.tipo_registro = !element.tipo_registro ? 0 : 1;
+        element.tipo_registro = !element.tipo_registro ? 1 : 0;
         element.editable =
           existePermiso?.edit == 1 || this.permisosGenerales ? true : false;
         element.permVinculo = this.permVinculo;
@@ -1208,7 +1210,7 @@ export class HojaMetradosComponent implements OnInit, OnDestroy, AfterViewInit {
         vinculado = true;
       }
     } else {
-      const response = await this.listarTablaExcel(titulo.indice);
+      const response = await this.listarTablaExcel(titulo.indice,titulo.item);
       const response2 = await this.tablaTipoExcel(response, tabla);
       if (!response2?.vinculado || !response2?.body.length) {
         vinculado = false;
@@ -1271,7 +1273,7 @@ export class HojaMetradosComponent implements OnInit, OnDestroy, AfterViewInit {
         this.hBotones2 = 45;
       }
       if (this.titInformSel.tipo_registro) {
-        const response = await this.listarTablaExcel(titulo.indice);
+        const response = await this.listarTablaExcel(titulo.indice,titulo.item)
         const response2 = await this.tablaTipoExcel(response, this.tablaTitulo);
         this.tablaExcelAdjunta = response2.body;
         this.headerExcel = response2.header;
@@ -7997,7 +7999,8 @@ export class HojaMetradosComponent implements OnInit, OnDestroy, AfterViewInit {
         let tituloaux;
         if (this.titInformSel.tipo_registro == 1) {
           const response = await this.listarTablaExcel(
-            this.titInformSel.indice
+            this.titInformSel.indice,
+            this.titInformSel.item
           );
           tipoRep = 2;
           if (response) {
@@ -8767,13 +8770,14 @@ export class HojaMetradosComponent implements OnInit, OnDestroy, AfterViewInit {
     }
   }
 
-  async listarTablaExcel(indice) {
+  async listarTablaExcel(indice,item) {
     try {
       const obj = {
         id_proyecto: this.idProyecto,
-        indice: indice,
+        indice_tit: indice,
+        item:item,
       };
-      const response = await this.metradoService.listarTablaMetradoExcel(obj);
+      const response = await this.metradoService.listarTopMetrados(obj);
       return response;
     } catch (e) {
       SwalService.error();
@@ -9079,11 +9083,12 @@ export class HojaMetradosComponent implements OnInit, OnDestroy, AfterViewInit {
           this.mostrar_carga_todo = true;
           const obj = {
             id_proyecto: this.idProyecto,
-            indice: this.indiceTitulo,
+            indicetit: this.indiceTitulo,
           };
-          const response = await this.metradoService.eliminarTablaMetradoExcel(
+          const response = await this.metradoService.limpiarTopMetrado(
             obj
           );
+          console.log(response)
           if (response[0].id == '1') {
             const index = this.tablaTitResumen.findIndex(ele => this.titInformSel.indice == ele.indice)
             this.tablaTitResumen[index].vinculado = false
@@ -9860,7 +9865,7 @@ export class HojaMetradosComponent implements OnInit, OnDestroy, AfterViewInit {
             }
             this.tablaTitResumen[index].vinculado = true;
           } else {
-            const response = await this.listarTablaExcel(titulo.indice);
+            const response = await this.listarTablaExcel(titulo.indice,titulo.item);
             const tablaExcel = await this.tablaTipoExcel(response, tablatitulo);
             const validos = await this.validosVinculo(
               tablatitulo,
@@ -9888,7 +9893,7 @@ export class HojaMetradosComponent implements OnInit, OnDestroy, AfterViewInit {
                 }
                 this.tablaTitResumen[i].vinculado = true;
               } else {
-                const response = await this.listarTablaExcel(tit.indice);
+                const response = await this.listarTablaExcel(tit.indice,tit.item);
                 const tablaExcel = await this.tablaTipoExcel(
                   response,
                   tablatitulo
@@ -10171,7 +10176,7 @@ export class HojaMetradosComponent implements OnInit, OnDestroy, AfterViewInit {
       this.mostrar_carga_todo = true;
       const index = this.tablaTitResumen.findIndex(ele=> ele.indice == this.titInformSel.indice ) 
       this.tablaTitResumen[index].estado_metrado = result.porcentaje
-      const response = await this.listarTablaExcel(this.titInformSel.indice);
+      const response = await this.listarTablaExcel(this.titInformSel.indice,this.titInformSel.item);
       const response2 = await this.tablaTipoExcel(response, this.tablaTitulo);
       this.tablaExcelAdjunta = response2.body;
       this.headerExcel = response2.header;

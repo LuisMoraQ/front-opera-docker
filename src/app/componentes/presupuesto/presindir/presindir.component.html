@@ -13,7 +13,7 @@
           <!-- <h4 class="sub-title text-center p-b-0" style="border-bottom: none;">PRESUPUESTO INDIRECTO</h4> -->
           <div class="row w-100" style="margin-bottom: 2px">
             <div style="width: calc(100% - 90px)">
-              <div class="btn-group" style="margin-bottom: 3px">
+              <!-- <div class="btn-group" style="margin-bottom: 3px">
                 <button
                   *ngIf="!solover"
                   type="button"
@@ -77,15 +77,15 @@
                     }}
                   </option>
                 </select>
-              </mat-form-field>
-              <span
+              </mat-form-field> -->
+              <!-- <span
                 *ngIf="titsel == '0' && !solover"
                 class="f-w-900 m-l-10 f-18"
                 placement="top"
                 ngbTooltip="Edición Activa"
                 container="body"
                 ><i class="icofont icofont-ui-edit"></i
-              ></span>
+              ></span> -->
               <span
                 *ngIf="titsel != '0' || solover"
                 class="f-w-900 m-l-10 f-18"
@@ -140,9 +140,10 @@
                   </th>
                   <!-- <th appAnchocol [ancho]="90">%</th> -->
                   <th appAnchocol [ancho]="200">FORMULA</th>
-                  <th appAnchocol [ancho]="100">MONTO</th>
+                  <th appAnchocol [ancho]="100">MONTO MANUAL</th>
                   <!-- <th appAnchocol [ancho]="58">APLICAR A TITULOS</th> -->
-                  <th appAnchocol [ancho]="35">ACCIONES</th>
+                  <th appAnchocol [ancho]="100">MONTO</th>
+                  <th appAnchocol [ancho]="100"></th>
                   <!-- <th appAnchocol [ancho]="50">INCLUIR FP</th>
                   <th appAnchocol [ancho]="250">IU</th> -->
                 </tr>
@@ -175,12 +176,22 @@
                       }"
                     >
                       <div *ngIf="row.tipo_registro != 3" class="d-flex">
-                        <select
+                        <ng-container *ngIf="row.tipo_registro == 1">
+                          Manual
+                        </ng-container>
+                        <ng-container *ngIf="row.tipo_registro == 2">
+                          Titulo
+                        </ng-container>
+                        <ng-container *ngIf="row.tipo_registro == 4">
+                          Detalle
+                        </ng-container>
+
+                        <!-- <select
                           class="cust-sel-celda"
                           (change)="CambTiporeg($event.target.value, indice)"
                           [disabled]="titsel != '0' || solover"
                         >
-                          <!-- <option value="0" [selected]="row.tipo_registro=='0'">Data</option> -->
+                        
                           <option
                             value="1"
                             [selected]="row.tipo_registro == '1'"
@@ -193,14 +204,14 @@
                           >
                             Titulo
                           </option>
-                          <!-- <option value="2" [selected]="row.tipo_registro=='2'">Costo Directo</option> -->
+                         
                           <option
                             value="4"
                             [selected]="row.tipo_registro == '4'"
                           >
                             Detalle
                           </option>
-                        </select>
+                        </select> -->
                       </div>
                       <ng-container *ngIf="row.tipo_registro == 3">
                         Presupuesto
@@ -217,27 +228,12 @@
                     >
                       <div
                         *ngIf="row.editar1 == 0"
-                        class="div-celdavac"
-                        (click)="Editar1(indice)"
                       >
                         <span class="recortatext">{{ row.abrev }}</span>
                       </div>
-                      <input
-                        *ngIf="row.editar1 == 1"
-                        type="text"
-                        class="formcontrol w-100 d-flex mayuscula"
-                        autocomplete="off"
-                        value="{{ row.abrev }}"
-                        maxlength="5"
-                        onkeypress="return ((event.charCode >= 48 && event.charCode <= 57) || (event.charCode >= 65 && event.charCode <= 90) || (event.charCode >= 97 && event.charCode <= 122))"
-                        appAutoFocus
-                        (keyup)="presenter1($event, indice)"
-                        (blur)="caneditar1($event.target.value, indice)"
-                      />
                     </td>
                     <td
                       class="text-left cellsinpadding"
-                      (click)="Editar2(indice)"
                       appAnchocol
                       [ancho]="220"
                       [detalle]="true"
@@ -249,12 +245,10 @@
                     >
                       <div
                         *ngIf="row.editar2 == 0"
-                        class="recortatextlinea celdaadvcero div-celdavac"
-                        style="cursor: pointer"
+                        class="recortatextlinea celdaadvcero"
                         ngbTooltip="{{ row.descripcion }}"
                         #t="ngbTooltip"
                         container="body"
-                      
                         triggers="click:blur"
                         (mouseout)="t.close()"
                       >
@@ -262,17 +256,6 @@
                           row.descripcion
                         }}</span>
                       </div>
-                      <input
-                        *ngIf="row.editar2 == 1"
-                        type="text"
-                        class="formcontrol w-100 d-flex mayuscula"
-                        autocomplete="off"
-                        value="{{ row.descripcion }}"
-                        maxlength="500"
-                        appAutoFocus
-                        (keyup)="presenter2($event, indice)"
-                        (blur)="caneditar2($event.target.value, indice)"
-                      />
                     </td>
                     <td
                       appAnchocol
@@ -284,7 +267,7 @@
                       }"
                     >  
                     <ng-container  *ngIf="row.tipo_registro == 4">
-                      <div *ngIf="row.editar4 == 0" (click)="Editar4(indice)">
+                      <div *ngIf="row.editar4 == 0">
                         <ng-container>
                           <div class="float-left" style="margin-top: 5px;margin-left: 10px;">
                             <span class="mt-1 font-weight-bolder" >C.I.={{row.abrev}}/{{row.formula==''?abretotal:row.formula}}={{( row.formula==''?totaldir:findabrev(row.formula))==0?'0.00':(row.monto * 100 /( row.formula==''?totaldir:findabrev(row.formula))).toFixed(2)}}%</span>
@@ -298,37 +281,13 @@
                           </div>
                         </ng-container>
                       </div>
-                      <span *ngIf="row.editar4 == 1" >C.I={{row.abrev}}/</span>
-                      <input
-                      *ngIf="row.editar4 == 1"
-                      type="text"
-                      class="mayuscula"
-                      autocomplete="off"
-                      style="width:30px;"
-                      value="{{row.formula =='' ? abretotal : row.formula}}"
-                      appAutoFocus
-                      (keyup)="presenter4($event, indice)"
-                      (blur)="caneditar4($event.target.value, indice)"
-                      />
                     </ng-container>
                     <ng-container *ngIf="row.tipo_registro == 1 || row.tipo_registro == 2">
                       <div
                       *ngIf="row.editar4 == 0"
-                      class="div-celdavac"
-                      (click)="Editar4(indice)"
                     >
                       <span class="recortatext">{{ row.formula }}</span>
                     </div>
-                    <input
-                      *ngIf="row.editar4 == 1"
-                      type="text"
-                      class="formcontrol w-100 d-flex mayuscula"
-                      autocomplete="off"
-                      value="{{ row.formula }}"
-                      appAutoFocus
-                      (keyup)="presenter4($event, indice)"
-                      (blur)="caneditar4($event.target.value, indice)"
-                  />
                      </ng-container>
                     </td>
                     <td
@@ -342,9 +301,32 @@
                     >
                       <div
                         *ngIf="row.editar5 == 0"
-                        style="cursor: pointer"
                         class="float-right w-100"
-                        (click)="Editar5(indice)"
+                      >
+                        <span class="float-left"
+                          >{{ simbolo
+                          }}<i
+                            *ngIf="row.monto2 == 0"
+                            class="fa fa-exclamation-triangle c-alert"
+                          ></i
+                        ></span>
+                        <span class="float-right">{{
+                          row.monto2 | number : mask_parcial
+                        }}</span>
+                      </div>
+                    </td>
+                    <td
+                      appAnchocol
+                      [ancho]="100"
+                      [ngClass]="{
+                        highlight: filaSel == indice,
+                        'f-w-900':
+                          row.tipo_registro == 3 || row.tipo_registro == 2
+                      }"
+                    >
+                      <div
+                        *ngIf="row.editar5 == 0"
+                        class="float-right w-100"
                       >
                         <span class="float-left"
                           >{{ simbolo
@@ -357,128 +339,17 @@
                           row.monto | number : mask_parcial
                         }}</span>
                       </div>
-                      <input
-                        *ngIf="row.editar5 == 1"
-                        [textMask]="
-                          this.dec_parcial == 4
-                            ? this.formService.maskUsAmountDecimal4
-                            : this.dec_parcial == 3
-                            ? this.formService.maskUsAmountDecimal3
-                            : this.formService.maskUsAmountDecimal2
-                        "
-                        type="text"
-                        class="formcontrol w-100 d-flex text-center"
-                        autocomplete="off"
-                        value="{{ row.monto }}"
-                        appAutoFocus
-                        (keyup)="presenter5($event, indice)"
-                        (blur)="caneditar5($event.target.value, indice)"
-                      />
                     </td>
-                    <!-- <td
-                      appAnchocol
-                      [ancho]="58"
-                      [ngClass]="{
-                        highlight: filaSel == indice,
-                        'f-w-900':
-                          row.tipo_registro == 3 || row.tipo_registro == 2
+                    <td appAnchocol [ancho]="100"
+                     [ngClass]="{
+                        highlight: filaSel == indice
                       }"
-                    >
-                      <mat-checkbox
-                        class="checktabla"
-                        [checked]="row.aplicatit == 0 ? false : true"
-                        (change)="$event ? cambioseltpri(row) : null"
-                        [disabled]="
-                          row.tipo_registro == 3 || titsel != '0' || solover
-                        "
-                      ></mat-checkbox>
-                    </td> -->
-                    <td
-                      appAnchocol
-                      [ancho]="35"
-                      [ngClass]="{
-                        highlight: filaSel == indice,
-                        'f-w-900':
-                          row.tipo_registro == 3 || row.tipo_registro == 2
-                      }"
-                    >
-                      <ng-container *ngIf="row.tipo_registro != 3">
-                        <div class="d-flex" style="justify-content: center">
-                          <button
-                            *ngIf="titsel == '0' && !solover"
-                            type="button"
-                            class="btn btn-mini2 btn-danger"
-                            placement="top"
-                            ngbTooltip="Eliminar"
-                            container="body"
-                            (click)="EliminarFila(indice)"
-                            (mouseup)="quitarfoco($event)"
-                          >
-                            <i class="fa fa-times icono-but"></i>
-                          </button>
-                        </div>
-                      </ng-container>
-                    </td>
-                    <!-- <td
-                      appAnchocol
-                      [ancho]="50"
-                      [ngClass]="{
-                        highlight: filaSel == indice,
-                        'f-w-900':
-                          row.tipo_registro == 3 || row.tipo_registro == 2||row.tipo_registro==4
-                      }"
-                    >
-                      <label
-                        class="switch"
-                        *ngIf="
-                          (row.tipo_registro == '0' ||
-                            row.tipo_registro == '1'||
-                            row.tipo_registro == '4') &&
-                          !solover
-                        "
                       >
-                        <input
-                          type="checkbox"
-                          id="togBtn"
-                          (click)="Cambioincluyefp(row)"
-                          [checked]="row.incluyefp == 1 ? true : false"
-                          [disabled]="titsel != '0'"
-                        />
-                        <div class="slider round"></div>
-                      </label>
-                    </td>
-                    <td
-                      appAnchocol
-                      [ancho]="250"
-                      [ngClass]="{
-                        highlight: filaSel == indice,
-                        'f-w-900':
-                          row.tipo_registro == 3 || row.tipo_registro == 2
-                      }"
-                    >
-                      <div
-                        *ngIf="row.incluyefp == 1 && !solover"
-                        class="d-flex"
-                      >
-                        <select
-                          class="cust-sel-celda"
-                          (change)="CambIndunif($event.target.value, row)"
-                          style="text-align: left"
-                          [disabled]="titsel != '0'"
-                        >
-                          <option [value]="">--Seleccionar--</option>
-                          <option
-                            *ngFor="let indunif of listaIndices"
-                            [value]="indunif.id_indice"
-                            [selected]="row.id_indice == indunif.id_indice"
-                          >
-                            {{
-                              indunif.id_indice + " - " + indunif.desc_indice
-                            }}
-                          </option>
-                        </select>
-                      </div>
-                    </td> -->
+                    <span class="badge bg-success pos-badge" style="padding-top: 4px;"
+                      *ngIf="row.monto==row.monto2">SI</span>
+                    <span class="badge bg-danger pos-badge" style="padding-top: 4px;"
+                      *ngIf="row.monto!==row.monto2">NO</span>
+                  </td>
                   </tr>
                 </ng-container>
                 <ng-container *ngIf="datasourcePri?.length <= 0">

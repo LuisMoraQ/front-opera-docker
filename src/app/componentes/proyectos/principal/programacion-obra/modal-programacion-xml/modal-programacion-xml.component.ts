@@ -108,6 +108,7 @@ export class ModalProgramacionXmlComponent implements OnInit {
 
   async ngOnInit() {
     await this.recuperarHitos();
+    console.log(this.dataPrincipal)
     this.tablaAuxiliar = JSON.parse(JSON.stringify(this.dataPrincipal));
     this.xmlTable.length = this.dataPrincipal.length;
   }

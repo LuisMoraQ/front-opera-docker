@@ -26,10 +26,11 @@ export class ModalProyectoComponent implements OnInit {
   mostrar_carga_todo = false;
   formProyecto = new UntypedFormGroup({
     descripcion: new UntypedFormControl('', [Validators.required]),
+    descripcion2: new UntypedFormControl('', [Validators.required]),
     id_clasificacion: new UntypedFormControl('', [Validators.required]),
     modalidad: new UntypedFormControl('', [Validators.required]),
     id_grupo: new UntypedFormControl('0', [Validators.required]),
-    moneda: new UntypedFormControl('', [Validators.required]),
+    moneda: new UntypedFormControl('0', [Validators.required]),
     estado: new UntypedFormControl('', [Validators.required]),
     cod_pais: new UntypedFormControl(227, []),
     departamento: new UntypedFormControl('', []),
@@ -45,6 +46,7 @@ export class ModalProyectoComponent implements OnInit {
     fecha_culmina: new UntypedFormControl('', [Validators.required,  this.fechaElaboracionValidator()]),
   })
   get descripcion(): UntypedFormControl { return this.formProyecto.get('descripcion') as UntypedFormControl }
+  get descripcion2(): UntypedFormControl { return this.formProyecto.get('descripcion2') as UntypedFormControl }
   get id_clasificacion(): UntypedFormControl { return this.formProyecto.get('id_clasificacion') as UntypedFormControl }
   get modalidad(): UntypedFormControl { return this.formProyecto.get('modalidad') as UntypedFormControl }
   get id_grupo(): UntypedFormControl { return this.formProyecto.get('id_grupo') as UntypedFormControl }
@@ -80,6 +82,7 @@ export class ModalProyectoComponent implements OnInit {
   OtroPais:boolean=false
   calculandofecha=false;
   actlista=false;
+  datos2
   constructor(private modal: NgbActiveModal,
     private principalService: PrincipalService,
     private configuracionService: ConfiguracionService,
@@ -94,6 +97,22 @@ export class ModalProyectoComponent implements OnInit {
     if(!this.editar){
       this.estado.setValue(0);
       this.estado.disable();
+    }else if(this.editar&&this.ver){
+       const detalleProyecto = await this.principalService.recuperarDatosProyecto({id_proyecto: this.datos.id_proyecto})
+       detalleProyecto.monedanom = await  this.monedas.find((item)=>item.id_moneda==detalleProyecto.moneda).moneda
+       detalleProyecto.modalidadnom=  this.modalidades.find((item)=>item.id==detalleProyecto.modalidad).nombre
+       detalleProyecto.estadonom=  this.estados.find((item)=>item.id==detalleProyecto.estado).nombre
+       const prueba2 = await this.grupos.find((item)=>item.id_grupo==detalleProyecto.id_grupo)
+       detalleProyecto.gruposnom= prueba2? prueba2.descripcion:''
+       this.datos2 = detalleProyecto
+       this.modalidad.setValue(detalleProyecto.modalidad);
+       this.moneda.setValue(detalleProyecto.moneda);
+       this.estado.setValue(detalleProyecto.estado);
+       this.id_grupo.setValue(detalleProyecto.id_grupo);
+       this.id_clasificacion.setValue(detalleProyecto.id_clasificacion);
+       this.direccion.setValue(detalleProyecto.direccion);
+       this.cod_pais.setValue(detalleProyecto.cod_pais);
+       this.distrito.setValue(detalleProyecto.id_deptact+'-'+detalleProyecto.id_provact+'-'+detalleProyecto.id_distact);
     }
   }
   async CambiarPais(id) {
@@ -133,14 +152,14 @@ export class ModalProyectoComponent implements OnInit {
     const provincia = this.provincia.value.split('-')
     this.distritos = await this.configuracionService.Distrito(this.departamento.value, provincia[1])
   }
-  async almacenar() {
-    if (this.editar) {
+  async almacenar(value=0) {
+    if (this.editar&&value==0) {
       await this.actualizar()
-    } else {
-      await this.guardar()
+    }else{
+      await this.guardar(value)
     }
   }
-  async guardar() {
+  async guardar(value) {
     try {
       if (this.formProyecto.invalid) {
         this.formProyecto.markAllAsTouched()
@@ -148,8 +167,10 @@ export class ModalProyectoComponent implements OnInit {
         return
       } else {
         this.mostrar_carga_todo = true;
+        const principal= value==2? this.datos.id_proyecto :''
         let descpasa=this.descripcion.value.toString().toUpperCase().trim().replace(/\s+/g, ' ')//quitar saltos y espacios, solo mayuscula
         const dataProyecto = {
+          id_principal:principal,
           cui:this.cod_pais.value===227? '':this.otrodepartamento.value+'|'+ this.otraprovincia.value+'|'+ this.otrodistrito.value,
           descripcion: descpasa,
           id_clasificacion: this.id_clasificacion.value,
@@ -168,6 +189,30 @@ export class ModalProyectoComponent implements OnInit {
           fuente: this.fuente,
         }
         const resp = await this.principalService.guardarProyecto(dataProyecto)
+        const id_nuevo=resp.idproy
+        if(value!==2){
+            let descpasa=this.descripcion2.value.toString().toUpperCase().trim().replace(/\s+/g, ' ')//quitar saltos y espacios, solo mayuscula
+            const dataProyecto = {
+              id_principal: id_nuevo,
+              cui:this.cod_pais.value===227? '':this.otrodepartamento.value+'|'+ this.otraprovincia.value+'|'+ this.otrodistrito.value,
+              descripcion: descpasa,
+              id_clasificacion: this.id_clasificacion.value,
+              modalidad: this.modalidad.value,
+              id_grupo: this.id_grupo.value,
+              moneda: this.moneda.value,
+              estado: this.estado.value,
+              cod_pais: this.cod_pais.value,
+              id_localidad: this.distrito.value,
+              direccion: this.direccion.value,
+              fecha_elaboracion: this.fecha_elaboracion.value ? moment(this.fecha_elaboracion.value).format('YYYY-MM-DD') : '',
+              plazo: this.plazo.value,
+              fecha_inicio: this.fecha_inicio.value ? moment(this.fecha_inicio.value).format('YYYY-MM-DD') : '',
+              fecha_culmina: this.fecha_culmina.value ? moment(this.fecha_culmina.value).format('YYYY-MM-DD') : '',
+              id_usuario: this.idUsuario,
+              fuente: this.fuente,
+            }
+            const resp2 =await this.principalService.guardarProyecto(dataProyecto)
+        }
         this.mostrar_carga_todo = false;
         if (resp.id == "1") {
           this.closeModal('ok')
@@ -181,7 +226,6 @@ export class ModalProyectoComponent implements OnInit {
       SwalService.error(e)
     }
   }
-
   async actualizar() {
   }
   closeModal(result: any = null) {
@@ -291,29 +335,22 @@ export class ModalProyectoComponent implements OnInit {
       event.target.blur();
     }
   }
-
-
   fechaElaboracionValidator(): ValidatorFn {
     return (control: AbstractControl): ValidationErrors | null => {
       if (!control.value) {
         return null; // Si no hay valor, no aplicar validación
       }
-  
       const fechaElaboracion = new Date(control.value);
       const fechaActual = new Date();
-  
       // Calcular las fechas límites
       const fechaLimiteInferior = new Date(fechaActual);
       fechaLimiteInferior.setFullYear(fechaActual.getFullYear() - 25); // 25 años antes de la fecha actual
-  
       const fechaLimiteSuperior = new Date(fechaActual);
       fechaLimiteSuperior.setFullYear(fechaActual.getFullYear() + 25); // 25 años después de la fecha actual
-  
       // Validación: la fecha debe estar dentro del rango
       if (fechaElaboracion < fechaLimiteInferior || fechaElaboracion > fechaLimiteSuperior) {
         return { fechaInvalida: 'La fecha debe estar entre 25 años antes y 25 años después de la fecha actual.' };
       }
-  
       return null; // Si es válida
     };
 }

@@ -57,7 +57,7 @@
           </div>
         </div>&nbsp;&nbsp;
         &nbsp;&nbsp;
-        <button type="button" class="btn btn-mini btn-success"
+        <!-- <button type="button" class="btn btn-mini btn-success"
           container="body" (click)="Vincular()" (mouseup)="quitarfoco($event);">
           <i class="fa  fa-code-fork fa-rotate-270"></i>Vincular
         </button>
@@ -68,7 +68,7 @@
         <button type="button" class="btn btn-mini btn-inverse"
           container="body" (click)="ReempUnd()" (mouseup)="quitarfoco($event);">
           <i class="fa fa-retweet"></i>Cambiar Unidad
-        </button>
+        </button> -->
       </div>
       <div class="col-sm-6" style="margin-bottom: 10px;">
         <mat-form-field class="mff-reduc w-100 alto-35 field-busqueda" appearance="outline">
@@ -83,8 +83,8 @@
         <table class="table-bordered tab-10">
           <thead>
             <tr class="headsticky header-custom">
-              <th *ngIf="!solover" appAnchocol [ancho]="40">Vincula</th>
-              <th *ngIf="!solover" appAnchocol [ancho]="30">S</th>
+              <!-- <th *ngIf="!solover" appAnchocol [ancho]="40">Vincula</th> -->
+              <th *ngIf="!solover" appAnchocol [ancho]="70">Nro</th>
               <th appAnchocol [ancho]="50" [ngClass]="{'cust-col-20': codsoloiu, 'cust-col-50': !codsoloiu}" [hidden]="!mcodigo">{{codsoloiu?'IU':'Codigo'}}</th>
               <th appAnchocol [ancho]="150" [detalle]="true">
                 <div class="d-flex">
@@ -118,16 +118,15 @@
             <ng-container *ngIf="tablaacusel.length>0">
               <tr *ngFor="let row of tablaacusel | filtroAcu: busqueda;let indice=index;" [hidden]="row.mostrar == 0" (click)="cambindiceselacu(row.aux)" 
               [ngClass]="{'highlight': filaSelacu == row.aux,'filagrupo':row.unidad==''}">
-                <td *ngIf="!solover" appAnchocol [ancho]="40" style="cursor: pointer;">
+                <!-- <td *ngIf="!solover" appAnchocol [ancho]="40" style="cursor: pointer;">
                   <label class="switch" *ngIf="row.unidad!=''">
                     <input type="checkbox" id="togBtn" (click)="Cambioselvinc(row)" [checked]="row.selvin==1?true:false" [disabled]="disabAcciones">
                     <div class="slider round">
                     </div>
                   </label>
-                </td>
-                <td *ngIf="!solover" appAnchocol [ancho]="30" style="cursor: pointer;">
-                    <span *ngIf="row.unidad!='' && !colselacu">{{row.num_det}}</span>
-                    <mat-checkbox [disabled]="row.selvin==1" *ngIf="row.num_det>0 && colselacu" class="checktabla" [checked]="row.seleccion==0?false:true" (change)="$event ? Cambioseltacu(row) : null"></mat-checkbox>
+                </td> -->
+                <td *ngIf="!solover" appAnchocol [ancho]="70" style="cursor: pointer;">
+                    <span *ngIf="row.unidad!==''">{{row.indiceLocal}}</span>
                     <a *ngIf="row.unidad=='' && row.icomost=='0'" style="color:#06bb06; width: 14px;" (click)="toggleOn(row.id_tipo_insumo,row)">
                         <i class="icofont icofont-caret-down"></i>
                     </a>
@@ -151,14 +150,11 @@
                   <div class="float-right w-100">{{row.cantidad | number: mask_metrado}}</div>
                 </td>
                 <td class="cellsinpadding" appAnchocol [ancho]="90">
-                  <div *ngIf="row.editar2==0" style="cursor: pointer;" class="float-right w-100" (click)="editarceldat3(row)">
+                  <div style="cursor: pointer;" class="float-right w-100">
                     <span *ngIf="row.unidad!=''" class="float-left">{{moneda}}<i *ngIf="(row.advceros===1 || row.precio==0) && row.unidad!=''" class="fa fa-exclamation-triangle c-alert"></i></span>
                     <span class="float-right">{{row.precio | number: mask_precio}}</span>
                   </div>
-                  <input *ngIf="row.editar2==1"
-                    [textMask]="this.dec_precio == 4? this.formService.maskUsAmountDecimal4 : (this.dec_precio==3? this.formService.maskUsAmountDecimal3:this.formService.maskUsAmountDecimal2)"
-                    type="text" class="formcontrol w-100 d-flex text-center" autocomplete="off" value="{{row.precio}}" appAutoFocus
-                    (keyup)="presentert3($event,row)" (blur)="caneditarceldat3($event.target.value,row)">
+                
                 </td>
                 <td class="cellsinpadding" appAnchocol [ancho]="100">
                   <span class="float-left">{{moneda}}</span>

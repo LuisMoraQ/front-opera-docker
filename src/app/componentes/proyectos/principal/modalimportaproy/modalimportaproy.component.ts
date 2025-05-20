@@ -270,19 +270,31 @@ export class ModalimportaproyComponent implements OnInit {
         }
         console.timeEnd('timeverif')
         console.time('timeimp')
+        // const tabla1=JSON.stringify(this.datapresu);
+        // const tabla2=JSON.stringify(this.datadetalle);
+        // const tabla3=JSON.stringify(this.datasubp);
+        // const dataProyecto=JSON.stringify({
+        //   'id_usuario': this.idUsuario,
+        //   'id_proyecto': this.idProyecto,
+        //   'datos1':tabla1,
+        //   'datos2':tabla2,
+        //   'datos3':tabla3,
+        // });
+        // const resp = await this.presuservice.importaPresuTop(dataProyecto)
+
         const tabla1=JSON.stringify(this.datapresu);
         const tabla2=JSON.stringify(this.datadetalle);
         const tabla3=JSON.stringify(this.datasubp);
-        const tablaund=JSON.stringify(this.arrund);
+
         const dataProyecto=JSON.stringify({
           'id_usuario': this.idUsuario,
           'id_proyecto': this.idProyecto,
           'datos1':tabla1,
-          'datos4':tabla2,
-          'datos7':tabla3,
-          'datosund':tablaund,
+          'datos2':tabla2,
+          'datos3':tabla3,
         });
-        const resp = await this.presuservice.ImportarPresupuestoRap(dataProyecto)
+        console.log(dataProyecto)
+        const resp = await this.presuservice.importaPresuTop(dataProyecto)
         if(resp.id=='0'){
           this.mostrar_carga_todo = false;
           SwalService.error('Advertencia', resp.mensaje);

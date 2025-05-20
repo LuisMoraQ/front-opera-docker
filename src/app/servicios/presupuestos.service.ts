@@ -257,6 +257,18 @@ export class PresupuestosService {
       catchError(err => throwError(err))
     ).toPromise()
   }
+  importaPresuTop (body: any): any {
+    const url = this.enviUrl + '/api/presupuesto/importaPresuTop';
+    return this.http.post<any>(url, body, { headers: this.httpHeaders }).pipe(
+      map(res => {
+        if (!res) {
+          throw new Error
+        }
+        return res
+      }),
+      catchError(err => throwError(err))
+    ).toPromise()
+  }
   ImportarPresuP1 (body: any): any {
     const url = this.enviUrl + '/api/presupuesto/importaPresuP1';
     return this.http.post<any>(url, body, { headers: this.httpHeaders }).pipe(
@@ -437,6 +449,38 @@ export class PresupuestosService {
       formData.append(key, value as string);
     });
     const url = this.enviUrl + '/api/presupuesto/recalculaMontosPresu';
+    return this.http.post<any>(url, formData).pipe(
+      map(res => {
+        if (!res) {
+          throw new Error
+        }
+        return res
+      }),
+      catchError(err => throwError(err))
+    ).toPromise()
+  }
+  limpiarTopPresupuesto (params = {}): any {
+    let formData: FormData = new FormData();
+    Object.entries(params).forEach(([key, value]) => {
+      formData.append(key, value as string);
+    });
+    const url = this.enviUrl + '/api/presupuesto/limpiarTopPresupuesto';
+    return this.http.post<any>(url, formData).pipe(
+      map(res => {
+        if (!res) {
+          throw new Error
+        }
+        return res
+      }),
+      catchError(err => throwError(err))
+    ).toPromise()
+  }
+  listarTopPresupuesto (params = {}): any {
+    let formData: FormData = new FormData();
+    Object.entries(params).forEach(([key, value]) => {
+      formData.append(key, value as string);
+    });
+    const url = this.enviUrl + '/api/presupuesto/listarTopPresupuesto';
     return this.http.post<any>(url, formData).pipe(
       map(res => {
         if (!res) {

@@ -1,30 +1,140 @@
 <div class="row">
-    <div class="col-6 col-md-6">
+  <div  [ngClass]="{
+    'col-sm-12 col-md-12 col-lg-12': expandido === 'div1',
+    'col-sm-6 col-md-6 col-lg-6': expandido !== 'div1'
+    }"  *ngIf="expandido === 'ninguno' || expandido === 'div1'">
+    <div class="titulo-contenido">
+      <h2>Paises</h2>
+    </div>
+    <app-card class="card col-md-12 card-principal">
+      <div class="row justify-content-between p-r-15">
+        <div class="col-sm-6" style="margin-bottom: 10px;">
+          <mat-form-field class="mff-reduc w-100 alto-35 field-busqueda" appearance="outline">
+            <mat-label>Buscar</mat-label>
+            <input matInput type="text" [(ngModel)]="busqueda" autocomplete="off">
+            <button *ngIf="busqueda" matSuffix mat-icon-button aria-label="Clear" (click)="limpiarfiltro()">
+              <mat-icon>close</mat-icon>
+            </button>
+          </mat-form-field>
+        </div>
+
+        <div class="content">
+          <button type="button" class="btn btn-success btn-sm light ripple m-b-10 m-r-5" (click)="openModal(1)"
+            (mouseup)="quitarfoco($event);">
+            <i class="fa fa-plus"></i>Agregar Pais
+          </button>
+          <button type="button" class="btn btn-outline-secondary btn-sm light ripple  m-b-10 float-right"
+              (mouseup)="quitarfoco($event);"  [ngbTooltip]="expandido === 'div1' ? 'Reducir' : 'Expandir'"
+              (click)="toggleExpand('div1')" container="body">
+              <i class="fa  mr-0"
+                  [ngClass]="{'fa-long-arrow-right': expandido !== 'div1','fa-long-arrow-left': expandido === 'div1'}"></i>
+          </button>
+        </div>
+      </div>
+      <div [style.height.px]="height" class="tabla-limp">
+        <table class="table-bordered">
+            <thead>
+                <tr class="headsticky header-custom">
+                    <th appAnchocol [ancho]="80">N°</th>
+                    <th appAnchocol [ancho]="80">Abrev</th>
+                    <th appAnchocol [ancho]="200" [detalle]="true">Pais</th>
+                    <th appAnchocol [ancho]="68">Codigo</th>
+                    <th appAnchocol [ancho]="68">Moneda</th>
+                    <th appAnchocol [ancho]="90">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                <ng-container *ngIf="dataSource.length>0">
+                    <tr *ngFor="let row of dataSource | filtoTablaDesc: busqueda: 'pais' let i = index"
+                        [ngClass]="{'highlight': fila_sel == i}" (click)="cambindicesel(i)">
+                        <td appAnchocol [ancho]="80">
+                          {{i+1}}
+                        </td>
+                        <td appAnchocol [ancho]="80">
+                          {{row.clave}}
+                        </td>
+                        <td class="text-left" appAnchocol [ancho]="200" [detalle]="true">
+                          <div class="recortatext" placement="top" ngbTooltip="{{row.descripcion}}" container="body">
+                            {{row.pais}}
+                          </div>
+                        </td>
+                        <td appAnchocol [ancho]="68">
+                          {{row.codigo}}
+                        </td>
+                        <td appAnchocol [ancho]="68">
+                          <div class="recortatext" placement="top" container="body">
+                              {{FindMoneda(row.id_moneda)}}
+                          </div>
+                        </td>
+                        <td appAnchocol [ancho]="90">
+                          <div class="d-flex">
+                            <button class="btn btn-mini btn-info" placement="top" ngbTooltip="Ver" container="body"
+                            (click)="openModal(1,row, false, true)" (mouseup)="quitarfoco($event);">
+                              <i class="fa fa-search icono-but"></i>
+                            </button>
+                            <div *ngIf="row.fuente==0" class="m-l-2">
+                              <i class="fa fa-lock fa-2x icono-but  text-danger"
+                                  style="margin-top: 1px;"></i>
+                            </div>
+                            <button class="btn btn-mini btn-primary" placement="top" ngbTooltip="Editar" container="body"
+                              *ngIf="row.fuente!=0" (click)="openModal(1,row, true)" (mouseup)="quitarfoco($event);">
+                              <i class="fa fa-edit icono-but"></i>
+                            </button>
+                            <button class="btn btn-mini btn-danger" placement="top" ngbTooltip="Eliminar" container="body"
+                              *ngIf="row.fuente!=0" (click)="eliminarPais(row)" (mouseup)="quitarfoco($event);">
+                              <i class="fa fa-remove icono-but"></i>
+                            </button>
+                          </div>
+                        </td>
+                    </tr>
+                </ng-container>
+                <ng-container *ngIf="dataSource.length<=0">
+                    <tr>
+                        <td class="mat-cell text-center" colspan="8">
+                            <label *ngIf="!buscando">No se encontraron resultados</label>
+                            <div *ngIf="buscando" class="preloader3 loader-block">
+                                <div class="circ1"></div>
+                                <div class="circ2"></div>
+                                <div class="circ3"></div>
+                                <div class="circ4"></div>
+                            </div>
+                        </td>
+                    </tr>
+                </ng-container>
+            </tbody>
+        </table>
+      </div>
+    </app-card>
+  </div>
+  <div  [ngClass]="{
+      'col-sm-12 col-md-12 col-lg-12': expandido === 'div2',
+      'col-sm-6 col-md-6 col-lg-6': expandido !== 'div2'
+      }"  *ngIf="expandido === 'ninguno' || expandido === 'div2'">
       <div class="titulo-contenido">
-        <h2>Paises</h2>
+        <h2>Monedas</h2>
       </div>
       <app-card class="card col-md-12 card-principal">
         <div class="row justify-content-between p-r-15">
           <div class="col-sm-6" style="margin-bottom: 10px;">
             <mat-form-field class="mff-reduc w-100 alto-35 field-busqueda" appearance="outline">
               <mat-label>Buscar</mat-label>
-              <input matInput type="text" [(ngModel)]="busqueda" autocomplete="off"><!-- (keyup)="applyFilterPrinc($event)" -->
-              <button *ngIf="busqueda" matSuffix mat-icon-button aria-label="Clear" (click)="limpiarfiltro()">
+              <input matInput type="text" [(ngModel)]="busqueda2" autocomplete="off">
+              <button *ngIf="busqueda2" matSuffix mat-icon-button aria-label="Clear" (click)="limpiarfiltro2()">
                 <mat-icon>close</mat-icon>
               </button>
             </mat-form-field>
           </div>
   
           <div class="content">
-            <button type="button" class="btn btn-success btn-sm light ripple m-b-10 m-r-5" (click)="openModal(1)"
+            <button type="button" class="btn btn-success btn-sm light ripple m-b-10 m-r-5" (click)="openModal2(1)"
               (mouseup)="quitarfoco($event);">
-              <i class="fa fa-plus"></i>Agregar Pais
+              <i class="fa fa-plus"></i>Agregar Moneda
             </button>
             <button type="button" class="btn btn-outline-secondary btn-sm light ripple  m-b-10 float-right"
-                (mouseup)="quitarfoco($event);" [ngbTooltip]="maximizar ? 'Reducir' : 'Expandir'"
-                (click)="expandir()" container="body">
+                (mouseup)="quitarfoco($event);"  [ngbTooltip]="expandido === 'div2' ? 'Reducir' : 'Expandir'"
+                (click)="toggleExpand('div2')" container="body">
                 <i class="fa  mr-0"
-                    [ngClass]="{'fa-long-arrow-right': !maximizar,'fa-long-arrow-left': maximizar}"></i>
+                  [ngClass]="{'fa-long-arrow-right': expandido !== 'div2','fa-long-arrow-left': expandido === 'div2'}"></i>
             </button>
           </div>
         </div>
@@ -34,40 +144,35 @@
                   <tr class="headsticky header-custom">
                       <th appAnchocol [ancho]="80">N°</th>
                       <th appAnchocol [ancho]="80">Abrev</th>
-                      <th appAnchocol [ancho]="200" [detalle]="true">Pais</th>
-                      <th appAnchocol [ancho]="68">Codigo</th>
-                      <th appAnchocol [ancho]="68">Moneda</th>
+                      <th appAnchocol [ancho]="200" [detalle]="true">Moneda</th>
+                      <th appAnchocol [ancho]="68">Simbolo</th>
                       <th appAnchocol [ancho]="90">Acciones</th>
                   </tr>
               </thead>
               <tbody>
-                  <ng-container *ngIf="dataSource.length>0">
-                      <tr *ngFor="let row of dataSource | filtoTablaDesc: busqueda; let i = index"
-                          [ngClass]="{'highlight': fila_sel == i}" (click)="cambindicesel(i)">
+                  <ng-container *ngIf="dataSource2.length>0">
+                      <tr *ngFor="let row of dataSource2 | filtoTablaDesc: busqueda2: 'moneda'; let i = index"
+                          [ngClass]="{'highlight': fila_sel2 == i}" (click)="cambindicesel2(i)">
                           <td appAnchocol [ancho]="80">
                             {{i+1}}
                           </td>
                           <td appAnchocol [ancho]="80">
-                            {{row.clave}}
+                            {{row.abreviatura}}
                           </td>
                           <td class="text-left" appAnchocol [ancho]="200" [detalle]="true">
                             <div class="recortatext" placement="top" ngbTooltip="{{row.descripcion}}" container="body">
-                              {{row.pais}}
+                              {{row.moneda}}
                             </div>
                           </td>
                           <td appAnchocol [ancho]="68">
-                            {{row.codigo}}
-                          </td>
-                          <td appAnchocol [ancho]="68">
-                            <div class="label-main" style="margin: 1px;">
-                              <label *ngIf="row.activo=='1'" class="label label-success ancho-50p">Activo</label>
-                              <label *ngIf="row.activo=='0'" class="label label-danger">Inactivo</label>
-                            </div>
+                              <div class="recortatext" placement="top" ngbTooltip="{{row.descripcion}}" container="body">
+                                  {{row.simbolo}}
+                              </div>
                           </td>
                           <td appAnchocol [ancho]="90">
                             <div class="d-flex">
                               <button class="btn btn-mini btn-info" placement="top" ngbTooltip="Ver" container="body"
-                              (click)="openModal(1,row, false, true)" (mouseup)="quitarfoco($event);">
+                              (click)="openModal2(1,row, false, true)" (mouseup)="quitarfoco($event);">
                                 <i class="fa fa-search icono-but"></i>
                               </button>
                               <div *ngIf="row.fuente==0" class="m-l-2">
@@ -75,11 +180,11 @@
                                     style="margin-top: 1px;"></i>
                               </div>
                               <button class="btn btn-mini btn-primary" placement="top" ngbTooltip="Editar" container="body"
-                                *ngIf="row.fuente!=0" (click)="openModal(1,row, true)" (mouseup)="quitarfoco($event);">
+                                *ngIf="row.fuente!=0" (click)="openModal2(1,row, true)" (mouseup)="quitarfoco($event);">
                                 <i class="fa fa-edit icono-but"></i>
                               </button>
                               <button class="btn btn-mini btn-danger" placement="top" ngbTooltip="Eliminar" container="body"
-                                *ngIf="row.fuente!=0" (click)="eliminarUnidadDeMedida(1,row)" (mouseup)="quitarfoco($event);">
+                                *ngIf="row.fuente!=0" (click)="eliminarMoneda(row)" (mouseup)="quitarfoco($event);">
                                 <i class="fa fa-remove icono-but"></i>
                               </button>
                             </div>
@@ -103,162 +208,139 @@
           </table>
         </div>
       </app-card>
-    </div>
-    <div class="col-6 col-md-6">
-        <div class="titulo-contenido">
-          <h2>Monedas</h2>
-        </div>
-        <app-card class="card col-md-12 card-principal">
-          <div class="row justify-content-between p-r-15">
-            <div class="col-sm-6" style="margin-bottom: 10px;">
-              <mat-form-field class="mff-reduc w-100 alto-35 field-busqueda" appearance="outline">
-                <mat-label>Buscar</mat-label>
-                <input matInput type="text" [(ngModel)]="busqueda" autocomplete="off"><!-- (keyup)="applyFilterPrinc($event)" -->
-                <button *ngIf="busqueda2" matSuffix mat-icon-button aria-label="Clear" (click)="limpiarfiltro()">
-                  <mat-icon>close</mat-icon>
-                </button>
-              </mat-form-field>
-            </div>
-    
-            <div class="content">
-              <button type="button" class="btn btn-success btn-sm light ripple m-b-10 m-r-5" (click)="openModal(1)"
-                (mouseup)="quitarfoco($event);">
-                <i class="fa fa-plus"></i>Agregar Moneda
-              </button>
-              <button type="button" class="btn btn-outline-secondary btn-sm light ripple  m-b-10 float-right"
-                  (mouseup)="quitarfoco($event);" [ngbTooltip]="maximizar ? 'Reducir' : 'Expandir'"
-                  (click)="expandir()" container="body">
-                  <i class="fa  mr-0"
-                      [ngClass]="{'fa-long-arrow-right': !maximizar,'fa-long-arrow-left': maximizar}"></i>
-              </button>
-            </div>
-          </div>
-          <div [style.height.px]="height" class="tabla-limp">
-            <table class="table-bordered">
-                <thead>
-                    <tr class="headsticky header-custom">
-                        <th appAnchocol [ancho]="80">N°</th>
-                        <th appAnchocol [ancho]="80">Abrev</th>
-                        <th appAnchocol [ancho]="200" [detalle]="true">Moneda</th>
-                        <th appAnchocol [ancho]="68">Simbolo</th>
-                        <th appAnchocol [ancho]="90">Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <ng-container *ngIf="dataSource2.length>0">
-                        <tr *ngFor="let row of dataSource2 | filtoTablaDesc: busqueda2; let i = index"
-                            [ngClass]="{'highlight': fila_sel2 == i}" (click)="cambindicesel(i)">
-                            <td appAnchocol [ancho]="80">
-                              {{i+1}}
-                            </td>
-                            <td appAnchocol [ancho]="80">
-                              {{row.abreviatura}}
-                            </td>
-                            <td class="text-left" appAnchocol [ancho]="200" [detalle]="true">
-                              <div class="recortatext" placement="top" ngbTooltip="{{row.descripcion}}" container="body">
-                                {{row.moneda}}
-                              </div>
-                            </td>
-                            <td appAnchocol [ancho]="68">
-                                <div class="recortatext" placement="top" ngbTooltip="{{row.descripcion}}" container="body">
-                                    {{row.simbolo}}
-                                </div>
-                            </td>
-                            <td appAnchocol [ancho]="90">
-                              <div class="d-flex">
-                                <button class="btn btn-mini btn-info" placement="top" ngbTooltip="Ver" container="body"
-                                (click)="openModal(1,row, false, true)" (mouseup)="quitarfoco($event);">
-                                  <i class="fa fa-search icono-but"></i>
-                                </button>
-                                <div *ngIf="row.fuente==0" class="m-l-2">
-                                  <i class="fa fa-lock fa-2x icono-but  text-danger"
-                                      style="margin-top: 1px;"></i>
-                                </div>
-                                <button class="btn btn-mini btn-primary" placement="top" ngbTooltip="Editar" container="body"
-                                  *ngIf="row.fuente!=0" (click)="openModal(1,row, true)" (mouseup)="quitarfoco($event);">
-                                  <i class="fa fa-edit icono-but"></i>
-                                </button>
-                                <button class="btn btn-mini btn-danger" placement="top" ngbTooltip="Eliminar" container="body"
-                                  *ngIf="row.fuente!=0" (click)="eliminarUnidadDeMedida(1,row)" (mouseup)="quitarfoco($event);">
-                                  <i class="fa fa-remove icono-but"></i>
-                                </button>
-                              </div>
-                            </td>
-                        </tr>
-                    </ng-container>
-                    <ng-container *ngIf="dataSource.length<=0">
-                        <tr>
-                            <td class="mat-cell text-center" colspan="8">
-                                <label *ngIf="!buscando">No se encontraron resultados</label>
-                                <div *ngIf="buscando" class="preloader3 loader-block">
-                                    <div class="circ1"></div>
-                                    <div class="circ2"></div>
-                                    <div class="circ3"></div>
-                                    <div class="circ4"></div>
-                                </div>
-                            </td>
-                        </tr>
-                    </ng-container>
-                </tbody>
-            </table>
-          </div>
-        </app-card>
-      </div>
   </div>
-  <app-modal-basic [dialogClass]="'modal-md'" #modalPais>
-    <div class="app-modal-header">
-      <h4 class="modal-title tit-modal1">
-        <b *ngIf="!editar && !ver">Agregar Pais</b>
-        <b *ngIf="editar && !ver">Editar Pais</b>
-        <b *ngIf="ver">Datos Pais</b>
-      </h4>
-      <button type="button" class="close basic-close" (click)="closeModal()">
-        <span aria-hidden="true">&times;</span>
-      </button>
-    </div>
-    <div class="app-modal-body">
-      <div class="row" *ngIf="ver; else editarGuardar">
-        <label class="col-sm-3 col-form-label">Pais :</label>
-        <div class="col-sm-9">
-          <label id="tx_area2" class="col-sm-12 col-form-label"><b>{{datos?.pais}}</b></label>
-        </div>
-        <label class="col-sm-3 col-form-label">Abreviatura :</label>
-        <div class="col-sm-9">
-          <label id="tx_area2" class="col-sm-12 col-form-label"><b>{{datos?.clave}}</b></label>
-        </div>
-        <label class="col-sm-3 col-form-label">Codigo :</label>
-        <div class="col-sm-9">
-          <label id="tx_area2" class="col-sm-12 col-form-label"><b>{{datos?.codigo}}</b></label>
-        </div>
-        <label class="col-sm-3 col-form-label">Moneda :</label>
-        <div class="col-sm-9">
-          <label id="tx_area2" class="col-sm-12 col-form-label"><b>{{datos?.id_moneda}}</b></label>
-        </div>
+</div>
+<app-modal-basic [dialogClass]="'modal-md'" #modalPais>
+  <div class="app-modal-header">
+    <h4 class="modal-title tit-modal1">
+      <b *ngIf="!editar && !ver">Agregar Pais</b>
+      <b *ngIf="editar && !ver">Editar Pais</b>
+      <b *ngIf="ver">Datos Pais</b>
+    </h4>
+    <button type="button" class="close basic-close" (click)="closeModal()">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="app-modal-body">
+    <div class="row" *ngIf="ver; else editarGuardar">
+      <label class="col-sm-3 col-form-label">Pais :</label>
+      <div class="col-sm-9">
+        <label id="tx_area2" class="col-sm-12 col-form-label"><b>{{datos?.pais}}</b></label>
       </div>
-      <ng-template #editarGuardar>
-        <form [formGroup]="formPaises">
-            <div class="row ">
-                <mat-form-field appearance="outline" class="mff-reduc col-sm-12 col-12">
-                    <mat-label>Abreviatura</mat-label>
-                    <input matInput type="text" class="mayuscula" autocomplete="off" maxlength="10" formControlName="abrev" id="inpabr"
-                      [maxlength]="10" class="mayuscula">
-                </mat-form-field>
-            </div>
-        </form>
-      </ng-template>
-    </div>
-    <div class="app-modal-footer w-100">
-      <div class="row px-3">
-        <button type="button" class="btn btn-danger btn-sm" (click)="closeModal()"><i
-            class="fa fa-times"></i>Cerrar</button>
-        <button type="button" *ngIf="!ver" class="btn btn-success btn-sm" (click)="almacenar()"><i
-            class="fa fa-check"></i>Guardar</button>
+      <label class="col-sm-3 col-form-label">Abreviatura :</label>
+      <div class="col-sm-9">
+        <label id="tx_area2" class="col-sm-12 col-form-label"><b>{{datos?.clave}}</b></label>
+      </div>
+      <label class="col-sm-3 col-form-label">Codigo :</label>
+      <div class="col-sm-9">
+        <label id="tx_area2" class="col-sm-12 col-form-label"><b>{{datos?.codigo}}</b></label>
+      </div>
+      <label class="col-sm-3 col-form-label">Moneda :</label>
+      <div class="col-sm-9">
+        <label id="tx_area2" class="col-sm-12 col-form-label"><b>{{FindMoneda(datos?.id_moneda)}}</b></label>
       </div>
     </div>
-  </app-modal-basic>
+    <ng-template #editarGuardar>
+      <form [formGroup]="formPaises">
+          <div class="row ">
+              <mat-form-field appearance="outline" class="mff-reduc col-sm-12 col-12 mt-2">
+                  <mat-label>Pais</mat-label>
+                  <input matInput type="text" class="mayuscula" autocomplete="off" maxlength="50" formControlName="pais" 
+                    [maxlength]="50" class="mayuscula">
+              </mat-form-field>
+              <mat-form-field appearance="outline" class="mff-reduc col-sm-12 col-12 mt-2">
+                  <mat-label>Abreviatura</mat-label>
+                  <input matInput type="text" class="mayuscula" autocomplete="off" maxlength="10" formControlName="abrev" 
+                    [maxlength]="10" class="mayuscula">
+              </mat-form-field>
+              <mat-form-field appearance="outline" class="mff-reduc col-sm-12 col-12 mt-2">
+                  <mat-label>Codigo</mat-label>
+                  <input matInput type="text" class="mayuscula" autocomplete="off" maxlength="10" formControlName="codigo" 
+                    [maxlength]="10" class="mayuscula">
+              </mat-form-field>
+              <div class="col-12">
+                  <label>Moneda :</label>
+                  <mat-form-field class="mff-reduc my-form-field w-100 col-12 col-sm-10" appearance="outline">
+                    <select matNativeControl formControlName="moneda">
+                      <option value="">--Seleccionar--</option>
+                      <option *ngFor="let mon of dataSource2"  value="{{mon.id_moneda}}">{{mon.moneda}}
+                      </option>
+                    </select>
+                  </mat-form-field>
+              </div>
+          </div>
+      </form>
+    </ng-template>
+  </div>
+  <div class="app-modal-footer w-100">
+    <div class="row px-3">
+      <button type="button" class="btn btn-danger btn-sm" (click)="closeModal()"><i
+          class="fa fa-times"></i>Cerrar</button>
+      <button type="button" *ngIf="!ver" class="btn btn-success btn-sm" (click)="almacenar()"><i
+          class="fa fa-check"></i>Guardar</button>
+    </div>
+  </div>
+</app-modal-basic>
+<app-modal-basic [dialogClass]="'modal-md'" #modalMoneda>
+  <div class="app-modal-header">
+    <h4 class="modal-title tit-modal1">
+      <b *ngIf="!editar && !ver">Agregar Moneda</b>
+      <b *ngIf="editar && !ver">Editar Moneda</b>
+      <b *ngIf="ver">Datos Moneda</b>
+    </h4>
+    <button type="button" class="close basic-close" (click)="closeModal2()">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="app-modal-body">
+    <div class="row" *ngIf="ver; else editarGuardar2">
+      <label class="col-sm-3 col-form-label">Moneda :</label>
+      <div class="col-sm-9">
+        <label id="tx_area2" class="col-sm-12 col-form-label"><b>{{datos?.moneda}}</b></label>
+      </div>
+      <label class="col-sm-3 col-form-label">Abreviatura :</label>
+      <div class="col-sm-9">
+        <label id="tx_area2" class="col-sm-12 col-form-label"><b>{{datos?.abreviatura}}</b></label>
+      </div>
+      <label class="col-sm-3 col-form-label">Simbolo :</label>
+      <div class="col-sm-9">
+        <label id="tx_area2" class="col-sm-12 col-form-label"><b>{{datos?.simbolo}}</b></label>
+      </div>
+    </div>
+    <ng-template #editarGuardar2>
+      <form [formGroup]="formMoneda">
+          <div class="row ">
+              <mat-form-field appearance="outline" class="mff-reduc col-sm-12 col-12 mt-2">
+                  <mat-label>Pais</mat-label>
+                  <input matInput type="text" class="mayuscula" autocomplete="off" maxlength="50" formControlName="moneda2" 
+                    [maxlength]="50" class="mayuscula">
+              </mat-form-field>
+              <mat-form-field appearance="outline" class="mff-reduc col-sm-12 col-12 mt-2">
+                  <mat-label>Abreviatura</mat-label>
+                  <input matInput type="text" class="mayuscula" autocomplete="off" maxlength="10" formControlName="abrev2" 
+                    [maxlength]="10" class="mayuscula">
+              </mat-form-field>
+              <mat-form-field appearance="outline" class="mff-reduc col-sm-12 col-12 mt-2">
+                  <mat-label>Simbolo</mat-label>
+                  <input matInput type="text" class="mayuscula" autocomplete="off" maxlength="10" formControlName="simbolo" 
+                    [maxlength]="10" class="mayuscula">
+              </mat-form-field>
+          </div>
+      </form>
+    </ng-template>
+  </div>
+  <div class="app-modal-footer w-100">
+    <div class="row px-3">
+      <button type="button" class="btn btn-danger btn-sm" (click)="closeModal2()"><i
+          class="fa fa-times"></i>Cerrar</button>
+      <button type="button" *ngIf="!ver" class="btn btn-success btn-sm" (click)="almacenar2()"><i
+          class="fa fa-check"></i>Guardar</button>
+    </div>
+  </div>
+</app-modal-basic>
 
 
 
-  
-  <app-cargando [bloquearTodo]="true" *ngIf="mostrar_carga_todo"></app-cargando>
-  <app-cargando [bloquearTodo]="false" *ngIf="mostrar_carga"></app-cargando>
+
+<app-cargando [bloquearTodo]="true" *ngIf="mostrar_carga_todo"></app-cargando>
+<app-cargando [bloquearTodo]="false" *ngIf="mostrar_carga"></app-cargando>

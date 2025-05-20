@@ -312,6 +312,7 @@ export class PrincipalComponent implements OnInit, OnDestroy {
       }
       else{
         this.dataSourceorg = await this.principalService.ListarProyectos(this.idUsuario);
+        this.dataSourceorg = await this.ordenarJerarquia(this.dataSourceorg)
         this.buscando = false;
         //si no hay proyectos mover a la pestana sistema?
         if(cambiatab && this.dataSourceorg.length<5){
@@ -322,8 +323,31 @@ export class PrincipalComponent implements OnInit, OnDestroy {
     catch {
       this.buscando = false;
     }
-    console.log(this.dataSourceorg)
   }
+  async ordenarJerarquia(arr) {
+    if (!arr || arr.length === 0) {
+      return [];
+    }
+    const resultado: any[] = [];
+    const principales = arr.filter(item => {
+    const esPrincipal = item.id_principal === null||item.id_proyecto==='';
+      return esPrincipal;
+    });
+    const hijos = arr.filter(item => {
+      const esHijo = item.id_principal !== null&&item.id_proyecto!=='';
+      return esHijo;
+    });
+    for (const padre of principales) {
+      const hijosDelPadre = hijos.filter(hijo => hijo.id_principal === padre.id_proyecto);
+      padre.totalsub = hijosDelPadre.length;
+      resultado.push(padre);
+      for (const hijo of hijosDelPadre) {
+        resultado.push(hijo);
+      }
+    }
+    return resultado;
+  }
+
   async close(event: MouseEvent, toRemove: number) {
     // if (event) {
     //   const sw = await SwalService.confirm('Estas seguro?', 'Se cerrará la pestaña, asegurese de guardar sus cambios')
@@ -676,7 +700,7 @@ export class PrincipalComponent implements OnInit, OnDestroy {
       escreador:new UntypedFormControl(creador)
     })
     this.formProyecto.push(datosTab)
-    await this.listarSubmetrado(nrotab)
+    // await this.listarSubmetrado(nrotab)// q tan necesario es el nuevo proyecto
     // console.log('this.formProyecto', this.formProyecto.value);
   }
   async crearFormAspectosGenerales(datosProyecto, nroProyecto = null): Promise<UntypedFormGroup> {

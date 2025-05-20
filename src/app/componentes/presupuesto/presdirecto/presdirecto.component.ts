@@ -356,59 +356,13 @@ export class PresdirectoComponent implements OnInit,OnDestroy {
         this.dec_cant=arrdec[3];
         this.mask_cant='0.'+arrdec[3];
       }
-      // console.time('timetemp')
-      let presutemp = this.solover?await this.presuservice.ListarPresupuestoTemp({id_proyecto: this.id_proyecto,id_usuario:''}):await this.presuservice.ListarPresupuestoTemp({id_proyecto: this.id_proyecto,id_usuario:this.id_user})
-      // console.timeEnd('timetemp')
-      if(presutemp.length>0){
-        this.existetemp=true;
-        let tabla1=this.encriptadorService.descomprimirJSON(presutemp[0].tablapri);//temporales
-        let tabla2=this.encriptadorService.descomprimirJSON(presutemp[0].tablapriacu);//temporales
-        let tabla3=this.encriptadorService.descomprimirJSON(presutemp[0].tablaprisubp);//temporales
-        let tabla4=this.encriptadorService.descomprimirJSON(presutemp[0].inserta);//temporales
-        let tabla5=this.encriptadorService.descomprimirJSON(presutemp[0].modifica);//temporales
-        let tabla6=this.encriptadorService.descomprimirJSON(presutemp[0].elimina);//temporales
-        let tabla7=this.encriptadorService.descomprimirJSON(presutemp[0].insertaacu);//temporales
-        let tabla8=this.encriptadorService.descomprimirJSON(presutemp[0].modificaacu);//temporales
-        let tabla9=this.encriptadorService.descomprimirJSON(presutemp[0].eliminaacu);//temporales
-        this.datasourcePri=tabla1;
-        for(let row of this.datasourcePri){
-          row.editar1=0;
-          row.editar2=0;
-          row.mostrar=1;
-          row.icomost=1;
-        }
-        this.datasourcePriacu=tabla2;
-        this.datasourcePrisub=tabla3;
-        this.datasourcePrisubaux=[];
-        this.inserta=tabla4;
-        this.modifica=tabla5;
-        this.elimina=tabla6;
-        this.insertaacu=tabla7;
-        this.modificaacu=tabla8;
-        this.eliminaacu=tabla9;
-        this.ultindice=Number(presutemp[0].ultindice);
-      }
-      else{
-        /* console.time('loop');
-        let res= await this.presuservice.ListarPresupuestoProy({id_proyecto:this.id_proyecto});
-        this.datasourcePri=res[0];
+      let res= await this.presuservice.listarTopPresupuesto({id_proyecto:this.id_proyecto});
+        this.datasourcePri=res[0]
         this.datasourcePriacu=res[1];
         this.datasourcePrisub=res[2];
-        this.ultindice=res[3][0].ultindice;//res->resindi
-        console.timeEnd('loop'); */
-        // console.time('recuperabd');
-        let res= await this.presuservice.ListarPresuProy({id_proyecto:this.id_proyecto});
-        this.datasourcePri=res;
-        this.existetemp=false;
-        let res1= await this.presuservice.ListarPresuDetProy({id_proyecto:this.id_proyecto});
-        this.datasourcePriacu=res1;
-        let res2= await this.presuservice.ListarPresuSubpProy({id_proyecto:this.id_proyecto});
-        this.datasourcePrisub=res2;
-        this.datasourcePrisubaux=JSON.stringify(res2);
+        this.datasourcePrisubaux=JSON.stringify(res[2]);
         let resindi=await this.presuservice.UltimoIndicePresu({id_proyecto:this.id_proyecto});
         this.ultindice=resindi[0].ultindice;
-        // console.timeEnd('recuperabd');
-      }
       let difer=this.solover?722:(1285+(this.cargacomp && this.datasourcePri.length==0 && !this.existetemp && !this.solover?32:0)+
         (!this.vistagrande || this.expanded?32:0));
       if ((document.body.clientWidth <= difer)) {
@@ -1321,7 +1275,7 @@ export class PresdirectoComponent implements OnInit,OnDestroy {
     this.RecalculaIndir();
   }
   async listarPresupuesto(){
-    let res= await this.presuservice.ListarPresupuestoProy({id_proyecto:this.id_proyecto});
+    let res= await this.presuservice.listarTopPresupuesto({id_proyecto:this.id_proyecto});
     this.datasourcePri=res[0];
     this.datasourcePriacu=res[1];
     this.datasourcePrisub=res[2];
@@ -8294,15 +8248,13 @@ export class PresdirectoComponent implements OnInit,OnDestroy {
     if (result == 'ok') {
       //asignar presupuesto
       this.mostrar_carga=true;
-      let res= await this.presuservice.ListarPresuProy({id_proyecto:this.id_proyecto});
-      this.datasourcePri=res;
-      let res1= await this.presuservice.ListarPresuDetProy({id_proyecto:this.id_proyecto});
-      this.datasourcePriacu=res1;
-      let res2= await this.presuservice.ListarPresuSubpProy({id_proyecto:this.id_proyecto});
-      this.datasourcePrisub=res2;
-      this.datasourcePrisubaux=JSON.stringify(res2);
-      let resindi=await this.presuservice.UltimoIndicePresu({id_proyecto:this.id_proyecto});
-      this.ultindice=resindi[0].ultindice;
+      let res= await this.presuservice.listarTopPresupuesto({id_proyecto:this.id_proyecto});
+        this.datasourcePri=res[0]
+        this.datasourcePriacu=res[1];
+        this.datasourcePrisub=res[2];
+        this.datasourcePrisubaux=JSON.stringify(res[2]);
+        let resindi=await this.presuservice.UltimoIndicePresu({id_proyecto:this.id_proyecto});
+        this.ultindice=resindi[0].ultindice;
       this.mostrar_carga=false;
       SwalService.success('Correcto', result.mensaje)
     }
@@ -9566,11 +9518,13 @@ export class PresdirectoComponent implements OnInit,OnDestroy {
         return;
       }//temporales
     const respu=await SwalService.confirmCheck('Esta seguro que desea Reiniciar el Presupuesto?',
-    'Se eliminará todo el Presupuesto guardado y temporal, también se borraran los datos de Metrado, Programación, Fórmula Polinomica y Especificaciones Técnicas.');
+    'Se eliminará todo el Presupuesto importados.');
     if(respu.isConfirmed){
       this.mostrar_carga=true;
-      let res=await this.presuservice.ReiniciarPresupuesto({id_proyecto:this.id_proyecto,id_usuario:this.id_userproy});
-      if(res?.id=="1"){
+      // let res=await this.presuservice.ReiniciarPresupuesto({id_proyecto:this.id_proyecto,id_usuario:this.id_userproy});
+      // console.log(res)
+      let res=await this.presuservice.limpiarTopPresupuesto({id_proyecto:this.id_proyecto});
+      if(res[0]?.id=="1"){
         this.datasourcePri=[];
         this.datasourcePriacu=[];
         this.datasourcePrisub=[];

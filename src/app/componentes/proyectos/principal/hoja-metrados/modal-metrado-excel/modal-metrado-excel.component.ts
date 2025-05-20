@@ -157,6 +157,7 @@ export class ModalMetradoExcelComponent implements OnInit {
             if (this.listaHojasSeleccionadas.length) {
               await this.opcionHojasValidas(0)
             }
+            console.log(this.listaHojasSeleccionadas)
           }
         } else if (this.vista == 1) {
           let valido = true
@@ -495,7 +496,6 @@ export class ModalMetradoExcelComponent implements OnInit {
       } else {
         hoja.columnas_completas = true
       }
-
       const columnas = new plantillaModel()
       hoja.columnas = columnas
       const nuevo = {}
@@ -765,13 +765,14 @@ export class ModalMetradoExcelComponent implements OnInit {
           } else {
             if (metradoIndiceActivo) {
               value.esMetrado = 1
-              if ((value.mparcial == null || value.mparcial == undefined) && (value.mtotal == null || value.mtotal == undefined)) {
-                value.tipo = 0
-              } else if ((value.mparcial !== null && value.mparcial !== undefined) && (value.mtotal == null || value.mtotal == undefined) && value.descripcion) {
-                value.tipo = 1
-              } else {
-                // console.log('submetrado')
-              }
+              value.tipo = 0
+              // if ((value.mparcial == null || value.mparcial == undefined) && (value.mtotal == null || value.mtotal == undefined)) {
+              //   value.tipo = 0
+              // } else if ((value.mparcial !== null && value.mparcial !== undefined) && (value.mtotal == null || value.mtotal == undefined) && value.descripcion) {
+              //   value.tipo = 1
+              // } else {
+              //   // console.log('submetrado')
+              // }
               arrayHoja.push(value)
             }
 
@@ -973,20 +974,6 @@ export class ModalMetradoExcelComponent implements OnInit {
       filaTablaPresu.ind_parecido_excel_titulo = []
       filaTablaPresu.ind_similar_excel_titulo = []
       filaTablaPresu.ind_similar_excel = []
-      // this.tablaExcel[fila.id_metrado].descripcion = this.tablaPresupuesto[fila.indiceParentesco].descripcion
-      // this.tablaExcel[fila.id_metrado].tipoError = 1
-      // this.tablaPresupuesto[fila.indiceParentesco].existeHoja = 1
-      // if (this.tablaPresupuesto[fila.indiceParentesco].ind_similar_excel) {
-      //   this.tablaPresupuesto[fila.indiceParentesco].ind_iguales_excel = JSON.parse(JSON.stringify(this.tablaPresupuesto[fila.indiceParentesco].ind_similar_excel))
-      //   this.tablaPresupuesto[fila.indiceParentesco].ind_iguales_excel_titulo = JSON.parse(JSON.stringify(this.tablaPresupuesto[fila.indiceParentesco].ind_similar_excel_titulo))
-      // } else {
-      //   this.tablaPresupuesto[fila.indiceParentesco].ind_iguales_excel = JSON.parse(JSON.stringify(this.tablaPresupuesto[fila.indiceParentesco].ind_parecido_excel))
-      //   this.tablaPresupuesto[fila.indiceParentesco].ind_iguales_excel_titulo = JSON.parse(JSON.stringify(this.tablaPresupuesto[fila.indiceParentesco].ind_parecido_excel_titulo))
-      // }
-      // this.tablaPresupuesto[fila.indiceParentesco].ind_parecido_excel = []
-      // this.tablaPresupuesto[fila.indiceParentesco].ind_parecido_excel_titulo = []
-      // this.tablaPresupuesto[fila.indiceParentesco].ind_similar_excel_titulo = []
-      // this.tablaPresupuesto[fila.indiceParentesco].ind_similar_excel = []
     } else {
       return
     }
@@ -1394,7 +1381,7 @@ export class ModalMetradoExcelComponent implements OnInit {
           plantilla: plantilla,
           datos1: datos1
         });
-        const response = await this.metradoService.guardarTablaMetradoExcel(obj)
+        const response = await this.metradoService.importarMetrado(obj)
         if (response.id == '1') {
           let cantidadRegistrados = 0
           let totalPartidas = 0

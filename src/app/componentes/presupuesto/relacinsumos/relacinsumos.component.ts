@@ -92,6 +92,7 @@ export class RelacinsumosComponent implements OnInit,OnDestroy {
     this.heightacu = window.innerHeight - resto;
     this.id_user=this.id_user??this.encriptadorService.recuperarlocalstory('idusuario');
     this.tablaacusel=this.arreglo;
+    this.NuevoInd(this.tablaacusel)
     this.preciototal=this.total;
     this.proyecto.setValue(this.descproy);
     this.propietario.setValue(this.propproy);
@@ -106,7 +107,21 @@ export class RelacinsumosComponent implements OnInit,OnDestroy {
         this.preciototal=Number(this.formService.redondeo(data.total,this.dec_parcial));
       }
     });
+    console.log(this.tablaacusel)
   }
+  NuevoInd(arr) {
+    let contador = 1;
+    arr.forEach((row) => {
+      if (row.unidad === '') {
+        row.indiceLocal = ''; // vacío porque no queremos mostrar número
+        contador = 1; // reinicia contador
+      } else {
+        row.indiceLocal = contador;
+        contador++;
+      }
+    });
+  }
+
   ngOnDestroy(): void {
     this.varGlobalesService.editaClasi.next(null);
     this.updateRelIns$.unsubscribe();

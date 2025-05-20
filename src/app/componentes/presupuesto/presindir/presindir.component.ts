@@ -794,7 +794,6 @@ export class PresindirComponent implements OnInit {
   totaldir
   abretotal
   async CalcularTabla() {
-    //calcular en nueva tabla, si no existe el valor dependiente se mueve al final
     let arraux = JSON.parse(JSON.stringify(this.datasourcePri));
     for (let a = 0; a < arraux.length; a++) {
       if(arraux[a].tipo_registro==4){
@@ -827,9 +826,9 @@ export class PresindirComponent implements OnInit {
           // Si no hay operadores, devolver el arreglo con el string completo
           if (!operadores) {
             for (let row of arraux) {
-              // if (!isNaN(row.abrev)) {
-              //   continue;
-              // }
+              if (!isNaN(row.abrev)) {
+                continue;
+              }
               if (row.abrev == arregloResultado[a]) {
                 if (row.calculado == 1) {
                   arregloResultado[a] = row.monto;

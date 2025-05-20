@@ -5,461 +5,762 @@
   class="custom-tabs nav-tabs ml-5 mr-6"
   (navChange)="onNavChange($event)"
 >
-<li [ngbNavItem]="1">
-  <a ngbNavLink>INFORMACION GENERAL</a>
-  <ng-template ngbNavContent>
-    <div class="row px-3">
-      <h4>REGISTRO DE PRESUPUESTO DE OBRA, SEGUN RESOLUCION DE APROBACION O DOCUMENTO EQUIVALENTE</h4>
-      <div class="col-12">
-        <!-- <h4 class="sub-title text-center p-b-0" style="border-bottom: none;">PRESUPUESTO INDIRECTO</h4> -->
-        <div class="row w-100" style="margin-bottom: 2px">
-          <div style="width: calc(100% - 90px)">
-            <div class="btn-group" style="margin-bottom: 3px">
+  <li [ngbNavItem]="1">
+    <a ngbNavLink>DATOS PROYECTOS</a>
+    <ng-template ngbNavContent>
+      <div class="card-header py-1">
+        <h5>INFORMACIÓN GENERAL</h5>
+        <button
+          type="button"
+          class="btn btn-sm btn-success float-right"
+          *ngIf="!permiso"
+          (click)="actualizarDatosProyecto()"
+        >
+          <i class="fa fa-save icono-but"></i>
+        </button>
+        <button
+          type="button"
+          class="btn btn-sm btn-secondary float-right"
+          *ngIf="!permiso"
+          (click)="cancelarEditarDatosProyecto()"
+        >
+          <i class="fa fa-times icono-but"></i>
+        </button>
+        <button
+          type="button"
+          class="btn btn-sm btn-info float-right"
+          *ngIf="permiso && (!solover || escreador) && !esSecund"
+          (click)="habilitarEdicionDatosProyecto()"
+        >
+          <i class="fa fa-pencil icono-but"></i>
+        </button>
+      </div>
+      <div class="card-body py-3 overflow-auto">
+        <div class="row">
+          <ng-container [formGroup]="myGroup">
+            <mat-form-field
+              appearance="outline"
+              class="mff-reduc my-form-field col-sm-12 col-12"
+              [floatLabel]="permiso ? 'always' : 'auto'"
+            >
+              <mat-label
+                >DESCRIPCIÓN<span class="text-danger"> * </span></mat-label
+              >
+              <textarea
+                matInput
+                type="text"
+                autocomplete="off"
+                class="mayuscula"
+                formControlName="descripcion"
+                [maxLength]="500"
+              ></textarea>
+            </mat-form-field>
+            <mat-form-field
+              appearance="outline"
+              class="mff-reduc my-form-field col-sm-6 col-12"
+              [floatLabel]="permiso ? 'always' : 'auto'"
+              [ngClass]="{ 'mat-form-field-disa': permiso }"
+            >
+              <mat-label>Fecha Elaboración</mat-label>
+              <input matInput type="date" formControlName="fecha_elaboracion" />
+              <mat-error *ngIf="fecha_elaboracion?.hasError('required')">
+                La fecha es obligatoria.
+              </mat-error>
+              <!-- Error cuando el valor está fuera del rango (validador personalizado) -->
+              <mat-error *ngIf="fecha_elaboracion?.hasError('fechaInvalida')">
+                La fecha ingresada no es valida.
+              </mat-error>
+            </mat-form-field>
+            <mat-form-field
+              appearance="outline"
+              class="mff-reduc my-form-field col-sm-6 col-12"
+              [floatLabel]="permiso ? 'always' : 'auto'"
+              [ngClass]="{ 'mat-form-field-disa': permiso }"
+            >
+              <mat-label>Plazo de ejecución</mat-label>
+              <input
+                matInput
+                type="text"
+                autocomplete="off"
+                formControlName="plazo"
+                (keyup)="TeclaCalcFin($event)"
+                (blur)="CalculaFechaFin(0)"
+                [textMask]="{ mask: this.formService.maskTelefono }"
+                maxlength="5"
+              />
+              <mat-error *ngIf="plazo?.hasError('min')">
+                El plazo debe ser como mínimo 1.
+              </mat-error>
+              <mat-error *ngIf="plazo?.hasError('max')">
+                El plazo no puede ser mayor a 5000.
+              </mat-error>
+              <mat-error *ngIf="plazo?.hasError('required')">
+                El plazo es obligatorio.
+              </mat-error>
+            </mat-form-field>
+            <div class="col-sm-6 col-12 mt-2">
+              <mat-form-field
+                appearance="outline"
+                class="mff-reduc my-form-field w-100"
+                [floatLabel]="permiso ? 'always' : 'auto'"
+                [ngClass]="{ 'mat-form-field-disa': permiso }"
+              >
+                <mat-label>Fecha Inicio</mat-label>
+                <input
+                  matInput
+                  type="date"
+                  formControlName="fecha_inicio"
+                  (keyup)="TeclaCalcFin($event)"
+                  (blur)="CalculaFechaFin(1)"
+                />
+                <mat-error *ngIf="fecha_inicio?.hasError('required')">
+                  La fecha es obligatoria.
+                </mat-error>
+                <!-- Error cuando el valor está fuera del rango (validador personalizado) -->
+                <mat-error *ngIf="fecha_inicio?.hasError('fechaInvalida')">
+                  La fecha ingresada no es valida.
+                </mat-error>
+              </mat-form-field>
+              &nbsp;
+              <i
+                *ngIf="calculandofecha"
+                class="fa fa-spinner fa-pulse fa-lg fa-fw"
+              ></i>
+              <span class="sr-only">Loading...</span>
+            </div>
+            <mat-form-field
+              appearance="outline"
+              class="mff-reduc my-form-field col-sm-6 col-12 mt-2"
+              [floatLabel]="permiso ? 'always' : 'auto'"
+              [ngClass]="{ 'mat-form-field-disa': permiso }"
+            >
+              <mat-label>Fecha Culminación</mat-label>
+              <input
+                matInput
+                type="date"
+                formControlName="fecha_culmina"
+                (keyup)="TeclaCalcFin($event)"
+                (blur)="CalculaFechaFin(2)"
+              />
+              <mat-error *ngIf="fecha_culmina?.hasError('required')">
+                La fecha es obligatoria.
+              </mat-error>
+              <!-- Error cuando el valor está fuera del rango (validador personalizado) -->
+              <mat-error *ngIf="fecha_culmina?.hasError('fechaInvalida')">
+                La fecha ingresada no es valida.
+              </mat-error>
+            </mat-form-field>
+          </ng-container>
+        </div>
+      </div>
+       <div class="card-header py-1">
+        <h5>REGISTRO DE PRESUPUESTO DE OBRA, SEGUN RESOLUCION DE APROBACION O
+          DOCUMENTO EQUIVALENTE</h5>
+      </div>
+        <div class="col-12">
+          <!-- <h4 class="sub-title text-center p-b-0" style="border-bottom: none;">PRESUPUESTO INDIRECTO</h4> -->
+          <div class="row w-100" style="margin-bottom: 2px">
+            <div style="width: calc(100% - 90px)">
+              <div class="btn-group" style="margin-bottom: 3px">
+                <button
+                  *ngIf="!solover"
+                  type="button"
+                  class="btn btn-mini btn-group-mini btn-outline-primary"
+                  placement="top"
+                  ngbTooltip="Agregar Fila"
+                  container="body"
+                  (click)="agregarFila()"
+                  (mouseup)="quitarfoco($event)"
+                >
+                  <i class="fa fa-plus icono-but"></i>
+                </button>
+                <button
+                  *ngIf="!solover"
+                  type="button"
+                  class="btn btn-mini btn-group-mini btn-outline-primary"
+                  placement="top"
+                  ngbTooltip="Subir"
+                  container="body"
+                  (click)="SubirFila()"
+                  (mouseup)="quitarfoco($event)"
+                >
+                  <i class="fa fa-arrow-up icono-but"></i>
+                </button>
+                <button
+                  *ngIf="!solover"
+                  type="button"
+                  class="btn btn-mini btn-group-mini btn-outline-primary"
+                  placement="top"
+                  ngbTooltip="Bajar"
+                  container="body"
+                  (click)="BajarFila()"
+                  (mouseup)="quitarfoco($event)"
+                >
+                  <i class="fa fa-arrow-down icono-but"></i>
+                </button>
+              </div>
+              &nbsp;&nbsp;&nbsp;
+              <!-- <mat-form-field
+                class="mff-reduc my-form-field wrapper-custom"
+                appearance="outline"
+                style="min-width: 100px; width: calc(100% - 280px)"
+              >
+                <mat-label>Titulo</mat-label>
+                <select
+                  matNativeControl
+                  (change)="cambiarTitulo($event.target.value)"
+                >
+                  <option value="0" [selected]="true">
+                    Todo el Presupuesto
+                  </option>
+                  <option
+                    *ngFor="let titulo of listaTitulos"
+                    value="{{ titulo.item }}"
+                  >
+                    {{ titulo?.item }}&nbsp;&#8702;&nbsp;{{
+                      titulo?.descripcion
+                    }}
+                  </option>
+                </select>
+              </mat-form-field>
+              <span
+                *ngIf="titsel == '0' && !solover"
+                class="f-w-900 m-l-10 f-18"
+                placement="top"
+                ngbTooltip="Edición Activa"
+                container="body"
+                ><i class="icofont icofont-ui-edit"></i
+              ></span>
+              <span
+                *ngIf="titsel != '0' || solover"
+                class="f-w-900 m-l-10 f-18"
+                placement="top"
+                ngbTooltip="Solo Visualizacion"
+                container="body"
+                ><i class="fa fa-lock"></i
+              ></span> -->
+            </div>
+            <div style="width: 85px">
               <button
                 *ngIf="!solover"
                 type="button"
-                class="btn btn-mini btn-group-mini btn-outline-primary"
-                placement="top"
-                ngbTooltip="Agregar Fila"
+                class="btn btn-mini btn-success"
+                ngbTooltip="Guardar Cambios"
                 container="body"
-                (click)="agregarFila()"
+                (click)="guardarCambios()"
                 (mouseup)="quitarfoco($event)"
               >
-                <i class="fa fa-plus icono-but"></i>
+                <i class="fa fa-save icono-but"></i>
+                <span
+                  *ngIf="existetemp"
+                  class="badge ballalert balert-danger"
+                ></span>
               </button>
               <button
                 *ngIf="!solover"
                 type="button"
-                class="btn btn-mini btn-group-mini btn-outline-primary"
-                placement="top"
-                ngbTooltip="Subir"
+                class="btn btn-mini btn-danger"
+                ngbTooltip="Descartar Cambios"
                 container="body"
-                (click)="SubirFila()"
+                (click)="descartaCambios()"
                 (mouseup)="quitarfoco($event)"
               >
-                <i class="fa fa-arrow-up icono-but"></i>
-              </button>
-              <button
-                *ngIf="!solover"
-                type="button"
-                class="btn btn-mini btn-group-mini btn-outline-primary"
-                placement="top"
-                ngbTooltip="Bajar"
-                container="body"
-                (click)="BajarFila()"
-                (mouseup)="quitarfoco($event)"
-              >
-                <i class="fa fa-arrow-down icono-but"></i>
+                <i class="fa fa-power-off icono-but"></i>
               </button>
             </div>
-            &nbsp;&nbsp;&nbsp;
-            <mat-form-field
-              class="mff-reduc my-form-field wrapper-custom"
-              appearance="outline"
-              style="min-width: 100px; width: calc(100% - 280px)"
-            >
-              <mat-label>Titulo</mat-label>
-              <select
-                matNativeControl
-                (change)="cambiarTitulo($event.target.value)"
-              >
-                <option value="0" [selected]="true">
-                  Todo el Presupuesto
-                </option>
-                <option
-                  *ngFor="let titulo of listaTitulos"
-                  value="{{ titulo.item }}"
-                >
-                  {{ titulo?.item }}&nbsp;&#8702;&nbsp;{{
-                    titulo?.descripcion
-                  }}
-                </option>
-              </select>
-            </mat-form-field>
-            <span
-              *ngIf="titsel == '0' && !solover"
-              class="f-w-900 m-l-10 f-18"
-              placement="top"
-              ngbTooltip="Edición Activa"
-              container="body"
-              ><i class="icofont icofont-ui-edit"></i
-            ></span>
-            <span
-              *ngIf="titsel != '0' || solover"
-              class="f-w-900 m-l-10 f-18"
-              placement="top"
-              ngbTooltip="Solo Visualizacion"
-              container="body"
-              ><i class="fa fa-lock"></i
-            ></span>
-          </div>
-          <div style="width: 85px">
-            <button
-              *ngIf="!solover"
-              type="button"
-              class="btn btn-mini btn-success"
-              ngbTooltip="Guardar Cambios"
-              container="body"
-              (click)="guardarCambios()"
-              (mouseup)="quitarfoco($event)"
-            >
-              <i class="fa fa-save icono-but"></i>
-              <span
-                *ngIf="existetemp"
-                class="badge ballalert balert-danger"
-              ></span>
-            </button>
-            <button
-              *ngIf="!solover"
-              type="button"
-              class="btn btn-mini btn-danger"
-              ngbTooltip="Descartar Cambios"
-              container="body"
-              (click)="descartaCambios()"
-              (mouseup)="quitarfoco($event)"
-            >
-              <i class="fa fa-power-off icono-but"></i>
-            </button>
           </div>
         </div>
-      </div>
-      <div class="col-12 px-2 p-t-5">
-        <div class="w-100 tabla-limp"> <!-- [style.height.px]="height" -->
-          <table class="table-bordered tab-10">
-            <thead>
-              <tr class="headsticky header-custom">
-                <th appAnchocol [ancho]="28">N°</th>
-                <!-- <th appAnchocol [ancho]="75">TIPO DE REGISTRO</th> -->
-                <th appAnchocol [ancho]="35">RES</th>
-                <th appAnchocol [ancho]="220" [detalle]="true">
-                  DISEÑO DE PIE DE PRESUPUESTO
-                </th>
-                <!-- <th appAnchocol [ancho]="90">%</th> -->
-                <th appAnchocol [ancho]="200">FORMULA</th>
-                <th appAnchocol [ancho]="100">MONTO</th>
-                <!-- <th appAnchocol [ancho]="58">APLICAR A TITULOS</th> -->
-                <!-- <th appAnchocol [ancho]="35">ACCIONES</th> -->
-                <!-- <th appAnchocol [ancho]="50">INCLUIR FP</th>
-                <th appAnchocol [ancho]="250">IU</th> -->
-              </tr>
-            </thead>
-            <tbody>
-              <ng-container *ngIf="datasourcePri?.length > 0">
-                <tr
-                  (click)="cambindiceselpresu(indice)"
-                  *ngFor="let row of datasourcePri; let indice = index"
-                  [hidden]="row.mostrar == 0"
-                >
-                  <td
-                    class="cellsinpadding"
-                    appAnchocol
-                    [ancho]="28"
-                    [ngClass]="{
-                      'f-w-900':
-                        row.tipo_registro == 3 || row.tipo_registro == 2
-                    }"
+        <div class="col-12 px-2 p-t-5">
+          <div class="w-100 tabla-limp">
+            <table class="table-bordered tab-10">
+              <thead>
+                <tr class="headsticky header-custom">
+                  <th appAnchocol [ancho]="28">N°</th>
+                  <th appAnchocol [ancho]="75">TIPO DE REGISTRO</th>
+                  <th appAnchocol [ancho]="35">RES</th>
+                  <th appAnchocol [ancho]="220" [detalle]="true">
+                    DISEÑO DE PIE DE PRESUPUESTO
+                  </th>
+                  <th appAnchocol [ancho]="200">FORMULA</th>
+                  <th appAnchocol [ancho]="100">MONTO</th>
+                  <th appAnchocol [ancho]="35">ACCIONES</th>
+                </tr>
+              </thead>
+              <tbody>
+                <ng-container *ngIf="datasourcePri?.length > 0">
+                  <tr
+                    (click)="cambindiceselpresu(indice)"
+                    *ngFor="let row of datasourcePri; let indice = index"
+                    [hidden]="row.mostrar == 0"
                   >
-                    {{ indice + 1 }}
-                  </td>
-                  <td
-                    appAnchocol
-                    [ancho]="35"
-                    [ngClass]="{
-                      highlight: filaSel == indice,
-                      'f-w-900':
-                        row.tipo_registro == 3 || row.tipo_registro == 2
-                    }"
-                  >
-                    <div
-                      *ngIf="row.editar1 == 0"
-                      class="div-celdavac"
-                      (click)="Editar1(indice)"
+                    <td
+                      class="cellsinpadding"
+                      appAnchocol
+                      [ancho]="28"
+                      [ngClass]="{
+                        'f-w-900':
+                          row.tipo_registro == 3 || row.tipo_registro == 2
+                      }"
                     >
-                      <span class="recortatext">{{ row.abrev }}</span>
-                    </div>
-                    <input
-                      *ngIf="row.editar1 == 1"
-                      type="text"
-                      class="formcontrol w-100 d-flex mayuscula"
-                      autocomplete="off"
-                      value="{{ row.abrev }}"
-                      maxlength="5"
-                      onkeypress="return ((event.charCode >= 48 && event.charCode <= 57) || (event.charCode >= 65 && event.charCode <= 90) || (event.charCode >= 97 && event.charCode <= 122))"
-                      appAutoFocus
-                      (keyup)="presenter1($event, indice)"
-                      (blur)="caneditar1($event.target.value, indice)"
-                    />
-                  </td>
-                  <td
-                    class="text-left cellsinpadding"
-                    (click)="Editar2(indice)"
-                    appAnchocol
-                    [ancho]="220"
-                    [detalle]="true"
-                    [ngClass]="{
-                      highlight: filaSel == indice,
-                      'f-w-900':
-                        row.tipo_registro == 3 || row.tipo_registro == 2
-                    }"
-                  >
-                    <div
-                      *ngIf="row.editar2 == 0"
-                      class="recortatextlinea celdaadvcero div-celdavac"
-                      style="cursor: pointer"
-                      ngbTooltip="{{ row.descripcion }}"
-                      #t="ngbTooltip"
-                      container="body"
-                    
-                      triggers="click:blur"
-                      (mouseout)="t.close()"
+                      {{ indice + 1 }}
+                    </td>
+                     <td
+                      appAnchocol
+                      [ancho]="75"
+                      [ngClass]="{
+                        highlight: filaSel == indice,
+                        'f-w-900':
+                          row.tipo_registro == 3 || row.tipo_registro == 2
+                      }"
                     >
-                      <span class="w-100 recortatext">{{
-                        row.descripcion
-                      }}</span>
-                    </div>
-                    <input
-                      *ngIf="row.editar2 == 1"
-                      type="text"
-                      class="formcontrol w-100 d-flex mayuscula"
-                      autocomplete="off"
-                      value="{{ row.descripcion }}"
-                      maxlength="500"
-                      appAutoFocus
-                      (keyup)="presenter2($event, indice)"
-                      (blur)="caneditar2($event.target.value, indice)"
-                    />
-                  </td>
-                  <td
-                    appAnchocol
-                    [ancho]="200"
-                    [ngClass]="{
-                      highlight: filaSel == indice,
-                      'f-w-900':
-                        row.tipo_registro == 3 || row.tipo_registro == 2
-                    }"
-                  >  
-                  <ng-container  *ngIf="row.tipo_registro == 4">
-                    <div *ngIf="row.editar4 == 0" (click)="Editar4(indice)">
-                      <ng-container>
-                        <div class="float-left" style="margin-top: 5px;margin-left: 10px;">
-                          <span class="mt-1 font-weight-bolder" >C.I.={{row.abrev}}/{{row.formula==''?abretotal:row.formula}}={{( row.formula==''?totaldir:findabrev(row.formula))==0?'0.00':(row.monto * 100 /( row.formula==''?totaldir:findabrev(row.formula))).toFixed(2)}}%</span>
+                      <div *ngIf="row.tipo_registro != 3" class="d-flex">
+                        <select
+                          class="cust-sel-celda"
+                          (change)="CambTiporeg($event.target.value, indice)"
+                          [disabled]="titsel != '0' || solover"
+                        >
+                          <!-- <option value="0" [selected]="row.tipo_registro=='0'">Data</option> -->
+                          <option
+                            value="1"
+                            [selected]="row.tipo_registro == '1'"
+                          >
+                            Manual
+                          </option>
+                          <option
+                            value="2"
+                            [selected]="row.tipo_registro == '2'"
+                          >
+                            Titulo
+                          </option>
+                          <!-- <option value="2" [selected]="row.tipo_registro=='2'">Costo Directo</option> -->
+                          <option
+                            value="4"
+                            [selected]="row.tipo_registro == '4'"
+                          >
+                            Detalle
+                          </option>
+                        </select>
+                      </div>
+                      <ng-container *ngIf="row.tipo_registro == 3">
+                        Presupuesto
+                      </ng-container>
+                    </td>
+                   <td
+                      appAnchocol
+                      [ancho]="35"
+                      [ngClass]="{
+                        highlight: filaSel == indice,
+                        'f-w-900':
+                          row.tipo_registro == 3 || row.tipo_registro == 2
+                      }"
+                       (click)="Editar1(indice)"
+                    >
+                      <div
+                        *ngIf="row.editar1 == 0"
+                        class="div-celdavac"
+
+                      >
+                        <span class="recortatext">{{ row.abrev }}</span>
+                      </div>
+                      <input
+                        *ngIf="row.editar1 == 1"
+                        type="text"
+                        class="formcontrol w-100 d-flex mayuscula"
+                        autocomplete="off"
+                        value="{{ row.abrev }}"
+                        maxlength="5"
+                        onkeypress="return ((event.charCode >= 48 && event.charCode <= 57) || (event.charCode >= 65 && event.charCode <= 90) || (event.charCode >= 97 && event.charCode <= 122))"
+                        appAutoFocus
+                        (keyup)="presenter1($event, indice)"
+                        (blur)="caneditar1($event.target.value, indice)"
+                      />
+                    </td>
+                    <td
+                      class="text-left cellsinpadding"
+                      (click)="Editar2(indice)"
+                      appAnchocol
+                      [ancho]="220"
+                      [detalle]="true"
+                      [ngClass]="{
+                        highlight: filaSel == indice,
+                        'f-w-900':
+                          row.tipo_registro == 3 || row.tipo_registro == 2
+                      }"
+                    >
+                      <div
+                        *ngIf="row.editar2 == 0"
+                        class="recortatextlinea celdaadvcero div-celdavac"
+                        style="cursor: pointer"
+                        ngbTooltip="{{ row.descripcion }}"
+                        #t="ngbTooltip"
+                        container="body"
+                        triggers="click:blur"
+                        (mouseout)="t.close()"
+                      >
+                        <span class="w-100 recortatext">{{
+                          row.descripcion
+                        }}</span>
+                      </div>
+                      <input
+                        *ngIf="row.editar2 == 1"
+                        type="text"
+                        class="formcontrol w-100 d-flex mayuscula"
+                        autocomplete="off"
+                        value="{{ row.descripcion }}"
+                        maxlength="500"
+                        appAutoFocus
+                        (keyup)="presenter2($event, indice)"
+                        (blur)="caneditar2($event.target.value, indice)"
+                      />
+                    </td>
+                    <td
+                      appAnchocol
+                      [ancho]="200"
+                      [ngClass]="{
+                        highlight: filaSel == indice,
+                        'f-w-900':
+                          row.tipo_registro == 3 || row.tipo_registro == 2
+                      }"
+                      (click)="Editar4(indice)"
+                    >
+                      <ng-container *ngIf="row.tipo_registro == 4">
+                        <div *ngIf="row.editar4 == 0" >
+                          <ng-container>
+                            <div
+                              class="text-center"
+                              style="margin-top: 5px; margin-left: 10px"
+                            >
+                              <span class="mt-1 font-weight-bolder"
+                                >C.I.={{ row.abrev }}/CD</span
+                              >
+                            </div>
+                          </ng-container>
                         </div>
-                        <div class="float-right">
-                          <button class="btn btn-mini2 bg-info ml-2 float-right" type="button"
-                          [ngbTooltip]="titsel!='0'?'' :'Ver tablas desagregados'" container="body" [disabled]="titsel!='0'"
-                          (mouseup)="quitarfoco($event);" (click)="cambioVista(indice)">
-                          <i class="fa fa-search icono-but"></i>
-                          </button> 
+                        <span *ngIf="row.editar4 == 1"
+                          >C.I={{ row.abrev }}/</span
+                        >
+                        <input
+                          *ngIf="row.editar4 == 1"
+                          type="text"
+                          class="mayuscula"
+                          autocomplete="off"
+                          style="width: 30px"
+                          value="{{
+                            row.formula == '' ? 'CD' : row.formula
+                          }}"
+                          appAutoFocus
+                          (keyup)="presenter4($event, indice)"
+                          (blur)="caneditar4($event.target.value, indice)"
+                        />
+                      </ng-container>
+                      <ng-container
+                        *ngIf="row.tipo_registro == 1 || row.tipo_registro == 2"
+                      >
+                        <div
+                          *ngIf="row.editar4 == 0"
+                          class="div-celdavac"
+                          (click)="Editar4(indice)"
+                        >
+                          <span class="recortatext">{{ row.formula }}</span>
+                        </div>
+                        <input
+                          *ngIf="row.editar4 == 1"
+                          type="text"
+                          class="formcontrol w-100 d-flex mayuscula"
+                          autocomplete="off"
+                          value="{{ row.formula }}"
+                          appAutoFocus
+                          (keyup)="presenter4($event, indice)"
+                          (blur)="caneditar4($event.target.value, indice)"
+                        />
+                      </ng-container>
+                    </td>
+                    <td
+                      appAnchocol
+                      [ancho]="100"
+                      [ngClass]="{
+                        highlight: filaSel == indice,
+                        'f-w-900':
+                          row.tipo_registro == 3 || row.tipo_registro == 2
+                      }"
+                    >
+                      <div
+                        *ngIf="row.editar5 == 0"
+                        style="cursor: pointer"
+                        class="float-right w-100"
+                        (click)="Editar5(indice)"
+                      >
+                        <span class="float-left"
+                          >{{ simbolo
+                          }}<i
+                            *ngIf="row.monto2 == 0"
+                            class="fa fa-exclamation-triangle c-alert"
+                          ></i
+                        ></span>
+                        <span class="float-right">{{
+                          row.monto2 | number : mask_parcial
+                        }}</span>
+                      </div>
+                      <input
+                        *ngIf="row.editar5 == 1"
+                        [textMask]="
+                          this.dec_parcial == 4
+                            ? this.formService.maskUsAmountDecimal4
+                            : this.dec_parcial == 3
+                            ? this.formService.maskUsAmountDecimal3
+                            : this.formService.maskUsAmountDecimal2
+                        "
+                        type="text"
+                        class="formcontrol w-100 d-flex text-center"
+                        autocomplete="off"
+                        value="{{ row.monto2 }}"
+                        appAutoFocus
+                        (keyup)="presenter5($event, indice)"
+                        (blur)="caneditar5($event.target.value, indice)"
+                      />
+                    </td>
+                         <td
+                      appAnchocol
+                      [ancho]="35"
+                      [ngClass]="{
+                        highlight: filaSel == indice,
+                        'f-w-900':
+                          row.tipo_registro == 3 || row.tipo_registro == 2
+                      }"
+                    >
+                      <ng-container *ngIf="row.tipo_registro != 3">
+                        <div class="d-flex" style="justify-content: center">
+                          <button
+                            *ngIf="titsel == '0' && !solover"
+                            type="button"
+                            class="btn btn-mini2 btn-danger"
+                            placement="top"
+                            ngbTooltip="Eliminar"
+                            container="body"
+                            (click)="EliminarFila(indice)"
+                            (mouseup)="quitarfoco($event)"
+                          >
+                            <i class="fa fa-times icono-but"></i>
+                          </button>
                         </div>
                       </ng-container>
-                    </div>
-                    <span *ngIf="row.editar4 == 1" >C.I={{row.abrev}}/</span>
-                    <input
-                    *ngIf="row.editar4 == 1"
-                    type="text"
-                    class="mayuscula"
-                    autocomplete="off"
-                    style="width:30px;"
-                    value="{{row.formula =='' ? abretotal : row.formula}}"
-                    appAutoFocus
-                    (keyup)="presenter4($event, indice)"
-                    (blur)="caneditar4($event.target.value, indice)"
-                    />
-                  </ng-container>
-                  <ng-container *ngIf="row.tipo_registro == 1 || row.tipo_registro == 2">
-                    <div
-                    *ngIf="row.editar4 == 0"
-                    class="div-celdavac"
-                    (click)="Editar4(indice)"
-                  >
-                    <span class="recortatext">{{ row.formula }}</span>
-                  </div>
-                  <input
-                    *ngIf="row.editar4 == 1"
-                    type="text"
-                    class="formcontrol w-100 d-flex mayuscula"
-                    autocomplete="off"
-                    value="{{ row.formula }}"
-                    appAutoFocus
-                    (keyup)="presenter4($event, indice)"
-                    (blur)="caneditar4($event.target.value, indice)"
-                />
-                   </ng-container>
-                  </td>
-                  <td
-                    appAnchocol
-                    [ancho]="100"
-                    [ngClass]="{
-                      highlight: filaSel == indice,
-                      'f-w-900':
-                        row.tipo_registro == 3 || row.tipo_registro == 2
-                    }"
-                  >
-                    <div
-                      *ngIf="row.editar5 == 0"
-                      style="cursor: pointer"
-                      class="float-right w-100"
-                      (click)="Editar5(indice)"
-                    >
-                      <span class="float-left"
-                        >{{ simbolo
-                        }}<i
-                          *ngIf="row.monto == 0"
-                          class="fa fa-exclamation-triangle c-alert"
-                        ></i
-                      ></span>
-                      <span class="float-right">{{
-                        row.monto | number : mask_parcial
-                      }}</span>
-                    </div>
-                    <input
-                      *ngIf="row.editar5 == 1"
-                      [textMask]="
-                        this.dec_parcial == 4
-                          ? this.formService.maskUsAmountDecimal4
-                          : this.dec_parcial == 3
-                          ? this.formService.maskUsAmountDecimal3
-                          : this.formService.maskUsAmountDecimal2
-                      "
-                      type="text"
-                      class="formcontrol w-100 d-flex text-center"
-                      autocomplete="off"
-                      value="{{ row.monto }}"
-                      appAutoFocus
-                      (keyup)="presenter5($event, indice)"
-                      (blur)="caneditar5($event.target.value, indice)"
-                    />
-                  </td>
-                  <!-- <td
-                    appAnchocol
-                    [ancho]="58"
-                    [ngClass]="{
-                      highlight: filaSel == indice,
-                      'f-w-900':
-                        row.tipo_registro == 3 || row.tipo_registro == 2
-                    }"
-                  >
-                    <mat-checkbox
-                      class="checktabla"
-                      [checked]="row.aplicatit == 0 ? false : true"
-                      (change)="$event ? cambioseltpri(row) : null"
-                      [disabled]="
-                        row.tipo_registro == 3 || titsel != '0' || solover
-                      "
-                    ></mat-checkbox>
-                  </td> -->
-                  <!-- <td
-                    appAnchocol
-                    [ancho]="35"
-                    [ngClass]="{
-                      highlight: filaSel == indice,
-                      'f-w-900':
-                        row.tipo_registro == 3 || row.tipo_registro == 2
-                    }"
-                  >
-                    <ng-container *ngIf="row.tipo_registro != 3">
-                      <div class="d-flex" style="justify-content: center">
-                        <button
-                          *ngIf="titsel == '0' && !solover"
-                          type="button"
-                          class="btn btn-mini2 btn-danger"
-                          placement="top"
-                          ngbTooltip="Eliminar"
-                          container="body"
-                          (click)="EliminarFila(indice)"
-                          (mouseup)="quitarfoco($event)"
-                        >
-                          <i class="fa fa-times icono-but"></i>
-                        </button>
-                      </div>
-                    </ng-container>
-                  </td> -->
-                  <!-- <td
-                    appAnchocol
-                    [ancho]="50"
-                    [ngClass]="{
-                      highlight: filaSel == indice,
-                      'f-w-900':
-                        row.tipo_registro == 3 || row.tipo_registro == 2||row.tipo_registro==4
-                    }"
-                  >
-                    <label
-                      class="switch"
-                      *ngIf="
-                        (row.tipo_registro == '0' ||
-                          row.tipo_registro == '1'||
-                          row.tipo_registro == '4') &&
-                        !solover
-                      "
-                    >
-                      <input
-                        type="checkbox"
-                        id="togBtn"
-                        (click)="Cambioincluyefp(row)"
-                        [checked]="row.incluyefp == 1 ? true : false"
-                        [disabled]="titsel != '0'"
-                      />
-                      <div class="slider round"></div>
-                    </label>
-                  </td>
-                  <td
-                    appAnchocol
-                    [ancho]="250"
-                    [ngClass]="{
-                      highlight: filaSel == indice,
-                      'f-w-900':
-                        row.tipo_registro == 3 || row.tipo_registro == 2
-                    }"
-                  >
-                    <div
-                      *ngIf="row.incluyefp == 1 && !solover"
-                      class="d-flex"
-                    >
-                      <select
-                        class="cust-sel-celda"
-                        (change)="CambIndunif($event.target.value, row)"
-                        style="text-align: left"
-                        [disabled]="titsel != '0'"
-                      >
-                        <option [value]="">--Seleccionar--</option>
-                        <option
-                          *ngFor="let indunif of listaIndices"
-                          [value]="indunif.id_indice"
-                          [selected]="row.id_indice == indunif.id_indice"
-                        >
-                          {{
-                            indunif.id_indice + " - " + indunif.desc_indice
-                          }}
-                        </option>
-                      </select>
-                    </div>
-                  </td> -->
-                </tr>
-              </ng-container>
-              <ng-container *ngIf="datasourcePri?.length == 0">
-                <tr>
-                  <td>1</td>
-                  <td>CD</td>
-                  <td>COSTO DIRECTO</td>
-                  <td></td>
-                  <td>54646645465</td>
-                </tr>
-              </ng-container>
-            </tbody>
-          </table>
+                    </td>
+                  </tr>
+                </ng-container>
+                <ng-container *ngIf="datasourcePri?.length == 0">
+                </ng-container>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      <div class="card-header py-1 mt-4">
+        <h5>LINKS DEL PROYECTO</h5>
+      </div>
+      <div class="col-12">
+        <div class="row">
+          <div
+            class="col-xl-4 col-sm-12 col-md-6 pl-lg-0"
+            style="margin-bottom: 10px"
+          >
+            <mat-form-field
+              class="mff-reduc w-100 alto-35 field-busqueda"
+              appearance="outline"
+            >
+              <mat-label>Buscar</mat-label>
+              <input
+                matInput
+                type="text"
+                [(ngModel)]="busqueda"
+                autocomplete="off"
+              />
+              <button
+                *ngIf="busqueda"
+                matSuffix
+                mat-icon-button
+                aria-label="Clear"
+                (click)="limpiarfiltro()"
+              >
+                <mat-icon>close</mat-icon>
+              </button>
+            </mat-form-field>
+          </div>
+          <div
+            *ngIf="!esSecund"
+            class="col-xl-4 col-sm-12 col-md-12 justify-content-end d-flex mt-sm-2 mt-2 mt-md-0 px-lg-0"
+          >
+            <button
+              type="button"
+              class="btn btn-success btn-sm light ripple m-b-10 m-r-5"
+              (click)="openModal(1)"
+              (mouseup)="quitarfoco($event)"
+            >
+              <i class="fa fa-plus"></i>Agregar
+            </button>
+          </div>
         </div>
       </div>
-      <app-tiempos-programacion [tabproyecto]="prueba" style="width: 100%;padding: 0px 10px;margin-top: 30px;"></app-tiempos-programacion>
-    </div>
-  </ng-template>
-</li>
+      <div [style.height.px]="height - 50" class="overflow-auto tabla-limp">
+        <table class="table-bordered tab-10">
+          <thead class="text-center">
+            <tr class="headsticky header-custom">
+              <th appAnchocol [ancho]="40" [detalle]="true" class="col-expand">
+                Tipo
+                <div class="d-flex">
+                  <a
+                    style="padding: 0px 2px; cursor: pointer"
+                    ngbTooltip="Expandir Todo"
+                    container="body"
+                    (click)="maxtodo()"
+                    ><i class="icofont icofont-caret-down"></i
+                  ></a>
+                  <a
+                    style="padding: 0px 2px; cursor: pointer"
+                    ngbTooltip="Contraer Todo"
+                    container="body"
+                    (click)="mintodo()"
+                    ><i class="icofont icofont-caret-up"></i
+                  ></a>
+                </div>
+              </th>
+              <th appAnchocol [ancho]="220" [detalle]="true">Descripción</th>
+              <th appAnchocol [ancho]="220">Link</th>
+              <th appAnchocol [ancho]="120">Fecha Modif.</th>
+              <th appAnchocol [ancho]="120">Observacion</th>
+              <th appAnchocol [ancho]="105"></th>
+            </tr>
+          </thead>
+          <tbody class="text-center">
+            <ng-container *ngIf="arreglomostrar.length > 0">
+              <tr
+                *ngFor="
+                  let row of arreglomostrar
+                    | filtoTablaDesc : busqueda : 'descripcion';
+                  let i = index
+                "
+                [hidden]="!row.mostrar"
+              >
+                <td appAnchocol [ancho]="40" style="cursor: pointer">
+                  <div class="w-100">
+                    <a
+                      *ngIf="row.icomost == '0'"
+                      style="color: #06bb06; width: 14px"
+                    >
+                      <i
+                        class="icofont icofont-caret-down"
+                        (click)="toggleOn(i)"
+                      ></i>
+                    </a>
+                    <a
+                      *ngIf="row.icomost == '1'"
+                      style="color: red; width: 14px"
+                    >
+                      <i
+                        class="icofont icofont-caret-up"
+                        (click)="toggleOff(i)"
+                      ></i>
+                    </a>
+                  </div>
+                </td>
+                <td
+                  class="text-left"
+                  appAnchocol
+                  [ancho]="220"
+                  [detalle]="true"
+                >
+                  <div
+                    class="row mx-0"
+                    ngbTooltip="{{ row.descripcion }}"
+                    #t="ngbTooltip"
+                    container="body"
+                    triggers="click:blur"
+                    (mouseout)="t.close()"
+                    [ngClass]="{
+                      'ml-1': row.filaagru == null,
+                      'ml-3': row.filaagru !== null
+                    }"
+                  >
+                    <span class="recortatext w-100">{{ row.descripcion }}</span>
+                  </div>
+                </td>
+                <td appAnchocol [ancho]="220" class="text-left">
+                  <a [href]="row.link" target="_blank" class="small">{{
+                    row.link
+                  }}</a>
+                </td>
+                <td appAnchocol [ancho]="120">
+                  {{ row.fechamod | date : "dd-MM-yyyy" }}
+                </td>
+                <td appAnchocol [ancho]="120">
+                  {{ row.observacion }}
+                </td>
+                <td appAnchocol [ancho]="105">
+                  <div class="d-flex">
+                    <button
+                      *ngIf="row.filaagru == null && !esSecund"
+                      class="btn btn-mini2 btn-info"
+                      placement="top"
+                      ngbTooltip="Agregar Link"
+                      container="body"
+                      (click)="openModal(row, true, true)"
+                      (mouseup)="quitarfoco($event)"
+                    >
+                      <i class="fa fa-plus icono-but"></i>
+                    </button>
+                    <button
+                      *ngIf="!esSecund"
+                      class="btn btn-mini2 btn-success"
+                      placement="top"
+                      ngbTooltip="Editar"
+                      container="body"
+                      (click)="openModal(row, true)"
+                      (mouseup)="quitarfoco($event)"
+                    >
+                      <i class="fa fa-edit icono-but"></i>
+                    </button>
+                    <button
+                      *ngIf="
+                        !esSecund &&
+                        (row.filaagru !== null ||
+                          (row.totalsub == 0 && row.filaagru == null))
+                      "
+                      class="btn btn-mini2 btn-danger"
+                      placement="top"
+                      ngbTooltip="Eliminar"
+                      container="body"
+                      (click)="eliminarLink(row)"
+                      (mouseup)="quitarfoco($event)"
+                    >
+                      <i class="fa fa-remove icono-but"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </ng-container>
+            <ng-container *ngIf="arreglomostrar.length <= 0">
+              <tr>
+                <td class="mat-cell text-center" colspan="8">
+                  <label *ngIf="!buscando">No se encontraron resultados</label>
+                  <div *ngIf="buscando" class="preloader3 loader-block">
+                    <div class="circ1"></div>
+                    <div class="circ2"></div>
+                    <div class="circ3"></div>
+                    <div class="circ4"></div>
+                  </div>
+                </td>
+              </tr>
+            </ng-container>
+          </tbody>
+        </table>
+      </div>
+    </ng-template>
+  </li>
   <li [ngbNavItem]="2">
     <a ngbNavLink>PRESUPUESTO DE OBRA</a>
     <ng-template ngbNavContent>
       <div class="col-12 espacio-boton">
         <button
           type="button"
-          ngbTooltip="Datos Proyecto"
+          ngbTooltip="Resumen Presupuesto"
           container="body"
           class="btn btn-outline-secondary btn-sm ripple m-b-10 custom-bt"
           (click)="cambioSubMenu(1)"
@@ -470,7 +771,7 @@
         </button>
         <button
           type="button"
-          ngbTooltip="Items Alternos"
+          ngbTooltip="Presupuesto Indirecto"
           container="body"
           class="btn btn-outline-secondary btn-sm ripple m-b-10 custom-bt ml-3"
           (click)="cambioSubMenu(2)"
@@ -480,24 +781,118 @@
           ><span class="ocultar-sm">Presupuesto Indirecto</span>
         </button>
       </div>
-      <div class="row contenido-menu-responsive w-100">  
-        <ng-container *ngIf="idnav == 1"> 
+      <div class="row contenido-menu-responsive w-100">
+        <ng-container *ngIf="idnav == 1">
           <app-presdirecto [tabproyecto]="prueba"></app-presdirecto>
         </ng-container>
-        <ng-container *ngIf="idnav == 2"> 
-          <app-presindir [tabproyecto]="prueba" style="width: 100%;padding: 0px 10px;"></app-presindir>
+        <ng-container *ngIf="idnav == 2">
+          <app-presindir
+            [tabproyecto]="prueba"
+            style="width: 100%; padding: 0px 10px"
+          ></app-presindir>
         </ng-container>
       </div>
     </ng-template>
   </li>
   <li [ngbNavItem]="3">
     <a ngbNavLink>METRADO DE OBRA</a>
+    <ng-template ngbNavContent>
+      <app-hoja-metrados
+        [tabproyecto]="prueba"
+        style="width: 100%; padding: 0px 10px; margin-top: 30px"
+      ></app-hoja-metrados>
+    </ng-template>
   </li>
   <li [ngbNavItem]="4">
     <a ngbNavLink>PROGRAMACION DE OBRA</a>
+     <ng-template ngbNavContent>
+      <app-programacion-obra
+        [tabproyecto]="prueba"
+        style="width: 100%; padding: 0px 10px; margin-top: 30px"
+      ></app-programacion-obra>
+    </ng-template>
   </li>
 </ul>
 <div [ngbNavOutlet]="nav" class="mt-2"></div>
+
+<app-modal-basic [dialogClass]="'modal-md'" #modalLinks>
+  <div class="app-modal-header">
+    <h4 class="modal-title tit-modal1">
+      <b *ngIf="!editar && !ver">Agregar Grupo</b>
+      <b *ngIf="editar && !ver">Editar Grupo/Subgrupo</b>
+      <b *ngIf="editar && ver">Agregar Subgrupo</b>
+    </h4>
+    <button type="button" class="close basic-close" (click)="closeModal()">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="app-modal-body">
+    <form [formGroup]="formLinks">
+      <div class="row">
+        <mat-form-field
+          appearance="outline"
+          class="mff-reduc col-sm-12 col-12 mt-2"
+        >
+          <mat-label>Descripcion</mat-label>
+          <input
+            matInput
+            type="text"
+            class="mayuscula"
+            autocomplete="off"
+            maxlength="100"
+            formControlName="descripcion"
+            [maxlength]="100"
+            class="mayuscula"
+          />
+        </mat-form-field>
+        <mat-form-field
+          appearance="outline"
+          class="mff-reduc col-sm-12 col-12 mt-2"
+        >
+          <mat-label>Link</mat-label>
+          <input
+            matInput
+            type="text"
+            autocomplete="off"
+            formControlName="link"
+            [maxlength]="150"
+          />
+        </mat-form-field>
+        <mat-form-field
+          appearance="outline"
+          class="mff-reduc col-sm-12 col-12 mt-2"
+        >
+          <mat-label>Observacion</mat-label>
+          <input
+            matInput
+            type="text"
+            autocomplete="off"
+            maxlength="200"
+            formControlName="observacion"
+          />
+        </mat-form-field>
+      </div>
+    </form>
+  </div>
+  <div class="app-modal-footer w-100">
+    <div class="row px-3">
+      <button
+        type="button"
+        class="btn btn-danger btn-sm"
+        (click)="closeModal()"
+      >
+        <i class="fa fa-times"></i>Cerrar
+      </button>
+      <button
+        type="button"
+        class="btn btn-success btn-sm"
+        (click)="almacenar()"
+      >
+        <i class="fa fa-check"></i>Guardar
+      </button>
+    </div>
+  </div>
+</app-modal-basic>
 
 <app-cargando [bloquearTodo]="true" *ngIf="mostrar_carga_todo"></app-cargando>
 <app-cargando [bloquearTodo]="false" *ngIf="mostrar_carga"></app-cargando>
