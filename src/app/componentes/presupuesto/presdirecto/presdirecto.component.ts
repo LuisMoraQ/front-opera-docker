@@ -8897,7 +8897,7 @@ export class PresdirectoComponent implements OnInit,OnDestroy {
       concat_tabla2:true,
       tipo_reporte:0,
       moneda:this.simbolo,//condicionar
-      titulo:'COSTO DEL PROYECTO DESAGREGADO',
+      titulo:'COSTO DEL PROYECTO DESAGREGADO X TIPO',
       titulos:arrtit,
     }
     const modalRef = this.modalService.open(ReportesComponent, { size: 'lg modalgrande', backdrop: 'static', windowClass: 'pcoded', keyboard: false, });
@@ -12037,5 +12037,335 @@ export class PresdirectoComponent implements OnInit,OnDestroy {
   }
   CambioLineas(){
     this.lineas2=!this.lineas2;
+  }
+  multipSubpar(auxsubp:any,indbusq:any,filabusq:any){
+    let fulasubp=null;
+    fulasubp=auxsubp.find(ele=>ele.indice_subp==indbusq)
+    if(fulasubp){
+      //recursivo para recuperar multiplicador e inidice
+      filabusq.indpart=fulasubp.indice;
+      filabusq.multi=(filabusq.multi??1)*fulasubp.cantidad;
+      this.multipSubpar(auxsubp,fulasubp.indice,filabusq);
+    }
+  }
+  acumuladetsubp(arrsubp:any,filadet:any,filarrtot:any){
+    for(let c=0;c<arrsubp.length;c++){
+      if(arrsubp[c].indpart==filadet.indice_subp){
+        //let parcopera=Number(filadet.cantidad) * Number(arrsubp[c].parcial) * Number(arrsubp[c].multi);//operar con multiplicador
+        let parc1=Number(arrsubp[c].parcial) * Number(arrsubp[c].multi);//operar con multiplicador
+        let cantop=Number(filadet.parcial)/Number(filadet.precio);
+        let parcopera=Number(cantop) * Number(parc1);//operar con multiplicador
+        if(arrsubp[c].id_tipo_insumo=='1'){
+          let valant=Number(filarrtot.mano??0);
+          filarrtot.mano=this.formService.redondeo(valant+parcopera,Number(this.dec_parcial)+3);
+        }
+        else if(arrsubp[c].id_tipo_insumo=='2'){
+          let valant=Number(filarrtot.mate??0);
+          filarrtot.mate=this.formService.redondeo(valant+parcopera,Number(this.dec_parcial)+3);
+        }
+        else if(arrsubp[c].id_tipo_insumo=='3'){
+          let valant=Number(filarrtot.equi??0);
+          filarrtot.equi=this.formService.redondeo(valant+parcopera,Number(this.dec_parcial)+3);
+        }
+        else if(arrsubp[c].id_tipo_insumo=='4'){
+          let valant=Number(filarrtot.subcont??0);
+          filarrtot.subcont=this.formService.redondeo(valant+parcopera,Number(this.dec_parcial)+3);
+        }
+      }
+    }
+  }
+  async imprdesagre2(){//generar 3er reporte
+    if(this.existetemp){
+      this.toaster.error('Guardar sus cambios antes de generar Reportes.', 'Advertencia', { closeButton: false, positionClass: 'toast-bottom-right', timeOut: 5000 })
+      return;
+    }
+    if(this.datosproy==null){
+      const detalleProyecto = await this.principalService.recuperarDatosProyecto({id_proyecto: this.id_proyecto})
+      this.datosproy=detalleProyecto;
+    }
+    const arrayHeader = ['ITEM', 'DESCRIPCION', 'UNIDAD', 'METRADO', 'PU','MANO DE OBRA','MATERIALES','EQUIPOS','SUBCONTRATOS','COSTO PARCIAL']
+    const arrayKeys = ['item', 'descripcion', 'unidad', 'cantidad', 'precio','mano','mate','equi','subcont', 'parcial']
+    const arrdec=[null,null,null,this.dec_metrado,this.dec_precio,Number(this.dec_parcial)+1,Number(this.dec_parcial)+1,Number(this.dec_parcial)+1,Number(this.dec_parcial)+1,this.dec_parcial];
+    const arralig=['left','left','center','right','right','right','right','right','right','right'];
+    let aux=JSON.parse(JSON.stringify(this.datasourcePri));
+    let auxdet=JSON.parse(JSON.stringify(this.datasourcePriacu));
+    let auxsubp=JSON.parse(JSON.stringify(this.datasourcePrisub));
+    let arrpasa=[];
+    let arrtit=[];
+    arrtit.push({
+      item:'',
+      descripcion:'COMPLETO',
+    });
+    let sumatot=0;
+    for(let row of aux){//asignar colores
+      let tipol='';
+      let colorl='';
+      let fondol='';
+      let valor2= row.item.toString().split('.');
+      if(this.titulo1letra!=undefined)
+      {
+        if(row.unidad!='')
+        {
+          colorl=this.titulo1letra[11]
+        }
+        else
+        {
+          let ind=valor2.length>=12?11:valor2.length-1;
+          colorl=this.titulo1letra[ind];
+        }
+      }
+      if(this.titulo1color!=undefined)
+      {
+        if(row.unidad!='')
+        {
+          fondol = this.titulo1color[11];
+        }
+        else
+        {
+          let ind=valor2.length>=12?11:valor2.length-1;
+          fondol=this.titulo1color[ind];
+        }
+      }
+      if(this.titulo1!=undefined)
+      {
+        if(row.unidad!='')
+        {
+          tipol = this.titulo1[11];
+        }
+        else{
+          let ind=valor2.length>=12?11:valor2.length-1;
+          tipol=this.titulo1[ind];
+        }
+      }
+      let esp=' ';
+      let descp=esp.repeat(valor2.length-1)+row.descripcion;
+      arrpasa.push({
+        indice:row.indice,
+        item:row.item,
+        itemord:row.itemord,
+        descripcion:descp,
+        id_unidad:row.id_unidad,
+        unidad:row.unidad,
+        cantidad:row.id_unidad!=''?this.formService.redondeo(row.cantidad,this.dec_metrado):null,
+        precio:row.id_unidad!=''?this.formService.redondeo(row.precio,this.dec_precio):null,
+        mano:null,
+        mate:null,
+        equi:null,
+        subcont:null,
+        subpart:null,
+        parcial:this.formService.redondeo(row.parcial,this.dec_parcial),
+        tipofila:row.tipofila,
+        tipoletra:tipol,
+        color:colorl=='unset'?'':colorl,
+        fondo:fondol=='none'?'':fondol
+      });
+      if(!(row.item.includes('.'))){
+        arrtit.push({
+          indice:row.indice,
+          item:row.item,
+          itemord:row.itemord,
+          descripcion:descp,
+          id_unidad:row.id_unidad,
+          unidad:row.unidad,
+          cantidad:row.id_unidad!=''?this.formService.redondeo(row.cantidad,this.dec_metrado):null,
+          precio:row.id_unidad!=''?this.formService.redondeo(row.precio,this.dec_precio):null,
+          mano:null,
+          mate:null,
+          equi:null,
+          subcont:null,
+          subpart:null,
+          parcial:this.formService.redondeo(row.parcial,this.dec_parcial),
+          tipofila:row.tipofila,
+          tipoletra:tipol,
+          color:colorl=='unset'?'':colorl,
+          fondo:fondol=='none'?'':fondol
+        });
+      }
+      if(row.unidad!=''){
+        sumatot+=Number(this.formService.redondeo(row.parcial??0,this.dec_parcial))
+      }
+    }
+    //operar subpartidas
+    //generar un nuevo array con los datos acumulados de las subpartidas que son de detalles
+    let filasubp;
+    let indant=-1;
+    let indpartant=-1;
+    let multiant=1;
+    for(let m=0;m<auxsubp.length;m++){//calcular por partidas y asignar cuando se encuentre en la siguiente iteracion
+      if(indant==auxsubp[m].indice){
+        auxsubp[m].indpart=indpartant;
+        auxsubp[m].multi=multiant;
+      }
+      else{
+        filasubp=auxsubp.find(ele=>ele.indice_subp==auxsubp[m].indice)
+        if(filasubp){
+          auxsubp[m].indpart=filasubp.indice;
+          auxsubp[m].multi=(auxsubp[m].multi??1)*filasubp.cantidad;
+          //recursivo para recuperar multiplicador e inidice
+          this.multipSubpar(auxsubp,filasubp.indice,auxsubp[m]);
+          indpartant=auxsubp[m].indpart;
+          multiant=auxsubp[m].multi;
+        }
+        else{//directo, asignar indice de partida?
+          auxsubp[m].indpart=auxsubp[m].indice;
+          auxsubp[m].multi=1;
+          indpartant=auxsubp[m].indice;
+          multiant=1;
+        }
+      }
+      filasubp=null;
+    }
+    //calcular agrupaciones
+    for(let b=0;b<auxdet.length;b++){
+      let parcopera=Number(auxdet[b].parcial);
+      //buscar en presu, break, solo sumar
+      for(let c=0;c<arrpasa.length;c++){
+        if(arrpasa[c].indice==auxdet[b].indice){
+          if(auxdet[b].id_tipo_insumo=='1'){
+            let valant=Number(arrpasa[c].mano??0);
+            arrpasa[c].mano=valant+parcopera;
+          }
+          else if(auxdet[b].id_tipo_insumo=='2'){
+            let valant=Number(arrpasa[c].mate??0);
+            arrpasa[c].mate=valant+parcopera;
+          }
+          else if(auxdet[b].id_tipo_insumo=='3'){
+            let valant=Number(arrpasa[c].equi??0);
+            arrpasa[c].equi=valant+parcopera;
+          }
+          else if(auxdet[b].id_tipo_insumo=='4'){
+            let valant=Number(arrpasa[c].subcont??0);
+            arrpasa[c].subcont=valant+parcopera;
+          }
+          else if(auxdet[b].id_tipo_insumo=='5'){//subpartidas, buscar los detalles en arrauxsubp
+            this.acumuladetsubp(auxsubp,auxdet[b],arrpasa[c])
+          }
+          break;
+        }
+      }
+    }
+    //volver a recorrer para multiplicar por metrado
+    for(let d=arrpasa.length-1;d>=0;d--){
+      if(arrpasa[d].cantidad){
+        //let cantop=arrpasa[d].cantidad;
+        let cantop=Number(arrpasa[d].parcial)/Number(arrpasa[d].precio);
+        arrpasa[d].mano=arrpasa[d].mano?this.formService.redondeo(cantop*Number(arrpasa[d].mano),Number(this.dec_parcial)+1):arrpasa[d].mano;
+        arrpasa[d].mate=arrpasa[d].mate?this.formService.redondeo(cantop*Number(arrpasa[d].mate),Number(this.dec_parcial)+1):arrpasa[d].mate;
+        arrpasa[d].equi=arrpasa[d].equi?this.formService.redondeo(cantop*Number(arrpasa[d].equi),Number(this.dec_parcial)+1):arrpasa[d].equi;
+        arrpasa[d].subcont=arrpasa[d].subcont?this.formService.redondeo(cantop*Number(arrpasa[d].subcont),Number(this.dec_parcial)+1):arrpasa[d].subcont;
+      }
+    }
+    //totales agrupaciones (sub)titulos
+    let indtit=[];
+    let tottit1=[];
+    let tottit2=[];
+    let tottit3=[];
+    let tottit4=[];
+    let itemtit=[];
+    for (let c = 0; c < arrpasa.length; c++)
+    {
+      if (arrpasa[c].unidad == "")//titulos
+      {
+        for (let t = itemtit.length - 1; t >= 0; t--)
+        {
+          let itemtem = arrpasa[c].item;
+          let itemfila = itemtem.Length <= itemtit[t].length + 1 ? "-" : itemtem.substring(0, itemtit[t].length + 1);
+          if (itemtit[t] + "." != itemfila)//si no es predecesor, se actualizan y eliminan los titulos
+          {
+            arrpasa[indtit[t]].mano = tottit1[t]!=null?this.formService.redondeo(tottit1[t],Number(this.dec_parcial)+1):tottit1[t];
+            arrpasa[indtit[t]].mate = tottit2[t]!=null?this.formService.redondeo(tottit2[t],Number(this.dec_parcial)+1):tottit2[t];
+            arrpasa[indtit[t]].equi = tottit3[t]!=null?this.formService.redondeo(tottit3[t],Number(this.dec_parcial)+1):tottit3[t];
+            arrpasa[indtit[t]].subcont = tottit4[t]!=null?this.formService.redondeo(tottit4[t],Number(this.dec_parcial)+1):tottit4[t];
+            indtit.splice(t,1);
+            tottit1.splice(t,1);
+            tottit2.splice(t,1);
+            tottit3.splice(t,1);
+            tottit4.splice(t,1);
+            itemtit.splice(t,1);
+          }
+        }
+        indtit.push(c);
+        tottit1.push(null);
+        tottit2.push(null);
+        tottit3.push(null);
+        tottit4.push(null);
+        itemtit.push(arrpasa[c].item);
+      }
+      else//partidas
+      {
+        for(let t = itemtit.length-1; t >= 0;t--)
+        {
+          let itemtem = arrpasa[c].item;
+          let itemfila = itemtem.Length <= itemtit[t].length + 1 ? "-" : itemtem.substring(0, itemtit[t].length + 1);
+          if (itemtit[t]+"."==itemfila)
+          {
+            if(arrpasa[c].mano){
+              tottit1[t] = Number(tottit1[t]??0)+Number(arrpasa[c].mano);
+            }
+            if(arrpasa[c].mate){
+              tottit2[t] = Number(tottit2[t]??0)+Number(arrpasa[c].mate);
+            }
+            if(arrpasa[c].equi){
+              tottit3[t] = Number(tottit3[t]??0)+Number(arrpasa[c].equi);
+            }
+            if(arrpasa[c].subcont){
+              tottit4[t] = Number(tottit4[t]??0)+Number(arrpasa[c].subcont);
+            }
+          }
+          else//si no es predecesor, se actualizan y eliminan los titulos
+          {
+            arrpasa[indtit[t]].mano = tottit1[t]!=null?this.formService.redondeo(tottit1[t],Number(this.dec_parcial)+1):tottit1[t];
+            arrpasa[indtit[t]].mate = tottit2[t]!=null?this.formService.redondeo(tottit2[t],Number(this.dec_parcial)+1):tottit2[t];
+            arrpasa[indtit[t]].equi = tottit3[t]!=null?this.formService.redondeo(tottit3[t],Number(this.dec_parcial)+1):tottit3[t];
+            arrpasa[indtit[t]].subcont = tottit4[t]!=null?this.formService.redondeo(tottit4[t],Number(this.dec_parcial)+1):tottit4[t];
+            indtit.splice(t,1);
+            tottit1.splice(t,1);
+            tottit2.splice(t,1);
+            tottit3.splice(t,1);
+            tottit4.splice(t,1);
+            itemtit.splice(t,1);
+          }
+        }
+      }
+    }
+    if(itemtit.length>0){//actualizar totales
+      for (let t = itemtit.length - 1; t >= 0; t--)
+      {
+        arrpasa[indtit[t]].mano = tottit1[t]!=null?this.formService.redondeo(tottit1[t],Number(this.dec_parcial)+1):tottit1[t];
+        arrpasa[indtit[t]].mate = tottit2[t]!=null?this.formService.redondeo(tottit2[t],Number(this.dec_parcial)+1):tottit2[t];
+        arrpasa[indtit[t]].equi = tottit3[t]!=null?this.formService.redondeo(tottit3[t],Number(this.dec_parcial)+1):tottit3[t];
+        arrpasa[indtit[t]].subcont = tottit4[t]!=null?this.formService.redondeo(tottit4[t],Number(this.dec_parcial)+1):tottit4[t];
+        indtit.splice(t,1);
+        tottit1.splice(t,1);
+        tottit2.splice(t,1);
+        tottit3.splice(t,1);
+        tottit4.splice(t,1);
+        itemtit.splice(t,1);
+      }
+    }
+    let tablaTotales = []
+    const obj = [
+      { text: 'TOTAL', colSpan: 9, tipoletra:'3',color:'',fondo:'',alinea:'center' },
+      { text: this.formService.redondeo(sumatot,this.dec_parcial), colSpan: 1, tipoletra:'3',color:'',fondo:'',alinea:'right' },
+    ]
+    tablaTotales.push(obj)
+    const datos = {
+      datos_proyecto: this.datosproy,
+      header: arrayHeader,
+      keys_body: arrayKeys,
+      keys_dec:arrdec,
+      col_alig:arralig,
+      tabla: arrpasa,
+      orientacion:'landscape',
+      tabla2: tablaTotales,
+      concat_tabla2:true,
+      tipo_reporte:0,
+      moneda:this.simbolo,//condicionar
+      titulo:'COSTO DEL PROYECTO DESAGREGADO',
+      titulos:arrtit,
+    }
+    const modalRef = this.modalService.open(ReportesComponent, { size: 'lg modalgrande', backdrop: 'static', windowClass: 'pcoded', keyboard: false, });
+    modalRef.componentInstance.datos = datos;
+    const result = await modalRef.result;
   }
 }

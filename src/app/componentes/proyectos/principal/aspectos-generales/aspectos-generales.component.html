@@ -411,85 +411,6 @@
                         <span class="float-right">{{row.total | number: '0.2'}}</span>
                       </td>
                     </tr>
-                    <tr class="filafoot">
-                      <th class="cellsinpadding font-weight-bolder" appAnchocol
-                        [ancho]="180" [detalle]="true" colspan="2">
-                        COSTO DIRECTO
-                      </th>
-                      <th class="cellsinpadding" appAnchocol [ancho]="90">
-                        <span
-                          class="float-left">{{this.moneda}}</span><span
-                          class="float-right font-weight-bolder">
-                          {{allform.get('aspectos_generales').value.tabla_prueba.totmano |
-                          number : mask_parcial}}</span>
-                      </th>
-                      <th class="cellsinpadding" appAnchocol [ancho]="90">
-                        <span
-                          class="float-left">{{this.moneda}}</span><span
-                          class="float-right font-weight-bolder">
-                          {{allform.get('aspectos_generales').value.tabla_prueba.totmat |
-                          number : mask_parcial}}</span>
-                      </th>
-                      <th class="cellsinpadding" appAnchocol [ancho]="90">
-                        <span
-                          class="float-left">{{this.moneda}}</span><span
-                          class="float-right font-weight-bolder">
-                          {{allform.get('aspectos_generales').value.tabla_prueba.totequi |
-                          number : mask_parcial}}</span>
-                      </th>
-                      <th class="cellsinpadding" appAnchocol [ancho]="90">
-                        <span
-                          class="float-left">{{this.moneda}}</span><span
-                          class="float-right font-weight-bolder">
-                          {{allform.get('aspectos_generales').value.tabla_prueba.totsubc |
-                          number : mask_parcial}}</span>
-                      </th>
-                      <th class="cellsinpadding" appAnchocol [ancho]="90">
-                        <span
-                          class="float-left">{{this.moneda}}</span><span
-                          class="float-right font-weight-bolder">
-                          {{allform.get('aspectos_generales').value.tabla_prueba.totsubp |
-                          number : mask_parcial}}</span>
-                      </th>
-                      <th class="cellsinpadding" appAnchocol [ancho]="90">
-                        <span
-                          class="float-left">{{this.moneda}}</span><span
-                          class="float-right font-weight-bolder">
-                          {{allform.get('aspectos_generales').value.tabla_prueba.totdir |
-                          number : mask_parcial}}</span>
-                      </th>
-                    </tr>
-                    <ng-container
-                      *ngFor="let row of allform.get('aspectos_generales').value.tabla_prueba?.totind">
-                      <tr class="filafoot">
-                        <th class="cellsinpadding text-left"
-                          [ngClass]="{'font-weight-bolder':row.tipo_registro==2}"
-                          appAnchocol [ancho]="180" [detalle]="true" colspan="4">
-                          {{row.descripcion}}
-                        </th>
-                        <th class="cellsinpadding"
-                          [ngClass]="{'font-weight-bolder':row.tipo_registro==2}"
-                          appAnchocol [ancho]="90">
-                          {{row.abrev}}
-                        </th>
-                        <th class="cellsinpadding" [ngClass]="{'font-weight-bolder':row.tipo_registro==2}" appAnchocol [ancho]="90">
-                          <ng-container *ngIf="row.tipo_registro==4;else prueba">
-                            <span class="mt-1 font-weight-bolder">{{row.abrev}}/{{row.formula==''?abretotal:row.formula}}={{( row.formula==''?totaldir:findabrev(row.formula))==0?'0.00':(row.monto * 100 /( row.formula==''?totaldir:findabrev(row.formula))).toFixed(2)}}%</span>
-                          </ng-container>
-                          <ng-template #prueba>
-                            {{row.formula}}
-                          </ng-template>
-                        </th>
-                        <th class="cellsinpadding" appAnchocol [ancho]="180"
-                          colspan="2">
-                          <span
-                            class="float-left">{{this.moneda}}</span>
-                          <span class="float-right"
-                            [ngClass]="{'font-weight-bolder':row.tipo_registro==2}">
-                            {{row.monto | number : mask_parcial}}</span>
-                        </th>
-                      </tr>
-                    </ng-container>
                   </ng-container>
                   <ng-container
                     *ngIf="allform.get('aspectos_generales').value.tabla_prueba?.data_source.length<=0">
@@ -506,6 +427,87 @@
                     </tr>
                   </ng-container>
                 </tbody>
+                <tfoot>
+                  <tr>
+                    <th class="cellsinpadding font-weight-bolder" appAnchocol
+                      [ancho]="180" [detalle]="true" colspan="2">
+                      COSTO DIRECTO
+                    </th>
+                    <th class="cellsinpadding" appAnchocol [ancho]="90">
+                      <span
+                        class="float-left">{{this.moneda}}</span><span
+                        class="float-right font-weight-bolder">
+                        {{allform.get('aspectos_generales').value.tabla_prueba.totmano |
+                        number : mask_parcial}}</span>
+                    </th>
+                    <th class="cellsinpadding" appAnchocol [ancho]="90">
+                      <span
+                        class="float-left">{{this.moneda}}</span><span
+                        class="float-right font-weight-bolder">
+                        {{allform.get('aspectos_generales').value.tabla_prueba.totmat |
+                        number : mask_parcial}}</span>
+                    </th>
+                    <th class="cellsinpadding" appAnchocol [ancho]="90">
+                      <span
+                        class="float-left">{{this.moneda}}</span><span
+                        class="float-right font-weight-bolder">
+                        {{allform.get('aspectos_generales').value.tabla_prueba.totequi |
+                        number : mask_parcial}}</span>
+                    </th>
+                    <th class="cellsinpadding" appAnchocol [ancho]="90">
+                      <span
+                        class="float-left">{{this.moneda}}</span><span
+                        class="float-right font-weight-bolder">
+                        {{allform.get('aspectos_generales').value.tabla_prueba.totsubc |
+                        number : mask_parcial}}</span>
+                    </th>
+                    <th class="cellsinpadding" appAnchocol [ancho]="90">
+                      <span
+                        class="float-left">{{this.moneda}}</span><span
+                        class="float-right font-weight-bolder">
+                        {{allform.get('aspectos_generales').value.tabla_prueba.totsubp |
+                        number : mask_parcial}}</span>
+                    </th>
+                    <th class="cellsinpadding" appAnchocol [ancho]="90">
+                      <span
+                        class="float-left">{{this.moneda}}</span><span
+                        class="float-right font-weight-bolder">
+                        {{allform.get('aspectos_generales').value.tabla_prueba.totdir |
+                        number : mask_parcial}}</span>
+                    </th>
+                  </tr>
+                  <ng-container
+                    *ngFor="let row of allform.get('aspectos_generales').value.tabla_prueba?.totind">
+                    <tr>
+                      <th class="cellsinpadding text-left"
+                        [ngClass]="{'font-weight-bolder':row.tipo_registro==2}"
+                        appAnchocol [ancho]="180" [detalle]="true" colspan="4">
+                        {{row.descripcion}}
+                      </th>
+                      <th class="cellsinpadding"
+                        [ngClass]="{'font-weight-bolder':row.tipo_registro==2}"
+                        appAnchocol [ancho]="90">
+                        {{row.abrev}}
+                      </th>
+                      <th class="cellsinpadding" [ngClass]="{'font-weight-bolder':row.tipo_registro==2}" appAnchocol [ancho]="90">
+                        <ng-container *ngIf="row.tipo_registro==4;else prueba">
+                          <span class="mt-1 font-weight-bolder">{{row.abrev}}/{{row.formula==''?abretotal:row.formula}}={{( row.formula==''?totaldir:findabrev(row.formula))==0?'0.00':(row.monto * 100 /( row.formula==''?totaldir:findabrev(row.formula))).toFixed(2)}}%</span>
+                        </ng-container>
+                        <ng-template #prueba>
+                          {{row.formula}}
+                        </ng-template>
+                      </th>
+                      <th class="cellsinpadding" appAnchocol [ancho]="180"
+                        colspan="2">
+                        <span
+                          class="float-left">{{this.moneda}}</span>
+                        <span class="float-right"
+                          [ngClass]="{'font-weight-bolder':row.tipo_registro==2}">
+                          {{row.monto | number : mask_parcial}}</span>
+                      </th>
+                    </tr>
+                  </ng-container>
+                </tfoot>
               </table>
             </div>
             <div class="row col-sm-12 m-b-5 m-t-5 justify-content-between mx-0">

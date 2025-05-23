@@ -1026,9 +1026,7 @@ export class AspectosGeneralesComponent implements OnInit {
                 posterior: 0
               }
               const response = await this.principalService.fechaDespuesDuracion(objeto)
-              console.log(response)
               const diasModificados = fiAnterior < fiform ? Number(response.duracion) * 1 : Number(response.duracion) * -1
-              console.log(diasModificados)
               await this.principalService.desplazarProgramacion({ id_proyecto: this.id_proyecto, diasmodificados: diasModificados,iniproy:fiform})
             }
           } else {

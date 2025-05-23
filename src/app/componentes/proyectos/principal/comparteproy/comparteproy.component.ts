@@ -122,15 +122,25 @@ export class ComparteproyComponent implements OnInit {
           this.estado.setValue(detalleProyecto.estado)
           this.cod_pais.setValue(detalleProyecto.cod_pais)
           this.direccion.setValue(detalleProyecto.direccion)
-          this.departamento.setValue(detalleProyecto.id_deptact??'')
-          if(detalleProyecto.id_deptact){
-            let id_prov=detalleProyecto.id_deptact+'-'+detalleProyecto.id_provact;
-            let id_dist=detalleProyecto.id_deptact+'-'+detalleProyecto.id_provact+'-'+detalleProyecto.id_distact;
-            if(detalleProyecto.id_provact){
-              await this.listarProvincias(detalleProyecto.id_deptact);
-              this.provincia.setValue(id_prov)
-              await this.listarDistritos(id_prov);
-              this.distrito.setValue(id_dist)
+          if(detalleProyecto.cod_pais=='227'){
+            this.departamento.setValue(detalleProyecto.id_deptact??'')
+            if(detalleProyecto.id_deptact){
+              let id_prov=detalleProyecto.id_deptact+'-'+detalleProyecto.id_provact;
+              let id_dist=detalleProyecto.id_deptact+'-'+detalleProyecto.id_provact+'-'+detalleProyecto.id_distact;
+              if(detalleProyecto.id_provact){
+                await this.listarProvincias(detalleProyecto.id_deptact);
+                this.provincia.setValue(id_prov)
+                await this.listarDistritos(id_prov);
+                this.distrito.setValue(id_dist)
+              }
+            }
+          }else{
+            this.OtroPais=true;
+            if(detalleProyecto.cui?.includes('|')){
+              const valores = detalleProyecto.cui.split('|');
+              this.otrodepartamento.setValue(valores[0])
+              this.otraprovincia.setValue(valores[1])
+              this.otrodistrito.setValue(valores[2])
             }
           }
           this.fecha_elaboracion.setValue(detalleProyecto.fecha_elaboracion?moment(detalleProyecto.fecha_elaboracion).format('YYYY-MM-DD'):'')
