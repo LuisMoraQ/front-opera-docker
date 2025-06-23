@@ -6199,6 +6199,16 @@ select.form-control:not([size]):not([multiple]) {
     padding-right: 5px !important;
     align-items: center;
 }
+.btn-mini3 {
+    margin-right: 2px;
+    padding: 1px 1px !important;
+    align-items: center;
+    font-size: 13px !important;
+}
+.boton-reducido{
+  padding : 3px 10px;
+  margin-bottom: 5px;
+}
 .btn-group-mini {
     padding: 3px 4px !important;
     line-height: 22px !important;
@@ -6381,6 +6391,9 @@ table {
     padding-bottom: 6px;
 }
 
+.mff-nopad .mat-form-field-wrapper {
+    padding-bottom: 0px;
+}
 /* .mat-form-field{
     margin-bottom: 0px !important; padding-bottom: 2px !important;
 }

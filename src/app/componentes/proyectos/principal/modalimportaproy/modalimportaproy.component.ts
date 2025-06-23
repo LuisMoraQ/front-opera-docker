@@ -235,21 +235,25 @@ export class ModalimportaproyComponent implements OnInit {
         this.mostrar_carga_todo=true;
         console.time('timeverif')
         for(let row of this.datapresu){
-          let cantr=row.parcial.toString();
-          if(this.errormaxval(cantr,'Cantidad',10,' Item : '+row.item)){ return }
+          if(row.cantidad){
+            let cantr=row.cantidad.toString();
+            if(this.errormaxval(cantr,'Cantidad',10,' Item : '+row.item)){ return }
+          }
           if(row.precio){
             let precior=row.precio.toString();
             if(this.errormaxval(precior,'Precio',10,' Item : '+row.item)){ return }
           }
-          let parcr=row.parcial.toString();
-          if(this.errormaxval(parcr,'Parcial',15,' Item : '+row.item)){ return }
+          if(row.parcial){
+            let parcr=row.parcial.toString();
+            if(this.errormaxval(parcr,'Parcial',15,' Item : '+row.item)){ return }
+          }
         }
         for(let row of this.datadetalle){
           if(row.cuadrilla){
             let cuadr=row.cuadrilla.toString();
             if(this.errormaxval(cuadr,'Cuadrilla',10,' En Costos Unitarios.')){ return }
           }
-          let cantr=row.parcial.toString();
+          let cantr=row.cantidad.toString();
           if(this.errormaxval(cantr,'Cantidad',10,' En Costos Unitarios.')){ return }
           let precior=row.precio.toString();
           if(this.errormaxval(precior,'Precio',10,' En Costos Unitarios.')){ return }
@@ -261,7 +265,7 @@ export class ModalimportaproyComponent implements OnInit {
             let cuadr=row.cuadrilla.toString();
             if(this.errormaxval(cuadr,'Cuadrilla',10,' En Subpartidas.')){ return }
           }
-          let cantr=row.parcial.toString();
+          let cantr=row.cantidad.toString();
           if(this.errormaxval(cantr,'Cantidad',10,' En Subpartidas.')){ return }
           let precior=row.precio.toString();
           if(this.errormaxval(precior,'Precio',10,' En Subpartidas.')){ return }
@@ -270,22 +274,9 @@ export class ModalimportaproyComponent implements OnInit {
         }
         console.timeEnd('timeverif')
         console.time('timeimp')
-        // const tabla1=JSON.stringify(this.datapresu);
-        // const tabla2=JSON.stringify(this.datadetalle);
-        // const tabla3=JSON.stringify(this.datasubp);
-        // const dataProyecto=JSON.stringify({
-        //   'id_usuario': this.idUsuario,
-        //   'id_proyecto': this.idProyecto,
-        //   'datos1':tabla1,
-        //   'datos2':tabla2,
-        //   'datos3':tabla3,
-        // });
-        // const resp = await this.presuservice.importaPresuTop(dataProyecto)
-
         const tabla1=JSON.stringify(this.datapresu);
         const tabla2=JSON.stringify(this.datadetalle);
         const tabla3=JSON.stringify(this.datasubp);
-
         const dataProyecto=JSON.stringify({
           'id_usuario': this.idUsuario,
           'id_proyecto': this.idProyecto,
@@ -293,7 +284,6 @@ export class ModalimportaproyComponent implements OnInit {
           'datos2':tabla2,
           'datos3':tabla3,
         });
-        console.log(dataProyecto)
         const resp = await this.presuservice.importaPresuTop(dataProyecto)
         if(resp.id=='0'){
           this.mostrar_carga_todo = false;
@@ -309,7 +299,7 @@ export class ModalimportaproyComponent implements OnInit {
     } catch (e) {
       this.mostrar_carga_todo = false;
       console.log(e)
-      SwalService.error(e)
+      SwalService.error('Advertencia','No se pudo realizar la operacion.')
     }
   }
   closeModal(result: any = null) {
@@ -1019,7 +1009,7 @@ export class ModalimportaproyComponent implements OnInit {
               else{
                 this.erracu=this.errsubp;
               }
-              await this.VinculaUnd();
+              //await this.VinculaUnd();
               this.activetab=3;
             }
           }
@@ -1344,6 +1334,17 @@ export class ModalimportaproyComponent implements OnInit {
             for(let row2 of arrauxdet){
               total+=Number(row2.parcial);
               row2.id_filadetalle=idfiladet++;
+              if(row2.id_tipo_insumo!=5){
+                let cant1=Number(row2.cantidad)
+                let prec1=Number(row2.precio)
+                let parc1=Number(row2.parcial)
+                let resul1=((cant1*prec1)/100)-parc1;
+                let margen=1/(10**this.dec_precio);
+                row2.operador=resul1>-margen && resul1<margen?'%':null
+              }
+              else{
+                row2.operador=null;
+              }
               auxdetcomp.push(row2);
             }
             if(arrauxdet.length>0){
@@ -1523,6 +1524,17 @@ export class ModalimportaproyComponent implements OnInit {
       for(let row2 of arrauxdet){
         total+=Number(row2.parcial);
         row2.id_filadetalle=idfiladet++;
+        if(row2.id_tipo_insumo!=5){
+          let cant1=Number(row2.cantidad)
+          let prec1=Number(row2.precio)
+          let parc1=Number(row2.parcial)
+          let resul1=((cant1*prec1)/100)-parc1;
+          let margen=1/(10**this.dec_precio);
+          row2.operador=resul1>-margen && resul1<margen?'%':null
+        }
+        else{
+          row2.operador=null;
+        }
         auxdetcomp.push(row2);
       }
       if(arrauxdet.length>0){
@@ -1567,6 +1579,12 @@ export class ModalimportaproyComponent implements OnInit {
     let txsubcon=this.opcfuente=='0'?'SUBCONTRATOS':(this.opcfuente=='1'?'SUB-CONTRATOS':(this.opcfuente=='3'?'SUB CONTRATOS':this.arrtipins[3]));
     let txsubpar=this.opcfuente=='0'?'SUBPARTIDAS':(this.opcfuente=='1'?'SUB-PARTIDAS':(this.opcfuente=='3'?'SUB PARTIDAS':this.arrtipins[4]));
     for(let filasubp of this.arrsubpart){//si buscamos desde las subpartidas, entonces ya no se agregaran duplicados, ya que agregariamos el primero
+      if(filasubp.tieneacu==1){
+        continue;
+      }
+      if(this.opcfuente=='1' && filasubp.codigo.toString()=='99'){
+        continue;
+      }
       for(let row of datos){
         if(this.opcfuente=='3'){
           row[arrind[10]]=row[arrind[10]]!=null?row[arrind[10]].toString().replace('%',''):[row[arrind[10]]];
@@ -1740,6 +1758,17 @@ export class ModalimportaproyComponent implements OnInit {
             for(let row2 of arrauxdet){
               total+=Number(row2.parcial);
               row2.id_filadetalle=idfiladet++;
+              if(row2.id_tipo_insumo!=5){
+                let cant1=Number(row2.cantidad)
+                let prec1=Number(row2.precio)
+                let parc1=Number(row2.parcial)
+                let resul1=((cant1*prec1)/100)-parc1;
+                let margen=1/(10**this.dec_precio);
+                row2.operador=resul1>-margen && resul1<margen?'%':null
+              }
+              else{
+                row2.operador=null;
+              }
               auxdetcomp.push(row2);
             }
             //buscar indice del rowsel en datadetalle?
@@ -1762,6 +1791,7 @@ export class ModalimportaproyComponent implements OnInit {
             }
             if(indpadre>=0){
               if(fuente==1){
+                filasubp.tieneacu=1
                 this.datadetalle[indpadre].tieneacu=1;
                 this.datadetalle[indpadre].advceros=0;
                 this.datadetalle[indpadre].precio=this.formService.redondeo(total,this.dec_precio);
@@ -1769,6 +1799,7 @@ export class ModalimportaproyComponent implements OnInit {
                 this.datadetalle[indpadre].parcial=this.formService.redondeo(parc,this.dec_precio);
               }
               else{
+                filasubp.tieneacu=1
                 this.datasubp[indpadre].tieneacu=1;
                 this.datasubp[indpadre].advceros=0;
                 this.datasubp[indpadre].precio=this.formService.redondeo(total,this.dec_precio);
@@ -1872,6 +1903,17 @@ export class ModalimportaproyComponent implements OnInit {
         for(let row2 of arrauxdet){
           total+=Number(row2.parcial);
           row2.id_filadetalle=idfiladet++;
+          if(row2.id_tipo_insumo!=5){
+            let cant1=Number(row2.cantidad)
+            let prec1=Number(row2.precio)
+            let parc1=Number(row2.parcial)
+            let resul1=((cant1*prec1)/100)-parc1;
+            let margen=1/(10**this.dec_precio);
+            row2.operador=resul1>-margen && resul1<margen?'%':null
+          }
+          else{
+            row2.operador=null;
+          }
           auxdetcomp.push(row2);
         }
         //buscar indice del rowsel en datadetalle?
@@ -1908,6 +1950,11 @@ export class ModalimportaproyComponent implements OnInit {
             this.datasubp[indpadre].parcial=this.formService.redondeo(parc,this.dec_precio);
           }
           this.datasubp=this.datasubp.concat(auxdetcomp);
+        }
+        for(let row of this.arrsubpart){
+          if(row.indice==indpartida.indice && row.num_det==indpartida.num_det && row.indice_subp==indpartida.indice_subp){
+            row.tieneacu=1;
+          }
         }
         indpartida=null;
         agru=0;
@@ -2504,7 +2551,7 @@ export class ModalimportaproyComponent implements OnInit {
             else{
               this.erracu=this.errsubp;
             }
-            await this.VinculaUnd();
+            //await this.VinculaUnd();
             this.activetab=3;
           }
         }
@@ -2583,6 +2630,17 @@ export class ModalimportaproyComponent implements OnInit {
             for(let row2 of arrauxdet){
               total+=Number(row2.parcial);
               row2.id_filadetalle=idfiladet++;
+              if(row2.id_tipo_insumo!=5){
+                let cant1=Number(row2.cantidad)
+                let prec1=Number(row2.precio)
+                let parc1=Number(row2.parcial)
+                let resul1=((cant1*prec1)/100)-parc1;
+                let margen=1/(10**this.dec_precio);
+                row2.operador=resul1>-margen && resul1<margen?'%':null
+              }
+              else{
+                row2.operador=null;
+              }
               auxdetcomp.push(row2);
             }
             if(arrauxdet.length>0){
@@ -2757,6 +2815,17 @@ export class ModalimportaproyComponent implements OnInit {
       for(let row2 of arrauxdet){
         total+=Number(row2.parcial);
         row2.id_filadetalle=idfiladet++;
+        if(row2.id_tipo_insumo!=5){
+          let cant1=Number(row2.cantidad)
+          let prec1=Number(row2.precio)
+          let parc1=Number(row2.parcial)
+          let resul1=((cant1*prec1)/100)-parc1;
+          let margen=1/(10**this.dec_precio);
+          row2.operador=resul1>-margen && resul1<margen?'%':null
+        }
+        else{
+          row2.operador=null;
+        }
         auxdetcomp.push(row2);
       }
       if(arrauxdet.length>0){
@@ -2795,7 +2864,13 @@ export class ModalimportaproyComponent implements OnInit {
     let txsubcon=this.opcfuente=='0'?'SUBCONTRATOS':(this.opcfuente=='1'?'SUB-CONTRATOS':(this.opcfuente=='3'?'SUB CONTRATOS':this.arrtipins[3].toUpperCase()));
     let txsubpar=this.opcfuente=='0'?'SUBPARTIDAS':(this.opcfuente=='1'?'SUB-PARTIDAS':(this.opcfuente=='3'?'SUB PARTIDAS':this.arrtipins[4].toUpperCase()));
     for(let filasubp of this.arrsubpart){//si buscamos desde las subpartidas, entonces ya no se agregaran duplicados, ya que agregariamos el primero
+      if(filasubp.tieneacu==1){
+        continue;
+      }
       let conttit=0;
+      if(this.opcfuente=='1' && filasubp.codigo.toString()=='99'){
+        continue;
+      }
       for(let row of datos){
         if(this.opcfuente=='3'){
           row[arrind[10]]=row[arrind[10]]!=null?row[arrind[10]].toString().replace('%',''):[row[arrind[10]]];
@@ -2884,6 +2959,17 @@ export class ModalimportaproyComponent implements OnInit {
               for(let row2 of arrauxdet){
                 total+=Number(row2.parcial);
                 row2.id_filadetalle=idfiladet++;
+                if(row2.id_tipo_insumo!=5){
+                  let cant1=Number(row2.cantidad)
+                  let prec1=Number(row2.precio)
+                  let parc1=Number(row2.parcial)
+                  let resul1=((cant1*prec1)/100)-parc1;
+                  let margen=1/(10**this.dec_precio);
+                  row2.operador=resul1>-margen && resul1<margen?'%':null
+                }
+                else{
+                  row2.operador=null;
+                }
                 auxdetcomp.push(row2);
               }
               //buscar indice del rowsel en datadetalle?
@@ -2906,6 +2992,7 @@ export class ModalimportaproyComponent implements OnInit {
               }
               if(indpadre>=0){//actualizar el parcial?
                 if(fuente==1){
+                  filasubp.tieneacu=1;
                   this.datadetalle[indpadre].tieneacu=1;
                   this.datadetalle[indpadre].advceros=0;
                   this.datadetalle[indpadre].precio=this.formService.redondeo(total,this.dec_precio);
@@ -2913,6 +3000,7 @@ export class ModalimportaproyComponent implements OnInit {
                   this.datadetalle[indpadre].parcial=this.formService.redondeo(parc,this.dec_precio);
                 }
                 else{
+                  filasubp.tieneacu=1;
                   this.datasubp[indpadre].tieneacu=1;
                   this.datasubp[indpadre].advceros=0;
                   this.datasubp[indpadre].precio=this.formService.redondeo(total,this.dec_precio);
@@ -2994,7 +3082,7 @@ export class ModalimportaproyComponent implements OnInit {
               }
               else{
                 if(Number(this.datasubp[indpadre].rendimiento??0)==0){
-                  this.datasubp[indpadre]
+                  //this.datasubp[indpadre]
                   this.datasubp[indpadre].rendimiento=this.formService.redondeo(rendip,2);
                   this.datasubp[indpadre].jornada=8;
                   this.datasubp[indpadre].und_rendi=undrendip;
@@ -3112,6 +3200,17 @@ export class ModalimportaproyComponent implements OnInit {
         for(let row2 of arrauxdet){
           total+=Number(row2.parcial);
           row2.id_filadetalle=idfiladet++;
+          if(row2.id_tipo_insumo!=5){
+            let cant1=Number(row2.cantidad)
+            let prec1=Number(row2.precio)
+            let parc1=Number(row2.parcial)
+            let resul1=((cant1*prec1)/100)-parc1;
+            let margen=1/(10**this.dec_precio);
+            row2.operador=resul1>-margen && resul1<margen?'%':null
+          }
+          else{
+            row2.operador=null;
+          }
           auxdetcomp.push(row2);
         }
         //buscar indice del rowsel en datadetalle?
@@ -3148,6 +3247,11 @@ export class ModalimportaproyComponent implements OnInit {
             this.datasubp[indpadre].parcial=this.formService.redondeo(parc,this.dec_precio);
           }
           this.datasubp=this.datasubp.concat(auxdetcomp);
+        }
+        for(let row of this.arrsubpart){
+          if(row.indice==indpartida.indice && row.num_det==indpartida.num_det && row.indice_subp==indpartida.indice_subp){
+            row.tieneacu=1;
+          }
         }
         indpartida=null;
         agru=0;

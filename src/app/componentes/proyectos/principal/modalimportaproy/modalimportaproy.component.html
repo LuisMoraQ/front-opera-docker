@@ -692,7 +692,7 @@
                   </table>
                 </div>
               </div>
-              <h4 class="col-12 sub-title h4-grupo"><b>Unidades de Medida Encontradas</b></h4>
+              <!-- <h4 class="col-12 sub-title h4-grupo"><b>Unidades de Medida Encontradas</b></h4>
               <button type="button" style="margin-right: 5px;" class="btn btn-sm btn-primary ripple m-b-5"
                 (click)="VinculaUnd()">Vincular Todo</button>
               <label class="m-l-10">Mostrar Unidades Vinculadas :</label>
@@ -728,7 +728,6 @@
                           <span *ngIf="row.unidad2" class="numberCircle backg-success"></span>
                           <span *ngIf="!row.unidad2" class="numberCircle backg-warning"></span>
                           <span *ngIf="row.unidad1.includes('%') && row.observacion!=''" placement="top" class="text-danger" style="font-size: 14px;" ngbTooltip="Se detecto una Unidad de Calculo que no esta asignada correctamente a una Unidad del sistema." container="body"><i class="icofont icofont-warning"></i></span>
-                          <!-- <span *ngIf="row.unidad1.includes('%')" placement="top" class="text-info" style="font-size: 14px;" ngbTooltip="Se detecto una Unidad Factor Porcentual." container="body"><i class="icofont icofont-info-circle"></i></span> -->
                         </td>
                         <td appAnchocol [ancho]="150" [detalle]="true" class="text-left">
                           {{row.observacion}}
@@ -752,7 +751,7 @@
                     </ng-container>
                   </tbody>
                 </table>
-              </div>
+              </div> -->
             </ng-template>
           </li>
         </ul>
