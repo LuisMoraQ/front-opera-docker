@@ -1,0 +1,238 @@
+<div class="row mx-0" style="overflow: auto;">
+  <div style="padding-left: 5px; padding-right: 5px;" class="col-6">
+    <div class="tabla-limp" [style.height.px]="heightpres">
+      <table mat-table class="table-bordered tab-9">
+        <thead>
+          <tr class="headsticky header-custom">
+            <th appAnchocol [ancho]="200" [detalle]="true" rowspan="2">Descripción</th>
+            <th appAnchocol [ancho]="30" rowspan="2">UND</th>
+            <th colspan="3">SALDO DEL PRESUPUESTO</th>
+            <th colspan="3">PRESUPUESTO SOLICITADO</th>
+          </tr>
+          <tr class="headsticky2 header-custom" style="top:23px">
+            <th appAnchocol [ancho]="60">Metrado&nbsp;
+              <i [hidden]="(oculceros1)" class="fa fa-eye-slash" placement="bottom" ngbTooltip="Ocultar ceros" container="body" style="cursor: pointer;" (click)="ocultarceros1(0)"></i>
+              <i [hidden]="!(oculceros1)" class="fa fa-eye" placement="bottom" ngbTooltip="Mostrar ceros" container="body" style="cursor: pointer;" (click)="ocultarceros1(1)"></i>
+            </th>
+            <th appAnchocol [ancho]="60">Precio</th>
+            <th appAnchocol [ancho]="78">Parcial</th>
+            <th appAnchocol [ancho]="65">Metrado Solicitado</th>
+            <th appAnchocol [ancho]="78">Parcial</th>
+            <th appAnchocol [ancho]="45">% Soli</th>
+          </tr>
+        </thead>
+        <tbody>
+          <ng-container *ngIf="dataSource2.length>0">
+            <tr *ngFor="let row of dataSource2;let indice=index;" (click)="cambindicesel1(row.indice)" [hidden]="row.mostrar == 0 || row.mostcero==0">
+              <td appAnchocol [ancho]="200" [detalle]="true" class="text-left  cellsinpadding" [ngClass]="{'highlight': fila2_sel == row.indice}"
+              appPintarfilapre [tipo]="titulo1" [color]="titulo1color" [letra]="titulo1letra" [item]="row.item" [separador]="'.'" [partida]="row.unidad!=''?true:false"> 
+                <div class="d-flex">
+                  <div class="recortatextlinea" [style.padding-left.px]="((row.item.toString().split('.').length-1)*5)+(row.unidad!=''?17:0)"
+                  ngbTooltip="{{row.descripcion}}" #t="ngbTooltip" container="body" triggers="click:blur" (mouseout)="t.close()">
+                    <a *ngIf="row.unidad=='' && row.icomost=='0'"
+                      style="padding: 0px 2px;color:#06bb06;cursor: pointer;"
+                      (click)="toggleOnpresu(row.item,row.ind)">
+                      <i class="icofont icofont-caret-down"></i>
+                    </a>
+                    <a *ngIf="row.unidad=='' && row.icomost=='1'"
+                      style="padding: 0px 2px;color:red;cursor: pointer;"
+                      (click)="toggleOffpresu(row.item,row.ind)">
+                      <i class="icofont icofont-caret-up"></i>
+                    </a><span style="font-weight: 700;">{{row.item}}</span>&nbsp;&nbsp;{{row.descripcion}}
+                  </div>
+                </div>
+              </td>
+              <td appAnchocol [ancho]="30" [ngClass]="{'highlight': fila2_sel == row.indice}"
+              appPintarfilapre [tipo]="titulo1" [color]="titulo1color" [letra]="titulo1letra" [item]="row.item" [separador]="'.'" [partida]="row.unidad!=''?true:false">
+                {{row.unidad}}
+              </td>
+              <td appAnchocol [ancho]="60" [ngClass]="{'highlight': fila2_sel == row.indice}"
+              appPintarfilapre [tipo]="titulo1" [color]="titulo1color" [letra]="titulo1letra" [item]="row.item" [separador]="'.'" [partida]="row.unidad!=''?true:false">
+                {{row.metrado | number: mask_metrado }}
+              </td>
+              <td appAnchocol [ancho]="60" [ngClass]="{'highlight': fila2_sel == row.indice}"
+              appPintarfilapre [tipo]="titulo1" [color]="titulo1color" [letra]="titulo1letra" [item]="row.item" [separador]="'.'" [partida]="row.unidad!=''?true:false">
+                <span class="float-left">{{simbolo}}</span>
+                <span class="float-right">{{row.precio | number: mask_precio}}</span>
+              </td>
+              <td appAnchocol [ancho]="78" [ngClass]="{'highlight': fila2_sel == row.indice}"
+              appPintarfilapre [tipo]="titulo1" [color]="titulo1color" [letra]="titulo1letra" [item]="row.item" [separador]="'.'" [partida]="row.unidad!=''?true:false">
+                <span class="float-left">{{simbolo}}</span>
+                <span class="float-right">{{row.parcial | number: mask_parcial}}</span>
+              </td>
+              <td appAnchocol [ancho]="65" [ngClass]="{'highlight': fila2_sel == row.indice}"
+              appPintarfilapre [tipo]="titulo1" [color]="titulo1color" [letra]="titulo1letra" [item]="row.item" [separador]="'.'" [partida]="row.unidad!=''?true:false">
+                <i *ngIf="row.difer==1" class="icofont icofont-warning" style="color: red;"></i>
+                <div *ngIf="row.editar1==0" (click)="!(row.parcial==0)?editarcelda1(indice):null" style="cursor: pointer;">
+                    {{row.metradosol | number: mask_metrado }}
+                </div >
+                <input *ngIf="row.editar1==1" [textMask]="this.dec_metrado == 4? this.formService.maskUsAmountDecimal4 : (this.dec_metrado==3? this.formService.maskUsAmountDecimal3:this.formService.maskUsAmountDecimal2)"  
+                type="text" class="formcontrol w-100 d-flex text-center" value="{{row.metradosol}}" appAutoFocus (keyup)="presenter1($event,row.ind)" (blur)="caneditarcelda1($event.target.value,row.ind)">
+              </td>
+              <td appAnchocol [ancho]="78" [ngClass]="{'highlight': fila2_sel == row.indice}"
+              appPintarfilapre [tipo]="titulo1" [color]="titulo1color" [letra]="titulo1letra" [item]="row.item" [separador]="'.'" [partida]="row.unidad!=''?true:false">
+                <span class="float-left">{{simbolo}}</span>
+                <span class="float-right">{{row.parcialsol | number: mask_parcial}}</span>
+              </td>
+              <td appAnchocol [ancho]="45"> 
+                <div *ngIf="(row.unidad=='' && (row.ind<dataSource2.length-1 && dataSource2[row.ind+1].unidad!='') && !(row.parcial==0))" style=" width: 40px; margin-right: 0px;margin-left: 0px;">
+                  <input *ngIf="row.editar2==1" type="text" [textMask]="this.formService.maskUsAmountDecimal2" class="formcontrol w-100 d-flex text-center" value="{{row.porcsol}}" appAutoFocus (keyup)="presenter2($event,row.ind)" (blur)="caneditarcelda2($event.target.value,row.ind)"
+                  appMinmaxnum [menor]="0" [mayor]="100"><!-- *ngIf="selectedCellsState[row.indice2][1]==true" -->
+                  <div *ngIf="row.editar2==0" class="progressj" style="cursor: pointer; width: 39px;" (click)="editarcelda2(row.ind)"><!-- *ngIf="selectedCellsState[row.indice2][1]==false" -->
+                    <span class="progressj-text">{{row.porcsol | number: '0.2'}}</span>
+                    <div class="progressj-fill" [ngStyle]="{'width': row.porcsol+'%', 'background':'#FF512A' }"></div>
+                  </div>
+                </div>
+                <div *ngIf="row.unidad!='' && !(row.parcial==0)" style=" width: 40px; margin-right: 0px;margin-left: 0px;">
+                  <input *ngIf="row.editar2==1" type="text" [textMask]="this.formService.maskUsAmountDecimal2" class="formcontrol w-100 d-flex text-center" value="{{row.porcsol}}" appAutoFocus (keyup)="presenter2($event,row.ind)" (blur)="caneditarcelda2($event.target.value,row.ind)"
+                      appMinmaxnum [menor]="0" [mayor]="100"><!-- *ngIf="selectedCellsState[row.indice2][1]==true" -->
+                  <div *ngIf="row.editar2==0" class="progressj" style="cursor: pointer; width: 39px;" (click)="editarcelda2(row.ind)"><!-- *ngIf="selectedCellsState[row.indice2][1]==false" -->
+                    <span class="progressj-text">{{row.porcsol | number: '0.2'}}</span>
+                    <div class="progressj-fill" [ngStyle]="{'width': row.porcsol+'%', 'background':'#00D154' }"></div>
+                  </div>
+                </div>
+              </td>
+            </tr>
+          </ng-container>
+          <ng-container *ngIf="dataSource2.length<=0">
+            <tr>
+              <td class="mat-cell text-center" colspan="9">
+                  <label *ngIf="!buscando1">No se encontraron resultados</label>
+                  <div *ngIf="buscando1" class="preloader3 loader-block">
+                      <div class="circ1"></div>
+                      <div class="circ2"></div>
+                      <div class="circ3"></div>
+                      <div class="circ4"></div>
+                  </div>
+              </td>
+            </tr>
+          </ng-container>
+        </tbody>
+      </table>
+    </div>
+    <span *ngIf="data2difer>0" style="color: red;"><i class="icofont icofont-warning" style="color: red;"></i>Se encontraron inconcistencias en Metrados Solicitados.
+    <label class="label label-info"  [ngStyle]="{'text-align': 'center','cursor':'pointer','padding-bottom':'3px'}" (click)="corregirdifer()">Corregir</label></span>
+  </div>
+  <div style="padding-left: 5px; padding-right: 5px; margin-bottom: 2px;" [style.width.px]="widthm1b2-20" class="col-6">
+      <div>
+        <h4 class="modal-title tit-modal1" style="background-color: #448aff; color: white; border-radius: 4px; padding-left: 4px; margin-top: 0px !important;">
+          <button type="button" class="btn btn-mini btn-success" placement="bottom" ngbTooltip="Actualizar Relacion de Insumos" container="body" (click)="actualizarder()">
+            <i class="fa fa-refresh icono-but"></i>
+          </button>&nbsp;&nbsp;
+          <b>Informacion</b>
+        </h4>
+        <div class="row col-12" style="margin-top: 5px; margin-bottom: 8px;font-size: 13px;">
+          <div class="col-8 col-md-4" style="padding-top: 2px;"><b>Presupuesto Asignado</b></div>
+          <span class="float-right col-4 col-md-2 px-0"><b>{{totalpreasig | number: mask_parcial}}</b></span>
+          <!-- <input type="text" style="text-align:center;font-size: 12px;padding-left: 5px;padding-right: 5px;" class="formcontrol col-2" value="{{totalpreasig}}" readonly> -->
+          <div class="col-8 col-md-4" style="padding-top: 2px;"><b>Presupuesto Solicitado</b></div>
+          <span class="float-right col-4 col-sm-2 px-0"><b>{{totalpresoli | number: mask_parcial}}</b></span>
+          <!-- <input type="text" style="text-align:center;font-size: 12px;padding-left: 5px;padding-right: 5px;" class="formcontrol col-2" value="{{totalpresoli}}" readonly> -->
+        </div>
+        <div class="row col-12" style="margin-top: 2px; padding-right: 0px;">
+          <div class="tabla-limp w-100" style="height: 100px">
+            <table class="table-bordered">
+              <thead>
+                <tr class="headsticky header-custom" [hidden]="true">
+                  <th>Descripción</th>
+                  <th>Parcial</th>
+                </tr>
+              </thead>
+              <tbody>
+                <ng-container *ngIf="dataSourcedet2.length>0">
+                  <tr *ngFor="let row of dataSourcedet2;let indice=index;" (click)="cambindiceseldet2(indice)" [ngClass]="{'highlight': filadet2_sel == indice}">
+                    <td class="text-left">
+                      {{row.descripcion}}
+                    </td>
+                    <td appAnchocol [ancho]="78">
+                      <span class="float-left">{{simbolo}}</span>
+                      <span class="float-right">{{row.parcial | number: mask_parcial}}</span>
+                    </td>
+                  </tr>
+                </ng-container>
+                <ng-container *ngIf="dataSourcedet2.length<=0">
+                  <tr>
+                    <td class="mat-cell text-center" colspan="9">
+                        <label>No se encontraron resultados</label>
+                    </td>
+                  </tr>
+                </ng-container>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <div class="tabla-limp" [style.height.px]="heightins">
+        <table mat-table class="table-bordered tab-9">
+          <thead>
+            <tr class="headsticky header-custom">
+              <th appAnchocol [ancho]="32">N°</th>
+              <th appAnchocol [ancho]="200" [detalle]="true">Descripción</th>
+              <th appAnchocol [ancho]="30">UND</th>
+              <th appAnchocol [ancho]="65">Cantidad</th>
+              <th appAnchocol [ancho]="65">Precio</th>
+              <th appAnchocol [ancho]="86">Parcial</th>
+            </tr>
+          </thead>
+          <tbody>
+            <ng-container *ngIf="dataSource3.length>0">
+              <tr *ngFor="let row of dataSource3;let indice=index;" (click)="cambindicesel3(indice)" [ngClass]="{'highlight': fila3_sel == indice,'filagrupo':row.unidad==''}"
+              [hidden]="row.mostrar == 0">
+                <td appAnchocol [ancho]="32" (click)="row.num_det=='0' && row.icomost=='0'?toggleOn1(row):toggleOff1(row)" class="cpoint"> 
+                  <a  *ngIf="row.num_det=='0' && row.icomost=='0'" style="color:green; width: 14px;">
+                    <i class="fa fa-sort-desc expand"></i>
+                  </a>
+                  <a  *ngIf="row.num_det=='0' && row.icomost=='1'" style="color:red; width: 14px;">
+                      <i class="fa fa-sort-up contract"></i>
+                  </a>
+                  {{row.num_det!=0?row.num_det:''}}
+                </td>
+                <td appAnchocol [ancho]="200" [detalle]="true" class="celdasalto text-left"> 
+                  <span class="span-container"><!-- placement="top" ngbTooltip="{{row.descripcion!=''?row.descripcion:row.nombre}}" container="body" -->
+                    <span class="span-ellipsis w-100 d-flex">
+                      <span>{{row.descripcion!=''?row.descripcion:row.nombre}}</span> 
+                    </span>
+                  </span>
+                </td>
+                <td appAnchocol [ancho]="30">
+                  {{row.unidad}}
+                </td>
+                <td appAnchocol [ancho]="65">
+                  <span *ngIf="row.num_det!='0'" class="float-left">{{simbolo}}</span>
+                  <span *ngIf="row.num_det!='0'" class="float-right">{{row.cantidad | number: mask_cant}}</span>
+                </td>
+                <td appAnchocol [ancho]="65">
+                  <span *ngIf="row.num_det'0'" class="float-left">{{simbolo}}</span>
+                  <span *ngIf="row.num_det!='0'" class="float-right">{{row.precio | number: mask_precio}}</span>
+                </td>
+                <td appAnchocol [ancho]="86">
+                  <span class="float-left">{{simbolo}}</span>
+                  <span class="float-right">{{row.parcial | number: mask_parcial}}</span>
+                </td>
+              </tr>
+            </ng-container>
+            <ng-container *ngIf="dataSource3.length<=0">
+              <tr>
+                <td class="mat-cell text-center" colspan="9">
+                    <label *ngIf="!buscando3">No se encontraron resultados</label>
+                    <div *ngIf="buscando3" class="preloader3 loader-block">
+                        <div class="circ1"></div>
+                        <div class="circ2"></div>
+                        <div class="circ3"></div>
+                        <div class="circ4"></div>
+                    </div>
+                </td>
+              </tr>
+            </ng-container>
+          </tbody>
+        </table>
+    </div>
+    <div class="d-flex justify-content-end">
+      <button type="button" class="btn btn-success btn-sm" style="padding: 4px 8px;" (click)="GuardarDatos()"><i
+        class="fa fa-check"></i>Guardar
+        <!-- <span *ngIf="bcambiost1" class="badge ballalert balert-danger"></span> -->
+      </button>
+    </div>
+  </div>
+</div>
+<app-cargando [bloquearTodo]="true" *ngIf="mostrar_carga_todo"></app-cargando>

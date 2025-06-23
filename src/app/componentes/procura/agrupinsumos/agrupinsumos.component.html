@@ -1,0 +1,324 @@
+<div class="row mx-0" style="overflow: auto;">
+  <div style="padding-left: 5px; padding-right: 5px;">
+    <div class="tabla-limp" [style.height.px]="heighttmodal" [style.width.px]="widthm1b2">
+      <table mat-table class="table-bordered tab-10">
+        <thead>
+          <tr class="headsticky header-custom">
+            <th appAnchocol [ancho]="30">N°</th>
+            <th appAnchocol [ancho]="200" [detalle]="true">Descripción&nbsp;<i class="fa fa-search" style="cursor: pointer; font-size: 15px;" placement="right"
+                    [ngbPopover]="popContent" container="body" [autoClose]="'outside'"></i></th>
+            <th appAnchocol [ancho]="35">UND</th>
+            <th appAnchocol [ancho]="65">Cantidad</th>
+            <th appAnchocol [ancho]="65">Precio</th>
+            <th appAnchocol [ancho]="86">
+              Parcial&nbsp;
+              <i [hidden]="(oculceros2)" class="fa fa-eye-slash" placement="bottom" ngbTooltip="Ocultar ceros" container="body" style="cursor: pointer;" (click)="ocultarceros2(0)"></i>
+              <i [hidden]="!(oculceros2)" class="fa fa-eye" placement="bottom" ngbTooltip="Mostrar ceros" container="body" style="cursor: pointer;" (click)="ocultarceros2(1)"></i>
+            </th>
+            <th appAnchocol [ancho]="65">
+              <i [hidden]="!(ordent4==0)" class="icofont icofont-arrow-down" placement="bottom" ngbTooltip="Orden Descendente" container="body" style="cursor: pointer;" (click)="ordenart4desc()"></i>
+              <i [hidden]="!(ordent4==1)" class="icofont icofont-arrow-up" placement="bottom" ngbTooltip="Orden Ascendente" container="body" style="cursor: pointer;" (click)="ordenart4asc()"></i>
+              <i [hidden]="!(ordent4==2)" class="icofont icofont-rounded-collapse" placement="bottom" ngbTooltip="Por Defecto" container="body" style="cursor: pointer;" (click)="ordenart4def()"></i>
+              &nbsp;Indice Unificado
+            </th>
+            <th appAnchocol [ancho]="25">
+              S<i [hidden]="(oculdisp2)" class="fa fa-eye-slash" placement="bottom" ngbTooltip="Ocultar Disponibles" container="body" style="cursor: pointer;" (click)="mostdisponibles2(0)"></i>
+              <i [hidden]="!(oculdisp2)" class="fa fa-eye" placement="bottom" ngbTooltip="Mostrar Disponibles" container="body" style="cursor: pointer;" (click)="mostdisponibles2(1)"></i>
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <ng-container *ngIf="dataSource4.length>0">
+            <tr *ngFor="let row of dataSource4;let indice=index;" (click)="cambindicesel4(indice)" [ngClass]="{'highlight': fila4_sel == indice,'filagrupo':row.unidad==''}" 
+            [hidden]="!(row.mostrar == 1 && row.mostsele==1 && row.mostfilt==1)">
+              <td appAnchocol [ancho]="30" (click)="row.num_det=='0' && row.icomost=='0'?toggleOn2(row):toggleOff2(row)" class="cpoint"> 
+                <a  *ngIf="row.num_det=='0' && row.icomost=='0'" style="color:green; width: 14px;"><!-- (click)="toggleOn(row.item,i)" -->
+                  <i class="fa fa-sort-desc expand"></i>
+                </a>
+                <a  *ngIf="row.num_det=='0' && row.icomost=='1'" style="color:red; width: 14px;"><!-- (click)="toggleOff(row.item,i)" -->
+                  <i class="fa fa-sort-up contract"></i>
+                </a>
+                {{row.num_det==0?'':row.num_det}}
+              </td>
+              <td appAnchocol [ancho]="200" [detalle]="true" class="celdasalto text-left"> 
+                <span class="span-container" placement="top" ngbTooltip="{{row.descripcion!=''?row.descripcion:row.nombre}}" container="body">
+                  <span class="span-ellipsis w-100 d-flex">
+                    <span>{{row.descripcion!=''?row.descripcion:row.nombre}}</span> 
+                  </span>
+                </span>
+              </td>
+              <td appAnchocol [ancho]="35">{{row.unidad}}</td>
+              <td appAnchocol [ancho]="65">
+                <span *ngIf="row.num_det!='0'" class="float-left">{{simbolo}}</span>
+                <span *ngIf="row.num_det!='0'" class="float-right">{{row.cantidad | number: mask_cant}}</span>
+              </td>
+              <td appAnchocol [ancho]="65">
+                <span *ngIf="row.num_det'0'" class="float-left">{{simbolo}}</span>
+                <span *ngIf="row.num_det!='0'" class="float-right">{{row.precio | number: mask_precio}}</span>
+              </td>
+              <td appAnchocol [ancho]="86">
+                <span class="float-left">{{simbolo}}</span>
+                <span class="float-right">{{row.parcial | number: mask_parcial}}</span>
+              </td>
+              <td appAnchocol [ancho]="65">{{row.indiceunif}}</td>
+              <td appAnchocol [ancho]="25">
+                <!-- <div style="display: flex; justify-content: center;"> -->
+                  <mat-checkbox *ngIf="row.num_det!='0' && row.seleccion!=2 && row.cantidad!='0.00'" class="chb-bot0" [checked]="row.seleccion==0?false:true" (change)="$event ? cambiosel4(row) : null"></mat-checkbox>
+                  <mat-checkbox *ngIf="row.num_det!='0' && row.seleccion==2" class="f-asignado chb-bot0" [checked]="true" (change)="$event ? cambiosel4(row) : null" disabled></mat-checkbox>
+                <!-- </div> -->
+              </td>
+            </tr>
+          </ng-container>
+          <ng-container *ngIf="dataSource4.length<=0">
+            <tr>
+              <td class="mat-cell text-center" colspan="9">
+                  <label *ngIf="!buscando4">No se encontraron resultados</label>
+                  <div *ngIf="buscando4" class="preloader3 loader-block">
+                      <div class="circ1"></div>
+                      <div class="circ2"></div>
+                      <div class="circ3"></div>
+                      <div class="circ4"></div>
+                  </div>
+              </td>
+            </tr>
+          </ng-container>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div style="width: 38px;">
+      <button type="button" class="btn btn-info light ripple m-b-10 botton-icono" placement="bottom" ngbTooltip="Agregar Grupo" container="body" style="margin-bottom: 5px;" (click)="AgregarGrupo()">
+          <i class="fa fa-plus"></i>
+      </button>
+      <button type="button" class="btn btn-danger light ripple m-b-10 botton-icono" placement="bottom" ngbTooltip="Quitar Grupo" container="body" style="margin-bottom: 5px;" (click)="QuitarGrupo()">
+          <i class="fa fa-minus"></i>
+      </button>
+      <button type="button" class="btn btn-inverse light ripple m-b-10 botton-icono" placement="bottom" ngbTooltip="Complemento de Grupo" container="body" style="margin-bottom: 20px;" (click)="AgregarComple()">
+          <i class="icofont icofont-ui-copy"></i>
+      </button>
+      <button type="button" class="btn btn-success light ripple m-b-10 botton-icono" placement="bottom" ngbTooltip="Agregar Filas Seleccionadas" container="body" style="margin-bottom: 5px;" (click)="AgregarFilasAgrIns()">
+          <i class="icofont icofont-arrow-right"></i>
+      </button>
+      <button type="button" class="btn btn-danger light ripple m-b-10 botton-icono" placement="bottom" ngbTooltip="Quitar filas seleccionadas" container="body" style="margin-bottom: 5px;" (click)="EliminarFilaAgrIns()">
+          <i class="icofont icofont-arrow-left"></i>
+      </button>
+      <button type="button" class="btn btn-info light ripple m-b-10 botton-icono" placement="bottom" ngbTooltip="Subir Fila" container="body" style="margin-bottom: 5px;" (click)="subirfila5()">
+          <i class="icofont icofont-arrow-up"></i>
+      </button>
+      <button type="button" class="btn btn-info light ripple m-b-10 botton-icono" placement="bottom" ngbTooltip="Bajar Fila" container="body" style="margin-bottom: 5px;" (click)="bajarfila5()">
+          <i class="icofont icofont-arrow-down"></i>
+      </button>
+  </div>
+  <div style="padding-left: 5px; padding-right: 5px;" [style.width.px]="widthm1b2">
+    <div [style.margin-bottom.px]="-paddingscroll2" class="tabla-limp" id="tableBody" [style.height.px]="heighttmodal-20" (scroll)="SyncScroll()">
+      <table class="table-bordered tab-9 minspacelet">
+        <thead>
+          <tr class="headsticky header-custom">
+            <th appAnchocol [ancho]="32">N°</th>
+            <th appAnchocol [ancho]="40">Item<br>
+              <i class="fa fa-toggle-down" style="cursor:pointer;font-size: 14px;" placement="bottom" ngbTooltip="Expandir Todo" container="body" (click)="mostrarTodo5()"></i>&nbsp;
+              <i class="fa fa-toggle-up" style="color:red; cursor:pointer;font-size: 14px;" placement="bottom" ngbTooltip="Contraer Todo" container="body" (click)="ocultarTodo5()"></i></th>
+            <th appAnchocol [ancho]="185" [detalle]="true">Descripción</th>
+            <th appAnchocol [ancho]="48">Fecha</th>
+            <th appAnchocol [ancho]="49">Agrupamiento de Insumo</th>
+            <th appAnchocol [ancho]="50">Estado</th>
+            <th appAnchocol [ancho]="80">Monto Programado</th>
+            <th appAnchocol [ancho]="80">Monto Solicitado</th>
+            <th appAnchocol [ancho]="40">%</th>
+          </tr>
+        </thead>
+        <tbody>
+          <ng-container *ngIf="dataSource5.length>0">
+            <tr *ngFor="let row of dataSource5;let indice=index;" (click)="cambindicesel5(indice)" [ngClass]="{'highlight': fila5_sel == indice,'filagrupo':row.unidad==''}" [hidden]="row.mostrar=='0'"
+            [ngStyle]="{'font-weight': row.indice==null? 'bold' : 'normal' }">
+              <td appAnchocol [ancho]="32" class="text-left"> 
+                <a *ngIf="row.indice">&nbsp;&nbsp;</a>
+                <mat-checkbox class="chb-bot0" [checked]="row.seleccion==1?true:false" [indeterminate]="row.seleccion==2?true:false" (change)="$event ? cambiosel5(indice) : null"></mat-checkbox>
+              </td>
+              <td appAnchocol [ancho]="40" class="celdasalto cpoint" (click)="row.indice==null && row.icomost=='1'?toggleOff5(row):row.indice==null && row.icomost=='0'?toggleOn5(row):false">
+                <a  *ngIf="row.indice==null && row.icomost=='0'" style="color:green; width: 14px;" >
+                    <i class="fa fa-sort-desc expand"></i>
+                </a>
+                <a  *ngIf="row.indice==null && row.icomost=='1'" style="color:red; width: 14px;" >
+                    <i class="fa fa-sort-up contract"></i>
+                </a>
+                {{row.indice==null?row.idgrupo:row.num_det}}
+              </td>
+              <td appAnchocol [ancho]="185" [detalle]="true" class="celdasalto text-left"> 
+                <span *ngIf="row.editar==0" class="span-container" [ngStyle]="{'cursor': row.indice==null?'pointer':'default' }" placement="top" ngbTooltip="{{row.descripcion}}" container="body" (click)="row.indice==null?editarcelda3(row):null">
+                    <span class="span-ellipsis w-100 d-flex">
+                        <span>{{row.descripcion}}</span> 
+                    </span>
+                </span>
+                <input *ngIf="row.indice==null && row.editar==1" type="text" class="formcontrol w-100 d-flex" style="height: 20px;" value="{{row.descripcion}}" appAutoFocus (keyup)="presenter3($event,row)" (blur)="caneditarcelda3($event.target.value,row)">
+              </td>
+              <td appAnchocol [ancho]="48">{{row.fecha}}</td>
+              <td appAnchocol [ancho]="49">
+                <span *ngIf="row.complemento==0">{{row.id_comple}}</span>
+                <span *ngIf="row.complemento==1" style="color: red;">{{row.id_comple}}</span>
+              </td>
+              <td appAnchocol [ancho]="50" style="font-size: 12px !important;">
+                <label *ngIf="row.estado==0" class="label" style="padding-left: 2px; padding-right: 2px; margin-right: 2px !important; background-color: 'darkorange';">Borrador</label>
+                <label *ngIf="row.estado==1" class="label label-success" style="padding-left: 2px; padding-right: 2px; margin-right: 2px !important;">Completo</label>
+              </td>
+              <td appAnchocol [ancho]="80">
+                <span class="float-left">{{simbolo}}</span>
+                <span class="float-right">{{row.parcial | number: mask_parcial}}</span>
+              </td>
+              <td appAnchocol [ancho]="80">
+                <span *ngIf="row.indice==null" class="float-left">{{simbolo}}</span>
+                <span *ngIf="row.indice==null" class="float-right">{{row.reqsol | number: mask_parcial}}</span>
+              </td>
+              <td appAnchocol [ancho]="40">
+                  <div *ngIf="row.indice==null" class="progressj">
+                      <span class="progressj-text">{{row.porc}}</span>
+                      <div class="progressj-fill" [ngStyle]="{'width': row.porc+'%' }"></div>
+                  </div>
+              </td>
+            </tr>
+          </ng-container>
+          <ng-container *ngIf="dataSource5.length<=0">
+            <tr>
+              <td class="mat-cell text-center" colspan="13">
+                  <label *ngIf="!buscando4">No se encontraron resultados</label>
+                  <div *ngIf="buscando4" class="preloader3 loader-block">
+                      <div class="circ1"></div>
+                      <div class="circ2"></div>
+                      <div class="circ3"></div>
+                      <div class="circ4"></div>
+                  </div>
+              </td>
+            </tr>
+          </ng-container>
+        </tbody>
+      </table>
+    </div>
+    <div class="tare-footer footer-tabla tabla-limp m-b-5" [style.padding-right.px]="paddingscroll" id="tableFoot" (scroll)="SyncScroll2()">
+      <table class="table-bordered tab-10" style="position: sticky; bottom: 1px;">
+          <tfoot>
+            <tr>
+              <th style="min-width: 404px; max-width: 404px;width: calc(100% - 200px);">Total</th>
+              <th appAnchocol [ancho]="80">
+                <span class="float-left">{{simbolo}}</span>
+                <span class="float-right">{{totalinsagru | number: mask_parcial}}</span>
+              </th>
+              <th appAnchocol [ancho]="80"></th>
+              <th appAnchocol [ancho]="40">
+                <div class="progressj">
+                  <span class="progressj-text">{{promporc1}}</span>
+                  <div class="progressj-fill" [ngStyle]="{'width': promporc1+'%','background': '#28a745' }"></div>
+                </div>
+              </th>
+            </tr>
+          </tfoot>
+        </table>
+    </div>
+  </div>
+  <div class="d-flex justify-content-end">
+    <button type="button" class="btn btn-success btn-sm" style="padding: 4px 8px;" (click)="GuardarDatos()"><i
+      class="fa fa-check"></i>Guardar
+    </button>
+  </div>
+</div>
+<app-modal-basic #modalmostrar12a [dialogClass]="'modal-lg'">
+  <div class="app-modal-header">
+    <h4 class="modal-title tit-modal1"><b>Nuevo Grupo de Insumos</b></h4>
+    <button type="button" class="close basic-close" (click)="cerrarModalmostrar12a()">
+    <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="app-modal-body">
+    <form [formGroup]='Frmmostrar12a' #validationForm="ngForm">
+      <div class="row">
+        <!-- <mat-form-field class="col-12 col-md-8" appearance="outline">
+            <mat-label>Expediente Aprobado</mat-label>
+            <input matInput type="text" formControlName="Expediente" readonly>
+        </mat-form-field> -->
+        <mat-form-field class="col-12 col-md-4" appearance="outline">
+          <mat-label>ID Item</mat-label>
+          <input matInput type="text" formControlName="Iditem12a" readonly>
+        </mat-form-field>
+      </div>
+      <div class="row">
+        <mat-form-field class="col-12" appearance="outline">
+          <mat-label>Descripción del Grupo de Insumos</mat-label>
+          <input matInput type="text" formControlName="Descgru12a">
+        </mat-form-field>
+      </div>
+      <div class="row">
+        <mat-form-field class="col-12 col-sm-8 col-md-6" appearance="outline">
+          <mat-label>Lugar de Entrega</mat-label>
+          <select matNativeControl formControlName="Lugar">
+            <option value="" selected>--Seleccionar</option>
+            <option value="1" selected>Almacen Central</option>
+            <option value="2" selected>Almacen de Obra</option>
+          </select>
+        </mat-form-field>
+      </div>
+    </form>
+  </div>
+  <div class="app-modal-footer w-100">
+    <div class="row px-3 justify-content-between d-flex">
+      <button type="button" style="margin-right: 5px;" class="btn btn-danger btn-sm ripple" (click)="cerrarModalmostrar12a()"><i class="fa fa-times"></i>Cancelar</button>
+      <button type="button" class="btn btn-success btn-sm ripple light" (click)="GuardarModalmostrar12a()"><i class="fa fa-check"></i>Guardar</button>
+    </div>
+  </div>
+</app-modal-basic>
+<app-modal-basic #modalmostrar12b [dialogClass]="'modal-lg'">
+    <div class="app-modal-header">
+        <h4 class="modal-title tit-modal1"><b>Complemento de Grupo de Insumos</b></h4>
+        <button type="button" class="close basic-close" (click)="cerrarModalmostrar12b()">
+        <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+    <div class="app-modal-body">
+        <form [formGroup]='Frmmostrar12b' #validationForm="ngForm">
+            <div class="row">
+                <mat-form-field class="col-12 col-md-6" appearance="outline">
+                    <mat-label>ID Grupo Seleccionado</mat-label>
+                    <input matInput type="text" formControlName="Iditemsel12b" readonly>
+                </mat-form-field>
+                <mat-form-field class="col-12 col-md-6" appearance="outline">
+                    <mat-label>Agrupamiento Grupo Seleccionado</mat-label>
+                    <input matInput type="text" formControlName="Idcomsel12b" readonly>
+                </mat-form-field>
+            </div>
+            <div class="row">
+                <mat-form-field class="col-12" appearance="outline">
+                    <mat-label>Descripción del Grupo Seleccionado</mat-label>
+                    <input matInput type="text" formControlName="Descgrusel12b" readonly>
+                </mat-form-field>
+            </div>
+            <div class="row">
+                <mat-form-field class="col-12 col-md-4" appearance="outline">
+                    <mat-label>ID Item</mat-label>
+                    <input matInput type="text" formControlName="Iditem12b" readonly>
+                </mat-form-field>
+                <mat-form-field class="col-12 col-sm-8 col-md-6" appearance="outline" readonly>
+                    <mat-label>Lugar de Entrega</mat-label>
+                    <select matNativeControl formControlName="Lugar">
+                        <option value="" selected>--Seleccionar</option>
+                        <option value="1" selected>Almacen Central</option>
+                        <option value="2" selected>Almacen de Obra</option>
+                    </select>
+                </mat-form-field>
+            </div>
+            <div class="row">
+                <mat-form-field class="col-12" appearance="outline">
+                    <mat-label>Descripción del Grupo de Insumos</mat-label>
+                    <input matInput type="text" formControlName="Descgru12b">
+                </mat-form-field>
+            </div>
+        </form>
+    </div>
+    <div class="app-modal-footer w-100">
+      <div class="row px-3 justify-content-between d-flex">
+        <button type="button" style="margin-right: 5px;" class="btn btn-danger ripple" (click)="cerrarModalmostrar12b()"><i class="fa fa-times"></i>Cancelar</button>
+        <button type="button" class="btn btn-success ripple light" (click)="GuardarModalmostrar12b()"><i class="fa fa-check"></i>Guardar</button>
+      </div>
+    </div>
+</app-modal-basic>
+<ng-template #popContent>
+  <input type="search" id="txt_buscam12" style="width: 200px;" (keyup)="applyFilterm12($event)" class="form-control form-control-primary" placeholder="Buscar" #input (search)="limpiarfiltrom12()" value="{{filtrom12}}" appAutoFocus>
+</ng-template>
+<app-cargando [bloquearTodo]="true" *ngIf="mostrar_carga_todo"></app-cargando>
