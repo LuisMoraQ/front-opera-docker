@@ -112,6 +112,7 @@ export class CompatinsumosComponent implements OnInit {
     if(res?.length>0){
       this.dataSource6=res[0]
       this.DatosDisgre=res[1]
+      console.log(this.dataSource6)
       this.ordenart6();
     }
     else{

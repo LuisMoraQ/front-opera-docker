@@ -116,15 +116,16 @@
   <div style="padding-left: 5px; padding-right: 5px; margin-bottom: 2px;" [style.width.px]="widthm1b2-6" class="col-12 col-sm-6">
     <div class="row mx-0">
       <h4 class="modal-title tit-modal1" style="background-color: #448aff; color: white; border-radius: 4px; padding-left: 4px; margin-top: 0px !important;width:calc(100% - 80px)">
-        <button *ngIf="!solover && estadoreg==0" type="button" class="btn btn-mini btn-inverse" placement="bottom" ngbTooltip="Actualizar Relacion de Insumos" container="body" (click)="actualizarder()">
+        <button *ngIf="!solover && estadoreg==0 && !existedisgre" type="button" class="btn btn-mini btn-inverse" placement="bottom" ngbTooltip="Actualizar Relacion de Insumos" container="body" (click)="actualizarder()">
           <i class="fa fa-refresh icono-but"></i>
         </button>&nbsp;&nbsp;
         <b>Informacion</b>
       </h4>
-      <button *ngIf="!solover && estadoreg==0" type="button" class="btn btn-success btn-sm m-l-5" style="padding: 4px 8px;" (click)="GuardarDatos()"><i
+      <button *ngIf="!solover && estadoreg==0 && !existedisgre" type="button" class="btn btn-success btn-sm m-l-5" style="padding: 4px 8px;" (click)="GuardarDatos()"><i
         class="fa fa-check"></i>Guardar
         <!-- <span *ngIf="bcambiost1" class="badge ballalert balert-danger" container="body"></span> -->
       </button>
+      <span *ngIf="!solover && estadoreg==0 && existedisgre" class="text-danger m-l-10" style="padding-top: 3px;" placement="left" ngbTooltip="No puede Editar por la existencia de insumos disgregados." container="body"><i class="icofont-ui-block"></i></span>
     </div>
     <div>
       <div class="row col-12" style="margin-top: 5px; margin-bottom: 8px;font-size: 13px;">

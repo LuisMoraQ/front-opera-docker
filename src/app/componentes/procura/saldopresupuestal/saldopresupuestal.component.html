@@ -1,4 +1,13 @@
-<div class="row mx-0" style="overflow: auto;">
+<div class="row mx-0 contenido-menu-responsive">
+  <div class="row mx-0 w-100">
+    <h4 class="modal-title tit-modal1 m-b-2" style="background-color: #448aff; color: white; border-radius: 4px; padding-left: 4px; margin-top: 0px !important;margin-bottom:2px !important;width:calc(100% - 86px)">
+      &nbsp;&nbsp;
+      <b>{{'Saldo Presupuestal'+filareg.detalle}}</b>
+    </h4>
+    <button type="button" class="btn btn-inverse btn-sm m-l-5" style="padding: 4px 8px;" (click)="Imprimir()"><i
+      class="fa fa-check"></i>Imprimir
+    </button>
+  </div>
   <div style="padding-left: 5px; padding-right: 5px;" class="col-12">
     <div class="tabla-limp" [style.height.px]="heightpres">
       <table mat-table class="table-bordered tab-9">
@@ -61,7 +70,7 @@
               </td>
               <td appAnchocol [ancho]="65" [ngClass]="{'highlight': fila2_sel == row.indice}"
               appPintarfilapre [tipo]="titulo1" [color]="titulo1color" [letra]="titulo1letra" [item]="row.item" [separador]="'.'" [partida]="row.unidad!=''?true:false">
-                <span class="float-left">{{simbolo}}</span>
+                <span *ngIf="row.unidad!=''" class="float-left">{{simbolo}}</span>
                 <span class="float-right">{{row.precio | number: mask_precio}}</span>
               </td>
               <td appAnchocol [ancho]="78" [ngClass]="{'highlight': fila2_sel == row.indice}"

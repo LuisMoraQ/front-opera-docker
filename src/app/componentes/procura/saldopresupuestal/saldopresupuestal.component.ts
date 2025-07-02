@@ -1,7 +1,10 @@
 import { Component, HostListener, Input, OnInit } from '@angular/core';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ToastrService } from 'ngx-toastr';
 import { FormsService } from 'src/app/servicios/forms.service';
 import { LogisticaService } from 'src/app/servicios/logistica.service';
+import { PrincipalService } from 'src/app/servicios/principal.service';
+import { ReportesComponent } from '../../proyectos/reportes/reportes.component';
 
 @Component({
   selector: 'app-saldopresupuestal',
@@ -14,6 +17,7 @@ export class SaldopresupuestalComponent implements OnInit {
   fila2_sel=-1
   buscando1=false
   heightpres=250
+  simbolo=''
 
   dec_metrado=4;
   mask_metrado='0.4';
@@ -30,6 +34,8 @@ export class SaldopresupuestalComponent implements OnInit {
   id_proyecto:any;
   id_reg:any;
 
+  datosproy=null;
+
   @Input() filareg:any
   @Input() decproy:any
   @Input() colproy:any
@@ -37,6 +43,8 @@ export class SaldopresupuestalComponent implements OnInit {
   constructor(
     private _logisticaService:LogisticaService,
     public formService: FormsService,
+    private principalService:PrincipalService,
+    private modalService: NgbModal,
     private toaster: ToastrService,
   ) { }
 
@@ -44,8 +52,9 @@ export class SaldopresupuestalComponent implements OnInit {
     this.heightpres = window.innerHeight-180;
     this.id_reg=this.filareg.id_registro;
     this.id_proyecto=this.filareg.id_proyecto
-
+    this.simbolo=this.filareg.simbolo
     this.aspectos = this.colproy?JSON.parse(this.colproy):null;
+    console.log(this.filareg)
     this.pintar();
     let decimales = this.decproy;
     if(decimales?.toString().includes('|')){
@@ -65,8 +74,6 @@ export class SaldopresupuestalComponent implements OnInit {
       if(tablares){
         console.log(tablares)
         this.dataSource2=tablares;//presupuesto
-        //calcular otros valores?
-
       }
       this.buscando1=false;
     }
@@ -142,5 +149,126 @@ export class SaldopresupuestalComponent implements OnInit {
       }
       else{ break; }
     }
+  }
+  async Imprimir(){
+    if(this.datosproy==null){
+      const detalleProyecto = await this.principalService.recuperarDatosProyecto({id_proyecto: this.id_proyecto})
+      this.datosproy=detalleProyecto;
+    }
+    const arrayHeader = ['ITEM', 'DESCRIPCION', 'UNIDAD', 'METRADO2', 'PRECIO2', 'PARCIAL']
+    const arrayKeys = ['item', 'descripcion', 'unidad', 'metrado', 'precio', 'parcial']
+    const arrdec=[null,null,null,this.dec_metrado,this.dec_precio,this.dec_parcial];
+    const arralig=['left','left','center','right','right','right'];
+    let aux=JSON.parse(JSON.stringify(this.dataSource2));
+    let arrpasa=[];
+    let arrtit=[];
+    arrtit.push({
+      item:'',
+      descripcion:'COMPLETO',
+    });
+    for(let row of aux){//asignar colores
+      let tipol='';
+      let colorl='';
+      let fondol='';
+      let valor2= row.item.toString().split('.');
+      if(this.titulo1letra!=undefined)
+      {
+        if(row.unidad!='')
+        {
+          colorl=this.titulo1letra[11]
+        }
+        else
+        {
+          let ind=valor2.length>=12?11:valor2.length-1;
+          colorl=this.titulo1letra[ind];
+        }
+      }
+      if(this.titulo1color!=undefined)
+      {
+        if(row.unidad!='')
+        {
+          fondol = this.titulo1color[11];
+        }
+        else
+        {
+          let ind=valor2.length>=12?11:valor2.length-1;
+          fondol=this.titulo1color[ind];
+        }
+      }
+      if(this.titulo1!=undefined)
+      {
+        if(row.unidad!='')
+        {
+          tipol = this.titulo1[11];
+        }
+        else{
+          let ind=valor2.length>=12?11:valor2.length-1;
+          tipol=this.titulo1[ind];
+        }
+      }
+      let esp=' ';
+      let descp=esp.repeat(valor2.length-1)+row.descripcion;
+      arrpasa.push({
+        indice:row.indice,
+        item:row.item,
+        itemord:row.itemord,
+        descripcion:descp,
+        //id_unidad:row.id_unidad,
+        unidad:row.unidad,
+        metrado:row.id_unidad!=''?this.formService.redondeo(row.metrado,this.dec_metrado):null,
+        //jornada:,
+        precio:row.id_unidad!=''?this.formService.redondeo(row.precio,this.dec_precio):null,
+        parcial:this.formService.redondeo(row.parcial,this.dec_parcial),
+        //rendimiento:,
+        //tipofila:row.tipofila,
+        //und_rendi:,
+        tipoletra:tipol,
+        color:colorl=='unset'?'':colorl,
+        fondo:fondol=='none'?'':fondol
+      });
+      if(!(row.item.includes('.'))){
+        arrtit.push({
+          indice:row.indice,
+          item:row.item,
+          itemord:row.itemord,
+          descripcion:descp,
+          //id_unidad:row.id_unidad,
+          unidad:row.unidad,
+          metrado:row.id_unidad!=''?this.formService.redondeo(row.metrado,this.dec_metrado):null,
+          //jornada:,
+          precio:row.id_unidad!=''?this.formService.redondeo(row.precio,this.dec_precio):null,
+          parcial:this.formService.redondeo(row.parcial,this.dec_parcial),
+          //rendimiento:,
+          //tipofila:row.tipofila,
+          //und_rendi:,
+          tipoletra:tipol,
+          color:colorl=='unset'?'':colorl,
+          fondo:fondol=='none'?'':fondol
+        });
+      }
+    }
+    //agregar footer
+    const datos = {
+      datos_proyecto: this.datosproy,
+      header: arrayHeader,
+      keys_body: arrayKeys,
+      keys_dec:arrdec,
+      col_alig:arralig,
+      tabla: arrpasa,
+      //tabla2: tablaTotales,
+      //concat_tabla2:false,
+      tipo_reporte:0,
+      orientacion:'landscape',
+      moneda:this.simbolo,//condicionar
+      titulo:'SALDO PRESUPUESTAL'+this.filareg.detalle,
+      //parametros filtro por titulo
+      //tindirecto:this.tabindir,
+      titulos:arrtit,
+      dec_parcial:this.dec_parcial,
+    }
+    console.log(datos)
+    const modalRef = this.modalService.open(ReportesComponent, { size: 'lg modalgrande', backdrop: 'static', windowClass: 'pcoded', keyboard: false, });
+    modalRef.componentInstance.datos = datos;
+    const result = await modalRef.result;
   }
 }

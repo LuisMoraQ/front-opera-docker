@@ -56,6 +56,9 @@ export class RelacioninsumosComponent implements OnInit {
   fila3_sel=-1
   buscando3=false
 
+  existedisgre=true
+  tablaagru=[]
+
   @Input() filareg:any
   @Input() decproy:any
   @Input() colproy:any
@@ -95,6 +98,15 @@ export class RelacioninsumosComponent implements OnInit {
       this.buscando3=true;
       let tablares=await this._logisticaService.ListarDetPresuAdquiSol({id_proyecto:this.id_proyecto,id_registro:this.id_reg,fuente:this.filareg.excuagru});//falta 1 parametro this.filareg
       if(tablares){
+        //para verificar demas tablas
+        let res=await this._logisticaService.listarRelinsAdqui({id_proyecto:this.id_proyecto,id_registro:this.id_reg,conrelins:'1'});
+        if(res?.length>0){
+          this.existedisgre=res[2].length>0?true:false;
+          this.tablaagru=res[1]
+        }
+        else{
+          this.existedisgre=false;
+        }
         this.presudet=tablares[1];
         this.presusubp=tablares[2];
         this.dataSource2=tablares[0];//presupuesto
@@ -200,6 +212,10 @@ export class RelacioninsumosComponent implements OnInit {
     else if(this.estadoreg==1 || this.estadoreg==2){
       return
     }
+    else if(this.existedisgre){
+      this.toaster.error('No puede editar por la existencia de Insumos Disgregados. Eliminarlos para poder editar.', 'Advertencia', { closeButton: false,positionClass: 'toast-bottom-right',timeOut: 5000 });
+      return;
+    }
     this.dataSource2[ind].editar1=1;
   }
   caneditarcelda1(eve:any,ind:any){
@@ -264,6 +280,10 @@ export class RelacioninsumosComponent implements OnInit {
     }
     else if(this.estadoreg==1 || this.estadoreg==2){
       return
+    }
+    else if(this.existedisgre){
+      this.toaster.error('No puede editar por la existencia de Insumos Disgregados. Eliminarlos para poder editar.', 'Advertencia', { closeButton: false,positionClass: 'toast-bottom-right',timeOut: 5000 });
+      return;
     }
     this.dataSource2[ind].editar2=1;
   }
@@ -819,15 +839,67 @@ export class RelacioninsumosComponent implements OnInit {
     else{
       if(this.bfaltactder){//se hizo cambios en Presupuesto Solicitado, pero no se actualizo
         this.actualizarder();
-        this.toaster.error('Se esta actualizando la información. Hacer clic en guardar nuevamente.', 'Advertencia', { closeButton: false,positionClass: 'toast-bottom-right',timeOut: 5000 });
+        this.toaster.info('Se esta actualizando la información. Hacer clic en guardar nuevamente.', 'Informacion', { closeButton: false,positionClass: 'toast-bottom-right',timeOut: 5000 });
       }
       else{
         if(this.bactualizoder || this.bcambiost1){
           this.mostrar_carga_todo=true;
-          const datos1 = JSON.stringify(this.dataSource2);
-          const datos2 = JSON.stringify(this.dataSource3);
           let resultad=(Number(this.totalpresoli)*100)/Number(this.totalpreasig);
           let porc=this.formService.redondeo(resultad,1);
+          //recalcular agrupaciones si existen
+          let datos3;
+          let editado=false;
+          if(this.tablaagru.length>0){
+            let total=0;
+            for(let a=0;a<this.tablaagru.length;a++){//buscar si existe en relacion de insumos y actualziar con su valor, eliminar si no existe
+              if(this.tablaagru[a].indice!=null){
+                //buscar en rel insumos
+                let val=this.dataSource3.find(ele=>ele.indice==this.tablaagru[a].indice && ele.id_filadetalle==this.tablaagru[a].id_filadetalle);
+                if(val){
+                  this.tablaagru[a].cantidad=val.cantidad
+                  this.tablaagru[a].precio=val.precio
+                  this.tablaagru[a].parcial=val.parcial
+                  total+=Number(this.tablaagru[a].parcial)
+                  editado=true;
+                  val.seleccion=2
+                }
+                else{
+                  console.log('elimina - '+ a)
+                  this.tablaagru.splice(a,1);
+                  editado=true;
+                  a--;
+                }
+              }
+            }
+            console.log(this.tablaagru)
+            //recalcular totales(parcial) y porcentajes(porc)? solo agrupaciones, complemento es 0
+            if(editado){
+              let indgru=-1;
+              let agrusel=''
+              let sumgru=0
+              for(let b=0;b<this.tablaagru.length;b++){
+                if(agrusel!=this.tablaagru[b].idgrupo){
+                  if(indgru!=-1){
+                    this.tablaagru[indgru].parcial=sumgru;
+                    this.tablaagru[indgru].porc=this.formService.redondeo((sumgru*100)/total,1);
+                  }
+                  indgru=b
+                  agrusel=this.tablaagru[b].idgrupo
+                  sumgru=0;
+                }
+                else{
+                  sumgru+=Number(this.tablaagru[b].parcial)
+                }
+              }
+              if(indgru!=-1){//actualizar ultima agrupacion
+                this.tablaagru[indgru].parcial=sumgru;
+                this.tablaagru[indgru].porc=this.formService.redondeo((sumgru*100)/total,1);
+              }
+              datos3 = JSON.stringify(this.tablaagru);
+            }
+          }
+          const datos1 = JSON.stringify(this.dataSource2);
+          const datos2 = JSON.stringify(this.dataSource3);
           let objpasa={
             id_proyecto:this.id_proyecto,
             id_registro:this.id_reg,
@@ -836,7 +908,9 @@ export class RelacioninsumosComponent implements OnInit {
             donde:this.filareg.excuagru,//0 inserta,1 modifica
             editado:0,
             datos1:datos1,
-            datos2:datos2
+            datos2:datos2,
+            datos3:datos3,
+            editaagru:editado?1:0
           }
           let res=await this._logisticaService.GuardarAdquiPresuSol(objpasa);
           this.mostrar_carga_todo=false;

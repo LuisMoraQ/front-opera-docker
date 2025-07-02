@@ -121,6 +121,13 @@ export class AgrupinsumosComponent implements OnInit {
         this.dataSource4=res[0];
         this.dataSource5=res[1]
         this.dataSource6=res[2]
+        let sumatot=0;
+        for(let row of this.dataSource5){
+          if(row.indice){
+            sumatot+=Number(row.parcial)
+          }
+        }
+        this.totalinsagru=this.formService.redondeo(sumatot,this.dec_parcial);
         if(res[0].length<=4){
           this.toaster.error('Aun no guardó Metrados Solicitado en la pestaña RELACIÓN DE INSUMOS.', 'Advertencia', { closeButton: false,positionClass: 'toast-bottom-right',timeOut: 5000 });
         }
@@ -428,7 +435,7 @@ export class AgrupinsumosComponent implements OnInit {
         row.seleccion=0;
       }
       let ejm={id_proyecto:this.id_proyecto,id_registro:this.id_reg,idgrupo:idgrup,idfila:0,nro:0,
-        indice:null,id_filadetalle:null,num_det:null,codigo:'',descripcion:descrip,unidad:'',cantidad:null,precio:null,parcial:0,indiceunif:'',porc:0,reqsol:0,
+        indice:null,id_filadetalle:null,num_det:null,codigo:'',descripcion:descrip,unidad:'',cantidad:null,precio:null,parcial:0,indiceunif:'',operador:null,porc:0,reqsol:0,
         variacion:100,estado:0,saldo:null,observacion:'',fecha:fecham,fecha_sol:null,fecha_ate:null,complemento:0,id_comple:nomite,entrega:lugar,seleccion:1,mostrar:1,icomost:1,editar:0};
       this.dataSource5.push(ejm);
       this.bcambiost5=true;
@@ -722,14 +729,14 @@ export class AgrupinsumosComponent implements OnInit {
         }
       }
       let ejm={id_proyecto:this.id_proyecto,id_registro:this.id_reg,idgrupo:idgrup,idfila:0,nro:0,
-      indice:null,id_filadetalle:null,num_det:null,codigo:'',descripcion:descrip,unidad:'',cantidad:null,precio:null,parcial:0,indiceunif:'',porc:0,reqsol:0,
+      indice:null,id_filadetalle:null,num_det:null,codigo:'',descripcion:descrip,unidad:'',cantidad:null,precio:null,parcial:0,indiceunif:'',operador:null,porc:0,reqsol:0,
       variacion:null,estado:0,saldo:null,observacion:'',fecha:fecham,fecha_sol:null,fecha_ate:null,complemento:1,id_comple:idcomsel,entrega:entrega,seleccion:1,mostrar:1,icomost:1,editar:0};
       this.dataSource5.push(ejm);
       for(let row of taux){
         if(row.indice){
           ejm={id_proyecto:this.id_proyecto,id_registro:this.id_reg,idgrupo:idgrup,idfila:row.idfila,nro:row.nro,//se asigna dependiendo al ultimo del grupo?es lo mismo del principal
             indice:row.indice,id_filadetalle:row.id_filadetalle,num_det:row.num_det,codigo:row.codigo,descripcion:row.descripcion,unidad:row.unidad,cantidad:row.cantidad,precio:row.precio,parcial:row.parcial,
-            indiceunif:row.indiceunif,porc:row.porc,reqsol:row.reqsol,
+            indiceunif:row.indiceunif,operador:row.operador,porc:row.porc,reqsol:row.reqsol,
             variacion:row.variacion,estado:0,saldo:row.saldo,observacion:row.observacion,fecha:null,fecha_sol:null,fecha_ate:null,complemento:1,
             id_comple:'',entrega:row.entrega,seleccion:1,mostrar:1,icomost:row.icomost,editar:0};//todo se asigna igual
           this.dataSource5.push(ejm);
@@ -799,7 +806,7 @@ export class AgrupinsumosComponent implements OnInit {
               var entrega=this.dataSource5[indgrupo].entrega;
               let ejm={id_proyecto:this.id_proyecto,id_registro:this.id_reg,idgrupo:idgrup,idfila:++idfilmay,nro:++nropas,//se asigna dependiendo al ultimo del grupo?es lo mismo del principal
                 indice:row.indice,id_filadetalle:row.id_filadetalle,num_det:row.num_det,codigo:row.codigo,descripcion:row.descripcion,unidad:row.unidad,cantidad:row.cantidad,precio:row.precio,parcial:row.parcial,
-                indiceunif:row.indiceunif,porc:0,reqsol:0,variacion:null,estado:0,saldo:100,observacion:'',fecha:null,fecha_sol:null,fecha_ate:null,complemento:0,
+                indiceunif:row.indiceunif,operador:row.operador,porc:0,reqsol:0,variacion:null,estado:0,saldo:100,observacion:'',fecha:null,fecha_sol:null,fecha_ate:null,complemento:0,
                 id_comple:'',entrega:entrega,seleccion:1,mostrar:this.dataSource5[indgrupo].icomost==1?1:0,icomost:1,editar:0};//todo se asigna igual
               this.dataSource5.splice(++inddetfin,0,ejm);
               totagrins=totagrins+Number(row.parcial);
@@ -895,7 +902,7 @@ export class AgrupinsumosComponent implements OnInit {
             var idgrup=this.dataSource5[indgrupo].idgrupo;
             let ejm={id_proyecto:this.id_proyecto,id_registro:this.id_reg,idgrupo:idgrup,idfila:row.idfila,nro:row.nro,//se asigna dependiendo al ultimo del grupo?es lo mismo del principal
                 indice:row.indice,id_filadetalle:row.id_filadetalle,num_det:row.num_det,codigo:row.codigo,descripcion:row.descripcion,unidad:row.unidad,cantidad:row.cantidad,precio:row.precio,parcial:row.parcial,
-                indiceunif:row.indiceunif,porc:0,reqsol:0,variacion:null,estado:0,saldo:100,observacion:'',fecha:null,fecha_sol:null,fecha_ate:null,complemento:0,
+                indiceunif:row.indiceunif,operador:row.operador,porc:0,reqsol:0,variacion:null,estado:0,saldo:100,observacion:'',fecha:null,fecha_sol:null,fecha_ate:null,complemento:0,
                 id_comple:'',entrega:row.entrega,seleccion:0,mostrar:this.dataSource5[indgrupo].icomost==1?1:0,icomost:1,editar:0};//todo se asigna igual
             //this.dataSource5.push(ejm);
             this.dataSource5.splice(inddetfin++,0,ejm);

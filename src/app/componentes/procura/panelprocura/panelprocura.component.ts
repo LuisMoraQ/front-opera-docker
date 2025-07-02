@@ -223,6 +223,7 @@ export class PanelprocuraComponent implements OnInit {
       this.fila1_sel = ind;
       this.filareg=this.dataSource1[ind];
       this.filareg.solover=this.solover;
+      this.filareg.simbolo=this.simbolo;
       this.colorpasa=this.colores;
       this.decpasa=this.decima;
       this.tit_sel_1=this.dataSource1[this.fila1_sel].detalle;//agregar los datos de tabla det1
@@ -539,6 +540,7 @@ export class PanelprocuraComponent implements OnInit {
       this.fila1_sel=ind
       this.filareg=row;
       this.filareg.solover=this.solover;
+      this.filareg.simbolo=this.simbolo;
       this.colorpasa=this.colores;
       this.decpasa=this.decima;
       this.subvista=3;
@@ -569,9 +571,6 @@ export class PanelprocuraComponent implements OnInit {
         SwalService.error('Advertencia', 'No se pudo realizar la operación');
       }
       await this.ListarAdquisiciones();
-      if(this.fila1_sel){
-        this.filareg=this.dataSource1[this.fila1_sel]
-      }
       this.mostrar_carga=false;  
     }
   }

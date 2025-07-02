@@ -140,10 +140,10 @@
                   </div>
                 </td>
                 <td *ngIf="!solover" appAnchocol [ancho]="60">
-                  <button class="btn btn-mini3 btn-info" placement="top" ngbTooltip="Agregar Directo" container="body" (click)="agregardirecto(indice)" style="margin-right: 2px;">
+                  <button *ngIf="row.estado==0" class="btn btn-mini3 btn-info" placement="top" ngbTooltip="Agregar Directo" container="body" (click)="agregardirecto(indice)" style="margin-right: 2px;">
                     <i class="icofont icofont-arrow-right icono-but"></i>
                   </button>
-                  <button class="btn btn-mini3 btn-success" placement="top" ngbTooltip="Disgregar Insumo" container="body" (click)="agregarinsumo(indice)">
+                  <button *ngIf="row.estado==0 && row.operador!='%'" class="btn btn-mini3 btn-success" placement="top" ngbTooltip="Disgregar Insumo" container="body" (click)="agregarinsumo(indice)">
                     <i class="icofont-chart-flow-2 icono-but"></i>
                   </button>
                 </td>
