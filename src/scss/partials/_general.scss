@@ -5985,6 +5985,9 @@ select.form-control:not([size]):not([multiple]) {
     background: #b9b9b9d9;
     border-radius: 2px;
 }
+.progressj.rtl{
+    direction: rtl;
+}
 
 .progressj-fill {
     max-width: 100%;
@@ -6206,8 +6209,8 @@ select.form-control:not([size]):not([multiple]) {
     font-size: 13px !important;
 }
 .boton-reducido{
-  padding : 3px 10px;
-  margin-bottom: 5px;
+    padding : 3px 10px !important;
+    margin-bottom: 5px !important;
 }
 .btn-group-mini {
     padding: 3px 4px !important;

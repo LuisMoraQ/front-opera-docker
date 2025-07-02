@@ -4,6 +4,7 @@ import { FormsService } from 'src/app/servicios/forms.service';
 import { LogisticaService } from 'src/app/servicios/logistica.service';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { ModalBasicComponent } from 'src/app/shared/modal-basic/modal-basic.component';
+import { SwalService } from 'src/app/servicios/swal.service';
 
 @Component({
   selector: 'app-compatinsumos',
@@ -13,6 +14,7 @@ import { ModalBasicComponent } from 'src/app/shared/modal-basic/modal-basic.comp
 export class CompatinsumosComponent implements OnInit {
   @Input() filareg:any
   @Input() decproy:any
+  solover=false
   id_reg:any
   id_proyecto:any
   dec_metrado=4;
@@ -63,7 +65,7 @@ export class CompatinsumosComponent implements OnInit {
     ParcialPr13a: new FormControl(''),
     Insumo13a: new FormControl('', Validators.required),
     Unidad13a: new FormControl('', Validators.required),
-    Codigo13a: new FormControl('', Validators.required),
+    Codigo13a: new FormControl(''),
     Cantidad13a: new FormControl('', Validators.required),
     Preciou13a: new FormControl('', Validators.required),
     Parcial13a: new FormControl('', Validators.required),
@@ -90,8 +92,8 @@ export class CompatinsumosComponent implements OnInit {
     this.heighttmodal13=(window.innerHeight-202)/2;
     this.id_reg=this.filareg.id_registro;
     this.id_proyecto=this.filareg.id_proyecto
+    this.solover=this.filareg.solover
     let decimales = this.decproy;
-    console.log(decimales)
     if(decimales?.toString().includes('|')){
       let arrdec=decimales.split('|');
       this.dec_metrado=arrdec[0];
@@ -106,7 +108,6 @@ export class CompatinsumosComponent implements OnInit {
     //listar datos
     this.buscando6=true;
     let res=await this._logisticaService.listarRelinsAdqui({id_proyecto:this.id_proyecto,id_registro:this.id_reg,conrelins:'0'});
-    console.log(res)//si no existe, mostrar mensaje para solicitar en pestana anterior
     this.buscando6=false;
     if(res?.length>0){
       this.dataSource6=res[0]
@@ -118,35 +119,35 @@ export class CompatinsumosComponent implements OnInit {
     }
   }
   @HostListener('window:resize', ['$event'])
-    onResize(event) {
-      this.heighttmodal13=(window.innerHeight-202)/2;
-    }
-    ngAfterContentChecked(): void {
-      // this.changeDetector.detectChanges();
-      var element = document.getElementById('tableBody');
-      if (element != undefined) {
-        let sizeef = element.offsetWidth - element.clientWidth;
-        if (this.paddingscroll != sizeef) {
-          this.paddingscroll = sizeef;
-        }
-        let sizeef2 = element.offsetHeight - element.clientHeight;
-        if (this.paddingscroll2 != sizeef2) {
-          this.paddingscroll2 = sizeef2;
-        }
+  onResize(event) {
+    this.heighttmodal13=(window.innerHeight-202)/2;
+  }
+  ngAfterContentChecked(): void {
+    // this.changeDetector.detectChanges();
+    var element = document.getElementById('tableBody');
+    if (element != undefined) {
+      let sizeef = element.offsetWidth - element.clientWidth;
+      if (this.paddingscroll != sizeef) {
+        this.paddingscroll = sizeef;
       }
-      //cambiar ancho del scroll
-      var el_down = document.getElementById('tableBody2');
-      if(el_down!=undefined){
-        let sizeef = el_down.offsetWidth - el_down.clientWidth;
-        if (this.paddingscroll3 != sizeef) {
-          this.paddingscroll3 = sizeef;
-        }
-        let sizeef2 = el_down.offsetHeight - el_down.clientHeight;
-        if (this.paddingscroll4 != sizeef2) {
-          this.paddingscroll4 = sizeef2;
-        }
+      let sizeef2 = element.offsetHeight - element.clientHeight;
+      if (this.paddingscroll2 != sizeef2) {
+        this.paddingscroll2 = sizeef2;
       }
     }
+    //cambiar ancho del scroll
+    var el_down = document.getElementById('tableBody2');
+    if(el_down!=undefined){
+      let sizeef = el_down.offsetWidth - el_down.clientWidth;
+      if (this.paddingscroll3 != sizeef) {
+        this.paddingscroll3 = sizeef;
+      }
+      let sizeef2 = el_down.offsetHeight - el_down.clientHeight;
+      if (this.paddingscroll4 != sizeef2) {
+        this.paddingscroll4 = sizeef2;
+      }
+    }
+  }
   SyncScroll(){
     try{
       if (this.preventscroll) {
@@ -251,15 +252,32 @@ export class CompatinsumosComponent implements OnInit {
         }
       }
     }
+    if(this.dataSource8.length>0){
+      this.dataSource8.sort(function (a, b) {
+        if (Number(a.idgrupo.split('-')[1]) > Number(b.idgrupo.split('-')[1])) {
+          return 1;
+        }
+        if (Number(a.idgrupo.split('-')[1]) < Number(b.idgrupo.split('-')[1])) {
+          return -1;
+        }
+        if (Number(a.orden??0) > Number(b.orden??0)) {
+          return 1;
+        }
+        if (Number(a.orden??0) < Number(b.orden??0)) {
+          return -1;
+        }
+        return 0;
+      });
+    }
     this.tab7total=this.formService.redondeo(totalgru,this.dec_parcial)
     for(let h=0;h<this.dataSource6.length;h++){
       if(this.dataSource6[h].id_comple==idcom && this.dataSource6[h].complemento==0){
         let parcial=Number(this.dataSource6[h].parcial);
         let varia=((parcial-totalgru)/parcial)*100;
         this.dataSource6[h].variacion=this.formService.redondeo(varia,2);
+        this.dataSource6[h].accion=1
       }
     }
-    //aqui podemos agregar la variacion
   }
   cambindicesel7(ind:any){
     if(ind==this.fila7_sel)
@@ -271,8 +289,6 @@ export class CompatinsumosComponent implements OnInit {
     }
   }
   agregardirecto(ind:any){
-    console.log(ind)
-    console.log(this.dataSource7[ind])
     let idgru=this.dataSource7[ind].idgrupo;
     let codig=this.dataSource7[ind].idfila;
     var parcial=this.dataSource7[ind].parcial;
@@ -285,34 +301,37 @@ export class CompatinsumosComponent implements OnInit {
     }
     //validar que no exista en t8 antes de agregar
     if(indgrupo==-1){//no existe entonces se puede agregar directo
-      let ejm={id_proyecto:this.id_proyecto,id_registro:this.id_reg,idgrupo:idgru,idfila:this.dataSource7[ind].idfila,indrep:0,orden:this.dataSource8.length,indice:this.dataSource7[ind].indice,id_filadetalle:this.dataSource7[ind].id_filadetalle,
+      let ejm={id_proyecto:this.id_proyecto,id_registro:this.id_reg,idgrupo:idgru,idfila:this.dataSource7[ind].idfila,indrep:0,orden:this.UltOrden(),indice:this.dataSource7[ind].indice,id_filadetalle:this.dataSource7[ind].id_filadetalle,
         num_det:this.dataSource7[ind].num_det,codigo:this.dataSource7[ind].codigo,descripcion:this.dataSource7[ind].descripcion,unidad:this.dataSource7[ind].unidad,cantidad:this.dataSource7[ind].cantidad,
-        precio:this.dataSource7[ind].precio,parcial:this.dataSource7[ind].parcial,operador:this.dataSource7[ind].operador,acumulado:this.dataSource7[ind].parcial,proceso:'',princi:1,estado:0,ingreso:0,salida:0,icomost:1};
+        precio:this.dataSource7[ind].precio,parcial:this.dataSource7[ind].parcial,operador:this.dataSource7[ind].operador,acumulado:this.dataSource7[ind].parcial,proceso:'',princi:1,estado:0,ingreso:0,salida:0,mostrar:1,icomost:1};
       this.dataSource8.push(ejm);
       this.bcambiost8=true;
       //agregar tambien a data
       this.DatosDisgre.push(JSON.parse(JSON.stringify(ejm)))
-
       //las desviaciones y requerimiento solicitado
       let reqsoli=Number(this.dataSource6[this.fila6_sel].reqsol);
       let paragre=Number(parcial);
-
       this.dataSource6[this.fila6_sel].reqsol=this.formService.redondeo((reqsoli+paragre),this.dec_parcial);
+      this.tab7total=this.formService.redondeo((reqsoli+paragre),this.dec_parcial);
 
       let parcialgru=Number(this.dataSource6[this.fila6_sel].parcial);
       let varia=this.formService.redondeo((((parcialgru-(reqsoli+paragre))/parcialgru)*100),2);
       this.dataSource6[this.fila6_sel].variacion=this.dataSource6[this.fila6_sel].complemento==1?'':varia;
+      this.dataSource6[this.fila6_sel].accion=1
       //para los saldos
-      let parc1=Number(this.dataSource6[ind].parcial);
+      let parc1=Number(this.dataSource7[ind].parcial);
       let sald=(((parc1-(paragre))/parc1)*100);
-      this.dataSource6[ind].saldo=sald<0?'0.00':this.formService.redondeo(sald,2);
-      this.dataSource6[ind].accion=1;
-      
+      for(let row of this.dataSource6){
+        if(row.idgrupo==idgru && row.idfila==codig){
+          row.saldo=sald<0?'0.00':this.formService.redondeo(sald,2);
+          row.accion=1;
+          break;
+        }
+      }
+      this.dataSource7[ind].saldo=sald<0?'0.00':this.formService.redondeo(sald,2);
       //this.actualizarvistat5();
-
       //this.ordenart6();//ES NECESARIO
       this.cargartabla8mostrar(this.idcomple);//TAMBIEN ES NECESARIO?
-      console.log(this.dataSource8)
     }
     else{//entra al siguiente porque existe
       this.toaster.error('No se puede agregar directamente porque ya existe. Usar la opción de disgregar.', 'Advertencia', { closeButton: false,positionClass: 'toast-bottom-right',timeOut: 5000 });
@@ -372,63 +391,74 @@ export class CompatinsumosComponent implements OnInit {
     }
   }
   quitarfilat8(ind:any){
-    let idgru1=this.dataSource8[ind].idgrupo;
-    let codigo1=this.dataSource8[ind].idfila;
-    let indrep1=this.dataSource8[ind].indrep;
-    let indt8d=-1;
-    for(let h=0;h<this.dataSource8.length;h++){
-      if(this.dataSource8[h].idgrupo==idgru1 && this.dataSource8[h].idfila==codigo1 && this.dataSource8[h].indrep==indrep1){
-        indt8d=h;
-      }
-    }
-    let parcialdel=Number(this.dataSource8[indt8d].parcial);
-    let acumdel=this.dataSource8[indt8d].acumulado;
+    let parcialdel=Number(this.dataSource8[ind].parcial);
+    let acumdel=this.dataSource8[ind].acumulado;
     //las desviaciones y requerimiento solicitado
     let reqsoli=Number(this.dataSource6[this.fila6_sel].reqsol);
     this.dataSource6[this.fila6_sel].reqsol=this.formService.redondeo((reqsoli-parcialdel),this.dec_parcial);
-    //this.tab7total=this.redondeo((reqsoli-parcialdel),this.dec_parcial);
+    this.tab7total=this.formService.redondeo((reqsoli-parcialdel),this.dec_parcial);
     let parcialgru=Number(this.dataSource6[this.fila6_sel].parcial);
     let varia=this.formService.redondeo((((parcialgru-(reqsoli-parcialdel))/parcialgru)*100),2);
     this.dataSource6[this.fila6_sel].variacion=this.dataSource6[this.fila6_sel].complemento==1?'':varia;
+    this.dataSource6[this.fila6_sel].accion=1
     //si se elimina grupo, agregar acumulado al siguiente o no agregar nada 0
     let difer=0;
-    if(acumdel!=''){//principal
+    if((acumdel??'')!=''){//principal
       difer=Number(acumdel)-parcialdel;
-      for(let k=indt8d+1;k<this.dataSource8.length;k++){
-        if(this.dataSource8[k].idfila==this.dataSource8[indt8d].idfila){
+      for(let k=ind+1;k<this.dataSource8.length;k++){
+        if(this.dataSource8[k].idfila==this.dataSource8[ind].idfila){
           this.dataSource8[k].acumulado=this.formService.redondeo(difer,this.dec_parcial);
-          this.dataSource8[k].princi=1;
+          this.dataSource8[k].princi=1;//actualizar a la data principal
+          for(let row1 of this.DatosDisgre){
+            if(row1.idgrupo==this.dataSource8[k].idgrupo && row1.idfila==this.dataSource8[k].idfila && row1.indrep==this.dataSource8[k].indrep){
+              row1.acumulado=this.formService.redondeo(difer,this.dec_parcial);
+              row1.princi=1
+              break;
+            }
+          }
           break;
         }
       }
     }
     else{//detalle  
-      for(let k=indt8d;k>=0;k--){
-        if(this.dataSource8[k].idfila==this.dataSource8[indt8d].idfila && this.dataSource8[k].princi==1){
+      for(let k=ind;k>=0;k--){
+        if(this.dataSource8[k].idfila==this.dataSource8[ind].idfila && this.dataSource8[k].princi==1){
           difer=Number(this.dataSource8[k].acumulado)-parcialdel;
           this.dataSource8[k].acumulado=this.formService.redondeo(difer,this.dec_parcial);
+          for(let row1 of this.DatosDisgre){
+            if(row1.idgrupo==this.dataSource8[k].idgrupo && row1.idfila==this.dataSource8[k].idfila && row1.indrep==this.dataSource8[k].indrep){
+              row1.acumulado=this.formService.redondeo(difer,this.dec_parcial);
+              break;
+            }
+          }
           break;
         }
       }
     }
-
     //para los saldos
-    for(let i=this.fila6_sel;i<this.dataSource6.length;i++){
-      if(this.dataSource6[i].idfila==this.dataSource8[indt8d].idfila){
+    for(let i=0;i<this.dataSource6.length;i++){
+      if(this.dataSource6[i].idgrupo==this.dataSource8[ind].idgrupo && this.dataSource6[i].idfila==this.dataSource8[ind].idfila){
         let parc1=Number(this.dataSource6[i].parcial);
         let sald=(((parc1-(difer))/parc1)*100);
         this.dataSource6[i].saldo=sald<0?'0.00':this.formService.redondeo(sald,2);
+        this.dataSource6[i].accion=1
+        for(let row1 of this.dataSource7){
+          if(row1.idgrupo==this.dataSource6[i].idgrupo && row1.idfila==this.dataSource6[i].idfila){
+            row1.saldo=sald<0?'0.00':this.formService.redondeo(sald,2);
+            break;
+          }
+        }
         break;
       }
     }
     //this.actualizarvistat5();
     for(let a=0;a<this.DatosDisgre.length;a++){
-      if(this.DatosDisgre[a].idfila==this.dataSource8[indt8d].idfila && this.DatosDisgre[a].indrep==this.dataSource8[indt8d].indrep){
+      if(this.DatosDisgre[a].idgrupo==this.dataSource8[ind].idgrupo && this.DatosDisgre[a].idfila==this.dataSource8[ind].idfila && this.DatosDisgre[a].indrep==this.dataSource8[ind].indrep){
         this.DatosDisgre.splice(a,1)
         break;
       }
     }
-    this.dataSource8.splice(indt8d,1);
+    this.dataSource8.splice(ind,1);
     this.cargartabla8mostrar(this.idcomple);
     this.bcambiost8=true;
   }
@@ -502,27 +532,29 @@ export class CompatinsumosComponent implements OnInit {
   }
   lvcantm13a(eve:any){
     let preclv=Number(this.Preciou13a.value);
-    let cantlv=Number(eve.target.value.toString());
+    let cantlv=Number(eve.toString().replace(/\,/g,''));
     let parciallv=cantlv*preclv;
     this.Cantidad13a.setValue(this.formService.redondeo(cantlv,this.dec_cant));
     this.Parcial13a.setValue(this.formService.redondeo(parciallv,this.dec_parcial));
   }
   presenterCant(event:any){
-    if(event.keyCode.toString()=="27"){//esc descartar los cambios
-      console.log(this.Cantidad13a)
-      this.lvcantm13a(this.Cantidad13a.value)//el primer parametro es el valor de la celda a editar
-    }
-    else if(event.keyCode.toString()=="13")
+    if(event.keyCode.toString()=="13")
     {
       event.target.blur();
     }
   }
   lvprem13a(eve:any){
-    let cantlv=Number(this.Frmmostrar13a.get('Cantidad13a').value);
-    let preclv=Number(eve.target.value.toString());
+    let cantlv=Number(this.Cantidad13a.value);
+    let preclv=Number(eve.toString().replace(/\,/g,''));
     let parciallv=cantlv*preclv;
-    //this.Preciou13a.setValue(this.formService.redondeo(preclv,this.dec_precio));
+    this.Preciou13a.setValue(this.formService.redondeo(preclv,this.dec_precio));
     this.Parcial13a.setValue(this.formService.redondeo(parciallv,this.dec_parcial));
+  }
+  presenterPrec(event:any){
+    if(event.keyCode.toString()=="13")
+    {
+      event.target.blur();
+    }
   }
   //modal mostrra 13b
   buscarinsumo(){
@@ -571,263 +603,279 @@ export class CompatinsumosComponent implements OnInit {
     this.canttotal8aux=this.formService.redondeo(totcant,this.dec_parcial)
     this.parcialtotal8aux=this.formService.redondeo(totparc,this.dec_parcial)
   }
-  GuardarModalmostrar13a(){
-    // if(this.dataSource8aux.data.length>0){
-    //   //recorrer la tabla, agregar y calcular los valores de saldo y variacion
-    //   var item=this.Frmmostrar13a.get('Item13a').value;
-    //   let idgru=this.dataSource5Pri[this.ind_disgrega].idgrupo;
-    //   let codig=this.dataSource5Pri[this.ind_disgrega].codigo;
-
-    //   let tablaux=[];
-    //   let indgrupo=-1;
-    //   let idgraux='';
-    //   let nroitemgru='';
-    //   let codigogru='';
-    //   let inddetfin=-1;
-    //   let nrorep=0;
-
-    //   for(let j=0;j<this.dataSource8.data.length;j++){
-    //     if(idgraux!='' && nroitemgru!='' && codigogru!=''){
-    //       if(this.dataSource8.data[j].princi==1)
-    //       {
-    //         inddetfin=j;
-    //         break;
-    //       }
-    //       nrorep=nrorep+1;
-    //     }
-    //     tablaux.push(this.dataSource8.data[j]);
-    //     if(this.dataSource8.data[j].idgrupo==idgru && this.dataSource8.data[j].nro==item && this.dataSource8.data[j].codigo==codig && this.dataSource8.data[j].princi==1)
-    //     {
-    //       indgrupo=j;
-    //       idgraux=this.dataSource8.data[j].idgrupo;
-    //       nroitemgru=this.dataSource8.data[j].nro;
-    //       codigogru=this.dataSource8.data[j].codigo;
-    //     }
-    //   }
-
-    //   if(indgrupo==-1){
-    //     let ejm:filatabla8;
-    //     for(let i=0;i<this.dataSource8aux.data.length;i++){
-    //       ejm={idgrupo:idgru,idinsumo:this.dataSource8aux.data[i].idinsumo,codigo:this.dataSource8aux.data[i].codigo,nro:this.dataSource8aux.data[i].nro,descripcion:this.dataSource8aux.data[i].descripcion,
-    //         unidad:this.dataSource8aux.data[i].unidad,cantidad:this.dataSource8aux.data[i].cantidad,
-    //         precio:this.dataSource8aux.data[i].precio,parcial:this.dataSource8aux.data[i].parcial,acumulado:i==0?this.parcialtotal8aux:'',proceso:'',princi:i==0?1:0,indrep:nrorep++,estado:0,ingreso:'0.00',salida:'0.00'};
-    //       tablaux.push(ejm);
-    //     }
-    //     this.dataSource8.data=tablaux;
-    //     this.bcambiost8=true;
-    //     //las desviaciones y requerimiento solicitado
-    //     let reqsoli=Number(this.dataSource5Pri[this.indfila6_sel].reqsol.replace(/\,/g,''));
-    //     let paragre=Number(this.parcialtotal8aux.replace(/\,/g,''));
-
-    //     this.dataSource5Pri[this.indfila6_sel].reqsol=this.redondeo((reqsoli+paragre),this.dec_parcial).replace(/\d(?=(\d{3})+\.)/g, '$&,');
-
-    //     let parcialgru=Number(this.dataSource5Pri[this.indfila6_sel].parcial.replace(/\,/g,''));
-    //     let varia=this.redondeo((((parcialgru-(reqsoli+paragre))/parcialgru)*100),2);
-    //     this.dataSource5Pri[this.indfila6_sel].variacion=this.dataSource5Pri[this.indfila6_sel].complemento==1?'':varia;
-
-    //     //para los saldos
-    //     let parc1=Number(this.dataSource5Pri[this.ind_disgrega].parcial.replace(/\,/g,''));
-    //     let sald=(((parc1-(paragre))/parc1)*100);
-    //     this.dataSource5Pri[this.ind_disgrega].saldo=sald<0?'0.00':this.redondeo(sald,2);
-    //     this.actualizarvistat5();
-
-    //     let tabla6aux=[];
-    //     for(let row of this.dataSource5Pri){
-    //       if(row.idinsumo==''){
-    //         tabla6aux.push(row);
-    //       }
-    //     }
-    //     this.dataSource6.data=tabla6aux;
-    //     this.ordenart6();
-    //     this.cargartabla8mostrar(this.idcomple);
-    //   }
-    //   else{
-    //     nrorep=nrorep+1;
-    //     let sumdif=0;
-    //     for(let i=0;i<this.dataSource8aux.data.length;i++){
-    //       if(this.dataSource8aux.data[i].existe==0){
-    //         let ejm1:filatabla8;
-    //         ejm1={idgrupo:idgru,idinsumo:this.dataSource8aux.data[i].idinsumo,codigo:this.dataSource8aux.data[i].codigo,nro:this.dataSource8aux.data[i].nro,descripcion:this.dataSource8aux.data[i].descripcion,
-    //           unidad:this.dataSource8aux.data[i].unidad,cantidad:this.dataSource8aux.data[i].cantidad,
-    //           precio:this.dataSource8aux.data[i].precio,parcial:this.dataSource8aux.data[i].parcial,acumulado:'',proceso:'',princi:0,indrep:nrorep++,estado:0,ingreso:'0.00',salida:'0.00'};
-    
-    //         sumdif=sumdif+Number(this.dataSource8aux.data[i].parcial.replace(/\,/g,''));
-    //         tablaux.push(ejm1);
-    //       }
-    //     }
-    //     let suma=Number(this.dataSource8.data[indgrupo].acumulado.replace(/\,/g,''));
-    //     suma=suma+sumdif;
-    //     tablaux[indgrupo].acumulado=this.redondeo(suma,this.dec_parcial).replace(/\d(?=(\d{3})+\.)/g, '$&,');
-        
-    //     if(inddetfin>-1){
-    //       for(let k=inddetfin;k<this.dataSource8.data.length;k++){
-    //         tablaux.push(this.dataSource8.data[k]);
-    //       }
-    //     }
-    //     this.dataSource8.data=tablaux;
-    //     this.bcambiost8=true;
-    //     //las desviaciones y requerimiento solicitado
-    //     let reqsoli=Number(this.dataSource5Pri[this.indfila6_sel].reqsol.replace(/\,/g,''));
-
-    //     this.dataSource5Pri[this.indfila6_sel].reqsol=this.redondeo(reqsoli+sumdif,this.dec_parcial).replace(/\d(?=(\d{3})+\.)/g, '$&,');
-
-    //     let parcialgru=Number(this.dataSource5Pri[this.indfila6_sel].parcial.replace(/\,/g,''));
-    //     let varia=this.redondeo((((parcialgru-(reqsoli+sumdif))/parcialgru)*100),2);
-    //     this.dataSource5Pri[this.indfila6_sel].variacion=this.dataSource5Pri[this.indfila6_sel].complemento==1?'':varia;
-
-    //     //para los saldos
-    //     let parc1=Number(this.dataSource5Pri[this.ind_disgrega].parcial.replace(/\,/g,''));
-    //     let sald=(((parc1-(suma))/parc1)*100);
-    //     this.dataSource5Pri[this.ind_disgrega].saldo=sald<0?'0.00':this.redondeo(sald,2);
-    //     this.actualizarvistat5();
-
-    //     let tabla6aux=[];
-    //     for(let row of this.dataSource5Pri){
-    //       if(row.idinsumo==''){
-    //         tabla6aux.push(row);
-    //       }
-    //     }
-    //     this.dataSource6.data=tabla6aux;
-    //     this.ordenart6();
-    //     this.cargartabla8mostrar(this.idcomple);
-    //   }
-
-    //   this.cerrarModalmostrar13a();
-    // }
-    // else
-    // {
-    //   if(!this.Frmmostrar13a.invalid)
-    //   {
-    //     var item=this.Frmmostrar13a.get('Item13a').value;
-    //     var insumo=this.Frmmostrar13a.get('Insumo13a').value;
-    //     var unid=this.Frmmostrar13a.get('Unidad13a').value;
-    //     var idinsum=this.Frmmostrar13a.get('Codigo13a').value;
-    //     var cantidad=this.Frmmostrar13a.get('Cantidad13a').value;
-    //     var precio=this.Frmmostrar13a.get('Preciou13a').value;
-    //     var parcial=this.Frmmostrar13a.get('Parcial13a').value;
-
-    //     let idgru=this.dataSource5Pri[this.ind_disgrega].idgrupo;
-    //     let codig=this.dataSource5Pri[this.ind_disgrega].codigo;
-        
-    //     let tablaux=[];
-    //     let indgrupo=-1;
-    //     let idgraux='';
-    //     let nroitemgru='';
-    //     let codigogru='';
-    //     let inddetfin=-1;
-    //     let nrorep=0;
-
-    //     for(let j=0;j<this.dataSource8.data.length;j++){
-    //       if(idgraux!='' && nroitemgru!='' && codigogru!=''){
-    //         if(this.dataSource8.data[j].princi==1)
-    //         {
-    //           inddetfin=j;
-    //           break;
-    //         }
-    //         nrorep=nrorep+1;
-    //       }
-    //       tablaux.push(this.dataSource8.data[j]);
-    //       if(this.dataSource8.data[j].idgrupo==idgru && this.dataSource8.data[j].nro==item && this.dataSource8.data[j].codigo==codig && this.dataSource8.data[j].princi==1)
-    //       {
-    //         indgrupo=j;
-    //         idgraux=this.dataSource8.data[j].idgrupo;
-    //         nroitemgru=this.dataSource8.data[j].nro;
-    //         codigogru=this.dataSource8.data[j].codigo;
-    //       }
-    //     }
-
-    //     if(indgrupo==-1){//no entrara porque se carga en t8aux al existir
-    //       let ejm:filatabla8;
-    //       ejm={idgrupo:idgru,idinsumo:idinsum,codigo:codig,nro:item,descripcion:insumo,unidad:unid,cantidad:cantidad,
-    //         precio:precio,parcial:parcial,acumulado:parcial,proceso:'',princi:1,indrep:0,estado:0,ingreso:'0.00',salida:'0.00'};
-    //       tablaux.push(ejm);
-
-    //       this.dataSource8.data=tablaux;
-    //       this.bcambiost8=true;
-    //       //las desviaciones y requerimiento solicitado
-    //       let reqsoli=Number(this.dataSource5Pri[this.indfila6_sel].reqsol.replace(/\,/g,''));
-    //       let paragre=Number(parcial.replace(/\,/g,''));
-
-    //       this.dataSource5Pri[this.indfila6_sel].reqsol=this.redondeo((reqsoli+paragre),this.dec_parcial).replace(/\d(?=(\d{3})+\.)/g, '$&,');
-
-    //       let parcialgru=Number(this.dataSource5Pri[this.indfila6_sel].parcial.replace(/\,/g,''));
-    //       let varia=this.redondeo((((parcialgru-(reqsoli+paragre))/parcialgru)*100),2);
-    //       this.dataSource5Pri[this.indfila6_sel].variacion=this.dataSource5Pri[this.indfila6_sel].complemento==1?'':varia;
-
-    //       //para los saldos
-    //       let parc1=Number(this.dataSource5Pri[this.ind_disgrega].parcial.replace(/\,/g,''));
-    //       let sald=(((parc1-(paragre))/parc1)*100);
-    //       this.dataSource5Pri[this.ind_disgrega].saldo=sald<0?'0.00':this.redondeo(sald,2);
-          
-    //       this.actualizarvistat5();
-    //       let tabla6aux=[];
-    //       for(let row of this.dataSource5Pri){
-    //         if(row.idinsumo==''){
-    //           tabla6aux.push(row);
-    //         }
-    //       }
-    //       this.dataSource6.data=tabla6aux;
-    //       this.ordenart6();
-    //       this.cargartabla8mostrar(this.idcomple);
-    //     }
-    //     else{
-    //       nrorep=nrorep+1;
-    //       let suma=Number(this.dataSource8.data[indgrupo].acumulado.replace(/\,/g,''));
-          
-    //       let ejm1={idgrupo:idgru,idinsumo:idinsum,codigo:codig,nro:item,descripcion:insumo,unidad:unid,cantidad:cantidad,
-    //         precio:precio,parcial:parcial,acumulado:'',proceso:'',princi:0,indrep:nrorep};
-
-    //       tablaux.push(ejm1);
-
-    //       suma=suma+Number(parcial.replace(/\,/g,''));
-    //       tablaux[indgrupo].acumulado=this.redondeo(suma,this.dec_parcial).replace(/\d(?=(\d{3})+\.)/g, '$&,');
-          
-    //       if(inddetfin>-1){
-    //         for(let k=inddetfin;k<this.dataSource8.data.length;k++){
-    //           tablaux.push(this.dataSource8.data[k]);
-    //         }
-    //       }
-    //       this.dataSource8.data=tablaux;
-    //       this.bcambiost8=true;
-    //       //las desviaciones y requerimiento solicitado
-    //       let reqsoli=Number(this.dataSource5Pri[this.indfila6_sel].reqsol.replace(/\,/g,''));
-    //       let paragre=Number(parcial.replace(/\,/g,''));
-    //       this.dataSource5Pri[this.indfila6_sel].reqsol=this.redondeo((reqsoli+paragre),this.dec_parcial).replace(/\d(?=(\d{3})+\.)/g, '$&,');
-
-    //       let parcialgru=Number(this.dataSource5Pri[this.indfila6_sel].parcial.replace(/\,/g,''));
-    //       let varia=this.redondeo((((parcialgru-(reqsoli+paragre))/parcialgru)*100),2);
-    //       this.dataSource5Pri[this.indfila6_sel].variacion=this.dataSource5Pri[this.indfila6_sel].complemento==1?'':varia;
-
-    //       //para los saldos
-    //       let parc1=Number(this.dataSource5Pri[this.ind_disgrega].parcial.replace(/\,/g,''));
-    //       let sald=(((parc1-(suma))/parc1)*100);
-    //       this.dataSource5Pri[this.ind_disgrega].saldo=sald<0?'0.00':this.redondeo(sald,2);
-    //       this.actualizarvistat5();
-
-    //       let tabla6aux=[];
-    //       for(let row of this.dataSource5Pri){
-    //         if(row.idinsumo==''){
-    //           tabla6aux.push(row);
-    //         }
-    //       }
-    //       this.dataSource6.data=tabla6aux;
-    //       this.ordenart6();
-    //       this.cargartabla8mostrar(this.idcomple);
-    //     }
-    //     this.cerrarModalmostrar13a();
-    //   }
-    //   else
-    //   {
-    //     this.Frmmostrar13a.get('Item13a').markAsTouched();
-    //     this.Frmmostrar13a.get('Insumo13a').markAsTouched();
-    //     this.Frmmostrar13a.get('Unidad13a').markAsTouched();
-    //     this.Frmmostrar13a.get('Codigo13a').markAsTouched();
-    //     this.Frmmostrar13a.get('Cantidad13a').markAsTouched();
-    //     this.Frmmostrar13a.get('Preciou13a').markAsTouched();
-    //     this.Frmmostrar13a.get('Parcial13a').markAsTouched();
-        
-    //     this.addToast({title:'Advertencia', msg:'Debe llenar los campos.', timeout: 5000, theme:'default', position:'bottom-right', type:'error'})
-    //   }
-    // }
+  UltOrden(){
+    let ord=0
+    for(let a=0;a<this.dataSource8.length;a++){
+      if(Number(this.dataSource8[a].orden)>ord){
+        ord=this.dataSource8[a].orden;
+      }
+    }
+    return ord+1;
   }
+  GuardarModalmostrar13a(){
+    if(this.dataSource8aux.length>0){
+      //recorrer la tabla, agregar y calcular los valores de saldo y variacion
+      let idgru=this.dataSource7[this.ind_disgrega].idgrupo;
+      let idfila=this.dataSource7[this.ind_disgrega].idfila;
+      let indgrupo=-1;
+      let idgraux='';
+      let idfilagru='';
+      let inddetfin=-1;
+      let nrorep=0;
+      for(let j=0;j<this.dataSource8.length;j++){
+        if(idgraux!='' && idfilagru!=''){
+          if(this.dataSource8[j].princi==1)
+          {
+            inddetfin=j;
+            break;
+          }
+          nrorep=nrorep+1;
+        }
+        if(this.dataSource8[j].idgrupo==idgru && this.dataSource8[j].idfila==idfila && this.dataSource8[j].princi==1)
+        {
+          indgrupo=j;
+          idgraux=this.dataSource8[j].idgrupo;
+          idfilagru=this.dataSource8[j].idfila;
+        }
+      }
+      if(indgrupo==-1){
+        let morden= this.UltOrden();
+        for(let i=0;i<this.dataSource8aux.length;i++){
+          this.dataSource8aux[i].acumulado=i==0?this.parcialtotal8aux:null;
+          this.dataSource8aux[i].princi=i==0?1:0;
+          this.dataSource8aux[i].indrep=nrorep++;
+          this.dataSource8aux[i].mostrar=1
+          this.dataSource8aux[i].icomost=1
+          this.dataSource8aux[i].orden=morden
+          this.dataSource8.push(this.dataSource8aux[i]);
+          //agregar tambien a data
+          this.DatosDisgre.push(JSON.parse(JSON.stringify(this.dataSource8aux[i])))
+        }
+        this.bcambiost8=true;
+        //las desviaciones y requerimiento solicitado
+        let reqsoli=Number(this.dataSource6[this.fila6_sel].reqsol);
+        let paragre=Number(this.parcialtotal8aux);
+        this.dataSource6[this.fila6_sel].reqsol=this.formService.redondeo((reqsoli+paragre),this.dec_parcial);
+
+        let parcialgru=Number(this.dataSource6[this.fila6_sel].parcial);
+        let varia=this.formService.redondeo((((parcialgru-(reqsoli+paragre))/parcialgru)*100),2);
+        this.dataSource6[this.fila6_sel].variacion=this.dataSource6[this.fila6_sel].complemento==1?'':varia;
+        this.dataSource6[this.fila6_sel].accion=1
+
+        //para los saldos
+        let parc1=Number(this.dataSource7[this.ind_disgrega].parcial);
+        let sald=(((parc1-(paragre))/parc1)*100);
+        this.dataSource7[this.ind_disgrega].saldo=sald<0?'0.00':this.formService.redondeo(sald,2);
+        for(let row of this.dataSource6){
+          if(row.idgrupo==this.dataSource7[this.ind_disgrega].idgrupo && row.idfila==this.dataSource7[this.ind_disgrega].idfila){
+            row.saldo=sald<0?'0.00':this.formService.redondeo(sald,2);
+            row.accion=1
+            break;
+          }
+        }
+        // this.actualizarvistat5();
+        // this.ordenart6();
+        this.cargartabla8mostrar(this.idcomple);
+      }
+      else{
+        nrorep=nrorep+1;
+        let sumdif=0;
+        let suma=Number(this.dataSource8[indgrupo].acumulado);
+        for(let i=0;i<this.dataSource8aux.length;i++){
+          if(this.dataSource8aux[i].existe==0){
+            sumdif=sumdif+Number(this.dataSource8aux[i].parcial);
+            this.dataSource8aux[i].acumulado=null;
+            this.dataSource8aux[i].princi=0;
+            this.dataSource8aux[i].indrep=nrorep++;
+            this.dataSource8aux[i].mostrar=1
+            this.dataSource8aux[i].icomost=1
+            this.dataSource8aux[i].orden=this.dataSource8[indgrupo].orden
+            this.dataSource8.splice(indgrupo+1,0,this.dataSource8aux[i]);
+            //agregar tambien a data
+            this.DatosDisgre.push(JSON.parse(JSON.stringify(this.dataSource8aux[i])))
+          }
+        }
+        //indgru varia, no se pushea en la fila correcta
+        suma=suma+sumdif;
+        this.dataSource8[indgrupo].acumulado=this.formService.redondeo(suma,this.dec_parcial);
+        //modificar en datosdisgre tambien
+        this.bcambiost8=true;
+        //las desviaciones y requerimiento solicitado
+        let reqsoli=Number(this.dataSource6[this.fila6_sel].reqsol);
+        this.dataSource6[this.fila6_sel].reqsol=this.formService.redondeo(reqsoli+sumdif,this.dec_parcial);
+
+        let parcialgru=Number(this.dataSource6[this.fila6_sel].parcial);
+        let varia=this.formService.redondeo((((parcialgru-(reqsoli+sumdif))/parcialgru)*100),2);
+        this.dataSource6[this.fila6_sel].variacion=this.dataSource6[this.fila6_sel].complemento==1?'':varia;
+        this.dataSource6[this.fila6_sel].accion=1
+        //para los saldos
+        let parc1=Number(this.dataSource7[this.ind_disgrega].parcial);
+        let sald=(((parc1-(suma))/parc1)*100);
+        this.dataSource7[this.ind_disgrega].saldo=sald<0?'0.00':this.formService.redondeo(sald,2);
+        for(let row of this.dataSource6){
+          if(row.idgrupo==this.dataSource7[this.ind_disgrega].idgrupo && row.idfila==this.dataSource7[this.ind_disgrega].idfila){
+            row.saldo=sald<0?'0.00':this.formService.redondeo(sald,2);
+            row.accion=1
+            break;
+          }
+        }
+        //this.actualizarvistat5();
+        //this.ordenart6();
+        this.cargartabla8mostrar(this.idcomple);
+      }
+      this.cerrarModalmostrar13a();
+    }
+    else
+    {
+      if(!this.Frmmostrar13a.invalid)
+      {
+        let insumo=this.Insumo13a.value;
+        let unid=this.Unidad13a.value;
+        let cantidad=this.Cantidad13a.value;
+        let precio=this.Preciou13a.value;
+        let parcial=this.Parcial13a.value;
+        let idgru=this.dataSource7[this.ind_disgrega].idgrupo;
+        let idfila=this.dataSource7[this.ind_disgrega].idfila;
+        
+        let indgrupo=-1;
+        let idgraux='';
+        let idfilagru='';
+        let nrorep=0;
+        for(let j=0;j<this.dataSource8.length;j++){
+          if(idgraux!='' && idfilagru!=''){
+            if(this.dataSource8[j].princi==1)
+            {
+              break;
+            }
+            nrorep=nrorep+1;
+          }
+          if(this.dataSource8[j].idgrupo==idgru && this.dataSource8[j].idfila==idfila && this.dataSource8[j].princi==1)
+          {
+            indgrupo=j;
+            idgraux=this.dataSource8[j].idgrupo;
+            idfilagru=this.dataSource8[j].idfila;
+          }
+        }
+        if(indgrupo==-1){//no entrara porque se carga en t8aux al existir
+          //agregar a tabla 8 e datosdisg
+          let ejm={id_proyecto:this.id_proyecto,id_registro:this.id_reg,idgrupo:idgru,idfila:this.dataSource7[this.ind_disgrega].idfila,indrep:0,orden:this.UltOrden(),indice:this.dataSource7[this.ind_disgrega].indice,id_filadetalle:this.dataSource7[this.ind_disgrega].id_filadetalle,
+            num_det:this.dataSource7[this.ind_disgrega].num_det,codigo:this.dataSource7[this.ind_disgrega].codigo,descripcion:insumo,unidad:unid,cantidad:cantidad,
+            precio:precio,parcial:parcial,operador:this.dataSource7[this.ind_disgrega].operador,acumulado:parcial,proceso:'',princi:1,estado:0,ingreso:0,salida:0,icomost:1,mostrar:1};
+          this.dataSource8.splice(indgrupo+1,0,ejm);
+          //agregar tambien a data
+          this.DatosDisgre.push(JSON.parse(JSON.stringify(ejm)))
+
+          this.bcambiost8=true;
+          //las desviaciones y requerimiento solicitado
+          let reqsoli=Number(this.dataSource6[this.fila6_sel].reqsol);
+          let paragre=Number(parcial);
+
+          this.dataSource6[this.fila6_sel].reqsol=this.formService.redondeo((reqsoli+paragre),this.dec_parcial);
+          let parcialgru=Number(this.dataSource6[this.fila6_sel].parcial);
+          let varia=this.formService.redondeo((((parcialgru-(reqsoli+paragre))/parcialgru)*100),2);
+          this.dataSource6[this.fila6_sel].variacion=this.dataSource6[this.fila6_sel].complemento==1?'':varia;
+          this.dataSource6[this.fila6_sel].accion=1
+          //para los saldos
+          let parc1=Number(this.dataSource7[this.ind_disgrega].parcial);
+          let sald=(((parc1-(paragre))/parc1)*100);
+          this.dataSource7[this.ind_disgrega].saldo=sald<0?'0.00':this.formService.redondeo(sald,2);
+          for(let row of this.dataSource6){
+            if(row.idgrupo==this.dataSource7[this.ind_disgrega].idgrupo && row.idfila==this.dataSource7[this.ind_disgrega].idfila){
+              row.saldo=sald<0?'0.00':this.formService.redondeo(sald,2);
+              row.accion=1
+              break;
+            }
+          }
+          // this.actualizarvistat5();
+          // this.ordenart6();
+          this.cargartabla8mostrar(this.idcomple);//debe ordenar?
+        }
+        else{
+          nrorep=nrorep+1;
+          let suma=Number(this.dataSource8[indgrupo].acumulado);
+          suma=suma+Number(parcial);//agrupacion suma tabla8
+          this.dataSource8[indgrupo].acumulado=this.formService.redondeo(suma,this.dec_parcial);//agrupacion suma tabla8
+
+          let ejm={id_proyecto:this.id_proyecto,id_registro:this.id_reg,idgrupo:idgru,idfila:this.dataSource7[this.ind_disgrega].idfila,indrep:nrorep,orden:this.dataSource8[indgrupo].orden,indice:this.dataSource7[this.ind_disgrega].indice,id_filadetalle:this.dataSource7[this.ind_disgrega].id_filadetalle,
+            num_det:this.dataSource7[this.ind_disgrega].num_det,codigo:this.dataSource7[this.ind_disgrega].codigo,descripcion:insumo,unidad:unid,cantidad:cantidad,
+            precio:precio,parcial:parcial,operador:this.dataSource7[this.ind_disgrega].operador,acumulado:null,proceso:'',princi:0,estado:0,ingreso:0,salida:0,icomost:1,mostrar:1};
+          this.dataSource8.splice(indgrupo+1,0,ejm);
+          //agregar tambien a data
+          this.DatosDisgre.push(JSON.parse(JSON.stringify(ejm)))
+          this.bcambiost8=true;
+          //las desviaciones y requerimiento solicitado
+          let reqsoli=Number(this.dataSource6[this.fila6_sel].reqsol);
+          let paragre=Number(parcial);
+          this.dataSource6[this.fila6_sel].reqsol=this.formService.redondeo((reqsoli+paragre),this.dec_parcial);
+
+          let parcialgru=Number(this.dataSource6[this.fila6_sel].parcial);
+          let varia=this.formService.redondeo((((parcialgru-(reqsoli+paragre))/parcialgru)*100),2);
+          this.dataSource6[this.fila6_sel].variacion=this.dataSource6[this.fila6_sel].complemento==1?'':varia;
+          this.dataSource6[this.fila6_sel].accion=1
+          //para los saldos
+          let parc1=Number(this.dataSource7[this.ind_disgrega].parcial);
+          let sald=(((parc1-(suma))/parc1)*100);
+          this.dataSource7[this.ind_disgrega].saldo=sald<0?'0.00':this.formService.redondeo(sald,2);
+          for(let row of this.dataSource6){
+            if(row.idgrupo==this.dataSource7[this.ind_disgrega].idgrupo && row.idfila==this.dataSource7[this.ind_disgrega].idfila){
+              row.saldo=sald<0?'0.00':this.formService.redondeo(sald,2);
+              row.accion=1
+              break;
+            }
+          }
+          //this.actualizarvistat5();
+          //this.ordenart6();
+          this.cargartabla8mostrar(this.idcomple);
+        }
+        this.cerrarModalmostrar13a();
+      }
+      else
+      {
+        this.Frmmostrar13a.markAllAsTouched();
+        this.toaster.error('Debe llenar los campos.', 'Advertencia', { closeButton: false,positionClass: 'toast-bottom-right',timeOut: 5000 });
+      }
+    }
+  }
+  async GuardarDatos(){
+      try{
+        if(this.bcambiost8){
+          this.mostrar_carga_todo=true;
+          let tabaux=[];
+          for(let row of this.dataSource6){
+            if(row.accion==1)
+              tabaux.push(row);
+          }
+          const datos1 = JSON.stringify(tabaux);
+          const datos2 = JSON.stringify(this.DatosDisgre);
+          let objpasa={
+            id_proyecto:this.id_proyecto,
+            id_registro:this.id_reg,
+            datos1:datos1,
+            datos2:datos2,
+          }
+          let res=await this._logisticaService.GuardarAdquiDisgreins(objpasa);
+          if(res.id==1)
+          {
+            this.bcambiost8=false;//Solicitud de presupuesto
+            for(let row of this.dataSource6){
+              row.accion=0
+            }
+            this.mostrar_carga_todo=false;
+            SwalService.success('Correcto',res.mensaje)
+          }
+          else
+          {
+            this.mostrar_carga_todo=false;
+            SwalService.error('Advertencia','No se pudo realizar la Operación. '+res.mensaje);
+          }
+        }
+        else{
+          this.toaster.info('No hay cambios para guardar.', 'Advertencia', { closeButton: false,positionClass: 'toast-bottom-right',timeOut: 5000 });
+        }
+      }catch(e){
+        this.mostrar_carga_todo=false;
+        console.log(e)
+        this.toaster.error('No se pudo realizar la operación.', 'Advertencia', { closeButton: false,positionClass: 'toast-bottom-right',timeOut: 5000 });
+      }
+    }
 }

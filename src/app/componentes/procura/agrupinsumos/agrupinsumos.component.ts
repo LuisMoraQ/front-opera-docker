@@ -1,4 +1,4 @@
-import { Component, HostListener, Input, OnInit, ViewChild } from '@angular/core';
+import { Component, HostListener, Input, OnInit, ViewChild,Output,EventEmitter } from '@angular/core';
 import { ToastrService } from 'ngx-toastr';
 import { SwalService } from 'src/app/servicios/swal.service';
 import { LogisticaService } from 'src/app/servicios/logistica.service';
@@ -16,6 +16,9 @@ import { EncriptadorService } from 'src/app/servicios/encriptador.service';
 export class AgrupinsumosComponent implements OnInit {
   @Input() filareg:any
   @Input() decproy:any
+  @Output() listarpri = new EventEmitter<any>();
+  solover=false
+  anchofoot3=404;
   mostrar_carga_todo=false
   widthm1b2: number=100;
   heighttmodal: number=100;
@@ -84,7 +87,12 @@ export class AgrupinsumosComponent implements OnInit {
 
   async ngOnInit() {
     try{
-      this.widthm1b2=(window.innerWidth/2)-90;
+      this.id_reg=this.filareg.id_registro;
+      this.id_proyecto=this.filareg.id_proyecto
+      this.solover=this.filareg.solover
+      let resto=this.solover?70:90;
+      this.widthm1b2=(window.innerWidth/2)-resto;
+      this.anchofoot3=this.solover?372:this.anchofoot3;
       this.heighttmodal=window.innerHeight-165;
       let decimales = this.decproy;
       if(decimales?.toString().includes('|')){
@@ -98,8 +106,6 @@ export class AgrupinsumosComponent implements OnInit {
         this.dec_cant=arrdec[3];
         this.mask_cant='0.'+arrdec[3];
       }
-      this.id_reg=this.filareg.id_registro;
-      this.id_proyecto=this.filareg.id_proyecto
       //listar y otras funciones
       let resfec = await this._EncriptadorService.FechaActualBack();
       if (resfec.id == 1) {
@@ -110,12 +116,14 @@ export class AgrupinsumosComponent implements OnInit {
       }
       this.buscando4=true;
       let res=await this._logisticaService.listarRelinsAdqui({id_proyecto:this.id_proyecto,id_registro:this.id_reg,conrelins:'1'});
-      console.log(res)//si no existe, mostrar mensaje para solicitar en pestana anterior
       this.buscando4=false
       if(res?.length>0){
         this.dataSource4=res[0];
         this.dataSource5=res[1]
         this.dataSource6=res[2]
+        if(res[0].length<=4){
+          this.toaster.error('Aun no guardó Metrados Solicitado en la pestaña RELACIÓN DE INSUMOS.', 'Advertencia', { closeButton: false,positionClass: 'toast-bottom-right',timeOut: 5000 });
+        }
       }
       else{
         this.toaster.error('No se pudo cargar la información.', 'Advertencia', { closeButton: false,positionClass: 'toast-bottom-right',timeOut: 5000 });
@@ -130,7 +138,8 @@ export class AgrupinsumosComponent implements OnInit {
   @HostListener('window:resize', ['$event'])
   onResize(event) {
     this.heighttmodal=window.innerHeight-165;
-    this.widthm1b2=(window.innerWidth/2)-90;
+    let resto=this.solover?70:90;
+    this.widthm1b2=(window.innerWidth/2)-resto;
   }
   ngAfterContentChecked(): void {
     //this.changeDetector.detectChanges();
@@ -420,7 +429,7 @@ export class AgrupinsumosComponent implements OnInit {
       }
       let ejm={id_proyecto:this.id_proyecto,id_registro:this.id_reg,idgrupo:idgrup,idfila:0,nro:0,
         indice:null,id_filadetalle:null,num_det:null,codigo:'',descripcion:descrip,unidad:'',cantidad:null,precio:null,parcial:0,indiceunif:'',porc:0,reqsol:0,
-        variacion:0,estado:0,saldo:null,observacion:'',fecha:fecham,fecha_sol:null,fecha_ate:null,complemento:0,id_comple:nomite,entrega:lugar,seleccion:1,mostrar:1,icomost:1,editar:0};
+        variacion:100,estado:0,saldo:null,observacion:'',fecha:fecham,fecha_sol:null,fecha_ate:null,complemento:0,id_comple:nomite,entrega:lugar,seleccion:1,mostrar:1,icomost:1,editar:0};
       this.dataSource5.push(ejm);
       this.bcambiost5=true;
       this.modalmostrar12a.hide();
@@ -714,7 +723,7 @@ export class AgrupinsumosComponent implements OnInit {
       }
       let ejm={id_proyecto:this.id_proyecto,id_registro:this.id_reg,idgrupo:idgrup,idfila:0,nro:0,
       indice:null,id_filadetalle:null,num_det:null,codigo:'',descripcion:descrip,unidad:'',cantidad:null,precio:null,parcial:0,indiceunif:'',porc:0,reqsol:0,
-      variacion:0,estado:0,saldo:null,observacion:'',fecha:fecham,fecha_sol:null,fecha_ate:null,complemento:1,id_comple:idcomsel,entrega:entrega,seleccion:1,mostrar:1,icomost:1,editar:0};
+      variacion:null,estado:0,saldo:null,observacion:'',fecha:fecham,fecha_sol:null,fecha_ate:null,complemento:1,id_comple:idcomsel,entrega:entrega,seleccion:1,mostrar:1,icomost:1,editar:0};
       this.dataSource5.push(ejm);
       for(let row of taux){
         if(row.indice){
@@ -790,7 +799,7 @@ export class AgrupinsumosComponent implements OnInit {
               var entrega=this.dataSource5[indgrupo].entrega;
               let ejm={id_proyecto:this.id_proyecto,id_registro:this.id_reg,idgrupo:idgrup,idfila:++idfilmay,nro:++nropas,//se asigna dependiendo al ultimo del grupo?es lo mismo del principal
                 indice:row.indice,id_filadetalle:row.id_filadetalle,num_det:row.num_det,codigo:row.codigo,descripcion:row.descripcion,unidad:row.unidad,cantidad:row.cantidad,precio:row.precio,parcial:row.parcial,
-                indiceunif:row.indiceunif,porc:0,reqsol:0,variacion:0,estado:0,saldo:100,observacion:'',fecha:null,fecha_sol:null,fecha_ate:null,complemento:0,
+                indiceunif:row.indiceunif,porc:0,reqsol:0,variacion:null,estado:0,saldo:100,observacion:'',fecha:null,fecha_sol:null,fecha_ate:null,complemento:0,
                 id_comple:'',entrega:entrega,seleccion:1,mostrar:this.dataSource5[indgrupo].icomost==1?1:0,icomost:1,editar:0};//todo se asigna igual
               this.dataSource5.splice(++inddetfin,0,ejm);
               totagrins=totagrins+Number(row.parcial);
@@ -803,7 +812,6 @@ export class AgrupinsumosComponent implements OnInit {
           this.dataSource5[indgrupo].parcial=this.formService.redondeo(suma,this.dec_parcial);
           this.totalinsagru=this.formService.redondeo(totagrins,this.dec_parcial);
           this.calcporcentajegrupoins(false);
-          console.log(this.dataSource5)
           // let tabla6aux=[];
           // let indaux=0
           // for(let row of this.dataSource5Pri){
@@ -887,7 +895,7 @@ export class AgrupinsumosComponent implements OnInit {
             var idgrup=this.dataSource5[indgrupo].idgrupo;
             let ejm={id_proyecto:this.id_proyecto,id_registro:this.id_reg,idgrupo:idgrup,idfila:row.idfila,nro:row.nro,//se asigna dependiendo al ultimo del grupo?es lo mismo del principal
                 indice:row.indice,id_filadetalle:row.id_filadetalle,num_det:row.num_det,codigo:row.codigo,descripcion:row.descripcion,unidad:row.unidad,cantidad:row.cantidad,precio:row.precio,parcial:row.parcial,
-                indiceunif:row.indiceunif,porc:0,reqsol:0,variacion:0,estado:0,saldo:100,observacion:'',fecha:null,fecha_sol:null,fecha_ate:null,complemento:0,
+                indiceunif:row.indiceunif,porc:0,reqsol:0,variacion:null,estado:0,saldo:100,observacion:'',fecha:null,fecha_sol:null,fecha_ate:null,complemento:0,
                 id_comple:'',entrega:row.entrega,seleccion:0,mostrar:this.dataSource5[indgrupo].icomost==1?1:0,icomost:1,editar:0};//todo se asigna igual
             //this.dataSource5.push(ejm);
             this.dataSource5.splice(inddetfin++,0,ejm);
@@ -980,14 +988,13 @@ export class AgrupinsumosComponent implements OnInit {
                 }
               }
             }
-            console.log(this.dataSource5)
           }
         }
         else{
           this.toaster.error('Seleccione filas para quitar.', 'Advertencia', { closeButton: false,positionClass: 'toast-bottom-right',timeOut: 5000 });
         }
       }else{
-        this.toaster.error('o se puede quitar insumos a un complemento.', 'Advertencia', { closeButton: false,positionClass: 'toast-bottom-right',timeOut: 5000 });
+        this.toaster.error('No se puede quitar insumos a un complemento.', 'Advertencia', { closeButton: false,positionClass: 'toast-bottom-right',timeOut: 5000 });
       }
     }
     else{
@@ -1056,7 +1063,6 @@ export class AgrupinsumosComponent implements OnInit {
           //bajar
           rowant.nro=nroact
           this.dataSource5[indfilasel]=rowant;
-          console.log(this.dataSource5)
         }
         else{
           this.toaster.error('El registro ya no se puede Subir.', 'Advertencia', { closeButton: false,positionClass: 'toast-bottom-right',timeOut: 5000 });
@@ -1098,7 +1104,6 @@ export class AgrupinsumosComponent implements OnInit {
           //bajar
           rowant.nro=nroact
           this.dataSource5[indfilasel]=rowant;
-          console.log(this.dataSource5)
         }
         else{
           this.toaster.error('El registro ya no se puede Bajar.', 'Advertencia', { closeButton: false,positionClass: 'toast-bottom-right',timeOut: 5000 });
@@ -1272,12 +1277,15 @@ export class AgrupinsumosComponent implements OnInit {
           if(row.accion==1)
             tabaux.push(row);
         }
+        //verificar estado y parsar si se va a cambiar a 2
+        let actestado=this.filareg.estado==1?1:0;
         const datos1 = JSON.stringify(tabaux);
         const datos2 = JSON.stringify(this.dataSource5);
         const datos3 = JSON.stringify(this.dataSource6);
         let objpasa={
           id_proyecto:this.id_proyecto,
           id_registro:this.id_reg,
+          actestado:actestado,
           datos1:datos1,
           datos2:datos2,
           datos3:datos3
@@ -1288,7 +1296,8 @@ export class AgrupinsumosComponent implements OnInit {
         {
           SwalService.success('Correcto',res.mensaje)
           this.bcambiost5=false;//Solicitud de presupuesto
-          
+          if(this.filareg.estado==1)
+            this.listarpri.emit('1')
         }
         else
         {

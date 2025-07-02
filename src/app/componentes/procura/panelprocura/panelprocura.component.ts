@@ -6,7 +6,8 @@ import { ModalBasicComponent } from 'src/app/shared/modal-basic/modal-basic.comp
 import { LogisticaService } from 'src/app/servicios/logistica.service';
 import { FormsService } from 'src/app/servicios/forms.service';
 import { PresupuestosService } from 'src/app/servicios/presupuestos.service';
-
+import { EncriptadorService } from 'src/app/servicios/encriptador.service';
+import { PrincipalService } from 'src/app/servicios/principal.service';
 @Component({
   selector: 'app-panelprocura',
   templateUrl: './panelprocura.component.html',
@@ -107,6 +108,8 @@ export class PanelprocuraComponent implements OnInit {
   constructor(
     private _logisticaService:LogisticaService,
     private presuservice:PresupuestosService,
+    private principalService:PrincipalService,
+    private encriptadorService: EncriptadorService,
     private toaster: ToastrService,
     public formService: FormsService,
     private changeDetector: ChangeDetectorRef,
@@ -115,23 +118,13 @@ export class PanelprocuraComponent implements OnInit {
   async ngOnInit() {
     this.mostrar_carga=true;
     this.scrollbut=document.body.clientWidth <= 988?true:false;
-    // this._EncriptadorService.FechaActualBack().subscribe((res:any)=>{
-    //   this.fechaac=new Date(res.mensaje);
-    // },err => {
-    //   this.addToast({title:'Advertencia', msg:'Ocurrio una excepción al momento de cargar. Revisar conexión a internet y actualizar.', timeout: 8000, theme:'default', position:'bottom-right', type:'error'})
-    // });
-    // //personalizar filtro con condicionales
-    // this.dataSource4.filterPredicate = function (record:filatabla4,filter) {
-    //   if(record.unidad=='')
-    //     return true;
-    //   else{
-    //     return record.descripcion.toLocaleLowerCase().includes(filter.toLocaleLowerCase());
-    //   }
-    // }
-    // this.oculceros1=false;
-    // this.oculceros2=false;
-    // this.oculdisp2=false;
-    // this.ordent4=0;
+    let id_user = await this.encriptadorService.recuperarlocalstory('idusuario');//deberia ser el id_usuario del creador del proyecto(usuarios secundarios)
+    const datoaccs = await this.principalService.ConfgsAsignaUserProy({id_proyecto: this.id_proyecto,id_usuario:id_user});
+    if(datoaccs?.length>0){
+      if(datoaccs[0].procura==0){
+        this.solover=true;
+      }
+    }
     let decimales = this.decima;
     if(decimales?.toString().includes('|')){
       let arrdec=decimales.split('|');
@@ -144,18 +137,6 @@ export class PanelprocuraComponent implements OnInit {
       this.dec_cant=arrdec[3];
       this.mask_cant='0.'+arrdec[3];
     }
-    //falta metodo pintar
-
-    var resto=194;
-    // this.heighttmodal=document.body.clientHeight-resto;
-    // this.heighttmodal13=(document.body.clientHeight-resto-8)/2;
-    // this.widthm1b2=(document.body.clientWidth-85)/2;
-    
-    var resto2=465//570;
-    // this.data2difer=0;
-
-    // this.mostrarbusqins=false;
-    // this.mostrar1=true;
     let res= await this.presuservice.listarTopPresupuesto({id_proyecto:this.id_proyecto});
     if(res){
       let presu=res[0]
@@ -166,39 +147,7 @@ export class PanelprocuraComponent implements OnInit {
       }
       this.costopresu=sumtot
     }
-    console.log(this.costopresu)
     await this.ListarAdquisiciones();
-
-    // //datos programación de adquisiciones
-    // this.Frmmostrar12a = this.formBuilder.group({
-    //   Iditem12a: new FormControl('', Validators.required),
-    //   Descgru12a: new FormControl('',Validators.required),
-    //   Lugar: new FormControl('',Validators.required),
-    // });
-
-    // this.Frmmostrar12b = this.formBuilder.group({
-    //   Iditemsel12b: new FormControl('', Validators.required),
-    //   Idcomsel12b: new FormControl('', Validators.required),
-    //   Descgrusel12b: new FormControl('', Validators.required),
-    //   Iditem12b: new FormControl('', Validators.required),
-    //   Descgru12b: new FormControl('', Validators.required),
-    //   Lugar: new FormControl('', Validators.required),
-    // });
-
-    // this.Frmmostrar13a = this.formBuilder.group({
-    //   Item13a: new FormControl('', Validators.required),
-    //   InsumoPr13a: new FormControl(''),
-    //   CantidadPr13a: new FormControl(''),
-    //   PreciouPr13a: new FormControl(''),
-    //   ParcialPr13a: new FormControl(''),
-
-    //   Insumo13a: new FormControl('', Validators.required),
-    //   Unidad13a: new FormControl('', Validators.required),
-    //   Codigo13a: new FormControl('', Validators.required),
-    //   Cantidad13a: new FormControl('', Validators.required),
-    //   Preciou13a: new FormControl('', Validators.required),
-    //   Parcial13a: new FormControl('', Validators.required),
-    // });
     this.mostrar_carga=false;
   }
   ngAfterContentChecked(): void {
@@ -273,6 +222,7 @@ export class PanelprocuraComponent implements OnInit {
     // else{
       this.fila1_sel = ind;
       this.filareg=this.dataSource1[ind];
+      this.filareg.solover=this.solover;
       this.colorpasa=this.colores;
       this.decpasa=this.decima;
       this.tit_sel_1=this.dataSource1[this.fila1_sel].detalle;//agregar los datos de tabla det1
@@ -293,7 +243,7 @@ export class PanelprocuraComponent implements OnInit {
       for(let j=0;j<tablares.length;j++){
         if(tablares[j].num_det=='0')
         {
-          let filad={nro:indic,especif:tablares[j].descripcion,exptec_dir:tablares[j].parcial ,program_dir: tablares[j].parcialsol,util_dir:'',porc_dir:'',
+          let filad={nro:indic,descripcion:tablares[j].descripcion,exptec_dir:tablares[j].parcial ,program_dir: tablares[j].parcialsol,util_dir:'',porc_dir:'',
           exptec_ind:'',program_ind:'',util_ind:'',porc_ind:''};
           this.dataSourcedet1.push(filad)
           suma1=suma1+Number(tablares[j].parcial);
@@ -301,7 +251,7 @@ export class PanelprocuraComponent implements OnInit {
           indic++;
         }
       }
-      let filad={nro:'',especif:'TOTAL',exptec_dir:this.formService.redondeo(suma1,this.dec_parcial) ,program_dir: this.formService.redondeo(suma2,this.dec_parcial),util_dir:'',porc_dir:'',
+      let filad={nro:'',descripcion:'TOTAL',exptec_dir:this.formService.redondeo(suma1,this.dec_parcial) ,program_dir: this.formService.redondeo(suma2,this.dec_parcial),util_dir:'',porc_dir:'',
           exptec_ind:'',program_ind:'',util_ind:'',porc_ind:''};
       this.dataSourcedet1.push(filad)
     }
@@ -339,7 +289,6 @@ export class PanelprocuraComponent implements OnInit {
   async ListarAdquisiciones(){
     this.buscando1=true;
     let res= await this._logisticaService.ListarAdquisicionesProy({id_proyecto:this.id_proyecto});
-    console.log(res)
     this.buscando1=false;
     this.dataSource1=res;
     this.TotalesAdquisiciones();
@@ -511,10 +460,10 @@ export class PanelprocuraComponent implements OnInit {
       this.modalmodpreasig.show();
     }
     else{
-      let filad={id_proyecto:this.id_proyecto,id_registro:1,id_tipo_insumo:1,especif:"MANO DE OBRA",monto:this.formService.redondeo(0,this.dec_parcial)};
-      let filad1={id_proyecto:this.id_proyecto,id_registro:2,id_tipo_insumo:2,especif:"MATERIALES",monto:this.formService.redondeo(0,this.dec_parcial)};
-      let filad2={id_proyecto:this.id_proyecto,id_registro:3,id_tipo_insumo:3,especif:"EQUIPO",monto:this.formService.redondeo(0,this.dec_parcial)};
-      let filad3={id_proyecto:this.id_proyecto,id_registro:4,id_tipo_insumo:4,especif:"SUB CONTRATOS",monto:this.formService.redondeo(0,this.dec_parcial)};
+      let filad={id_proyecto:this.id_proyecto,id_registro:1,id_tipo_insumo:1,nro:1,descripcion:"MANO DE OBRA",monto:this.formService.redondeo(0,this.dec_parcial)};
+      let filad1={id_proyecto:this.id_proyecto,id_registro:2,id_tipo_insumo:2,nro:2,descripcion:"MATERIALES",monto:this.formService.redondeo(0,this.dec_parcial)};
+      let filad2={id_proyecto:this.id_proyecto,id_registro:3,id_tipo_insumo:3,nro:3,descripcion:"EQUIPO",monto:this.formService.redondeo(0,this.dec_parcial)};
+      let filad3={id_proyecto:this.id_proyecto,id_registro:4,id_tipo_insumo:4,nro:4,descripcion:"SUB CONTRATOS",monto:this.formService.redondeo(0,this.dec_parcial)};
       this.datasourcemodasig.push(filad)
       this.datasourcemodasig.push(filad1)
       this.datasourcemodasig.push(filad2)
@@ -535,7 +484,7 @@ export class PanelprocuraComponent implements OnInit {
     let totalpresu=Number(this.costopresu);
     let totalasig=Number(this.tot_asig1);
     let monantasig=Number(this.totant_montoasig);
-    let monactasig=Number(this.tot_montoasig);
+    let monactasig=Number(this.tot_montoasig.replace(/\,/g,''));
     let nuevototasig=totalasig-monantasig+monactasig;
     if(nuevototasig>=totalpresu){
       let difer=this.formService.redondeo(nuevototasig-totalpresu,2);
@@ -544,7 +493,7 @@ export class PanelprocuraComponent implements OnInit {
     else{
       this.mostrar_carga_todo=true;
       const datos1 = JSON.stringify(this.datasourcemodasig);
-      let resp=await this._logisticaService.GuardarDetallePreasig({id_proyecto:this.id_proyecto,id_registro:this.id_reg,total:this.tot_montoasig,data:datos1});
+      let resp=await this._logisticaService.GuardarDetallePreasig({id_proyecto:this.id_proyecto,id_registro:this.id_reg,total:this.tot_montoasig,datos1:datos1});
       this.mostrar_carga_todo=false;
       if(resp.id==1)
         SwalService.success('Correcto',resp.mensaje)
@@ -555,28 +504,41 @@ export class PanelprocuraComponent implements OnInit {
     }
   }
   caneditarmodasig1(eve:any,row:any){
-    var valor=Number(eve.target.value);
+    var valor=Number(eve.target.value.replace(/\,/g,''));
     let nuevo=this.formService.redondeo(valor,this.dec_parcial);
-    row.monto=nuevo;
+    row.monto=nuevo.replace(/\d(?=(\d{3})+\.)/g, '$&,');
     this.calculartotalpreasig();
   }
+  presenter1(event:any){
+    if(event.keyCode.toString()=="13")
+    {
+      event.target.blur();
+    }
+  }
   caneditarmodasig2(eve:any){
-    var valor=Number(eve.target.value);
+    var valor=Number(eve.target.value.replace(/\,/g,''));
     let nuevo=this.formService.redondeo(valor,this.dec_parcial);
-    this.tot_montoasig=nuevo;
+    this.tot_montoasig=nuevo.replace(/\d(?=(\d{3})+\.)/g, '$&,');
+  }
+  presenter2(event:any){
+    if(event.keyCode.toString()=="13")
+    {
+      event.target.blur();
+    }
   }
   calculartotalpreasig(){
     let suma=0;
     for(let i=0;i<this.datasourcemodasig.length;i++){
-      let valfil=Number(this.datasourcemodasig[i].monto);
+      let valfil=Number(this.datasourcemodasig[i].monto.replace(/\,/g,''));
       suma=suma+valfil;
     }
-    this.tot_montoasig=this.formService.redondeo(suma,this.dec_parcial);
+    this.tot_montoasig=this.formService.redondeo(suma,this.dec_parcial).replace(/\d(?=(\d{3})+\.)/g, '$&,');
   }
   EditarAdqDir(row:any,ind:any){
     if(row){
       this.fila1_sel=ind
       this.filareg=row;
+      this.filareg.solover=this.solover;
       this.colorpasa=this.colores;
       this.decpasa=this.decima;
       this.subvista=3;
@@ -592,6 +554,8 @@ export class PanelprocuraComponent implements OnInit {
     if (sw.isConfirmed) {
       this.mostrar_carga=true;
       let resp=await this._logisticaService.ActualizarEstAdqui({id_proyecto:this.id_proyecto,id_registro:row.id_registro});
+      this.fila1_sel=-1
+      this.filareg=null
       this.mostrar_carga=false;
       if(resp){
         if(resp[0].id=="1"){
@@ -605,6 +569,9 @@ export class PanelprocuraComponent implements OnInit {
         SwalService.error('Advertencia', 'No se pudo realizar la operación');
       }
       await this.ListarAdquisiciones();
+      if(this.fila1_sel){
+        this.filareg=this.dataSource1[this.fila1_sel]
+      }
       this.mostrar_carga=false;  
     }
   }

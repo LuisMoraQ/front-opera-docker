@@ -416,10 +416,12 @@ async CambiarPais(id) {
       this.toaster.error('Ingresar el codigo del Proyecto para buscar.', 'Advertencia', { closeButton: false, positionClass: 'toast-bottom-right', timeOut: 5000 })
       return;
     }
+    this.mostrar_carga_todo=true;
     let codigost=this.codigo.value.toString();
     let val1=codigost.split('|')[0]
     let val2=codigost.split('|')[1]
     const detalleProyecto = await this.principalService.BuscarProyBiplan({id_proyecto: val1,id_usuario:val2})
+    this.mostrar_carga_todo=false;
     if(detalleProyecto.id=="1"){
       this.toaster.success(detalleProyecto.mensaje, 'Advertencia', { closeButton: false, positionClass: 'toast-bottom-right', timeOut: 5000 })
       if(detalleProyecto.observacion){

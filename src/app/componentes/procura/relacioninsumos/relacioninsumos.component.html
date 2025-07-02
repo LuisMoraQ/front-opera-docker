@@ -1,5 +1,5 @@
-<div class="row mx-0" style="overflow: auto;">
-  <div style="padding-left: 5px; padding-right: 5px;" class="col-6">
+<div class="row mx-0 contenido-menu-responsive">
+  <div style="padding-left: 5px; padding-right: 5px;" class="col-12 col-sm-6">
     <div class="tabla-limp" [style.height.px]="heightpres">
       <table mat-table class="table-bordered tab-9">
         <thead>
@@ -113,56 +113,62 @@
     <span *ngIf="data2difer>0" style="color: red;"><i class="icofont icofont-warning" style="color: red;"></i>Se encontraron inconcistencias en Metrados Solicitados.
     <label class="label label-info"  [ngStyle]="{'text-align': 'center','cursor':'pointer','padding-bottom':'3px'}" (click)="corregirdifer()">Corregir</label></span>
   </div>
-  <div style="padding-left: 5px; padding-right: 5px; margin-bottom: 2px;" [style.width.px]="widthm1b2-20" class="col-6">
-      <div>
-        <h4 class="modal-title tit-modal1" style="background-color: #448aff; color: white; border-radius: 4px; padding-left: 4px; margin-top: 0px !important;">
-          <button type="button" class="btn btn-mini btn-success" placement="bottom" ngbTooltip="Actualizar Relacion de Insumos" container="body" (click)="actualizarder()">
-            <i class="fa fa-refresh icono-but"></i>
-          </button>&nbsp;&nbsp;
-          <b>Informacion</b>
-        </h4>
-        <div class="row col-12" style="margin-top: 5px; margin-bottom: 8px;font-size: 13px;">
-          <div class="col-8 col-md-4" style="padding-top: 2px;"><b>Presupuesto Asignado</b></div>
-          <span class="float-right col-4 col-md-2 px-0"><b>{{totalpreasig | number: mask_parcial}}</b></span>
-          <!-- <input type="text" style="text-align:center;font-size: 12px;padding-left: 5px;padding-right: 5px;" class="formcontrol col-2" value="{{totalpreasig}}" readonly> -->
-          <div class="col-8 col-md-4" style="padding-top: 2px;"><b>Presupuesto Solicitado</b></div>
-          <span class="float-right col-4 col-sm-2 px-0"><b>{{totalpresoli | number: mask_parcial}}</b></span>
-          <!-- <input type="text" style="text-align:center;font-size: 12px;padding-left: 5px;padding-right: 5px;" class="formcontrol col-2" value="{{totalpresoli}}" readonly> -->
-        </div>
-        <div class="row col-12" style="margin-top: 2px; padding-right: 0px;">
-          <div class="tabla-limp w-100" style="height: 100px">
-            <table class="table-bordered">
-              <thead>
-                <tr class="headsticky header-custom" [hidden]="true">
-                  <th>Descripción</th>
-                  <th>Parcial</th>
+  <div style="padding-left: 5px; padding-right: 5px; margin-bottom: 2px;" [style.width.px]="widthm1b2-6" class="col-12 col-sm-6">
+    <div class="row mx-0">
+      <h4 class="modal-title tit-modal1" style="background-color: #448aff; color: white; border-radius: 4px; padding-left: 4px; margin-top: 0px !important;width:calc(100% - 80px)">
+        <button *ngIf="!solover && estadoreg==0" type="button" class="btn btn-mini btn-inverse" placement="bottom" ngbTooltip="Actualizar Relacion de Insumos" container="body" (click)="actualizarder()">
+          <i class="fa fa-refresh icono-but"></i>
+        </button>&nbsp;&nbsp;
+        <b>Informacion</b>
+      </h4>
+      <button *ngIf="!solover && estadoreg==0" type="button" class="btn btn-success btn-sm m-l-5" style="padding: 4px 8px;" (click)="GuardarDatos()"><i
+        class="fa fa-check"></i>Guardar
+        <!-- <span *ngIf="bcambiost1" class="badge ballalert balert-danger" container="body"></span> -->
+      </button>
+    </div>
+    <div>
+      <div class="row col-12" style="margin-top: 5px; margin-bottom: 8px;font-size: 13px;">
+        <div class="col-8 col-md-4" style="padding-top: 2px;"><b>Presupuesto Asignado</b></div>
+        <span class="float-right col-4 col-md-2 px-0"><b>{{totalpreasig | number: mask_parcial}}</b></span>
+        <!-- <input type="text" style="text-align:center;font-size: 12px;padding-left: 5px;padding-right: 5px;" class="formcontrol col-2" value="{{totalpreasig}}" readonly> -->
+        <div class="col-8 col-md-4" style="padding-top: 2px;"><b>Presupuesto Solicitado</b></div>
+        <span class="float-right col-4 col-sm-2 px-0"><b>{{totalpresoli | number: mask_parcial}}</b></span>
+        <!-- <input type="text" style="text-align:center;font-size: 12px;padding-left: 5px;padding-right: 5px;" class="formcontrol col-2" value="{{totalpresoli}}" readonly> -->
+      </div>
+      <div class="row col-12" style="margin-top: 2px; padding-right: 0px;">
+        <div class="tabla-limp w-100" style="height: 100px">
+          <table class="table-bordered">
+            <thead>
+              <tr class="headsticky header-custom" [hidden]="true">
+                <th>Descripción</th>
+                <th>Parcial</th>
+              </tr>
+            </thead>
+            <tbody>
+              <ng-container *ngIf="dataSourcedet2.length>0">
+                <tr *ngFor="let row of dataSourcedet2;let indice=index;" (click)="cambindiceseldet2(indice)" [ngClass]="{'highlight': filadet2_sel == indice}">
+                  <td class="text-left">
+                    {{row.descripcion}}
+                  </td>
+                  <td appAnchocol [ancho]="78">
+                    <span class="float-left">{{simbolo}}</span>
+                    <span class="float-right">{{row.parcial | number: mask_parcial}}</span>
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                <ng-container *ngIf="dataSourcedet2.length>0">
-                  <tr *ngFor="let row of dataSourcedet2;let indice=index;" (click)="cambindiceseldet2(indice)" [ngClass]="{'highlight': filadet2_sel == indice}">
-                    <td class="text-left">
-                      {{row.descripcion}}
-                    </td>
-                    <td appAnchocol [ancho]="78">
-                      <span class="float-left">{{simbolo}}</span>
-                      <span class="float-right">{{row.parcial | number: mask_parcial}}</span>
-                    </td>
-                  </tr>
-                </ng-container>
-                <ng-container *ngIf="dataSourcedet2.length<=0">
-                  <tr>
-                    <td class="mat-cell text-center" colspan="9">
-                        <label>No se encontraron resultados</label>
-                    </td>
-                  </tr>
-                </ng-container>
-              </tbody>
-            </table>
-          </div>
+              </ng-container>
+              <ng-container *ngIf="dataSourcedet2.length<=0">
+                <tr>
+                  <td class="mat-cell text-center" colspan="9">
+                      <label>No se encontraron resultados</label>
+                  </td>
+                </tr>
+              </ng-container>
+            </tbody>
+          </table>
         </div>
       </div>
-      <div class="tabla-limp" [style.height.px]="heightins">
+    </div>
+    <div class="tabla-limp" [style.height.px]="heightins">
         <table mat-table class="table-bordered tab-9">
           <thead>
             <tr class="headsticky header-custom">
@@ -226,12 +232,6 @@
             </ng-container>
           </tbody>
         </table>
-    </div>
-    <div class="d-flex justify-content-end">
-      <button type="button" class="btn btn-success btn-sm" style="padding: 4px 8px;" (click)="GuardarDatos()"><i
-        class="fa fa-check"></i>Guardar
-        <!-- <span *ngIf="bcambiost1" class="badge ballalert balert-danger"></span> -->
-      </button>
     </div>
   </div>
 </div>

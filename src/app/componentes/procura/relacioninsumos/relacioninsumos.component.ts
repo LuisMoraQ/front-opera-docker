@@ -15,7 +15,8 @@ export class RelacioninsumosComponent implements OnInit {
   heightpres: number=100;
   heightins: number=100;
   oculceros1=false
-
+  solover=false
+  estadoreg=0;
   //deteccion cambios
   bfaltactder=false;
   bactualizoder=false;
@@ -72,6 +73,8 @@ export class RelacioninsumosComponent implements OnInit {
     this.totalpreasig=this.filareg.costo_dir;
     this.id_reg=this.filareg.id_registro;
     this.id_proyecto=this.filareg.id_proyecto
+    this.solover=this.filareg.solover
+    this.estadoreg=this.filareg.estado
 
     this.aspectos = this.colproy?JSON.parse(this.colproy):null;
     this.pintar();
@@ -87,7 +90,6 @@ export class RelacioninsumosComponent implements OnInit {
       this.dec_cant=arrdec[3];
       this.mask_cant='0.'+arrdec[3];
     }
-
     try{
       this.buscando1=true;
       this.buscando3=true;
@@ -96,7 +98,6 @@ export class RelacioninsumosComponent implements OnInit {
         this.presudet=tablares[1];
         this.presusubp=tablares[2];
         this.dataSource2=tablares[0];//presupuesto
-        console.log(tablares[3])
         for(let index=0;index<this.dataSource2.length;index++){
           if(this.dataSource2[index].difer==1){
             this.data2difer++;
@@ -193,6 +194,12 @@ export class RelacioninsumosComponent implements OnInit {
     }
   }
   editarcelda1(ind:any){
+    if(this.solover){
+      return;
+    }
+    else if(this.estadoreg==1 || this.estadoreg==2){
+      return
+    }
     this.dataSource2[ind].editar1=1;
   }
   caneditarcelda1(eve:any,ind:any){
@@ -206,11 +213,11 @@ export class RelacioninsumosComponent implements OnInit {
         var porc=this.formService.redondeo(((valor*100)/ametrado),2);
         this.dataSource2[ind].porcsol=porc;
         this.dataSource2[ind].difer=0;
+        this.data2difer--;
+        this.calculartotal(this.formService.redondeo((valor*aprecio),this.dec_parcial),Number(this.dataSource2[ind].parcialsol),ind);
         this.dataSource2[ind].metradosol=this.formService.redondeo(Number(valor),this.dec_metrado);
         this.dataSource2[ind].parcialsol=this.formService.redondeo((valor*aprecio),this.dec_parcial);
         this.dataSource2[ind].accion=1;
-        this.data2difer--;
-        this.calculartotal(this.formService.redondeo((valor*aprecio),this.dec_parcial),Number(this.dataSource2[ind].parcialsol),ind);
         this.bfaltactder=true;
         this.bcambiost1=true;
       }
@@ -252,6 +259,12 @@ export class RelacioninsumosComponent implements OnInit {
     }
   }
   editarcelda2(ind:any){
+    if(this.solover){
+      return;
+    }
+    else if(this.estadoreg==1 || this.estadoreg==2){
+      return
+    }
     this.dataSource2[ind].editar2=1;
   }
   caneditarcelda2(eve:any,ind:any){
@@ -268,9 +281,9 @@ export class RelacioninsumosComponent implements OnInit {
         var ametrado=Number(this.dataSource2[ind].metrado);
         var ametradosol=Number(this.formService.redondeo(((valor*ametrado)/100),this.dec_metrado));
         this.dataSource2[ind].metradosol=ametradosol.toString();
+        this.calculartotal(this.formService.redondeo((ametradosol*aprecio),this.dec_parcial),Number(this.dataSource2[ind].parcialsol),ind);
         this.dataSource2[ind].parcialsol=this.formService.redondeo((ametradosol*aprecio),this.dec_parcial);
         this.dataSource2[ind].accion=1;
-        this.calculartotal(this.formService.redondeo((ametradosol*aprecio),this.dec_parcial),Number(this.dataSource2[ind].parcialsol),ind);
       }//si no tiene unidad se operara 1 grupo, en cambio si tiene unidad es una partida
       else
       {
@@ -391,28 +404,26 @@ export class RelacioninsumosComponent implements OnInit {
         for(let j=0;j<this.dataSource2.length;j++){
           if(this.dataSource2[j].item==titem)
           {
-            var tot=Number(this.dataSource2[j].parcialsol.replace(/\,/g,''));
+            var tot=Number(this.dataSource2[j].parcialsol);
             this.dataSource2[j].parcialsol=this.formService.redondeo((tot+resto),this.dec_parcial);
             this.dataSource2[j].accion=1;
             indexgrup=j;
             j=this.dataSource2.length;
           }
         }
-        
         if(i==aritem.length-1){//quitar la condicion para calcular los % de todos los titulos
           var suma=0;
           var cont=0;
           //calcular promedio de porcentajes
           for(let k=0;k<this.dataSource2.length;k++){
             var palabra=this.dataSource2[k].item.substring(0,(titem).length)
-  
             var palabras=this.dataSource2[k].item.split('.');
             var items=titem.split('.');
             if(palabras.length==items.length+1)
             {
               if(palabra==titem)
               {
-                var tot=Number(this.dataSource2[k].porcsol.toString().replace(/\,/g,''));
+                var tot=Number(this.dataSource2[k].porcsol);
                 suma=suma+tot;
                 cont++;
               }
@@ -481,7 +492,6 @@ export class RelacioninsumosComponent implements OnInit {
     }
   }
   async actualizarder(){
-    console.log(JSON.parse(JSON.stringify(this.dataSource2)))
     this.mostrar_carga_todo=true;
     this.dataSourcedet2=[];
     this.buscando3=true;
@@ -614,7 +624,7 @@ export class RelacioninsumosComponent implements OnInit {
         tabresult[indporc].compensa=totpre-totax;
       }
       //fin corr
-      if(tabresult.length>0){
+      /* if(tabresult.length>0){ */
         let summano=0;
         let summat=0;
         let sumeq=0;
@@ -691,7 +701,7 @@ export class RelacioninsumosComponent implements OnInit {
             tabresult[m].num_det = ++ndet;
           }
         }
-      }
+      /* } */
       return {datos:tabresult,total:totpre};
     }
     catch{

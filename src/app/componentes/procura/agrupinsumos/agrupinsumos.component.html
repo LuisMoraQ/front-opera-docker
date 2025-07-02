@@ -1,7 +1,7 @@
-<div class="row mx-0" style="overflow: auto;">
-  <div style="padding-left: 5px; padding-right: 5px;">
-    <div class="tabla-limp" [style.height.px]="heighttmodal" [style.width.px]="widthm1b2">
-      <table mat-table class="table-bordered tab-10">
+<div class="row mx-0 contenido-menu-responsive">
+  <div style="padding-left: 5px; padding-right: 5px;" [style.width.px]="widthm1b2">
+    <div class="tabla-limp" [style.height.px]="heighttmodal">
+      <table class="table-bordered tab-9 minspacelet">
         <thead>
           <tr class="headsticky header-custom">
             <th appAnchocol [ancho]="30">N°</th>
@@ -21,7 +21,7 @@
               <i [hidden]="!(ordent4==2)" class="icofont icofont-rounded-collapse" placement="bottom" ngbTooltip="Por Defecto" container="body" style="cursor: pointer;" (click)="ordenart4def()"></i>
               &nbsp;Indice Unificado
             </th>
-            <th appAnchocol [ancho]="25">
+            <th *ngIf="!solover" appAnchocol [ancho]="25">
               S<i [hidden]="(oculdisp2)" class="fa fa-eye-slash" placement="bottom" ngbTooltip="Ocultar Disponibles" container="body" style="cursor: pointer;" (click)="mostdisponibles2(0)"></i>
               <i [hidden]="!(oculdisp2)" class="fa fa-eye" placement="bottom" ngbTooltip="Mostrar Disponibles" container="body" style="cursor: pointer;" (click)="mostdisponibles2(1)"></i>
             </th>
@@ -61,17 +61,17 @@
                 <span class="float-right">{{row.parcial | number: mask_parcial}}</span>
               </td>
               <td appAnchocol [ancho]="65">{{row.indiceunif}}</td>
-              <td appAnchocol [ancho]="25">
-                <!-- <div style="display: flex; justify-content: center;"> -->
+              <td *ngIf="!solover" appAnchocol [ancho]="25">
+                <div style="display: flex; justify-content: center;">
                   <mat-checkbox *ngIf="row.num_det!='0' && row.seleccion!=2 && row.cantidad!='0.00'" class="chb-bot0" [checked]="row.seleccion==0?false:true" (change)="$event ? cambiosel4(row) : null"></mat-checkbox>
                   <mat-checkbox *ngIf="row.num_det!='0' && row.seleccion==2" class="f-asignado chb-bot0" [checked]="true" (change)="$event ? cambiosel4(row) : null" disabled></mat-checkbox>
-                <!-- </div> -->
+                </div>
               </td>
             </tr>
           </ng-container>
           <ng-container *ngIf="dataSource4.length<=0">
             <tr>
-              <td class="mat-cell text-center" colspan="9">
+              <td class="mat-cell text-center" colspan="8">
                   <label *ngIf="!buscando4">No se encontraron resultados</label>
                   <div *ngIf="buscando4" class="preloader3 loader-block">
                       <div class="circ1"></div>
@@ -86,7 +86,7 @@
       </table>
     </div>
   </div>
-  <div style="width: 38px;">
+  <div *ngIf="!solover" style="width: 38px;">
       <button type="button" class="btn btn-info light ripple m-b-10 botton-icono" placement="bottom" ngbTooltip="Agregar Grupo" container="body" style="margin-bottom: 5px;" (click)="AgregarGrupo()">
           <i class="fa fa-plus"></i>
       </button>
@@ -109,12 +109,24 @@
           <i class="icofont icofont-arrow-down"></i>
       </button>
   </div>
-  <div style="padding-left: 5px; padding-right: 5px;" [style.width.px]="widthm1b2">
-    <div [style.margin-bottom.px]="-paddingscroll2" class="tabla-limp" id="tableBody" [style.height.px]="heighttmodal-20" (scroll)="SyncScroll()">
+  <!-- <div class="d-flex justify-content-end">
+    
+  </div> -->
+  <div style="padding-left: 5px;" [style.width.px]="widthm1b2">
+    <div class="row mx-0">
+      <h4 class="modal-title tit-modal1 m-b-2" style="background-color: #448aff; color: white; border-radius: 4px; padding-left: 4px; margin-top: 0px !important;width:calc(100% - 80px)">
+        &nbsp;&nbsp;
+        <b>Agrupación de Insumos</b>
+      </h4>
+      <button *ngIf="!solover" type="button" class="btn btn-success btn-sm m-l-5" style="padding: 4px 8px;" (click)="GuardarDatos()"><i
+        class="fa fa-check"></i>Guardar
+      </button>
+    </div>
+    <div [style.margin-bottom.px]="-paddingscroll2" class="tabla-limp m-t-5" id="tableBody" [style.height.px]="heighttmodal-49" (scroll)="SyncScroll()">
       <table class="table-bordered tab-9 minspacelet">
         <thead>
           <tr class="headsticky header-custom">
-            <th appAnchocol [ancho]="32">N°</th>
+            <th *ngIf="!solover" appAnchocol [ancho]="32">N°</th>
             <th appAnchocol [ancho]="40">Item<br>
               <i class="fa fa-toggle-down" style="cursor:pointer;font-size: 14px;" placement="bottom" ngbTooltip="Expandir Todo" container="body" (click)="mostrarTodo5()"></i>&nbsp;
               <i class="fa fa-toggle-up" style="color:red; cursor:pointer;font-size: 14px;" placement="bottom" ngbTooltip="Contraer Todo" container="body" (click)="ocultarTodo5()"></i></th>
@@ -131,7 +143,7 @@
           <ng-container *ngIf="dataSource5.length>0">
             <tr *ngFor="let row of dataSource5;let indice=index;" (click)="cambindicesel5(indice)" [ngClass]="{'highlight': fila5_sel == indice,'filagrupo':row.unidad==''}" [hidden]="row.mostrar=='0'"
             [ngStyle]="{'font-weight': row.indice==null? 'bold' : 'normal' }">
-              <td appAnchocol [ancho]="32" class="text-left"> 
+              <td *ngIf="!solover" appAnchocol [ancho]="32" class="text-left"> 
                 <a *ngIf="row.indice">&nbsp;&nbsp;</a>
                 <mat-checkbox class="chb-bot0" [checked]="row.seleccion==1?true:false" [indeterminate]="row.seleccion==2?true:false" (change)="$event ? cambiosel5(indice) : null"></mat-checkbox>
               </td>
@@ -197,7 +209,7 @@
       <table class="table-bordered tab-10" style="position: sticky; bottom: 1px;">
           <tfoot>
             <tr>
-              <th style="min-width: 404px; max-width: 404px;width: calc(100% - 200px);">Total</th>
+              <th [style.min-width.px]="anchofoot3" [style.max-width.px]=""  style="width: calc(100% - 200px);">Total</th>
               <th appAnchocol [ancho]="80">
                 <span class="float-left">{{simbolo}}</span>
                 <span class="float-right">{{totalinsagru | number: mask_parcial}}</span>
@@ -213,11 +225,6 @@
           </tfoot>
         </table>
     </div>
-  </div>
-  <div class="d-flex justify-content-end">
-    <button type="button" class="btn btn-success btn-sm" style="padding: 4px 8px;" (click)="GuardarDatos()"><i
-      class="fa fa-check"></i>Guardar
-    </button>
   </div>
 </div>
 <app-modal-basic #modalmostrar12a [dialogClass]="'modal-lg'">
@@ -313,8 +320,8 @@
     </div>
     <div class="app-modal-footer w-100">
       <div class="row px-3 justify-content-between d-flex">
-        <button type="button" style="margin-right: 5px;" class="btn btn-danger ripple" (click)="cerrarModalmostrar12b()"><i class="fa fa-times"></i>Cancelar</button>
-        <button type="button" class="btn btn-success ripple light" (click)="GuardarModalmostrar12b()"><i class="fa fa-check"></i>Guardar</button>
+        <button type="button" style="margin-right: 5px;" class="btn btn-sm btn-danger ripple" (click)="cerrarModalmostrar12b()"><i class="fa fa-times"></i>Cancelar</button>
+        <button type="button" class="btn btn-sm btn-success ripple light" (click)="GuardarModalmostrar12b()"><i class="fa fa-check"></i>Guardar</button>
       </div>
     </div>
 </app-modal-basic>

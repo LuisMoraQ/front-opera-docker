@@ -24,6 +24,7 @@ import { RelacioninsumosComponent } from './relacioninsumos/relacioninsumos.comp
 import { MinmaxnumModule } from 'src/app/directivas/minmaxnum.module';
 import { AgrupinsumosComponent } from './agrupinsumos/agrupinsumos.component';
 import { CompatinsumosComponent } from './compatinsumos/compatinsumos.component';
+import { SaldopresupuestalComponent } from './saldopresupuestal/saldopresupuestal.component';
 
 
 @NgModule({
@@ -33,7 +34,8 @@ import { CompatinsumosComponent } from './compatinsumos/compatinsumos.component'
     PanelprocuraComponent,
             RelacioninsumosComponent,
             AgrupinsumosComponent,
-            CompatinsumosComponent
+            CompatinsumosComponent,
+            SaldopresupuestalComponent
   ],
   imports: [
     CommonModule,

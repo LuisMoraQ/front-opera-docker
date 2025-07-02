@@ -168,4 +168,26 @@ export class LogisticaService {
       catchError(err => throwError(err))
     ).toPromise()
   }
+  GuardarAdquiDisgreins(params = {}):any//ejemplo con json
+  {
+    const url = this.enviUrl + '/api/logistica/guardarAdquiDisgreins';
+    return this.http.post<any>(url, params, { headers: this.httpHeaders }).pipe(
+      map(res => {
+        if (!res) {
+          throw new Error
+        }
+        return res
+      }),
+      catchError(err => throwError(err))
+    ).toPromise()
+  }
+  ListarSaldoPresu(params = {}): Promise<any> {
+    const url = this.enviUrl + '/api/logistica/listarSaldoPresupuestal';
+    return this.http.post<any>(url, this.Cargafrmdata(params)).pipe(
+      map(res => {
+        return res
+      }),
+      catchError(err => throwError(err))
+    ).toPromise()
+  }
 }

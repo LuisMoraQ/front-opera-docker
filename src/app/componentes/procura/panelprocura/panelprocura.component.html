@@ -59,13 +59,13 @@
           </div>
       </div>&nbsp;&nbsp;
       <div>
-        <button type="button" class="btn btn-success btn-sm light ripple" style="margin-top: 5px; margin-bottom: 5px;" (click)="buAgregar()">
+        <button *ngIf="!solover" type="button" class="btn btn-success btn-sm light ripple" style="margin-top: 5px; margin-bottom: 5px;" (click)="buAgregar()">
           <i class="fa fa-plus"></i>Agregar
         </button>&nbsp;&nbsp;
-        <button type="button" class="btn btn-primary btn-sm light ripple" style="margin-top: 5px; margin-bottom: 5px;" (click)="buEditarAdqui()">
+        <button *ngIf="!solover" type="button" class="btn btn-primary btn-sm light ripple" style="margin-top: 5px; margin-bottom: 5px;" (click)="buEditarAdqui()">
           <i class="fa fa-edit"></i>Editar
         </button>&nbsp;&nbsp;
-        <button type="button" class="btn btn-danger btn-sm light ripple" style="margin-top: 5px; margin-bottom: 5px;" (click)="buEliminar()">
+        <button *ngIf="!solover" type="button" class="btn btn-danger btn-sm light ripple" style="margin-top: 5px; margin-bottom: 5px;" (click)="buEliminar()">
           <i class="fa fa-minus"></i>Eliminar
         </button>
       </div>
@@ -103,8 +103,8 @@
                 <span class="float-left">{{simbolo}}</span>
                 <span class="float-right">
                   {{row.costo_dir | number: mask_parcial}}
-                  <i *ngIf="row.estado==1" class="icofont icofont-ui-edit" style="color: transparent;font-size: 12px;"></i>
-                  <i *ngIf="row.estado==0" class="icofont icofont-ui-edit" placement="top" ngbTooltip="Editar Presupuesto Asignado" container="body" style="cursor: pointer;font-size: 12px;" (click)="editarpreasig(row)"></i>
+                  <i *ngIf="row.estado==1 && !solover" class="icofont icofont-ui-edit" style="color: transparent;font-size: 12px;"></i>
+                  <i *ngIf="row.estado==0 && !solover" class="icofont icofont-ui-edit" placement="top" ngbTooltip="Editar Presupuesto Asignado" container="body" style="cursor: pointer;font-size: 12px;" (click)="editarpreasig(row)"></i>
                 </span>
               </td>
               <td appAnchocol [ancho]="105">
@@ -118,11 +118,14 @@
                   </div>
               </td>
               <td appAnchocol [ancho]="26"> 
-                <button *ngIf="row.estado==0" class="btn btn-mini2 btn-primary" placement="top" ngbTooltip="Editar" container="body" style="margin-right: 2px;"  (click)="EditarAdqDir(row,indice)" (mouseup)="quitarfoco($event);">
+                <button type="button" *ngIf="row.estado==0 && !solover" class="btn btn-mini2 btn-primary" placement="top" ngbTooltip="Editar" container="body" style="margin-right: 2px;"  (click)="EditarAdqDir(row,indice)" (mouseup)="quitarfoco($event);">
                     <i class="fa fa-edit icono-but"></i>
                 </button>
-                <button *ngIf="row.estado==1 || row.estado==2" class="btn btn-mini2 btn-success" placement="top" ngbTooltip="Agregar Requerimientos" container="body" style="margin-right: 2px;"  (click)="AgregarReq1(row)" (mouseup)="quitarfoco($event);">
-                    <i class="icofont icofont-chart-flow-alt-2 icono-but"></i>
+                <button type="button" *ngIf="(row.estado==1 || row.estado==2) && !solover" class="btn btn-mini2 btn-success" placement="top" ngbTooltip="Agregar Requerimientos" container="body" style="margin-right: 2px;"  (click)="EditarAdqDir(row,indice)" (mouseup)="quitarfoco($event);">
+                    <i class="icofont-chart-flow-2 icono-but"></i>
+                </button>
+                <button type="button" *ngIf="solover" class="btn btn-mini2 btn-info" placement="top" ngbTooltip="Ver" container="body" style="margin-right: 2px;"  (click)="EditarAdqDir(row,indice)" (mouseup)="quitarfoco($event);">
+                    <i class="fa fa-search icono-but"></i>
                 </button>
               </td>
               <td appAnchocol [ancho]="110">
@@ -140,18 +143,21 @@
                 </div>
               </td>
               <td appAnchocol [ancho]="26"> 
-                  <button class="btn btn-mini2 btn-primary" placement="top" ngbTooltip="Editar" container="body" style="margin-right: 2px;" (click)="EditarAdqInd(row)">
+                  <button type="button" *ngIf="!solover" class="btn btn-mini2 btn-primary" placement="top" ngbTooltip="Editar" container="body" style="margin-right: 2px;" (click)="EditarAdqInd(row)">
                       <i class="fa fa-edit icono-but"></i>
                   </button>
+                  <button type="button" *ngIf="solover" class="btn btn-mini2 btn-info" placement="top" ngbTooltip="Agregar Requerimientos" container="body" style="margin-right: 2px;"  (click)="EditarAdqInd(row)" (mouseup)="quitarfoco($event);">
+                    <i class="fa fa-search icono-but"></i>
+                </button>
               </td>
               <td appAnchocol [ancho]="65"> 
-                <button *ngIf="row.estado=='0'" class="btn btn-mini2 btn-warning" placement="left" ngbTooltip="Hacer clic para Cambiar a Definitivo" container="body" style="background-color: darkorange; margin-right: 2px;" (click)="cambiarmodo1(row)">
+                <button type="button" *ngIf="row.estado=='0'" class="btn btn-mini2 btn-warning" placement="left" ngbTooltip="Hacer clic para Cambiar a Definitivo" container="body" style="background-color: darkorange; margin-right: 2px;" (click)="cambiarmodo1(row)">
                     Borrador
                 </button>
-                <button *ngIf="row.estado=='1'" class="btn btn-mini2 btn-success" style="cursor: default;" style="margin-right: 2px;">
+                <button type="button" *ngIf="row.estado=='1'" class="btn btn-mini2 btn-success" style="cursor: default;" style="margin-right: 2px;">
                     Definitivo
                 </button>
-                <button *ngIf="row.estado=='2'" class="btn btn-mini2 btn-info" placement="left" ngbTooltip="Hacer clic para Cambiar a Definitivo" container="body" style="margin-right: 2px;" (click)="cambiarmodo1(row)">
+                <button type="button" *ngIf="row.estado=='2'" class="btn btn-mini2 btn-info" placement="left" ngbTooltip="Hacer clic para Cambiar a Definitivo" container="body" style="margin-right: 2px;" (click)="cambiarmodo1(row)">
                     Verificar
                 </button>
               </td>
@@ -177,7 +183,7 @@
       <table class="table-bordered tab-10" style="position: sticky; bottom: 1px;">
           <tfoot>
             <tr>
-              <th style="min-width: 524px; max-width: 524px;width: calc(100% - 639px);">Solicitud Programada</th>
+              <th style="min-width: 524px; max-width: 524px;width: calc(100% - 625px);">Solicitud Programada</th>
               <th appAnchocol [ancho]="110">
                 <span class="float-left">{{simbolo}}</span>
                 <span class="float-right">{{tot_asig1 | number: mask_parcial}}</span>
@@ -192,7 +198,7 @@
                   <div class="progressj-fill" [ngStyle]="{'width': promporc1+'%','background': '#28a745' }"></div>
                 </div>
               </th>
-              <th appAnchocol [ancho]="63"></th>
+              <th appAnchocol [ancho]="26"></th>
               <th appAnchocol [ancho]="110">
                 <span class="float-left">{{simbolo}}</span>
                 <span class="float-right">{{tot_asig2 | number: mask_parcial}}</span>
@@ -207,7 +213,7 @@
                   <div class="progressj-fill" [ngStyle]="{'width': promporc2+'%','background': '#28a745'}"></div>
                 </div>
               </th>
-              <th appAnchocol [ancho]="128"></th>
+              <th appAnchocol [ancho]="91"></th>
             </tr>
           </tfoot>
         </table>
@@ -252,7 +258,7 @@
             <tr *ngFor="let row of dataSourcedet1;let indice=index;" (click)="cambindiceseldet1(indice)" 
             [ngClass]="{'highlight': filadet1_sel == indice}" [ngStyle]="{'font-weight': row.nro ==''?'bold':''}">
               <td> {{row.nro}} </td>
-              <td> {{row.especif}} </td>
+              <td class="text-left"> {{row.descripcion}}</td>
               <td>
                 <span class="float-left">{{simbolo}}</span>
                 <span class="float-right">{{row.exptec_dir | number: mask_parcial}}</span>
@@ -309,11 +315,14 @@
     </div>
   </app-card>
 </div>
+<div *ngIf="subvista==2">
+  <app-saldopresupuestal [filareg]="filareg" [decproy]="decpasa" [colproy]="colorpasa"></app-saldopresupuestal>
+</div>
 <div *ngIf="subvista==3">
   <app-relacioninsumos [filareg]="filareg" [decproy]="decpasa" [colproy]="colorpasa" (listarpri)="ListarExterno($event)"></app-relacioninsumos>
 </div>
 <div *ngIf="subvista==4">
-  <app-agrupinsumos [filareg]="filareg" [decproy]="decpasa"></app-agrupinsumos>
+  <app-agrupinsumos [filareg]="filareg" [decproy]="decpasa" (listarpri)="ListarExterno($event)"></app-agrupinsumos>
 </div>
 <div *ngIf="subvista==5">
   <app-compatinsumos [filareg]="filareg" [decproy]="decpasa"></app-compatinsumos>
@@ -428,12 +437,12 @@
         <tbody>
           <tr *ngFor="let row of datasourcemodasig;let indice=index;">
             <td appAnchocol [ancho]="35"> {{row.nro}} </td>
-            <td appAnchocol [ancho]="250" [detalle]="true" class="celdasalto text-left"> {{row.especif}} </td>
+            <td appAnchocol [ancho]="250" [detalle]="true" class="celdasalto text-left"> {{row.descripcion}} </td>
             <td appAnchocol [ancho]="150">
               <!-- <input [textMask]="{mask: dec_metrado==3?maskUsAmountDecimal3:maskUsAmountDecimal2}" style="height: 20px;text-align: center;" 
               type="text" class="formcontrol w-100 d-flex" value="{{row.monto}}" onClick="this.select();" (blur)="caneditarmodasig1($event,row)"> -->
               <input [textMask]="this.dec_parcial == 4? this.formService.maskUsAmountDecimal4 : (this.dec_parcial==3? this.formService.maskUsAmountDecimal3:this.formService.maskUsAmountDecimal2)" style="height: 20px;text-align: center;" 
-                type="text" class="formcontrol w-100 d-flex" value="{{row.monto}}" autocomplete="off" onClick="this.select();" (blur)="caneditarmodasig1($event,row)">
+                type="text" class="formcontrol w-100 d-flex" value="{{row.monto}}" autocomplete="off" onClick="this.select();" (blur)="caneditarmodasig1($event,row)" (keyup)="presenter1($event)">
             </td>
             <td appAnchocol [ancho]="150" style="color: #a50101de;font-weight: bold;">Campo Opcional</td>
           </tr>
@@ -446,7 +455,7 @@
               <!-- <input [textMask]="{mask: dec_metrado==3?maskUsAmountDecimal3:maskUsAmountDecimal2}" style="height: 20px;text-align: center;font-weight: bold;" 
               type="text" class="formcontrol w-100 d-flex" value="{{tot_montoasig}}" onClick="this.select();" (blur)="caneditarmodasig2($event)"> -->
               <input [textMask]="this.dec_parcial == 4? this.formService.maskUsAmountDecimal4 : (this.dec_parcial==3? this.formService.maskUsAmountDecimal3:this.formService.maskUsAmountDecimal2)" style="height: 20px;text-align: center;font-weight: bold;"
-                type="text" class="formcontrol w-100 d-flex" value="{{tot_montoasig}}" onClick="this.select();" (blur)="caneditarmodasig2($event)" autocomplete="off">
+                type="text" class="formcontrol w-100 d-flex" value="{{tot_montoasig}}" onClick="this.select();" (blur)="caneditarmodasig2($event)" autocomplete="off" (keyup)="presenter2($event)">
             </th>
             <th appAnchocol [ancho]="150" class="text-danger">Regsitro Obligatorio</th>
           </tr>
@@ -454,9 +463,11 @@
       </table>
     </div>
   </div>
-  <div class="app-modal-footer">
-      <button type="button" style="margin-right: 5px;" class="btn btn-danger ripple" (click)="cerrarModalmodpreasig()">Cancelar</button>
-      <button type="button" class="btn btn-success ripple light" (click)="GuardarModalmodpreasig()">Agregar</button>
+  <div class="app-modal-footer w-100">
+      <div class="row px-3 justify-content-between d-flex">
+        <button type="button" style="margin-right: 5px;" class="btn btn-danger btn-sm ripple" (click)="cerrarModalmodpreasig()"><i class="fa fa-times"></i>Cancelar</button>
+        <button type="button" class="btn btn-success btn-sm ripple light" (click)="GuardarModalmodpreasig()"><i class="fa fa-check"></i>Agregar</button>
+      </div>
   </div>
 </app-modal-basic>
 

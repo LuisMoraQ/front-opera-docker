@@ -1728,6 +1728,10 @@ body.swal2-shown:not(.swal2-no-backdrop):not(.swal2-toast-shown) {
     .mat-checkbox-layout {
         margin-bottom: 0;
     }
+    .mat-checkbox-ripple{
+    width: 0px !important;
+    height: 0px !important;
+}
 }
 
 //tamaños columnas acu
