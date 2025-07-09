@@ -1,1 +1,198 @@
-<p>panelalmc works!</p>
+<div id="divbut" style="width: calc(100% - 58px);margin-left:44px" class="hidescroll m-b-10">
+  <span *ngIf="scrollbut" class="icscrol-l" (click)="rigthDivBut()"><i class="icofont icofont-caret-left icono-but"></i></span>
+  <div class="row" style="width: 805px;margin-right: 0px;margin-left: 0px;">
+    <button class="btn btn-sm btn-outline-secondary btn-menu-top" type="button" (mouseup)="quitarfoco($event)"
+    (click)="cambioVista(1)" style="padding: 4px 8px" [ngClass]="{ 'btn-custom-active': subvista == 1 }">
+      <i class="fa fa-list"></i> RESUMEN MOV. ALMACEN
+    </button>
+    <button class="btn btn-sm btn-outline-secondary btn-menu-top" type="button" (mouseup)="quitarfoco($event)"
+      style="padding: 4px 8px" (click)="cambioVista(2)" [ngClass]="{ 'btn-custom-active': subvista == 2 }">
+      <i class="fa fa-list"></i> REGISTRO DE INGRESO DE MATERIALES
+    </button>
+    <button class="btn btn-sm btn-outline-secondary btn-menu-top" type="button" (mouseup)="quitarfoco($event)"
+      style="padding: 4px 8px" (click)="cambioVista(3)" [ngClass]="{ 'btn-custom-active': subvista == 3 }">
+      <i class="fa fa-list"></i> REGISTRO DE SALIDA DE MATERIALES
+    </button>
+  </div>
+  <span *ngIf="scrollbut" class="icscrol-r" (click)="leftDivBut()"><i class="icofont icofont-caret-right icono-but"></i></span>
+</div>
+<div style="overflow: auto;height: calc(100vh - 160px);" *ngIf="subvista == 1">
+  <app-card class="card col-12" style="margin-bottom:5px; padding-left: 0; padding-right: 0;">
+    <h4 style="margin-bottom: 5px;"><b>Movimiento de Almacen de Obra</b></h4>
+    <div class="row m-l-0 m-r-0">
+      <div class="borde-div col-8 col-md-9">
+          <div class="row">
+              <mat-form-field class="mff-reduc mff-nopad col-12" appearance="outline">
+                  <mat-label>Proyecto</mat-label>
+                  <input matInput type="text" placeholder="..." value="{{nomproy}}" readonly>
+              </mat-form-field>
+          </div>
+      </div>&nbsp;&nbsp;
+      <div>
+        <button *ngIf="!solover" type="button" class="btn btn-success btn-sm light ripple" style="margin-top: 5px; margin-bottom: 5px;" (click)="buAgregar()">
+          <i class="fa fa-plus"></i>Agregar
+        </button>&nbsp;&nbsp;
+        <button *ngIf="!solover" type="button" class="btn btn-primary btn-sm light ripple" style="margin-top: 5px; margin-bottom: 5px;" (click)="buVincula()">
+          <i class="fa fa-edit"></i>Vincular con Metrado
+        </button><!-- &nbsp;&nbsp;
+        <button *ngIf="!solover" type="button" class="btn btn-danger btn-sm light ripple" style="margin-top: 5px; margin-bottom: 5px;" (click)="buEliminar()">
+          <i class="fa fa-minus"></i>Eliminar
+        </button> -->
+      </div>
+    </div>
+    <div [style.margin-bottom.px]="-paddingscroll2" class="tabla-limp height-t1" id="tableBody" (scroll)="SyncScroll()">
+      <table class="table-bordered tab-10 minspacelet">
+        <thead>
+          <tr class="headsticky header-custom">
+            <th appAnchocol rowspan="2" [ancho]="24">N°</th>
+            <th appAnchocol rowspan="2" [ancho]="270" [detalle]="true">REPORTES DE ALMACEN</th>
+            <th appAnchocol colspan="2">RANGO REGISTRO</th>
+            <th appAnchocol colspan="3">MOVIMIENTO ALMACEN VALORIZADO</th>
+            <th appAnchocol rowspan="2" [ancho]="50">% SALDO TOTAL</th>
+            <th appAnchocol colspan="2">VERIFICACION DEL REGISTRO</th>
+            <th appAnchocol rowspan="2" [ancho]="65"></th>
+          </tr>
+          <tr class="headsticky2 header-custom" style="top:23px">
+            <th appAnchocol [ancho]="60">Fecha Inicio</th>
+            <th appAnchocol [ancho]="60">Fecha Finalización</th>
+            <th appAnchocol [ancho]="95">INGRESO</th>
+            <th appAnchocol [ancho]="95">SALIDA</th>
+            <th appAnchocol [ancho]="95">SALDO TOTAL</th>
+            <th appAnchocol [ancho]="54">ESTADO	</th>
+            <th appAnchocol [ancho]="100">FECHA</th>
+          </tr>
+        </thead>
+        <tbody>
+          <ng-container *ngIf="dataSource1.length>0">
+            <tr *ngFor="let row of dataSource1;let indice=index;" (click)="cambindicesel1(indice)" [hidden]="row.mostrar=='0'"
+            [ngClass]="{'highlight': fila1_sel == indice,'filagrupo':row.idregmov==null}">
+              <td appAnchocol [ancho]="24" class="celdasalto"> {{indice+1}} </td>
+              <td appAnchocol [ancho]="270" [detalle]="true" class="celdasalto text-left"> 
+                <!-- <a  *ngIf="row.idregmov==null && row.icomost=='0'" style="cursor: pointer;color:green; width: 14px;" (click)="toggleOn(row.tipo)">
+                  <i class="fa fa-sort-desc expand"></i>
+                </a>
+                <a  *ngIf="row.idregmov==null && row.icomost=='1'" style="cursor: pointer;color:red; width: 14px;" (click)="toggleOff(row.tipo)">
+                  <i class="fa fa-sort-up contract"></i>
+                </a>&nbsp; -->
+                {{row.detalle}}
+              </td>
+              <td appAnchocol [ancho]="60">
+                {{row.fechaini}}
+              </td>
+              <td appAnchocol [ancho]="60">
+                {{row.fechafin}}
+              </td>
+              <td appAnchocol [ancho]="95">
+                <span class="float-left">{{simbolo}}</span>
+                <span class="float-right">{{row.ingreso | number: mask_parcial}}</span>
+              </td>
+              <td appAnchocol [ancho]="95"> 
+                <span class="float-left">{{simbolo}}</span>
+                <span class="float-right">{{row.salida | number: mask_parcial}}</span>
+              </td>
+              <td appAnchocol [ancho]="95">
+                <span class="float-left">{{simbolo}}</span>
+                <span class="float-right">{{row.saldo | number: mask_parcial}}</span>
+              </td>
+              <td appAnchocol [ancho]="50">
+                <div class="progressj" *ngIf="row.fechaini!=''">
+                  <span class="progressj-text">{{row.porcsaldo | number:'0.1'}}</span>
+                  <div class="progressj-fill" [ngStyle]="{'width': row.porcsaldo+'%' }"></div>
+                </div>
+              </td>
+              <td appAnchocol [ancho]="54"> 
+                <label *ngIf="row.estado==0  && row.fechaini!=''" class="label" style="padding-left: 2px; padding-right: 2px; margin-right: 2px !important; background-color: 'darkorange';">Pendiente</label>
+                <label *ngIf="row.estado==1  && row.fechaini!=''" class="label label-success" style="padding-left: 2px; padding-right: 2px; margin-right: 2px !important;">Aprobado</label>
+                <label *ngIf="row.estado==2  && row.fechaini!=''" class="label label-danger" style="padding-left: 2px; padding-right: 2px; margin-right: 2px !important;">Observado</label>
+              </td>
+              <td appAnchocol [ancho]="100">
+                {{row.fecha}}
+              </td>
+              <td appAnchocol [ancho]="65"> 
+                <button type="button" *ngIf="row.fecha!='' && row.estado!=1" class="btn btn-mini2 btn-primary" placement="top" ngbTooltip="Editar" container="body" style="margin-right: 2px; margin-top: 1px; margin-bottom: 1px;"  (click)="Editar1(row);" (mouseup)="quitarfoco($event);">
+                  <i class="fa fa-edit icono-but"></i>
+                </button>
+                <button type="button" *ngIf="row.fecha!='' && row.estado==1" class="btn btn-mini2 btn-info" placement="top" ngbTooltip="Ver" container="body" style="margin-right: 2px; margin-top: 1px; margin-bottom: 1px;" (click)="Ver1(row);" (mouseup)="quitarfoco($event);">
+                  <i class="fa fa-search icono-but"></i>
+                </button>
+                <button type="button" *ngIf="row.fecha!='' && row.estado==0" class="btn btn-mini2 btn-danger" placement="top" ngbTooltip="Eliminar Registro" container="body" (click)="Eliminar1(row)" (mouseup)="quitarfoco($event);">
+                  <i class="fa fa-remove icono-but"></i>
+                </button>
+              </td>
+            </tr>
+          </ng-container>
+          <ng-container *ngIf="dataSource1.length<=0">
+            <tr>
+              <td class="mat-cell text-center" colspan="11">
+                  <label *ngIf="!buscando1">No se encontraron resultados</label>
+                  <div *ngIf="buscando1" class="preloader3 loader-block">
+                      <div class="circ1"></div>
+                      <div class="circ2"></div>
+                      <div class="circ3"></div>
+                      <div class="circ4"></div>
+                  </div>
+              </td>
+            </tr>
+          </ng-container>
+        </tbody>
+      </table>
+    </div>
+  </app-card>
+</div>
+<div *ngIf="subvista==2">
+  <app-almcingreso [filareg]="filareg" [decproy]="decpasa"  (listarpri)="ListarExterno($event)"></app-almcingreso>
+</div>
+<div *ngIf="subvista==3">
+  <app-almcsalida [filareg]="filareg" [decproy]="decpasa" (listarpri)="ListarExterno($event)"></app-almcsalida>
+</div>
+
+<app-modal-basic #modalagre0 [dialogClass]="'modal-lg'">
+  <div class="app-modal-header">
+      <h4 class="modal-title tit-modal1"><b>Registro Nuevo</b></h4>
+      <button type="button" class="close basic-close" (click)="cerrarModalAgre0()">
+      <span aria-hidden="true">&times;</span>
+      </button>
+  </div>
+  <div class="app-modal-body">
+      <form [formGroup]='FrmAgre0' #validationForm="ngForm">
+          <div class="row">
+              <mat-form-field class="mff-reduc col-12" appearance="outline">
+                  <mat-label>Denominación del Reporte</mat-label>
+                  <input matInput type="text" formControlName="Detalle">
+              </mat-form-field>
+          </div>
+          <div class="row">
+              <mat-form-field class="mff-reduc col-6" appearance="outline">
+                  <mat-label>Fecha Inicial</mat-label>
+                  <!-- <input matInput type="text" formControlName="Fechaini"> -->
+                  <input matInput type="date" formControlName="Fechaini" (change)="cambiofecha1()">
+              </mat-form-field>
+              <mat-form-field class="mff-reduc col-6" appearance="outline">
+                  <mat-label>Fecha Final</mat-label>
+                  <!-- <input matInput type="text" formControlName="Fechafin"> -->
+                  <input matInput type="date" formControlName="Fechafin" (change)="cambiofecha2()">
+              </mat-form-field>
+          </div>
+          <div class="row">
+              <mat-form-field class="mff-reduc col-12 col-sm-8 col-md-6" appearance="outline">
+                  <mat-label>Reporte de almacen según</mat-label>
+                  <select matNativeControl formControlName="Tipo">
+                      <option value="" selected>--Seleccionar</option>
+                      <option value="1" selected>Expediente Técnico</option>
+                      <option value="2" selected>Mayores Metrado</option>
+                      <option value="3" selected>Partidas Nuevas</option>
+                  </select>
+              </mat-form-field>
+          </div>
+      </form>
+  </div>
+  <div class="app-modal-footer w-100">
+    <div class="row px-3 justify-content-between d-flex">
+      <button type="button" style="margin-right: 5px;" class="btn btn-sm btn-danger ripple" (click)="cerrarModalAgre0()"><i class="fa fa-times"></i>Cancelar</button>
+      <button type="button" class="btn btn-sm btn-success ripple light" (click)="GuardarModalAgre0()"><i class="fa fa-check"></i>Guardar</button>
+    </div>
+  </div>
+</app-modal-basic>
+
+<app-cargando [bloquearTodo]="true" *ngIf="mostrar_carga_todo"></app-cargando>
+<app-cargando [bloquearTodo]="false" *ngIf="mostrar_carga"></app-cargando>

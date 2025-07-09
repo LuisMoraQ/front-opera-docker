@@ -19,7 +19,7 @@
             <th appAnchocol [ancho]="94">Lugar de Entrega</th>
             <th appAnchocol [ancho]="70">Fecha Programada</th>
             <th appAnchocol [ancho]="70">Fecha Solicitada</th>
-            <th appAnchocol [ancho]="70">Fecha Atención</th>
+            <th appAnchocol [ancho]="70">Plazo Atención</th>
             <th appAnchocol [ancho]="50">Estado</th>
             <th appAnchocol [ancho]="130">Requerimiento Programado Exp Tecnico</th>
             <th appAnchocol [ancho]="118">Requerimiento Solicitado por OE</th>
@@ -41,12 +41,12 @@
                 {{row.descripcion}}
               </td>
               <td appAnchocol [ancho]="94">{{row.entrega=='1'?'Almacen Central':row.entrega=='2'?'Almacen de Obra':''}}</td>
-              <td appAnchocol [ancho]="70">{{row.fecha_m}}</td>
-              <td appAnchocol [ancho]="70">{{row.fechasol_m}}</td>
-              <td appAnchocol [ancho]="70">{{row.fechaate_m}}</td>
+              <td appAnchocol [ancho]="70">{{row.fecha}}</td>
+              <td appAnchocol [ancho]="70">{{row.fecha_sol}}</td>
+              <td appAnchocol [ancho]="70">{{row.plazo_ate}}</td>
               <td appAnchocol [ancho]="50">
-                <label *ngIf="row.estado==0" class="label" style="padding-left: 2px; padding-right: 2px; margin-right: 2px !important; background-color: 'darkorange';">Pendiente</label>
-                <label *ngIf="row.estado==1" class="label label-success" style="padding-left: 2px; padding-right: 2px; margin-right: 2px !important;">Aprobado</label>
+                <label *ngIf="row.estado==0" class="label" style="font-size: 9px;padding-left: 2px; padding-right: 2px; margin-right: 2px !important; background-color: 'darkorange';">Pendiente</label>
+                <label *ngIf="row.estado==1" class="label label-success" style="font-size: 9px;padding-left: 2px; padding-right: 2px; margin-right: 2px !important;">Aprobado</label>
               </td>
               <td appAnchocol [ancho]="130">
                 <span class="float-left">{{simbolo}}</span>
@@ -143,7 +143,7 @@
                   <button *ngIf="row.estado==0" class="btn btn-mini3 btn-info" placement="top" ngbTooltip="Agregar Directo" container="body" (click)="agregardirecto(indice)" style="margin-right: 2px;">
                     <i class="icofont icofont-arrow-right icono-but"></i>
                   </button>
-                  <button *ngIf="row.estado==0 && row.operador!='%'" class="btn btn-mini3 btn-success" placement="top" ngbTooltip="Disgregar Insumo" container="body" (click)="agregarinsumo(indice)">
+                  <button *ngIf="row.estado==0" class="btn btn-mini3 btn-success" placement="top" ngbTooltip="Disgregar Insumo" container="body" (click)="agregarinsumo(indice)">
                     <i class="icofont-chart-flow-2 icono-but"></i>
                   </button>
                 </td>

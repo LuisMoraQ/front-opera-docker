@@ -69,6 +69,7 @@ import { DataProyectoComponent } from './principal/data-proyecto/data-proyecto.c
 import { AddproybiplanComponent } from './addproybiplan/addproybiplan.component';
 import { ProcuraModule } from '../procura/procura.module';
 import { MetradosModule } from '../metrados/metrados.module';
+import { AlmacenModule } from '../almacen/almacen.module';
 
 @NgModule({
   declarations: [
@@ -129,6 +130,7 @@ import { MetradosModule } from '../metrados/metrados.module';
     AnchocolModule,
     PresupuestoModule,
     ProcuraModule,
+    AlmacenModule,
     MetradosModule,
     ScrollingModule,
     TableModule,

@@ -57,10 +57,12 @@ export class AgrupinsumosComponent implements OnInit {
     Iditem12a: new FormControl('', [Validators.required]),
     Descgru12a: new FormControl('', [Validators.required]),
     Lugar: new FormControl('', [Validators.required]),
+    Plazo: new FormControl('1', [Validators.required, Validators.min(1), Validators.max(5000)]),
   })
   get Iditem12a(): FormControl { return this.Frmmostrar12a.get('Iditem12a') as FormControl }
   get Descgru12a(): FormControl { return this.Frmmostrar12a.get('Descgru12a') as FormControl }
   get Lugar(): FormControl { return this.Frmmostrar12a.get('Lugar') as FormControl }
+  get Plazo(): FormControl { return this.Frmmostrar12a.get('Plazo') as FormControl }
 
   @ViewChild("modalmostrar12b") modalmostrar12b: ModalBasicComponent;
   Frmmostrar12b = new FormGroup({
@@ -70,6 +72,7 @@ export class AgrupinsumosComponent implements OnInit {
     Iditem12b: new FormControl(null, Validators.required),
     Descgru12b: new FormControl('', Validators.required),
     Lugar: new FormControl('', Validators.required),
+    Plazo: new FormControl('1', Validators.required),
   })
   get Iditemsel12b(): FormControl { return this.Frmmostrar12b.get('Iditemsel12b') as FormControl }
   get Idcomsel12b(): FormControl { return this.Frmmostrar12b.get('Idcomsel12b') as FormControl }
@@ -77,6 +80,7 @@ export class AgrupinsumosComponent implements OnInit {
   get Iditem12b(): FormControl { return this.Frmmostrar12b.get('Iditem12b') as FormControl }
   get Descgru12b(): FormControl { return this.Frmmostrar12b.get('Descgru12b') as FormControl }
   get Lugarb(): FormControl { return this.Frmmostrar12b.get('Lugar') as FormControl }
+  get Plazob(): FormControl { return this.Frmmostrar12b.get('Plazo') as FormControl }
 
   constructor(
     private _logisticaService:LogisticaService,
@@ -436,7 +440,7 @@ export class AgrupinsumosComponent implements OnInit {
       }
       let ejm={id_proyecto:this.id_proyecto,id_registro:this.id_reg,idgrupo:idgrup,idfila:0,nro:0,
         indice:null,id_filadetalle:null,num_det:null,codigo:'',descripcion:descrip,unidad:'',cantidad:null,precio:null,parcial:0,indiceunif:'',operador:null,porc:0,reqsol:0,
-        variacion:100,estado:0,saldo:null,observacion:'',fecha:fecham,fecha_sol:null,fecha_ate:null,complemento:0,id_comple:nomite,entrega:lugar,seleccion:1,mostrar:1,icomost:1,editar:0};
+        variacion:100,estado:0,saldo:null,observacion:'',fecha:fecham,fecha_sol:null,plazo_ate:this.Plazo.value,complemento:0,id_comple:nomite,entrega:lugar,seleccion:1,mostrar:1,icomost:1,editar:0};
       this.dataSource5.push(ejm);
       this.bcambiost5=true;
       this.modalmostrar12a.hide();
@@ -642,7 +646,7 @@ export class AgrupinsumosComponent implements OnInit {
       }
     }
     else{
-      this.toaster.error('No se puede eliminar un grupo con estado Completo.', 'Advertencia', { closeButton: false,positionClass: 'toast-bottom-right',timeOut: 5000 });
+      this.toaster.error('No se puede eliminar un grupo con estado APROBADO.', 'Advertencia', { closeButton: false,positionClass: 'toast-bottom-right',timeOut: 5000 });
     }
   }
   AgregarComple(){
@@ -730,14 +734,14 @@ export class AgrupinsumosComponent implements OnInit {
       }
       let ejm={id_proyecto:this.id_proyecto,id_registro:this.id_reg,idgrupo:idgrup,idfila:0,nro:0,
       indice:null,id_filadetalle:null,num_det:null,codigo:'',descripcion:descrip,unidad:'',cantidad:null,precio:null,parcial:0,indiceunif:'',operador:null,porc:0,reqsol:0,
-      variacion:null,estado:0,saldo:null,observacion:'',fecha:fecham,fecha_sol:null,fecha_ate:null,complemento:1,id_comple:idcomsel,entrega:entrega,seleccion:1,mostrar:1,icomost:1,editar:0};
+      variacion:null,estado:0,saldo:null,observacion:'',fecha:fecham,fecha_sol:null,plazo_ate:this.Plazob.value,complemento:1,id_comple:idcomsel,entrega:entrega,seleccion:1,mostrar:1,icomost:1,editar:0};
       this.dataSource5.push(ejm);
       for(let row of taux){
         if(row.indice){
           ejm={id_proyecto:this.id_proyecto,id_registro:this.id_reg,idgrupo:idgrup,idfila:row.idfila,nro:row.nro,//se asigna dependiendo al ultimo del grupo?es lo mismo del principal
             indice:row.indice,id_filadetalle:row.id_filadetalle,num_det:row.num_det,codigo:row.codigo,descripcion:row.descripcion,unidad:row.unidad,cantidad:row.cantidad,precio:row.precio,parcial:row.parcial,
             indiceunif:row.indiceunif,operador:row.operador,porc:row.porc,reqsol:row.reqsol,
-            variacion:row.variacion,estado:0,saldo:row.saldo,observacion:row.observacion,fecha:null,fecha_sol:null,fecha_ate:null,complemento:1,
+            variacion:row.variacion,estado:0,saldo:100,observacion:'',fecha:null,fecha_sol:null,plazo_ate:null,complemento:1,
             id_comple:'',entrega:row.entrega,seleccion:1,mostrar:1,icomost:row.icomost,editar:0};//todo se asigna igual
           this.dataSource5.push(ejm);
         }
@@ -806,7 +810,7 @@ export class AgrupinsumosComponent implements OnInit {
               var entrega=this.dataSource5[indgrupo].entrega;
               let ejm={id_proyecto:this.id_proyecto,id_registro:this.id_reg,idgrupo:idgrup,idfila:++idfilmay,nro:++nropas,//se asigna dependiendo al ultimo del grupo?es lo mismo del principal
                 indice:row.indice,id_filadetalle:row.id_filadetalle,num_det:row.num_det,codigo:row.codigo,descripcion:row.descripcion,unidad:row.unidad,cantidad:row.cantidad,precio:row.precio,parcial:row.parcial,
-                indiceunif:row.indiceunif,operador:row.operador,porc:0,reqsol:0,variacion:null,estado:0,saldo:100,observacion:'',fecha:null,fecha_sol:null,fecha_ate:null,complemento:0,
+                indiceunif:row.indiceunif,operador:row.operador,porc:0,reqsol:0,variacion:null,estado:0,saldo:100,observacion:'',fecha:null,fecha_sol:null,plazo_ate:null,complemento:0,
                 id_comple:'',entrega:entrega,seleccion:1,mostrar:this.dataSource5[indgrupo].icomost==1?1:0,icomost:1,editar:0};//todo se asigna igual
               this.dataSource5.splice(++inddetfin,0,ejm);
               totagrins=totagrins+Number(row.parcial);
@@ -843,7 +847,7 @@ export class AgrupinsumosComponent implements OnInit {
         }
       }
       else{
-        this.toaster.error('No se puede modificar un grupo Completo.', 'Advertencia', { closeButton: false,positionClass: 'toast-bottom-right',timeOut: 5000 });
+        this.toaster.error('No se puede modificar un grupo APROBADO.', 'Advertencia', { closeButton: false,positionClass: 'toast-bottom-right',timeOut: 5000 });
       }
     }
     else{
@@ -902,7 +906,7 @@ export class AgrupinsumosComponent implements OnInit {
             var idgrup=this.dataSource5[indgrupo].idgrupo;
             let ejm={id_proyecto:this.id_proyecto,id_registro:this.id_reg,idgrupo:idgrup,idfila:row.idfila,nro:row.nro,//se asigna dependiendo al ultimo del grupo?es lo mismo del principal
                 indice:row.indice,id_filadetalle:row.id_filadetalle,num_det:row.num_det,codigo:row.codigo,descripcion:row.descripcion,unidad:row.unidad,cantidad:row.cantidad,precio:row.precio,parcial:row.parcial,
-                indiceunif:row.indiceunif,operador:row.operador,porc:0,reqsol:0,variacion:null,estado:0,saldo:100,observacion:'',fecha:null,fecha_sol:null,fecha_ate:null,complemento:0,
+                indiceunif:row.indiceunif,operador:row.operador,porc:0,reqsol:0,variacion:null,estado:0,saldo:100,observacion:'',fecha:null,fecha_sol:null,plazo_ate:null,complemento:0,
                 id_comple:'',entrega:row.entrega,seleccion:0,mostrar:this.dataSource5[indgrupo].icomost==1?1:0,icomost:1,editar:0};//todo se asigna igual
             //this.dataSource5.push(ejm);
             this.dataSource5.splice(inddetfin++,0,ejm);
@@ -1005,7 +1009,7 @@ export class AgrupinsumosComponent implements OnInit {
       }
     }
     else{
-      this.toaster.error('No se puede modificar un grupo Completo.', 'Advertencia', { closeButton: false,positionClass: 'toast-bottom-right',timeOut: 5000 });
+      this.toaster.error('No se puede modificar un grupo APROBADO.', 'Advertencia', { closeButton: false,positionClass: 'toast-bottom-right',timeOut: 5000 });
     }
   }
   eliminarfilaInsComple(idgrupo:any,idcomp:any,datos_Selcomp:any){
@@ -1256,6 +1260,9 @@ export class AgrupinsumosComponent implements OnInit {
     }
   }
   editarcelda3(row:any){
+    if(row.estado==1){
+      return;
+    }
     row.editar=1;
   }
   caneditarcelda3(valor:any,row:any){
@@ -1263,7 +1270,6 @@ export class AgrupinsumosComponent implements OnInit {
       row.descripcion=valor;
       this.bcambiost5=true;
     }
-    
     row.editar=0;
   }
   presenter3(event:any,row:any){

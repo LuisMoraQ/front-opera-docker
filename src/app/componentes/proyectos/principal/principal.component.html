@@ -556,7 +556,8 @@
                               <app-panelprocura [tabproyecto]="tab"></app-panelprocura>
                             </ng-container>
                             <ng-container *ngIf="tab.get('menu_proyecto_seleccionado').value == 6">
-                              <app-hoja-metrados [tabproyecto]="tab"></app-hoja-metrados>
+                              <!-- <app-hoja-metrados [tabproyecto]="tab"></app-hoja-metrados> -->
+                              <app-panelalmc [tabproyecto]="tab"></app-panelalmc>
                             </ng-container>
                             <ng-container *ngIf="tab.get('menu_proyecto_seleccionado').value == 7">
                               <app-formula-polinomica [idProyecto]="tab.get('id_proyecto').value"

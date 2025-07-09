@@ -20,7 +20,7 @@ export class LogisticaService {
     });
     return formData;
   }
-
+  //adquisiciones,requerimientos,procura
   EliminarAdquisicionProy(params = {}): Promise<any> {
     let formData: FormData = new FormData();
     Object.entries(params).forEach(([key, value]) => {
@@ -190,4 +190,54 @@ export class LogisticaService {
       catchError(err => throwError(err))
     ).toPromise()
   }
+  //movimiento almacen
+  GuardarMovalmcobra(params = {}): Promise<any> {
+    const url = this.enviUrl + '/api/almacen/guardarMovalmcobra';
+    return this.http.post<any>(url, this.Cargafrmdata(params)).pipe(
+      map(res => {
+        return res
+      }),
+      catchError(err => throwError(err))
+    ).toPromise()
+  }
+  ListarMovalmcobra(params = {}): Promise<any> {
+    const url = this.enviUrl + '/api/almacen/listarMovalmcobra';
+    return this.http.post<any>(url, this.Cargafrmdata(params)).pipe(
+      map(res => {
+        return res
+      }),
+      catchError(err => throwError(err))
+    ).toPromise()
+  }
+  EliminarMovalmcobra(params = {}): Promise<any> {
+    const url = this.enviUrl + '/api/almacen/eliminarMovalmcobra';
+    return this.http.post<any>(url, this.Cargafrmdata(params)).pipe(
+      map(res => {
+        return res
+      }),
+      catchError(err => throwError(err))
+    ).toPromise()
+  }
+  ListarMovalmcobraDet(params = {}): Promise<any> {
+    const url = this.enviUrl + '/api/almacen/listarMovalmcobraDet';
+    return this.http.post<any>(url, this.Cargafrmdata(params)).pipe(
+      map(res => {
+        return res
+      }),
+      catchError(err => throwError(err))
+    ).toPromise()
+  }
+  // GuardarAdquiPresuSol(params = {}):any//ejemplo con json
+  // {
+  //   const url = this.enviUrl + '/api/almacen/guardarAdquiPresuSol';
+  //   return this.http.post<any>(url, params, { headers: this.httpHeaders }).pipe(
+  //     map(res => {
+  //       if (!res) {
+  //         throw new Error
+  //       }
+  //       return res
+  //     }),
+  //     catchError(err => throwError(err))
+  //   ).toPromise()
+  // }
 }

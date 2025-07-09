@@ -170,70 +170,71 @@
       </div>
     </div>
     <div class="tabla-limp" [style.height.px]="heightins">
-        <table mat-table class="table-bordered tab-9">
-          <thead>
-            <tr class="headsticky header-custom">
-              <th appAnchocol [ancho]="32">N°</th>
-              <th appAnchocol [ancho]="200" [detalle]="true">Descripción</th>
-              <th appAnchocol [ancho]="30">UND</th>
-              <th appAnchocol [ancho]="65">Cantidad</th>
-              <th appAnchocol [ancho]="65">Precio</th>
-              <th appAnchocol [ancho]="86">Parcial</th>
-            </tr>
-          </thead>
-          <tbody>
-            <ng-container *ngIf="dataSource3.length>0">
-              <tr *ngFor="let row of dataSource3;let indice=index;" (click)="cambindicesel3(indice)" [ngClass]="{'highlight': fila3_sel == indice,'filagrupo':row.unidad==''}"
-              [hidden]="row.mostrar == 0">
-                <td appAnchocol [ancho]="32" (click)="row.num_det=='0' && row.icomost=='0'?toggleOn1(row):toggleOff1(row)" class="cpoint"> 
-                  <a  *ngIf="row.num_det=='0' && row.icomost=='0'" style="color:green; width: 14px;">
-                    <i class="fa fa-sort-desc expand"></i>
-                  </a>
-                  <a  *ngIf="row.num_det=='0' && row.icomost=='1'" style="color:red; width: 14px;">
-                      <i class="fa fa-sort-up contract"></i>
-                  </a>
-                  {{row.num_det!=0?row.num_det:''}}
-                </td>
-                <td appAnchocol [ancho]="200" [detalle]="true" class="celdasalto text-left"> 
-                  <span class="span-container"><!-- placement="top" ngbTooltip="{{row.descripcion!=''?row.descripcion:row.nombre}}" container="body" -->
-                    <span class="span-ellipsis w-100 d-flex">
-                      <span>{{row.descripcion!=''?row.descripcion:row.nombre}}</span> 
-                    </span>
+      <table mat-table class="table-bordered tab-9">
+        <thead>
+          <tr class="headsticky header-custom">
+            <th appAnchocol [ancho]="32">N°</th>
+            <th appAnchocol [ancho]="200" [detalle]="true">Descripción</th>
+            <th appAnchocol [ancho]="30">UND</th>
+            <th appAnchocol [ancho]="65">Cantidad</th>
+            <th appAnchocol [ancho]="65">Precio</th>
+            <th appAnchocol [ancho]="86">Parcial</th>
+          </tr>
+        </thead>
+        <tbody>
+          <ng-container *ngIf="dataSource3.length>0">
+            <tr *ngFor="let row of dataSource3;let indice=index;" (click)="cambindicesel3(indice)" [ngClass]="{'highlight': fila3_sel == indice,'filagrupo':row.unidad==''}"
+            [hidden]="row.mostrar == 0">
+              <td appAnchocol [ancho]="32" (click)="row.num_det=='0' && row.icomost=='0'?toggleOn1(row):toggleOff1(row)" class="cpoint"> 
+                <a  *ngIf="row.num_det=='0' && row.icomost=='0'" style="color:green; width: 14px;">
+                  <i class="fa fa-sort-desc expand"></i>
+                </a>
+                <a  *ngIf="row.num_det=='0' && row.icomost=='1'" style="color:red; width: 14px;">
+                    <i class="fa fa-sort-up contract"></i>
+                </a>
+                {{row.num_det!=0?row.num_det:''}}
+              </td>
+              <td appAnchocol [ancho]="200" [detalle]="true" class="celdasalto text-left"> 
+                <span class="span-container"><!-- placement="top" ngbTooltip="{{row.descripcion!=''?row.descripcion:row.nombre}}" container="body" -->
+                  <span class="span-ellipsis w-100 d-flex">
+                    <span>{{row.descripcion!=''?row.descripcion:row.nombre}}</span> 
                   </span>
-                </td>
-                <td appAnchocol [ancho]="30">
-                  {{row.unidad}}
-                </td>
-                <td appAnchocol [ancho]="65">
-                  <span *ngIf="row.num_det!='0'" class="float-left">{{simbolo}}</span>
-                  <span *ngIf="row.num_det!='0'" class="float-right">{{row.cantidad | number: mask_cant}}</span>
-                </td>
-                <td appAnchocol [ancho]="65">
-                  <span *ngIf="row.num_det'0'" class="float-left">{{simbolo}}</span>
-                  <span *ngIf="row.num_det!='0'" class="float-right">{{row.precio | number: mask_precio}}</span>
-                </td>
-                <td appAnchocol [ancho]="86">
-                  <span class="float-left">{{simbolo}}</span>
-                  <span class="float-right">{{row.parcial | number: mask_parcial}}</span>
-                </td>
-              </tr>
-            </ng-container>
-            <ng-container *ngIf="dataSource3.length<=0">
-              <tr>
-                <td class="mat-cell text-center" colspan="9">
-                    <label *ngIf="!buscando3">No se encontraron resultados</label>
-                    <div *ngIf="buscando3" class="preloader3 loader-block">
-                        <div class="circ1"></div>
-                        <div class="circ2"></div>
-                        <div class="circ3"></div>
-                        <div class="circ4"></div>
-                    </div>
-                </td>
-              </tr>
-            </ng-container>
-          </tbody>
-        </table>
+                </span>
+              </td>
+              <td appAnchocol [ancho]="30">
+                {{row.unidad}}
+              </td>
+              <td appAnchocol [ancho]="65">
+                <span *ngIf="row.num_det!='0'" class="float-left">{{simbolo}}</span>
+                <span *ngIf="row.num_det!='0'" class="float-right">{{row.cantidad | number: mask_cant}}</span>
+              </td>
+              <td appAnchocol [ancho]="65">
+                <span *ngIf="row.num_det'0'" class="float-left">{{simbolo}}</span>
+                <span *ngIf="row.num_det!='0'" class="float-right">{{row.precio | number: mask_precio}}</span>
+              </td>
+              <td appAnchocol [ancho]="86">
+                <span class="float-left">{{simbolo}}</span>
+                <span class="float-right">{{row.parcial | number: mask_parcial}}</span>
+              </td>
+            </tr>
+          </ng-container>
+          <ng-container *ngIf="dataSource3.length<=0">
+            <tr>
+              <td class="mat-cell text-center" colspan="9">
+                  <label *ngIf="!buscando3">No se encontraron resultados</label>
+                  <div *ngIf="buscando3" class="preloader3 loader-block">
+                      <div class="circ1"></div>
+                      <div class="circ2"></div>
+                      <div class="circ3"></div>
+                      <div class="circ4"></div>
+                  </div>
+              </td>
+            </tr>
+          </ng-container>
+        </tbody>
+      </table>
     </div>
+    <span *ngIf="estadoreg==1 || estadoreg==2" class="text-danger" style="font-size: 11px;">No se puede editar por ser un registro DEFINITIVO o en estado por VERIFICAR.</span>
   </div>
 </div>
 <app-cargando [bloquearTodo]="true" *ngIf="mostrar_carga_todo"></app-cargando>

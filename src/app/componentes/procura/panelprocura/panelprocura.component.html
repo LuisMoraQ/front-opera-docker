@@ -6,10 +6,6 @@
       <i class="fa fa-list"></i> RESUMEN DE PROCURA
     </button>
     <button class="btn btn-sm btn-outline-secondary btn-menu-top" type="button" (mouseup)="quitarfoco($event)"
-      style="padding: 4px 8px" (click)="cambioVista(2)" [ngClass]="{ 'btn-custom-active': subvista == 2 }">
-      <i class="fa fa-list"></i> SALDO PRESUPUESTAL SEGUN ADQUISICIONES
-    </button>
-    <button class="btn btn-sm btn-outline-secondary btn-menu-top" type="button" (mouseup)="quitarfoco($event)"
       style="padding: 4px 8px" (click)="cambioVista(3)" [ngClass]="{ 'btn-custom-active': subvista == 3 }">
       <i class="fa fa-list"></i> RELACION DE INSUMOS
     </button>
@@ -20,6 +16,10 @@
     <button class="btn btn-sm btn-outline-secondary btn-menu-top" type="button" (mouseup)="quitarfoco($event)"
       style="padding: 4px 8px" (click)="cambioVista(5)" [ngClass]="{ 'btn-custom-active': subvista == 5 }">
       <i class="fa fa-list"></i> COMPATIBILIZACION DE INSUMOS
+    </button>
+    <button class="btn btn-sm btn-outline-secondary btn-menu-top" type="button" (mouseup)="quitarfoco($event)"
+      style="padding: 4px 8px" (click)="cambioVista(2)" [ngClass]="{ 'btn-custom-active': subvista == 2 }">
+      <i class="fa fa-list"></i> SALDO PRESUPUESTAL SEGUN ADQUISICIONES
     </button>
   </div>
   <span *ngIf="scrollbut" class="icscrol-r" (click)="leftDivBut()"><i class="icofont icofont-caret-right icono-but"></i></span>
@@ -367,9 +367,11 @@
             </div>
         </form>
     </div>
-    <div class="app-modal-footer">
-        <button type="button" style="margin-right: 5px;" class="btn btn-danger ripple" (click)="cerrarModalmodadqui()">Cancelar</button>
-        <button type="button" class="btn btn-success ripple light" (click)="Modificaradqui()">Guardar</button>
+    <div class="app-modal-footer w-100">
+      <div class="row px-3 justify-content-between d-flex">
+        <button type="button" style="margin-right: 5px;" class="btn btn-sm btn-danger ripple" (click)="cerrarModalmodadqui()"><i class="fa fa-times"></i>Cancelar</button>
+        <button type="button" class="btn btn-sm btn-success ripple light" (click)="Modificaradqui()"><i class="fa fa-check"></i>Guardar</button>
+      </div>
     </div>
 </app-modal-basic>
 <app-modal-basic #modalprogadq0 [dialogClass]="'modal-lg'">
@@ -411,9 +413,11 @@
             </div>
         </form>
     </div>
-    <div class="app-modal-footer">
-        <button type="button" style="margin-right: 5px;" class="btn btn-danger ripple" (click)="cerrarModalProgAdq0()">Cancelar</button>
-        <button type="button" class="btn btn-success ripple light" (click)="GuardarModalProgAdq0()">Guardar</button>
+    <div class="app-modal-footer w-100">
+      <div class="row px-3 justify-content-between d-flex">
+        <button type="button" style="margin-right: 5px;" class="btn btn-sm btn-danger ripple" (click)="cerrarModalProgAdq0()"><i class="fa fa-times"></i>Cancelar</button>
+        <button type="button" class="btn btn-sm btn-success ripple light" (click)="GuardarModalProgAdq0()"><i class="fa fa-check"></i>Guardar</button>
+      </div>
     </div>
 </app-modal-basic>
 <app-modal-basic #modalmodpreasig [dialogClass]="'modal-lg'">

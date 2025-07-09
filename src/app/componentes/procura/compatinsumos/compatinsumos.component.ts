@@ -239,7 +239,7 @@ export class CompatinsumosComponent implements OnInit {
         let idgrucom=this.dataSource6[j].idgrupo;
         let filagru={id_proyecto:this.id_proyecto,id_registro:this.id_reg,idgrupo:idgrucom,idfila:this.dataSource6[j].idfila,indrep:0,orden:null,indice:this.dataSource6[j].indice,id_filadetalle:this.dataSource6[j].id_filadetalle,
         num_det:this.dataSource6[j].num_det,codigo:this.dataSource6[j].codigo,descripcion:this.dataSource6[j].descripcion,unidad:this.dataSource6[j].unidad,cantidad:null,
-        precio:null,parcial:null,operador:null,acumulado:this.dataSource6[j].reqsol,proceso:'',princi:0,estado:0,ingreso:0,salida:0,mostrar:1,icomost:1};
+        precio:null,parcial:null,operador:null,acumulado:this.dataSource6[j].reqsol,proceso:'',princi:0,estado:0,ingreso:0,salida:0,fecha_sol:null,mostrar:1,icomost:1};
 
         this.dataSource8.push(filagru)
         totalgru=totalgru+Number(this.dataSource6[j].reqsol);
@@ -304,7 +304,7 @@ export class CompatinsumosComponent implements OnInit {
     if(indgrupo==-1){//no existe entonces se puede agregar directo
       let ejm={id_proyecto:this.id_proyecto,id_registro:this.id_reg,idgrupo:idgru,idfila:this.dataSource7[ind].idfila,indrep:0,orden:this.UltOrden(),indice:this.dataSource7[ind].indice,id_filadetalle:this.dataSource7[ind].id_filadetalle,
         num_det:this.dataSource7[ind].num_det,codigo:this.dataSource7[ind].codigo,descripcion:this.dataSource7[ind].descripcion,unidad:this.dataSource7[ind].unidad,cantidad:this.dataSource7[ind].cantidad,
-        precio:this.dataSource7[ind].precio,parcial:this.dataSource7[ind].parcial,operador:this.dataSource7[ind].operador,acumulado:this.dataSource7[ind].parcial,proceso:'',princi:1,estado:0,ingreso:0,salida:0,mostrar:1,icomost:1};
+        precio:this.dataSource7[ind].precio,parcial:this.dataSource7[ind].parcial,operador:this.dataSource7[ind].operador,acumulado:this.dataSource7[ind].parcial,proceso:'',princi:1,estado:0,ingreso:0,salida:0,fecha_sol:null,mostrar:1,icomost:1};
       this.dataSource8.push(ejm);
       this.bcambiost8=true;
       //agregar tambien a data
@@ -475,9 +475,9 @@ export class CompatinsumosComponent implements OnInit {
       this.Insumo13a.setValue(this.dataSource7[ind].descripcion)
       this.Unidad13a.setValue(this.dataSource7[ind].unidad)
       this.Codigo13a.setValue(this.dataSource7[ind].codigo)
-      this.Cantidad13a.setValue(this.formService.redondeo(this.dataSource7[ind].cantidad,this.dec_cant))
-      this.Preciou13a.setValue(this.formService.redondeo(this.dataSource7[ind].precio,this.dec_precio))
-      this.Parcial13a.setValue(this.formService.redondeo(this.dataSource7[ind].parcial,this.dec_parcial))
+      this.Cantidad13a.setValue(this.formService.redondeo(this.dataSource7[ind].cantidad??0,this.dec_cant))
+      this.Preciou13a.setValue(this.formService.redondeo(this.dataSource7[ind].precio??0,this.dec_precio))
+      this.Parcial13a.setValue(this.formService.redondeo(this.dataSource7[ind].precio?this.dataSource7[ind].parcial:0,this.dec_parcial))
       //agregar los disgregados existentes
       let idgru=this.dataSource7[ind].idgrupo;
       let idfila=this.dataSource7[ind].idfila;
@@ -487,7 +487,7 @@ export class CompatinsumosComponent implements OnInit {
             indice:this.dataSource8[i].indice,id_filadetalle:this.dataSource8[i].id_filadetalle,num_det:this.dataSource8[i].num_det,codigo:this.dataSource8[i].codigo,descripcion:this.dataSource8[i].descripcion,
             unidad:this.dataSource8[i].unidad,cantidad:this.dataSource8[i].cantidad,precio:this.dataSource8[i].precio,parcial:this.dataSource8[i].parcial,operador:this.dataSource8[i].operador,
             acumulado:this.dataSource8[i].acumulado,proceso:this.dataSource8[i].proceso,princi:this.dataSource8[i].princi,estado:this.dataSource8[i].estado,ingreso:this.dataSource8[i].ingreso,
-            salida:this.dataSource8[i].salida,mostrar:this.dataSource8[i].mostrar,icomost:this.dataSource8[i].icomost,existe:1};//existe se usa?
+            salida:this.dataSource8[i].salida,fecha_sol:this.dataSource8[i].fecha_sol,mostrar:this.dataSource8[i].mostrar,icomost:this.dataSource8[i].icomost,existe:1};//existe se usa?
           this.dataSource8aux.push(ejm);
           this.calcfoottab8aux();
         }
@@ -508,22 +508,27 @@ export class CompatinsumosComponent implements OnInit {
     this.modalmostrar13a.hide();
   }
   Agregartabla8aux(){
-    if(!this.Frmmostrar13a.invalid)
+    if(!this.Frmmostrar13a.invalid)//validar que parcial sea !=0
     {
-      var insumo=this.Insumo13a.value;
-      var unid=this.Unidad13a.value;
-      var idinsum=this.Codigo13a.value;
-      var cantidad=this.Cantidad13a.value;
-      var precio=this.Preciou13a.value;
-      var parcial=this.Parcial13a.value;
-      let idgru=this.dataSource7[this.ind_disgrega].idgrupo;
+      if(Number(this.Parcial13a.value)>0){
+        var insumo=this.Insumo13a.value;
+        var unid=this.Unidad13a.value;
+        var idinsum=this.Codigo13a.value;
+        var cantidad=this.Cantidad13a.value;
+        var precio=this.Preciou13a.value;
+        var parcial=this.Parcial13a.value;
+        let idgru=this.dataSource7[this.ind_disgrega].idgrupo;
 
-      let ejm={id_proyecto:this.id_proyecto,id_registro:this.id_reg,idgrupo:idgru,idfila:this.dataSource7[this.ind_disgrega].idfila,indrep:null,orden:null,
-          indice:this.dataSource7[this.ind_disgrega].indice,id_filadetalle:this.dataSource7[this.ind_disgrega].id_filadetalle,num_det:this.dataSource7[this.ind_disgrega].num_det,codigo:idinsum,descripcion:insumo,
-          unidad:unid,cantidad:cantidad,precio:precio,parcial:parcial,operador:this.dataSource7[this.ind_disgrega].operador,
-          acumulado:null,proceso:'',princi:0,estado:0,ingreso:0,salida:0,mostrar:1,icomost:1,existe:0};
-      this.dataSource8aux.push(ejm);
-      this.calcfoottab8aux();
+        let ejm={id_proyecto:this.id_proyecto,id_registro:this.id_reg,idgrupo:idgru,idfila:this.dataSource7[this.ind_disgrega].idfila,indrep:null,orden:null,
+            indice:this.dataSource7[this.ind_disgrega].indice,id_filadetalle:this.dataSource7[this.ind_disgrega].id_filadetalle,num_det:this.dataSource7[this.ind_disgrega].num_det,codigo:idinsum,descripcion:insumo,
+            unidad:unid,cantidad:cantidad,precio:precio,parcial:parcial,operador:this.dataSource7[this.ind_disgrega].operador,
+            acumulado:null,proceso:'',princi:0,estado:0,ingreso:0,salida:0,fecha_sol:null,mostrar:1,icomost:1,existe:0};
+        this.dataSource8aux.push(ejm);
+        this.calcfoottab8aux();
+      }
+      else{
+        this.toaster.error('No puede agregar un insumo con Parcial igual a 0.', 'Advertencia', { closeButton: false,positionClass: 'toast-bottom-right',timeOut: 5000 });
+      }
     } 
     else
     {
@@ -761,7 +766,7 @@ export class CompatinsumosComponent implements OnInit {
           //agregar a tabla 8 e datosdisg
           let ejm={id_proyecto:this.id_proyecto,id_registro:this.id_reg,idgrupo:idgru,idfila:this.dataSource7[this.ind_disgrega].idfila,indrep:0,orden:this.UltOrden(),indice:this.dataSource7[this.ind_disgrega].indice,id_filadetalle:this.dataSource7[this.ind_disgrega].id_filadetalle,
             num_det:this.dataSource7[this.ind_disgrega].num_det,codigo:this.dataSource7[this.ind_disgrega].codigo,descripcion:insumo,unidad:unid,cantidad:cantidad,
-            precio:precio,parcial:parcial,operador:this.dataSource7[this.ind_disgrega].operador,acumulado:parcial,proceso:'',princi:1,estado:0,ingreso:0,salida:0,icomost:1,mostrar:1};
+            precio:precio,parcial:parcial,operador:this.dataSource7[this.ind_disgrega].operador,acumulado:parcial,proceso:'',princi:1,estado:0,ingreso:0,salida:0,fecha_sol:null,icomost:1,mostrar:1};
           this.dataSource8.splice(indgrupo+1,0,ejm);
           //agregar tambien a data
           this.DatosDisgre.push(JSON.parse(JSON.stringify(ejm)))
@@ -799,7 +804,7 @@ export class CompatinsumosComponent implements OnInit {
 
           let ejm={id_proyecto:this.id_proyecto,id_registro:this.id_reg,idgrupo:idgru,idfila:this.dataSource7[this.ind_disgrega].idfila,indrep:nrorep,orden:this.dataSource8[indgrupo].orden,indice:this.dataSource7[this.ind_disgrega].indice,id_filadetalle:this.dataSource7[this.ind_disgrega].id_filadetalle,
             num_det:this.dataSource7[this.ind_disgrega].num_det,codigo:this.dataSource7[this.ind_disgrega].codigo,descripcion:insumo,unidad:unid,cantidad:cantidad,
-            precio:precio,parcial:parcial,operador:this.dataSource7[this.ind_disgrega].operador,acumulado:null,proceso:'',princi:0,estado:0,ingreso:0,salida:0,icomost:1,mostrar:1};
+            precio:precio,parcial:parcial,operador:this.dataSource7[this.ind_disgrega].operador,acumulado:null,proceso:'',princi:0,estado:0,ingreso:0,salida:0,fecha_sol:null,icomost:1,mostrar:1};
           this.dataSource8.splice(indgrupo+1,0,ejm);
           //agregar tambien a data
           this.DatosDisgre.push(JSON.parse(JSON.stringify(ejm)))

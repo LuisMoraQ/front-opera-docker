@@ -109,9 +109,6 @@
           <i class="icofont icofont-arrow-down"></i>
       </button>
   </div>
-  <!-- <div class="d-flex justify-content-end">
-    
-  </div> -->
   <div style="padding-left: 5px;" [style.width.px]="widthm1b2">
     <div class="row mx-0">
       <h4 class="modal-title tit-modal1 m-b-2" style="background-color: #448aff; color: white; border-radius: 4px; padding-left: 4px; margin-top: 0px !important;width:calc(100% - 80px)">
@@ -171,7 +168,7 @@
               </td>
               <td appAnchocol [ancho]="50" style="font-size: 12px !important;">
                 <label *ngIf="row.estado==0" class="label" style="padding-left: 2px; padding-right: 2px; margin-right: 2px !important; background-color: 'darkorange';">Borrador</label>
-                <label *ngIf="row.estado==1" class="label label-success" style="padding-left: 2px; padding-right: 2px; margin-right: 2px !important;">Completo</label>
+                <label *ngIf="row.estado==1" class="label label-success" style="padding-left: 2px; padding-right: 2px; margin-right: 2px !important;">Aprobado</label>
               </td>
               <td appAnchocol [ancho]="80">
                 <span class="float-left">{{simbolo}}</span>
@@ -241,25 +238,38 @@
             <mat-label>Expediente Aprobado</mat-label>
             <input matInput type="text" formControlName="Expediente" readonly>
         </mat-form-field> -->
-        <mat-form-field class="col-12 col-md-4" appearance="outline">
+        <mat-form-field class="mff-reduc col-12 col-md-4" appearance="outline">
           <mat-label>ID Item</mat-label>
           <input matInput type="text" formControlName="Iditem12a" readonly>
         </mat-form-field>
       </div>
       <div class="row">
-        <mat-form-field class="col-12" appearance="outline">
+        <mat-form-field class="mff-reduc col-12" appearance="outline">
           <mat-label>Descripción del Grupo de Insumos</mat-label>
           <input matInput type="text" formControlName="Descgru12a">
         </mat-form-field>
       </div>
       <div class="row">
-        <mat-form-field class="col-12 col-sm-8 col-md-6" appearance="outline">
+        <mat-form-field class="mff-reduc col-12 col-sm-8 col-md-6" appearance="outline">
           <mat-label>Lugar de Entrega</mat-label>
           <select matNativeControl formControlName="Lugar">
             <option value="" selected>--Seleccionar</option>
             <option value="1" selected>Almacen Central</option>
             <option value="2" selected>Almacen de Obra</option>
           </select>
+        </mat-form-field>
+        <mat-form-field appearance="outline" class="mff-reduc col-sm-4 col-md-6 col-12">
+          <mat-label>Plazo Atención(Dias)</mat-label>
+          <input matInput type="text" autocomplete="off" formControlName="Plazo" [textMask]="{mask: this.formService.maskTelefono}" maxlength="4">
+          <mat-error *ngIf="Plazo?.hasError('min')">
+              El plazo debe ser como mínimo 1.
+          </mat-error>
+          <mat-error *ngIf="Plazo?.hasError('max')">
+              El plazo no puede ser mayor a 5000.
+          </mat-error>
+          <!-- <mat-error *ngIf="Plazo?.hasError('required')">
+              El plazo es obligatorio.
+          </mat-error> -->
         </mat-form-field>
       </div>
     </form>
@@ -315,6 +325,16 @@
                     <mat-label>Descripción del Grupo de Insumos</mat-label>
                     <input matInput type="text" formControlName="Descgru12b">
                 </mat-form-field>
+                <mat-form-field appearance="outline" class="mff-reduc col-sm-4 col-md-6 col-12">
+                  <mat-label>Plazo Atención(Dias)</mat-label>
+                  <input matInput type="text" autocomplete="off" formControlName="Plazo" [textMask]="{mask: this.formService.maskTelefono}" maxlength="4">
+                  <mat-error *ngIf="Plazob?.hasError('min')">
+                      El plazo debe ser como mínimo 1.
+                  </mat-error>
+                  <mat-error *ngIf="Plazob?.hasError('max')">
+                      El plazo no puede ser mayor a 5000.
+                  </mat-error>
+              </mat-form-field>
             </div>
         </form>
     </div>

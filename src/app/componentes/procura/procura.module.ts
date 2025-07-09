@@ -17,11 +17,11 @@ import { AnchocolModule } from 'src/app/directivas/anchocol.module';
 import { AutoFocusModule } from 'src/app/directivas/auto-focus.module';
 import { TextMaskModule } from 'angular2-text-mask';
 import { PintarfilapreModule } from 'src/app/directivas/pintarfilapre.module';
+import { MinmaxnumModule } from 'src/app/directivas/minmaxnum.module';
 
 import { ProcuraRoutingModule } from './procura-routing.module';
 import { PanelprocuraComponent } from './panelprocura/panelprocura.component';
 import { RelacioninsumosComponent } from './relacioninsumos/relacioninsumos.component';
-import { MinmaxnumModule } from 'src/app/directivas/minmaxnum.module';
 import { AgrupinsumosComponent } from './agrupinsumos/agrupinsumos.component';
 import { CompatinsumosComponent } from './compatinsumos/compatinsumos.component';
 import { SaldopresupuestalComponent } from './saldopresupuestal/saldopresupuestal.component';
@@ -29,13 +29,11 @@ import { SaldopresupuestalComponent } from './saldopresupuestal/saldopresupuesta
 
 @NgModule({
   declarations: [
-    
-  
     PanelprocuraComponent,
-            RelacioninsumosComponent,
-            AgrupinsumosComponent,
-            CompatinsumosComponent,
-            SaldopresupuestalComponent
+    RelacioninsumosComponent,
+    AgrupinsumosComponent,
+    CompatinsumosComponent,
+    SaldopresupuestalComponent
   ],
   imports: [
     CommonModule,
