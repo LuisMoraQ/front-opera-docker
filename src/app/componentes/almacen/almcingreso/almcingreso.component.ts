@@ -1,8 +1,10 @@
-import { Component, EventEmitter, HostListener, Input, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, HostListener, Input, OnInit, Output, ViewChild } from '@angular/core';
 import { ToastrService } from 'ngx-toastr';
 import { EncriptadorService } from 'src/app/servicios/encriptador.service';
 import { FormsService } from 'src/app/servicios/forms.service';
 import { LogisticaService } from 'src/app/servicios/logistica.service';
+import { ModalBasicComponent } from 'src/app/shared/modal-basic/modal-basic.component';
+import { SwalService } from 'src/app/servicios/swal.service';
 
 @Component({
   selector: 'app-almcingreso',
@@ -58,6 +60,32 @@ export class AlmcingresoComponent implements OnInit {
   preventscroll=false;
   paddingscrollsup=0
 
+  //agregar ingreso
+  @ViewChild("modalIngreso1") modalIngreso1: ModalBasicComponent;
+  nroingreso='';
+  nroreqsel:any;
+  detreqsol:any;
+  lugreqsol:any;
+  editaing=false;
+  bcambiost5=false;
+  heighttmodal2=100;
+  paddingscroll2m=17
+  paddingscrollm=17
+  paddingscroll2n=17
+  paddingscrolln=17
+
+  dataSource5= [];
+  fila5_sel=-1;
+  tott5:any;
+  seltodo5=0;
+
+  dataSource3aux= [];
+  fila3_selaux=-1;
+  tab3auxtotalcant:any;
+  tab3auxtotalparc:any;
+  tab3auxtotalsal:any;
+  widthm1b3=100;
+
   constructor(
     private _EncriptadorService:EncriptadorService,
     private _logisticaService:LogisticaService,
@@ -67,14 +95,17 @@ export class AlmcingresoComponent implements OnInit {
 
   async ngOnInit() {
     this.id_reg=this.filareg.idregmov;
-      this.id_proyecto=this.filareg.id_proyecto
+    this.id_proyecto=this.filareg.id_proyecto
+    this.simbolo=this.filareg.simbolo
     this.solover=this.filareg.solover
     //evitar salto de tabla por scroll
     let resto=this.solover?70:90;
     this.widthm1b2=(window.innerWidth/2)-resto;
+    this.widthm1b3=(window.innerWidth-10)/2;
     // this.anchofoot3=this.solover?372:this.anchofoot3;
     this.heighttmodal=window.innerHeight-155;
     this.heighttmodal13=(window.innerHeight-106)/2;
+    this.heighttmodal2=window.innerHeight-174;
     console.log(this.heighttmodal,this.heighttmodal13)
     let decimales = this.decproy;
     if(decimales?.toString().includes('|')){
@@ -105,9 +136,12 @@ export class AlmcingresoComponent implements OnInit {
     //this.heighttmodal=window.innerHeight-165;
     let resto=this.solover?70:90;
     this.widthm1b2=(window.innerWidth/2)-resto;
+    this.widthm1b3=(window.innerWidth-10)/2;
 
     this.heighttmodal=window.innerHeight-155;
     this.heighttmodal13=(window.innerHeight-106)/2;
+    this.heighttmodal2=window.innerHeight-174;
+    console.log(this.heighttmodal2)
   }
   ngAfterContentChecked(): void {
     //this.changeDetector.detectChanges();
@@ -138,6 +172,28 @@ export class AlmcingresoComponent implements OnInit {
       let sizeef = element.offsetWidth - element.clientWidth;
       if (this.paddingscrollsup != sizeef) {
         this.paddingscrollsup = sizeef;
+      }
+    }
+    var element = document.getElementById('tableBodym');
+    if (element != undefined) {
+      let sizeef = element.offsetWidth - element.clientWidth;
+      if (this.paddingscrollm != sizeef) {
+        this.paddingscrollm = sizeef;
+      }
+      let sizeef2 = element.offsetHeight - element.clientHeight;
+      if (this.paddingscroll2m != sizeef2) {
+        this.paddingscroll2m = sizeef2;
+      }
+    }
+    var element = document.getElementById('tableBodyn');
+    if (element != undefined) {
+      let sizeef = element.offsetWidth - element.clientWidth;
+      if (this.paddingscrolln != sizeef) {
+        this.paddingscrolln = sizeef;
+      }
+      let sizeef2 = element.offsetHeight - element.clientHeight;
+      if (this.paddingscroll2n != sizeef2) {
+        this.paddingscroll2n = sizeef2;
       }
     }
   }
@@ -215,8 +271,8 @@ export class AlmcingresoComponent implements OnInit {
     this.tab3totalparc=0;
     this.tab3totalsal=0;
   }
-  cambindicesel2(ind:any){
-    if(ind==this.fila2_sel){
+  cambindicesel2(ind:any,seligual=false){
+    if(ind==this.fila2_sel && !seligual){
       this.fila2_sel=-1;
       this.dataSource3=[]
       this.dataSource4=[]
@@ -246,11 +302,12 @@ export class AlmcingresoComponent implements OnInit {
         }
       }
       let suma=0;
+      console.log(this.dataingreso)
       for(let row of this.dataingreso){
         if(row.idgrupo==idgru && row.id_registro==idreg)
         {
           if(row.unidad==''){
-            suma+=Number(row.parcial.replace(/\,/g,''));
+            suma+=Number(row.parcial);
           }
           this.dataSource4.push(row)
         }
@@ -268,19 +325,668 @@ export class AlmcingresoComponent implements OnInit {
     else
       this.fila3_sel=ind;
   }
-  OpenModalIngreso1(){
+  async OpenModalIngreso1(){
+    if(this.fila2_sel!=-1){
+      let estadoreq=this.dataSource2[this.fila2_sel].estingreso;
+      if(estadoreq!=2){
+        this.tott5=this.formService.redondeo(0,this.dec_parcial);
+        if(this.fila2_sel!=-1){
+          let saldogru=Number(this.tab3totalsal);
+          if(saldogru>0){
+            this.nroreqsel=this.dataSource2[this.fila2_sel].idgrupo;
+            this.detreqsol=this.dataSource2[this.fila2_sel].descripcion;
+            this.lugreqsol=this.dataSource2[this.fila2_sel].entrega;
+            this.mostrar_carga_todo=true;
 
+            this.dataSource3aux=[];
+            for(let m=0;m<this.dataSource3.length;m++){
+              //filaag=this.dataSource3.data[m];
+              // let filaag={id_registro:this.dataSource3.data[m].id_registro,cui:this.dataSource3.data[m].cui,version:this.dataSource3.data[m].version,idgrupo:this.dataSource3.data[m].idgrupo,codigo:this.dataSource3.data[m].codigo,nro:this.dataSource3.data[m].nro,indrep:this.dataSource3.data[m].indrep,descripcion:this.dataSource3.data[m].descripcion,estado:this.dataSource3.data[m].estado,
+              //   idinsumo:this.dataSource3.data[m].idinsumo,unidad:this.dataSource3.data[m].unidad,cantidad:this.dataSource3.data[m].cantidad,precio:this.dataSource3.data[m].precio,parcial:this.dataSource3.data[m].parcial,acumulado:this.dataSource3.data[m].acumulado,proceso:this.dataSource3.data[m].proceso,princi:this.dataSource3.data[m].princi,mostrar:this.dataSource3.data[m].mostrar,
+              //   ingreso:this.dataSource3.data[m].ingreso,salida:this.dataSource3.data[m].salida,saldo:this.dataSource3.data[m].saldo,indicador:this.dataSource3.data[m].indicador,seleccion:this.dataSource3.data[m].seleccion,editado:0};
+              let filaag=JSON.parse(JSON.stringify(this.dataSource3[m]))
+              filaag.seleccion=0
+              filaag.editado=0
+              this.dataSource3aux.push(filaag);
+            }
+            this.tab3auxtotalcant=this.tab3totalcant;
+            this.tab3auxtotalparc=this.tab3totalparc;
+            this.tab3auxtotalsal=this.tab3totalsal;
+            
+            let res=await this._logisticaService.UltNroIngAlmcobra({id_proyecto:this.id_proyecto});
+            if(res.length>0){
+              this.nroingreso=res[0].ultimo;
+            }
+            this.modalIngreso1.show();
+            this.mostrar_carga_todo=false;
+          }
+          else{
+            this.toaster.error('No hay saldo para agregar Notas de Ingreso.', 'Advertencia', { closeButton: false,positionClass: 'toast-bottom-right',timeOut: 5000 });
+          }
+        }
+        else{
+          this.toaster.error('Seleccione un Requerimiento.', 'Advertencia', { closeButton: false,positionClass: 'toast-bottom-right',timeOut: 5000 });
+        }
+      }
+      else{
+        this.toaster.error('No se puede modificar un requerimiento con estado CONFORME.', 'Advertencia', { closeButton: false,positionClass: 'toast-bottom-right',timeOut: 5000 });
+      }
+    }
+    else{
+      this.toaster.error('Seleccione una fila de Requerimientos.', 'Advertencia', { closeButton: false,positionClass: 'toast-bottom-right',timeOut: 5000 });
+    }
   }
   OpenModalEditarIng1(){
+    let estadoreq=this.dataSource2[this.fila2_sel].estingreso;
+    if(estadoreq!=2){
+      if(this.fila4_sel>=0)
+      {
+        let tipofila=this.dataSource4[this.fila4_sel].unidad==''?1:0;
+        if(tipofila==1){
+          this.editaing=true;
+          this.nroreqsel=this.dataSource2[this.fila2_sel].idgrupo;
+          this.detreqsol=this.dataSource2[this.fila2_sel].descripcion;
+          this.lugreqsol=this.dataSource2[this.fila2_sel].entrega;
+          this.nroingreso=this.dataSource4[this.fila4_sel].nroingreso;
 
+          this.dataSource3aux=[];
+          for(let m=0;m<this.dataSource3.length;m++){
+            let filaag=JSON.parse(JSON.stringify(this.dataSource3[m]))
+            filaag.seleccion=0
+            filaag.editado=0
+            this.dataSource3aux.push(filaag);
+          }
+          this.tab3auxtotalcant=this.tab3totalcant;
+          this.tab3auxtotalparc=this.tab3totalparc;
+          this.tab3auxtotalsal=this.tab3totalsal;
+          let ind3=0
+          for(let i=0;i<this.dataSource4.length;i++){
+            if(this.dataSource4[i].nroingreso==this.nroingreso && this.dataSource4[i].unidad!='')
+            {
+              let indicepri=-1;
+              for(let j=0;j<this.dataSource3aux.length;j++){
+                if(this.dataSource3aux[j].id_registro==this.dataSource4[i].id_registro && this.dataSource3aux[j].idgrupo==this.dataSource4[i].idgrupo &&
+                this.dataSource3aux[j].idfila==this.dataSource4[i].idfila && this.dataSource3aux[j].indrep==this.dataSource4[i].indrep){
+                  this.dataSource3aux[j].seleccion=2;//actualizar y buscar el indice correspondiente a la fila
+                  indicepri=j;
+                  break;
+                }
+              }
+              let ejm={id_proyecto:this.id_proyecto,idregmov:this.id_reg,nroingreso:this.nroingreso,idingreso:this.dataSource4[i].idingreso,
+                id_registro:this.dataSource4[i].id_registro,idgrupo:this.dataSource4[i].idgrupo,idfila:this.dataSource4[i].idfila,indrep:this.dataSource4[i].indrep,
+                codigo:this.dataSource4[i].codigo,descripcion:this.dataSource4[i].descripcion,unidad:this.dataSource4[i].unidad,
+                cantidad:this.dataSource4[i].cantidad,precio:this.dataSource4[i].precio,parcial:this.dataSource4[i].parcial,indice3:ind3++,editar:0};
+              this.dataSource5.push(ejm);
+            }
+          }
+          console.log(this.dataSource5)
+          this.tott5=this.dataSource4[this.fila4_sel].parcial;
+          this.mostrar_carga_todo=false;
+          this.modalIngreso1.show();
+        }
+        else{
+          this.toaster.error('Seleccione una Nota de Ingreso para Editar.', 'Advertencia', { closeButton: false,positionClass: 'toast-bottom-right',timeOut: 5000 });
+        }
+      }
+      else{
+        this.toaster.error('Seleccione una Nota de Ingreso para Editar.', 'Advertencia', { closeButton: false,positionClass: 'toast-bottom-right',timeOut: 5000 });
+      }
+    }
+    else{
+      this.toaster.error('No se puede modificar un requerimiento con estado CONFORME.', 'Advertencia', { closeButton: false,positionClass: 'toast-bottom-right',timeOut: 5000 });
+    }
   }
-  EliminarIng1(){
+  async EliminarIng1(){
+    let estadoreq=this.dataSource2[this.fila2_sel].estingreso;
+    if(estadoreq!=2){
+      if(this.fila4_sel>=0)
+      {
+        let tipofila=this.dataSource4[this.fila4_sel].unidad==''?1:0;
+        if(tipofila==1){
+          let nomdetalle=this.dataSource4[this.fila4_sel].descripcion+" N° "+this.dataSource4[this.fila4_sel].nroingreso;
+          let mensj='Se eliminarán todos los datos del registro : '+nomdetalle.substring(0,nomdetalle.length>80?80:nomdetalle.length)+(nomdetalle.length>80?'...':'')
+          const sw = await SwalService.confirm('Estas seguro?',null,mensj);
+          if (sw.isConfirmed) {
+            this.mostrar_carga_todo=true;
+            let existesalneg=false;
+            let nroingraux=this.dataSource4[this.fila4_sel].nroingreso;
+            for(let i=0;i<this.dataSource4.length;i++){
+              if(this.dataSource4[i].unidad!='' && this.dataSource4[i].nroingreso==nroingraux){
+                for(let j=0;this.dataSource3.length;j++){
+                  if(this.dataSource3[j].id_registro==this.dataSource4[i].id_registro && this.dataSource3[j].idgrupo==this.dataSource4[i].idgrupo &&
+                    this.dataSource3[j].idfila==this.dataSource4[i].idfila &&  this.dataSource3[j].indrep==this.dataSource4[i].indrep){
+                    let ingresoact=Number(this.dataSource3[j].ingreso);
+                    let agregaing=Number(this.dataSource4[i].cantidad);
+                    ingresoact-=agregaing;
+                    let salidat3b=Number(this.dataSource3[j].salida);
+                    let saldoauxsal=ingresoact-salidat3b;
+                    if(saldoauxsal<0){
+                      existesalneg=true;
+                    }
+                    break;
+                  }
+                }
+              }
+            }
+            if(!existesalneg){
+              let aux2=[];
+              let nroingr=this.dataSource4[this.fila4_sel].nroingreso;
+              for(let i=0;i<this.dataSource4.length;i++){
+                if(this.dataSource4[i].unidad!='' && this.dataSource4[i].nroingreso==nroingr){
+                  for(let j=0;this.dataSource3.length;j++){
+                    if(this.dataSource3[j].id_registro==this.dataSource4[i].id_registro && this.dataSource3[j].idgrupo==this.dataSource4[i].idgrupo &&
+                      this.dataSource3[j].idfila==this.dataSource4[i].idfila && this.dataSource3[j].indrep==this.dataSource4[i].indrep){
+                      let ingresoact=Number(this.dataSource3[j].ingreso);
+                      let agregaing=Number(this.dataSource4[i].cantidad);
+                      ingresoact-=agregaing;
+                      this.dataSource3[j].ingreso=this.formService.redondeo(ingresoact,this.dec_cant);
+                      let cantfil=Number(this.dataSource3[j].cantidad);
+                      this.dataSource3[j].saldo=this.formService.redondeo(cantfil-ingresoact,this.dec_cant);
+                      this.dataSource3[j].indicador=cantfil-ingresoact>0?0:1;
+                      aux2.push(this.dataSource3[j]);
+                      break;
+                    }
+                  }
+                }
+              }
+              //actualizar tabla izquierda
+              let suma3=0;
+              let sald3b=0;
+              for(let row of this.dataSource3){
+                suma3+=Number(row.saldo);
+                sald3b+=(Number(row.ingreso)-Number(row.salida));
+              }
+              let estadoing=suma3>0?0:1;
+              let estadosal=sald3b>0?0:1;
+              const tabla1=JSON.stringify(aux2);
+              const body=JSON.stringify({
+                'id_proyecto':this.id_proyecto,
+                'idregmov':this.id_reg,
+                'nroingreso':this.dataSource4[this.fila4_sel].nroingreso,
+                'parcial':this.dataSource4[this.fila4_sel].parcial,
+                'id_registro':this.dataSource2[this.fila2_sel].id_registro,
+                'idgrupo':this.dataSource2[this.fila2_sel].idgrupo,
+                'estadoing':estadoing,
+                'estadosal':estadosal,
+                'datos1':tabla1,
+              });
+              let res=await this._logisticaService.EliminarNotaIngAlmcObra(body);//iding idregmov
+              if(res?.id=='1'){
+                SwalService.success('Correcto', res.mensaje)
+                this.fila4_sel=-1;
+                await this.listar1();
+                await this.cambindicesel2(this.fila2_sel,true)
+                this.mostrar_carga_todo=false;
+              }
+              else{
+                this.mostrar_carga_todo=false;
+                SwalService.error('Advertencia', res?res.mensaje:'Ocurrio una excepcion al momento de guardar.');
+              }
+            }
+            else{
+              this.mostrar_carga_todo=false;
+              this.toaster.error('No puede continuar porque se generará saldos negativos en salidas.', 'Advertencia', { closeButton: false,positionClass: 'toast-bottom-right',timeOut: 5000 });
+            }
+          }
+        }
+        else{
+          this.toaster.error('Seleccione una Nota de Ingreso.', 'Advertencia', { closeButton: false,positionClass: 'toast-bottom-right',timeOut: 5000 });
+        }
+      }
+      else{
+        this.toaster.error('Seleccione una Nota de Ingreso para Eliminar.', 'Advertencia', { closeButton: false,positionClass: 'toast-bottom-right',timeOut: 5000 });
+      }
+    }
+    else{
+      this.toaster.error('No se puede modificar un requerimiento con estado CONFORME.', 'Advertencia', { closeButton: false,positionClass: 'toast-bottom-right',timeOut: 5000 });
+    }
+  }
+  async cerrarModalIngreso1(){
+    if(this.bcambiost5){
+      const sw = await SwalService.confirm('Desea Guardar los cambios?','','');
+      if (sw.isConfirmed) {
+        this.guardarModalIngreso1();
+      }
+      else{
+        //cancelar
+        this.editaing=false;
+        this.seltodo5=0;
+        this.dataSource5=[];
+        this.bcambiost5=false;
+        this.dataSource3aux=[]
+        this.tott5='0.00';
+        this.modalIngreso1.hide();
+      }
+    }
+    else{
+      this.editaing=false;
+      this.seltodo5=0;
+      this.bcambiost5=false;
+      this.dataSource5=[];
+      this.dataSource3aux=[]
+      console.log(this.dataSource3)
+      for(let row of this.dataSource3){//mantener?
+        row.seleccion=0;
+      }
+      this.tott5='0.00';
+      this.modalIngreso1.hide();
+    }
+  }
+  async guardarModalIngreso1(){
+    let monto0=false;
+    if(this.dataSource5.length>0){
+      if(this.bcambiost5){
+        if(!this.editaing){
+          let aux=[];
+          let aux2=[];
+          let ejm={id_proyecto:this.id_proyecto,idregmov:this.id_reg,nroingreso:this.nroingreso,idingreso:0,id_registro:this.dataSource2[this.fila2_sel].id_registro,idgrupo:this.dataSource2[this.fila2_sel].idgrupo,idfila:null,
+            indrep:null,codigo:null,descripcion:"Nota de Ingreso de Materiales",unidad:'',cantidad:null,precio:null,parcial:this.tott5,indice3:null,editar:0};
+          aux.push(ejm);
+          for(let i=0;i<this.dataSource5.length;i++){
+            aux.push(this.dataSource5[i]);
+            if(Number(this.dataSource5[i].cantidad)==0){
+              monto0=true;
+            }
+          }
+          if(!monto0){
+            this.mostrar_carga_todo=true;
+            let suma3=0;
+            let sald3b=0;
+            for(let i=0;i<this.dataSource3aux.length;i++){//hacer un listar general y volver a cargar la fila seleccionada sería mejor?
+              if(this.dataSource3aux[i].editado==1){
+                aux2.push(this.dataSource3aux[i]);
+                // //actualizar tabla 3 principal ingreso, saldo
+                // this.dataSource3[i].ingreso=this.dataSource3aux[i].ingreso;
+                // this.dataSource3[i].saldo=this.dataSource3aux[i].saldo;
+                // this.dataSource3[i].indicador=Number(this.dataSource3aux[i].saldo)>0?0:1;
 
+                // this.dataSource3b[i].ingreso=this.dataSource3aux[i].ingreso;//que tabla es datasource3b?
+                // let ingresot3=Number(this.dataSource3aux[i].ingreso);
+                // let salidat3b=Number(this.dataSource3b[i].salida);
+                // this.dataSource3b[i].saldo=this.formService.redondeo(ingresot3-salidat3b,2);
+                // this.dataSource3b[i].indicador=(ingresot3-salidat3b)>0?0:1;
+              }
+              suma3+=Number(this.dataSource3aux[i].saldo);//cantidad-ingreso
+              sald3b+=(Number(this.dataSource3aux[i].ingreso)-Number(this.dataSource3aux[i].salida));//ingreso-salida
+            }
+            let estadoing=suma3>0?0:1;
+            let estadosal=sald3b>0?0:1;
+            // nuevos parametros para metodo
+            const tabla1=JSON.stringify(aux);
+            const tabla2=JSON.stringify(aux2);
+            const body=JSON.stringify({
+              'id_proyecto':this.id_proyecto,
+              'idregmov':this.id_reg,
+              'id_registro':this.dataSource2[this.fila2_sel].id_registro,
+              'idgrupo':this.dataSource2[this.fila2_sel].idgrupo,
+              'estadoing':estadoing,
+              'estadosal':estadosal,
+              'datos1':tabla1,
+              'datos2':tabla2,
+            });
+            let res=await this._logisticaService.GuardarIngresoAmlcobra(body);//iding idregmov
+            if(res?.id=='1'){
+              SwalService.success('Correcto', res.mensaje)
+              await this.listar1();
+              //cargar los elementos seleccionados
+              await this.cambindicesel2(this.fila2_sel,true)
+              this.mostrar_carga_todo=false;
+              this.bcambiost5=false;
+              this.cerrarModalIngreso1();
+            }
+            else{
+              this.mostrar_carga_todo=false;
+              SwalService.error('Advertencia', res?res.mensaje:'Ocurrio una excepcion al momento de guardar.');
+            }
+          }
+          else{
+            this.toaster.error('Existen registros con cantidad 0.', 'Advertencia', { closeButton: false,positionClass: 'toast-bottom-right',timeOut: 5000 });
+          }
+        }
+        else{
+          let aux2=[];
+          for(let row of this.dataSource5){
+            if(Number(row.cantidad)==0){
+              monto0=true;
+            }
+          }
+          if(!monto0){
+            this.mostrar_carga_todo=true;
+            //verificar si se crearan saldos negativos
+            let existesalneg=false;
+            for(let i=0;i<this.dataSource3aux.length;i++){
+              if(this.dataSource3aux[i].editado==1){
+                let ingresot3=Number(this.dataSource3aux[i].ingreso);
+                let salidat3b=Number(this.dataSource3aux[i].salida);
+                let saldoauxsal=ingresot3-salidat3b;
+                if(saldoauxsal<0){
+                  existesalneg=true;
+                }
+              }
+            }
+            if(!existesalneg){
+              let suma3=0;
+              let sald3b=0;
+              for(let i=0;i<this.dataSource3aux.length;i++){
+                if(this.dataSource3aux[i].editado==1){
+                  aux2.push(this.dataSource3aux[i]);
+                  // //actualizar tabla 3 principal ingreso, saldo
+                  // this.dataSource3[i].ingreso=this.dataSource3aux[i].ingreso;
+                  // this.dataSource3[i].saldo=this.dataSource3aux[i].saldo;
+                  // this.dataSource3[i].indicador=Number(this.dataSource3aux[i].saldo)>0?0:1;
+
+                  // this.dataSource3b[i].ingreso=this.dataSource3aux[i].ingreso;
+                  // let ingresot3=Number(this.dataSource3aux[i].ingreso);
+                  // let salidat3b=Number(this.dataSource3b[i].salida);
+                  // this.dataSource3b[i].saldo=this.formService.redondeo(ingresot3-salidat3b,this.dec_cant);
+                  // this.dataSource3b[i].indicador=(ingresot3-salidat3b)>0?0:1;
+                }
+                suma3+=Number(this.dataSource3aux[i].saldo);//cantidad-ingreso
+                sald3b+=(Number(this.dataSource3aux[i].ingreso)-Number(this.dataSource3aux[i].salida));//ingreso-salida
+              }
+              let estadoing=suma3>0?0:1;
+              let estadosal=sald3b>0?0:1;
+              //actualizar tabla derecha
+              let idgru=this.dataSource2[this.fila2_sel].idgrupo;
+              let idreg=this.dataSource2[this.fila2_sel].id_registro;
+              // nuevos parametros para metodo
+              const tabla1=JSON.stringify(this.dataSource5);
+              const tabla2=JSON.stringify(aux2);
+              const body=JSON.stringify({
+                'id_proyecto':this.id_proyecto,
+                'idregmov':this.id_reg,
+                'nroingreso':this.nroingreso,
+                'parcial':this.tott5,
+                'id_registro':this.dataSource2[this.fila2_sel].id_registro,
+                'idgrupo':this.dataSource2[this.fila2_sel].idgrupo,
+                'estadoing':estadoing,
+                'estadosal':estadosal,
+                'datos1':tabla1,
+                'datos2':tabla2,
+              });
+              let res=await this._logisticaService.EditarIngresoAmlcobra(body);//iding idregmov
+              if(res?.id=='1'){
+                SwalService.success('Correcto', res.mensaje)
+                await this.listar1();
+                //cargar los elementos seleccionados
+                await this.cambindicesel2(this.fila2_sel,true)
+                this.mostrar_carga_todo=false;
+                this.bcambiost5=false;
+                this.cerrarModalIngreso1();
+              }
+              else{
+                this.mostrar_carga_todo=false;
+                SwalService.error('Advertencia', res?res.mensaje:'Ocurrio una excepcion al momento de guardar.');
+              }
+            }
+            else{
+              this.mostrar_carga_todo=false;
+              this.toaster.error('No puede continuar porque se generará saldos negativos en salidas.', 'Advertencia', { closeButton: false,positionClass: 'toast-bottom-right',timeOut: 5000 });
+            }
+          }
+          else{
+            this.toaster.error('Existen registros con cantidad 0.', 'Advertencia', { closeButton: false,positionClass: 'toast-bottom-right',timeOut: 5000 });
+          }
+        }
+      }
+      else{
+        this.toaster.error('No hay cambios para guardar.', 'Advertencia', { closeButton: false,positionClass: 'toast-bottom-right',timeOut: 5000 });
+      }
+    }
+    else{
+      this.toaster.error('No hay detalles para guardar.', 'Advertencia', { closeButton: false,positionClass: 'toast-bottom-right',timeOut: 5000 });
+    }
   }
-  cerrarModalIngreso1(){
-    
+  cambindicesel3aux(ind:any){
+    if(ind==this.fila3_selaux)
+      this.fila3_selaux=-1;
+    else
+      this.fila3_selaux=ind;
   }
-  guardarModalIngreso1(){
-    
+  cambioselt31(row){
+    if(row.seleccion==0)
+      row.seleccion=1;
+    else{
+      row.seleccion=0;
+    }
   }
+  AgregarDetalle(){
+    let totagrins=Number(this.tott5);
+    let cont=0;
+    let ultiding=1
+    for(let row of this.dataSource5){
+      ultiding=Number(row.idingreso)>ultiding?Number(row.idingreso):ultiding;
+    }
+    for(let i=0;i<this.dataSource3aux.length;i++){
+      if(this.dataSource3aux[i].seleccion==1 && Number(this.dataSource3aux[i].saldo)>0)
+      {
+        cont++;
+        let parc=Number(this.dataSource3aux[i].saldo)*Number(this.dataSource3aux[i].precio);
+        let ejm={id_proyecto:this.id_proyecto,idregmov:this.id_reg,nroingreso:this.nroingreso,idingreso:ultiding++,
+          id_registro:this.dataSource3aux[i].id_registro,idgrupo:this.dataSource3aux[i].idgrupo,idfila:this.dataSource3aux[i].idfila,indrep:this.dataSource3aux[i].indrep,
+          codigo:this.dataSource3aux[i].codigo,descripcion:this.dataSource3aux[i].descripcion,unidad:this.dataSource3aux[i].unidad,
+          cantidad:this.dataSource3aux[i].saldo,precio:this.dataSource3aux[i].precio,parcial:this.formService.redondeo(parc,this.dec_parcial),indice3:i,editar:0};
+        this.dataSource5.push(ejm);
+        totagrins=totagrins+parc;
+        this.dataSource3aux[i].seleccion=2;//cambiar en la vista source4.data
+        let cantagre=Number(this.dataSource3aux[i].saldo);
+        let ingresot3=Number(this.dataSource3aux[i].ingreso);
+        this.dataSource3aux[i].ingreso=this.formService.redondeo(ingresot3+cantagre,this.dec_cant);
+        let valcant=Number(this.dataSource3aux[i].cantidad);
+        this.dataSource3aux[i].saldo=this.formService.redondeo(valcant-(ingresot3+cantagre),this.dec_cant);
+        if(valcant-(ingresot3+cantagre)>0){
+          this.dataSource3aux[i].indicador=0;
+        }
+        else{
+          this.dataSource3aux[i].indicador=1;
+        }
+        this.dataSource3aux[i].editado=1;
+        this.TotalSaldo(this.dataSource3aux);
+        this.bcambiost5=true;
+      }
+    }
+    this.tott5=this.formService.redondeo(totagrins,this.dec_parcial);
+    if(cont<1){
+      this.toaster.error('Seleccione los insumos para agregar al grupo.', 'Advertencia', { closeButton: false,positionClass: 'toast-bottom-right',timeOut: 5000 });
+    }
+  }
+  TotalSaldo(data:any){
+    let suma=0;
+    for(let row of data){
+      suma+=Number(row.saldo);
+    }
+    this.tab3auxtotalsal=this.formService.redondeo(suma,this.dec_cant);
+  }
+  cambioseltodos5(){
+    if(this.seltodo5){
+      this.seltodo5=0;
+    }
+    else{
+      this.seltodo5=1;
+    }
+    for(let row of this.dataSource3aux){
+      let idgru=this.dataSource2[this.fila2_sel].idgrupo;
+      let idreg=this.dataSource2[this.fila2_sel].id_registro;
+      if(row.idgrupo==idgru && row.id_registro==idreg && Number(row.saldo.replace(/\,/g,''))>0 && row.seleccion!=2){
+        row.seleccion=this.seltodo5;
+      }
+    }
+  }
+  SyncScrollm() {
+    try{
+      if (this.preventscroll) {
+        this.preventscroll = false;
+        return;
+      }
+      this.preventscroll = true;
+      var face2 = document.getElementById("tableBodym");
+      var face3 = document.getElementById("tableFootm");
+      face3.scrollLeft = face2.scrollLeft;
+    }
+    catch(ex){}
+  }
+  SyncScroll2m() {
+    try{
+      if (this.preventscroll) {
+        this.preventscroll = false;
+        return;
+      }
+      this.preventscroll = true;
+      var face2 = document.getElementById("tableBodym");
+      var face3 = document.getElementById("tableFootm");
+      face2.scrollLeft = face3.scrollLeft;
+    }catch(ex){}
+  }
+  SyncScrolln() {
+    try{
+      if (this.preventscroll) {
+        this.preventscroll = false;
+        return;
+      }
+      this.preventscroll = true;
+      var face2 = document.getElementById("tableBodyn");
+      var face3 = document.getElementById("tableFootn");
+      face3.scrollLeft = face2.scrollLeft;
+    }
+    catch(ex){}
+  }
+  SyncScroll2n() {
+    try{
+      if (this.preventscroll) {
+        this.preventscroll = false;
+        return;
+      }
+      this.preventscroll = true;
+      var face2 = document.getElementById("tableBodyn");
+      var face3 = document.getElementById("tableFootn");
+      face2.scrollLeft = face3.scrollLeft;
+    }catch(ex){}
+  }
+  cambindicesel4(ind:any){
+    if(ind==this.fila4_sel)
+      this.fila4_sel=-1;
+    else
+      this.fila4_sel=ind;
+  }
+  toggleOn4(tipo:any){
+    for(let row of this.dataSource4){
+      if(row.nroingreso==tipo)
+      {
+        if(row.unidad!='')
+        {
+          row.mostrar=1;
+        }
+        else
+          row.icomost=1;
+      }
+    }
+  }
+  toggleOff4(tipo:any){
+    for(let row of this.dataSource4){
+      if(row.nroingreso==tipo)
+      {
+        if(row.unidad!='')
+        {
+          row.mostrar=0;
+        }
+        else
+          row.icomost=0;
+      }
+    }
+  }
+  //tabla5
+  cambindicesel5(ind:any){
+    if(ind==this.fila5_sel)
+      this.fila5_sel=-1;
+    else
+    {
+      this.fila5_sel=ind;
+    }
+  }
+  editarcelda1(ind:any){
+    this.dataSource5[ind].editar=1;
+  }
+  caneditarcelda1(eve:any,ind:any){
+    var valor=Number(eve);
+    var actual=Number(this.dataSource5[ind].cantidad)
+    var pactual=Number(this.dataSource5[ind].parcial)
+    var aprecio=Number(this.dataSource5[ind].precio);
+    console.log(this.dataSource5[ind].indice3)
+    var asaldo=Number(this.dataSource3aux[this.dataSource5[ind].indice3].saldo);
+    var saldototal=asaldo+actual;
+    this.dataSource5[ind].editar=false;
+    if(valor>=0 && valor<=saldototal){
+      if(valor!=actual){
+        let montotot=this.tott5;
+        montotot=montotot-pactual;
+        montotot=montotot+(valor*aprecio);
+        this.dataSource5[ind].cantidad=this.formService.redondeo(Number(valor),this.dec_cant);
+        this.dataSource5[ind].parcial=this.formService.redondeo((valor*aprecio),this.dec_parcial);
+        this.tott5=this.formService.redondeo(montotot,this.dec_parcial)
+
+        let difer=actual-valor;
+        let valingreso=Number(this.dataSource3aux[this.dataSource5[ind].indice3].ingreso);
+        let valcant=Number(this.dataSource3aux[this.dataSource5[ind].indice3].cantidad);
+        this.dataSource3aux[this.dataSource5[ind].indice3].ingreso=this.formService.redondeo(valingreso-difer,this.dec_cant);
+        this.dataSource3aux[this.dataSource5[ind].indice3].saldo=this.formService.redondeo(valcant-(valingreso-difer),this.dec_cant);
+        if(valcant-(valingreso-difer)>0){
+          this.dataSource3aux[this.dataSource5[ind].indice3].indicador=0;
+        }
+        else{
+          this.dataSource3aux[this.dataSource5[ind].indice3].indicador=1;
+        }
+        this.dataSource3aux[this.dataSource5[ind].indice3].editado=1;
+        this.bcambiost5=true;
+        this.TotalSaldo(this.dataSource3aux);
+      }
+    }
+    else
+    {
+      this.toaster.error('La cantidad de ingreso es mayor al saldo del requerimiento.', 'Advertencia', { closeButton: false,positionClass: 'toast-bottom-right',timeOut: 5000 });
+    }
+  }
+  presenter1(event:any,ind:any){
+    if(event.keyCode.toString()=="27"){//esc descartar los cambios
+      this.caneditarcelda1(this.dataSource5[ind].cantidad,ind)//el primer parametro es el valor de la celda a editar
+    }
+    else if(event.keyCode.toString()=="13")
+    {
+      event.target.blur();
+    }
+    else if(event.keyCode.toString()=="40"){
+      this.dataSource5[ind].editar=0;
+      if(ind+1<this.dataSource5.length){
+        this.dataSource5[ind+1].editar=1;
+      }
+    }
+    else if(event.keyCode.toString()=="38"){
+      this.dataSource5[ind].editar=0;
+      if(ind-1>=0){
+        this.dataSource5[ind-1].editar=1;
+      }
+    }
+  }
+  quitarfilaIng(ind:any){
+    let tot=Number(this.tott5);
+    let parcial=Number(this.dataSource5[ind].parcial);
+    let cant=Number(this.dataSource5[ind].cantidad);
+    this.tott5=this.formService.redondeo(tot-parcial,this.dec_parcial);
+    let ind3=this.dataSource5[ind].indice3;
+    this.dataSource3aux[ind3].seleccion=0;
+    let ingresot3=Number(this.dataSource3aux[ind3].ingreso);
+    this.dataSource3aux[ind3].ingreso=this.formService.redondeo(ingresot3-cant,this.dec_cant);
+    let valcant=Number(this.dataSource3aux[this.dataSource5[ind].indice3].cantidad);
+    this.dataSource3aux[ind3].saldo=this.formService.redondeo(valcant-(ingresot3-cant),this.dec_cant);
+    if(valcant-(ingresot3-cant)>0){
+      this.dataSource3aux[this.dataSource5[ind].indice3].indicador=0;
+    }
+    else{
+      this.dataSource3aux[this.dataSource5[ind].indice3].indicador=1;
+    }
+    this.dataSource3aux[this.dataSource5[ind].indice3].editado=1;
+    this.dataSource5.splice(ind,1);
+    this.bcambiost5=true;
+    this.TotalSaldo(this.dataSource3aux);
+  }
+  
 }

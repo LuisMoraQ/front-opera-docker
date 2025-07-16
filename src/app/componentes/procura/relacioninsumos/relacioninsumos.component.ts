@@ -30,6 +30,7 @@ export class RelacioninsumosComponent implements OnInit {
   mask_parcial='0.2';
   dec_cant=4;
   mask_cant='0.4';
+  simbolo=''
   aspectos:any
   titulo1:any = '';
   titulo1color:any = '';
@@ -76,6 +77,7 @@ export class RelacioninsumosComponent implements OnInit {
     this.totalpreasig=this.filareg.costo_dir;
     this.id_reg=this.filareg.id_registro;
     this.id_proyecto=this.filareg.id_proyecto
+    this.simbolo=this.filareg.simbolo
     this.solover=this.filareg.solover
     this.estadoreg=this.filareg.estado
 

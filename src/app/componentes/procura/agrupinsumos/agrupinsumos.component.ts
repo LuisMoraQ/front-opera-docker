@@ -93,6 +93,7 @@ export class AgrupinsumosComponent implements OnInit {
     try{
       this.id_reg=this.filareg.id_registro;
       this.id_proyecto=this.filareg.id_proyecto
+      this.simbolo=this.filareg.simbolo
       this.solover=this.filareg.solover
       let resto=this.solover?70:90;
       this.widthm1b2=(window.innerWidth/2)-resto;

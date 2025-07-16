@@ -92,6 +92,7 @@ export class CompatinsumosComponent implements OnInit {
     this.heighttmodal13=(window.innerHeight-202)/2;
     this.id_reg=this.filareg.id_registro;
     this.id_proyecto=this.filareg.id_proyecto
+    this.simbolo=this.filareg.simbolo
     this.solover=this.filareg.solover
     let decimales = this.decproy;
     if(decimales?.toString().includes('|')){

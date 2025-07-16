@@ -52,7 +52,7 @@
               </td>
               <td appAnchocol [ancho]="60" [ngClass]="{'highlight': fila2_sel == row.indice}"
               appPintarfilapre [tipo]="titulo1" [color]="titulo1color" [letra]="titulo1letra" [item]="row.item" [separador]="'.'" [partida]="row.unidad!=''?true:false">
-                <span class="float-left">{{simbolo}}</span>
+                <span *ngIf="row.unidad!=''" class="float-left">{{simbolo}}</span>
                 <span class="float-right">{{row.precio | number: mask_precio}}</span>
               </td>
               <td appAnchocol [ancho]="78" [ngClass]="{'highlight': fila2_sel == row.indice}"
@@ -151,7 +151,7 @@
                   <td class="text-left">
                     {{row.descripcion}}
                   </td>
-                  <td appAnchocol [ancho]="78">
+                  <td>
                     <span class="float-left">{{simbolo}}</span>
                     <span class="float-right">{{row.parcial | number: mask_parcial}}</span>
                   </td>
@@ -205,7 +205,6 @@
                 {{row.unidad}}
               </td>
               <td appAnchocol [ancho]="65">
-                <span *ngIf="row.num_det!='0'" class="float-left">{{simbolo}}</span>
                 <span *ngIf="row.num_det!='0'" class="float-right">{{row.cantidad | number: mask_cant}}</span>
               </td>
               <td appAnchocol [ancho]="65">

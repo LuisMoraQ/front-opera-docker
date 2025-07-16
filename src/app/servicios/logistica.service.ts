@@ -218,6 +218,15 @@ export class LogisticaService {
       catchError(err => throwError(err))
     ).toPromise()
   }
+  UltNroIngAlmcobra(params = {}): Promise<any> {
+    const url = this.enviUrl + '/api/almacen/UltNroingresoAlmcobra';
+    return this.http.post<any>(url, this.Cargafrmdata(params)).pipe(
+      map(res => {
+        return res
+      }),
+      catchError(err => throwError(err))
+    ).toPromise()
+  }
   ListarMovalmcobraDet(params = {}): Promise<any> {
     const url = this.enviUrl + '/api/almacen/listarMovalmcobraDet';
     return this.http.post<any>(url, this.Cargafrmdata(params)).pipe(
@@ -227,17 +236,43 @@ export class LogisticaService {
       catchError(err => throwError(err))
     ).toPromise()
   }
-  // GuardarAdquiPresuSol(params = {}):any//ejemplo con json
-  // {
-  //   const url = this.enviUrl + '/api/almacen/guardarAdquiPresuSol';
-  //   return this.http.post<any>(url, params, { headers: this.httpHeaders }).pipe(
-  //     map(res => {
-  //       if (!res) {
-  //         throw new Error
-  //       }
-  //       return res
-  //     }),
-  //     catchError(err => throwError(err))
-  //   ).toPromise()
-  // }
+  GuardarIngresoAmlcobra(params = {}):any//ejemplo con json
+  {
+    const url = this.enviUrl + '/api/almacen/guardarIngresoAmlcobra';
+    return this.http.post<any>(url, params, { headers: this.httpHeaders }).pipe(
+      map(res => {
+        if (!res) {
+          throw new Error
+        }
+        return res
+      }),
+      catchError(err => throwError(err))
+    ).toPromise()
+  }
+  EditarIngresoAmlcobra(params = {}):any//ejemplo con json
+  {
+    const url = this.enviUrl + '/api/almacen/editarIngresoAmlcobra';
+    return this.http.post<any>(url, params, { headers: this.httpHeaders }).pipe(
+      map(res => {
+        if (!res) {
+          throw new Error
+        }
+        return res
+      }),
+      catchError(err => throwError(err))
+    ).toPromise()
+  }
+  EliminarNotaIngAlmcObra(params = {}):any//ejemplo con json
+  {
+    const url = this.enviUrl + '/api/almacen/eliminarNotaIngAlmcObra';
+    return this.http.post<any>(url, params, { headers: this.httpHeaders }).pipe(
+      map(res => {
+        if (!res) {
+          throw new Error
+        }
+        return res
+      }),
+      catchError(err => throwError(err))
+    ).toPromise()
+  }
 }
