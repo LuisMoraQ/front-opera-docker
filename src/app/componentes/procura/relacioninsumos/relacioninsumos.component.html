@@ -115,13 +115,17 @@
   </div>
   <div style="padding-left: 5px; padding-right: 5px; margin-bottom: 2px;" [style.width.px]="widthm1b2-6" class="col-12 col-sm-6">
     <div class="row mx-0">
-      <h4 class="modal-title tit-modal1" style="background-color: #448aff; color: white; border-radius: 4px; padding-left: 4px; margin-top: 0px !important;width:calc(100% - 80px)">
-        <button *ngIf="!solover && estadoreg==0 && !existedisgre" type="button" class="btn btn-mini btn-inverse" placement="bottom" ngbTooltip="Actualizar Relacion de Insumos" container="body" (click)="actualizarder()">
+      <h4 class="modal-title tit-modal1 d-flex" style="background-color: #448aff; color: white; border-radius: 4px; padding-left: 4px; margin-top: 0px !important;width:calc(100% - 114px)">
+        <!-- <button *ngIf="!solover && estadoreg==0 && !existedisgre" type="button" class="btn btn-mini btn-inverse" placement="bottom" ngbTooltip="Actualizar Relacion de Insumos" container="body" (click)="actualizarder()">
           <i class="fa fa-refresh icono-but"></i>
-        </button>&nbsp;&nbsp;
-        <b>Informacion</b>
+        </button>&nbsp;&nbsp; -->
+        &nbsp;&nbsp;<b>Informacion</b>
       </h4>
-      <button *ngIf="!solover && estadoreg==0 && !existedisgre" type="button" class="btn btn-success btn-sm m-l-5" style="padding: 4px 8px;" (click)="GuardarDatos()"><i
+      <button *ngIf="!solover && estadoreg==0 && !existedisgre" type="button" class="btn btn-mini btn-inverse m-l-5" placement="bottom" [disabled]="!bfaltactder"
+      ngbTooltip="Actualizar Relacion de Insumos" container="body" (click)="actualizarder()">
+        <i class="fa fa-refresh icono-but"></i>
+      </button>
+      <button *ngIf="!solover && estadoreg==0 && !existedisgre" type="button" class="btn btn-success btn-sm m-l-5" style="padding: 4px 8px;" (click)="GuardarDatos()" [disabled]="!bcambiost1 || bfaltactder"><i
         class="fa fa-check"></i>Guardar
         <!-- <span *ngIf="bcambiost1" class="badge ballalert balert-danger" container="body"></span> -->
       </button>
@@ -208,8 +212,8 @@
                 <span *ngIf="row.num_det!='0'" class="float-right">{{row.cantidad | number: mask_cant}}</span>
               </td>
               <td appAnchocol [ancho]="65">
-                <span *ngIf="row.num_det'0'" class="float-left">{{simbolo}}</span>
-                <span *ngIf="row.num_det!='0'" class="float-right">{{row.precio | number: mask_precio}}</span>
+                <span *ngIf="row.precio!=null" class="float-left">{{simbolo}}</span>
+                <span *ngIf="row.precio!=null" class="float-right">{{row.precio | number: mask_precio}}</span>
               </td>
               <td appAnchocol [ancho]="86">
                 <span class="float-left">{{simbolo}}</span>

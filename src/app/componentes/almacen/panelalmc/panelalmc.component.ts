@@ -64,12 +64,10 @@ export class PanelalmcComponent implements OnInit {
     Detalle: new FormControl('', Validators.required),
     Fechaini:new FormControl('',Validators.required),
     Fechafin:new FormControl('',Validators.required),
-    Tipo:new FormControl('',Validators.required),
   })
   get detalle0(): FormControl { return this.FrmAgre0.get('Detalle') as FormControl }
   get Fechaini0(): FormControl { return this.FrmAgre0.get('Fechaini') as FormControl }
   get Fechafin0(): FormControl { return this.FrmAgre0.get('Fechafin') as FormControl }
-  get Tipo0(): FormControl { return this.FrmAgre0.get('Tipo') as FormControl }
 
   constructor(
     private _logisticaService:LogisticaService,
@@ -132,121 +130,10 @@ export class PanelalmcComponent implements OnInit {
     }
     for(let row1 of res){
       if(Number(row1.saldo)!=0){
-        let porcp=(Number(row1.saldo)*100)/suma3;
+        let porcp=(Number(row1.saldo)*100)/row1.ingreso;
         row1.porcsaldo=this.formService.redondeo(porcp,1);
       }
-      
     }
-    this.buscando1=false;
-    // let aux=[];
-    // let filaad;
-    // let indicegru=0;
-    // let suma1=0;
-    // let suma2=0;
-    //valorizada
-    // filaad={id_proyecto:this.id_proyecto,id_registro:null,nro:'1',detalle:'Reporte de Almacen Según el Expediente Tecnico',tipo:'1',estado:'0',fecha:'',fechaini:'',fechafin:'',ingreso:0,salida:0,idsiguiente:'',
-    //   saldo:null,porcsaldo:null,icomost:1,mostrar:1};
-    // aux.push(filaad);
-    // for(let i=0;i<res.length;i++){
-    //   if(res[i].tipo=="1"){
-    //     let resaldo=Number(res[i].ingreso)-Number(res[i].salida);
-    //     /* filaad={cui:res[i].cui,version:res[i].version,detalle:res[i].detalle,estado:res[i].estado,fecha:res[i].fecha,fechaini:res[i].fechaini,fechafin:res[i].fechafin,
-    //       ingreso:res[i].ingreso,salida:res[i].salida,tipo:res[i].tipo,nro:'',saldo:this.formService.redondeo(resaldo,this.dec_parcial),porcsaldo:'',icomost:0,mostrar:1,idsiguiente:res[i].idsiguiente,id_reg:res[i].id_reg}; */
-    //     res[i].saldo=this.formService.redondeo(resaldo,this.dec_parcial)
-    //     res[i].porcsaldo=0
-    //     res[i].icomost=0
-    //     res[i].mostrar=1
-    //     aux.push(res[i]);
-    //     suma1+=Number(res[i].ingreso);
-    //     suma2+=Number(res[i].salida);
-    //   }
-    // }
-    // aux[indicegru].ingreso=this.formService.redondeo(suma1,this.dec_parcial);
-    // aux[indicegru].salida=this.formService.redondeo(suma2,this.dec_parcial);
-    // aux[indicegru].saldo=this.formService.redondeo(suma1-suma2,this.dec_parcial);
-    // //no valorizada
-    // indicegru=aux.length;
-    // suma1=0;
-    // suma2=0;
-    // filaad={id_proyecto:this.id_proyecto,id_registro:null,nro:'2',detalle:'Reporte de Almacen Según - Mayores Metrados',tipo:'2',estado:'0',fecha:'',fechaini:'',fechafin:'',ingreso:0,salida:0,idsiguiente:'',
-    // saldo:null,porcsaldo:null,icomost:1,mostrar:1};
-    // aux.push(filaad);
-    // for(let i=0;i<res.length;i++){
-    //   if(res[i].tipo=="2"){
-    //     let resaldo=Number(res[i].ingreso)-Number(res[i].salida);
-    //     /* filaad={cui:res[i].cui,version:res[i].version,detalle:res[i].detalle,estado:res[i].estado,fecha:res[i].fecha,fechaini:res[i].fechaini,fechafin:res[i].fechafin,
-    //       ingreso:res[i].ingreso,salida:res[i].salida,tipo:res[i].tipo,nro:'',saldo:this.formService.redondeo(resaldo,this.dec_parcial),porcsaldo:'',icomost:0,mostrar:1,idsiguiente:res[i].idsiguiente,id_reg:res[i].id_reg}; */
-    //     res[i].saldo=this.formService.redondeo(resaldo,this.dec_parcial)
-    //     res[i].porcsaldo=0
-    //     res[i].icomost=0
-    //     res[i].mostrar=1
-    //     aux.push(res[i]);
-    //     suma1+=Number(res[i].ingreso);
-    //     suma2+=Number(res[i].salida);
-    //   }
-    // }
-    // aux[indicegru].ingreso=this.formService.redondeo(suma1,this.dec_parcial);
-    // aux[indicegru].salida=this.formService.redondeo(suma2,this.dec_parcial);
-    // aux[indicegru].saldo=this.formService.redondeo(suma1-suma2,this.dec_parcial);
-
-    // //calidad de prestamo
-    // indicegru=aux.length;
-    // suma1=0;
-    // suma2=0;
-    // filaad={id_proyecto:this.id_proyecto,id_registro:null,nro:'3',detalle:'Reporte de Almacen Según - Partidas Nuevas',tipo:'3',estado:'0',fecha:'',fechaini:'',fechafin:'',ingreso:0,salida:0,idsiguiente:'',
-    // saldo:null,porcsaldo:null,icomost:1,mostrar:1};
-    // aux.push(filaad);
-    // for(let i=0;i<res.length;i++){
-    //   if(res[i].tipo=="3"){
-    //     /* filaad={cui:res[i].cui,version:res[i].version,detalle:res[i].detalle,estado:res[i].estado,fecha:res[i].fecha,fechaini:res[i].fechaini,fechafin:res[i].fechafin,
-    //       ingreso:res[i].ingreso,salida:res[i].salida,tipo:res[i].tipo,nro:'',saldo:'',porcsaldo:'',icomost:0,mostrar:1,idsiguiente:res[i].idsiguiente,id_reg:res[i].id_reg}; */
-
-    //     res[i].porcsaldo=0
-    //     res[i].icomost=0
-    //     res[i].mostrar=1
-    //     aux.push(res[i]);
-    //     suma1+=Number(res[i].ingreso);
-    //     suma1+=Number(res[i].salida);
-    //   }
-    // }
-    // aux[indicegru].ingreso=this.formService.redondeo(suma1,this.dec_parcial);
-    // aux[indicegru].salida=this.formService.redondeo(suma2,this.dec_parcial);
-    // aux[indicegru].saldo=this.formService.redondeo(suma1-suma2,this.dec_parcial);
-
-    // let sumagru=0;
-    // let grupose='';
-    // for(let m=0;m<aux.length;m++){//revisar y tambien que pase los parametros correctos al guardar
-    //   if(aux[m].fechaini==''){
-    //     sumagru=Number(aux[m].ingreso);
-    //     grupose=aux[m].tipo;
-    //   }
-    //   else{
-    //     if(grupose!=''){
-    //       if(aux[m].tipo==grupose){
-    //         if(sumagru>0){
-    //           let saldant=0;
-    //           if(m>0){
-    //             if(aux[m-1].fechaini!=''){
-    //               saldant=Number(aux[m-1].saldo);
-    //             }
-    //           }
-    //           let ingr=Number(aux[m].ingreso);
-    //           let sali=Number(aux[m].salida);
-    //           let ressal=saldant+ingr-sali;
-    //           aux[m].saldo=this.formService.redondeo(ressal,this.dec_parcial);
-
-    //           let resu=(ressal/sumagru)*100;
-    //           aux[m].porcsaldo=this.formService.redondeo(resu,1);
-    //         }
-    //         else{
-    //           aux[m].porcsaldo=this.formService.redondeo(0,1);
-    //         }
-    //       }
-    //     }
-    //   }
-    // }
-    // this.dataSource1=aux;
-    // console.log(this.dataSource1)
     this.buscando1=false;
   }
   cambindicesel1(ind:any){
@@ -294,15 +181,11 @@ export class PanelalmcComponent implements OnInit {
   buAgregar(){
     const primerDia = new Date(this.fechaac.getFullYear(), this.fechaac.getMonth() , 1)
     const ultimoDia = new Date(this.fechaac.getFullYear(), this.fechaac.getMonth() + 1, 0)
-    console.log(primerDia)
-    console.log(ultimoDia)
     var fecha1=moment(primerDia).format('YYYY-MM-DD');//this.datePipe.transform(primerDia, "yyyy-MM-dd");
     var fecha2=moment(ultimoDia).format('YYYY-MM-DD');//this.datePipe.transform(ultimoDia, "yyyy-MM-dd");
-    console.log(fecha1,fecha2)
     this.detalle0.setValue('')
     this.Fechaini0.setValue(fecha1)
     this.Fechafin0.setValue(fecha2)
-    this.Tipo0.setValue('')
     this.modalagre0.show();
   }
   cambiofecha1(){
@@ -350,22 +233,13 @@ export class PanelalmcComponent implements OnInit {
             this.mostrar_carga_todo=true;
             //confirmar
             var detalle=this.detalle0.value;
-            var tipo=this.Tipo0.value;
             let idant='';
             let idgru='';
             for(let a=0;a<this.dataSource1.length;a++){
-              if(this.dataSource1[a].tipo==tipo)
-              {
-                if(this.dataSource1[a].idregmov==null){
-                  idgru=this.dataSource1[a].nro;
-                }else{
-                  idant=this.dataSource1[a].idregmov;
-                }
-              }
-              else{
-                if(idgru!=''){
-                  break;
-                }
+              if(this.dataSource1[a].idregmov==null){
+                idgru=this.dataSource1[a].nro;
+              }else{
+                idant=this.dataSource1[a].idregmov;
               }
             }
             let idreg=0;
@@ -373,7 +247,7 @@ export class PanelalmcComponent implements OnInit {
               if(idreg<Number(row.idregmov))
                 idreg=Number(row.idregmov);
             }
-            let res=await this._logisticaService.GuardarMovalmcobra({id_proyecto:this.id_proyecto,idregmov:idreg+1,detalle:detalle,tipo:tipo,estado:0,fecha:'',fechaini:fecha1,fechafin:fecha2,
+            let res=await this._logisticaService.GuardarMovalmcobra({id_proyecto:this.id_proyecto,idregmov:idreg+1,detalle:detalle,estado:0,fecha:'',fechaini:fecha1,fechafin:fecha2,
               ingreso:'',salida:'',idant:idant });
             await this.Listar1();
             this.cerrarModalAgre0();
@@ -439,6 +313,11 @@ export class PanelalmcComponent implements OnInit {
       //this.colorpasa=this.colores;
       this.decpasa=this.decima;
       this.subvista=2;
+    }
+  }
+  ListarExterno(val:any){
+    if(val==1){
+      this.Listar1();
     }
   }
 }

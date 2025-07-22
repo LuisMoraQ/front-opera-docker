@@ -5,6 +5,7 @@ import { FormsService } from 'src/app/servicios/forms.service';
 import { LogisticaService } from 'src/app/servicios/logistica.service';
 import { ModalBasicComponent } from 'src/app/shared/modal-basic/modal-basic.component';
 import { SwalService } from 'src/app/servicios/swal.service';
+import * as moment from 'moment';
 
 @Component({
   selector: 'app-almcingreso',
@@ -14,10 +15,10 @@ import { SwalService } from 'src/app/servicios/swal.service';
 export class AlmcingresoComponent implements OnInit {
   @Input() filareg:any
   @Input() decproy:any
-  @Output() listarpri = new EventEmitter<any>();
+  @Output() listarpri = new EventEmitter<any>();//aun no se usa, usar para el principal registros mov
   solover=false
   mostrar_carga_todo=false
-  fechaac:any;
+  // fechaac:any;
   widthm1b2: number=100;
   heighttmodal13=250;
   heighttmodal=250;
@@ -85,6 +86,9 @@ export class AlmcingresoComponent implements OnInit {
   tab3auxtotalparc:any;
   tab3auxtotalsal:any;
   widthm1b3=100;
+  fechaSal
+  fechamin
+  fechamax
 
   constructor(
     private _EncriptadorService:EncriptadorService,
@@ -119,14 +123,19 @@ export class AlmcingresoComponent implements OnInit {
       this.dec_cant=arrdec[3];
       this.mask_cant='0.'+arrdec[3];
     }
-    //listar y otras funciones
-    let resfec = await this._EncriptadorService.FechaActualBack();
-    if (resfec.id == 1) {
-      this.fechaac = new Date(resfec.mensaje);
-    }
-    else{
-      this.fechaac=new Date();
-    }
+    // //listar y otras funciones
+    // let resfec = await this._EncriptadorService.FechaActualBack();
+    // if (resfec.id == 1) {
+    //   this.fechaac = new Date(resfec.mensaje);
+    // }
+    // else{
+    //   this.fechaac=new Date();
+    // }
+    // this.fechaSal=moment(this.fechaac).format('YYYY-MM-DD')
+    let val1=this.filareg.fechaini.split('-')
+    this.fechamin=val1[2]+'-'+val1[1]+'-'+val1[0]
+    val1=this.filareg.fechafin.split('-')
+    this.fechamax=val1[2]+'-'+val1[1]+'-'+val1[0]
     //listar datos
     await this.listar1();
     console.log(this.filareg)
@@ -262,6 +271,19 @@ export class AlmcingresoComponent implements OnInit {
       this.dataingreso=res[2]
       this.datasalida=res[3]
       // this.DatosDisgre=res[1]
+      let arrfini=this.filareg.fechaini.split('-');
+      console.log(moment(arrfini[2]+'-'+arrfini[1]+'-'+arrfini[0]).format('YYYY-MM-DD'))
+      let ultfecha=moment(arrfini[2]+'-'+arrfini[1]+'-'+arrfini[0]).format('YYYY-MM-DD');
+      for(let row of this.dataingreso){
+        let fechrow=moment(row.fecha).format('YYYY-MM-DD');
+        if(fechrow>ultfecha){
+          ultfecha=fechrow
+        }
+      }
+      this.fechaSal=ultfecha
+      console.log(ultfecha)//menor a ult fecha no debe ser editable, si es igual o mayor , permitir editar
+      //agregar input fecha al agregar una nota de ingreso o salida?
+      //tambien agregar fecha a las agrupaciones de las adquicisiones, lo que importa es la fecha de aprobacion, agregar fecha al hacer eso?
     }
     else{
       this.toaster.error('No se pudo cargar la información.', 'Advertencia', { closeButton: false,positionClass: 'toast-bottom-right',timeOut: 5000 });
@@ -353,7 +375,7 @@ export class AlmcingresoComponent implements OnInit {
             this.tab3auxtotalparc=this.tab3totalparc;
             this.tab3auxtotalsal=this.tab3totalsal;
             
-            let res=await this._logisticaService.UltNroIngAlmcobra({id_proyecto:this.id_proyecto});
+            let res=await this._logisticaService.UltNroIngAlmcobra({id_proyecto:this.id_proyecto,idregmov:this.id_reg});
             if(res.length>0){
               this.nroingreso=res[0].ultimo;
             }
@@ -437,108 +459,115 @@ export class AlmcingresoComponent implements OnInit {
     }
   }
   async EliminarIng1(){
-    let estadoreq=this.dataSource2[this.fila2_sel].estingreso;
-    if(estadoreq!=2){
-      if(this.fila4_sel>=0)
-      {
-        let tipofila=this.dataSource4[this.fila4_sel].unidad==''?1:0;
-        if(tipofila==1){
-          let nomdetalle=this.dataSource4[this.fila4_sel].descripcion+" N° "+this.dataSource4[this.fila4_sel].nroingreso;
-          let mensj='Se eliminarán todos los datos del registro : '+nomdetalle.substring(0,nomdetalle.length>80?80:nomdetalle.length)+(nomdetalle.length>80?'...':'')
-          const sw = await SwalService.confirm('Estas seguro?',null,mensj);
-          if (sw.isConfirmed) {
-            this.mostrar_carga_todo=true;
-            let existesalneg=false;
-            let nroingraux=this.dataSource4[this.fila4_sel].nroingreso;
-            for(let i=0;i<this.dataSource4.length;i++){
-              if(this.dataSource4[i].unidad!='' && this.dataSource4[i].nroingreso==nroingraux){
-                for(let j=0;this.dataSource3.length;j++){
-                  if(this.dataSource3[j].id_registro==this.dataSource4[i].id_registro && this.dataSource3[j].idgrupo==this.dataSource4[i].idgrupo &&
-                    this.dataSource3[j].idfila==this.dataSource4[i].idfila &&  this.dataSource3[j].indrep==this.dataSource4[i].indrep){
-                    let ingresoact=Number(this.dataSource3[j].ingreso);
-                    let agregaing=Number(this.dataSource4[i].cantidad);
-                    ingresoact-=agregaing;
-                    let salidat3b=Number(this.dataSource3[j].salida);
-                    let saldoauxsal=ingresoact-salidat3b;
-                    if(saldoauxsal<0){
-                      existesalneg=true;
-                    }
-                    break;
-                  }
-                }
-              }
-            }
-            if(!existesalneg){
-              let aux2=[];
-              let nroingr=this.dataSource4[this.fila4_sel].nroingreso;
+    try{
+      let estadoreq=this.dataSource2[this.fila2_sel].estingreso;
+      if(estadoreq!=2){
+        if(this.fila4_sel>=0)
+        {
+          let tipofila=this.dataSource4[this.fila4_sel].unidad==''?1:0;
+          if(tipofila==1){
+            let nomdetalle=this.dataSource4[this.fila4_sel].descripcion+" N° "+this.dataSource4[this.fila4_sel].nroingreso;
+            let mensj='Se eliminarán todos los datos del registro : '+nomdetalle.substring(0,nomdetalle.length>80?80:nomdetalle.length)+(nomdetalle.length>80?'...':'')
+            const sw = await SwalService.confirm('Estas seguro?',null,mensj);
+            if (sw.isConfirmed) {
+              this.mostrar_carga_todo=true;
+              let existesalneg=false;
+              let nroingraux=this.dataSource4[this.fila4_sel].nroingreso;
               for(let i=0;i<this.dataSource4.length;i++){
-                if(this.dataSource4[i].unidad!='' && this.dataSource4[i].nroingreso==nroingr){
+                if(this.dataSource4[i].unidad!='' && this.dataSource4[i].nroingreso==nroingraux){
                   for(let j=0;this.dataSource3.length;j++){
                     if(this.dataSource3[j].id_registro==this.dataSource4[i].id_registro && this.dataSource3[j].idgrupo==this.dataSource4[i].idgrupo &&
-                      this.dataSource3[j].idfila==this.dataSource4[i].idfila && this.dataSource3[j].indrep==this.dataSource4[i].indrep){
+                      this.dataSource3[j].idfila==this.dataSource4[i].idfila &&  this.dataSource3[j].indrep==this.dataSource4[i].indrep){
                       let ingresoact=Number(this.dataSource3[j].ingreso);
                       let agregaing=Number(this.dataSource4[i].cantidad);
                       ingresoact-=agregaing;
-                      this.dataSource3[j].ingreso=this.formService.redondeo(ingresoact,this.dec_cant);
-                      let cantfil=Number(this.dataSource3[j].cantidad);
-                      this.dataSource3[j].saldo=this.formService.redondeo(cantfil-ingresoact,this.dec_cant);
-                      this.dataSource3[j].indicador=cantfil-ingresoact>0?0:1;
-                      aux2.push(this.dataSource3[j]);
+                      let salidat3b=Number(this.dataSource3[j].salida);
+                      let saldoauxsal=ingresoact-salidat3b;
+                      if(saldoauxsal<0){
+                        existesalneg=true;
+                      }
                       break;
                     }
                   }
                 }
               }
-              //actualizar tabla izquierda
-              let suma3=0;
-              let sald3b=0;
-              for(let row of this.dataSource3){
-                suma3+=Number(row.saldo);
-                sald3b+=(Number(row.ingreso)-Number(row.salida));
-              }
-              let estadoing=suma3>0?0:1;
-              let estadosal=sald3b>0?0:1;
-              const tabla1=JSON.stringify(aux2);
-              const body=JSON.stringify({
-                'id_proyecto':this.id_proyecto,
-                'idregmov':this.id_reg,
-                'nroingreso':this.dataSource4[this.fila4_sel].nroingreso,
-                'parcial':this.dataSource4[this.fila4_sel].parcial,
-                'id_registro':this.dataSource2[this.fila2_sel].id_registro,
-                'idgrupo':this.dataSource2[this.fila2_sel].idgrupo,
-                'estadoing':estadoing,
-                'estadosal':estadosal,
-                'datos1':tabla1,
-              });
-              let res=await this._logisticaService.EliminarNotaIngAlmcObra(body);//iding idregmov
-              if(res?.id=='1'){
-                SwalService.success('Correcto', res.mensaje)
-                this.fila4_sel=-1;
-                await this.listar1();
-                await this.cambindicesel2(this.fila2_sel,true)
-                this.mostrar_carga_todo=false;
+              if(!existesalneg){
+                let aux2=[];
+                let nroingr=this.dataSource4[this.fila4_sel].nroingreso;
+                for(let i=0;i<this.dataSource4.length;i++){
+                  if(this.dataSource4[i].unidad!='' && this.dataSource4[i].nroingreso==nroingr){
+                    for(let j=0;this.dataSource3.length;j++){
+                      if(this.dataSource3[j].id_registro==this.dataSource4[i].id_registro && this.dataSource3[j].idgrupo==this.dataSource4[i].idgrupo &&
+                        this.dataSource3[j].idfila==this.dataSource4[i].idfila && this.dataSource3[j].indrep==this.dataSource4[i].indrep){
+                        let ingresoact=Number(this.dataSource3[j].ingreso);
+                        let agregaing=Number(this.dataSource4[i].cantidad);
+                        ingresoact-=agregaing;
+                        this.dataSource3[j].ingreso=this.formService.redondeo(ingresoact,this.dec_cant);
+                        let cantfil=Number(this.dataSource3[j].cantidad);
+                        this.dataSource3[j].saldo=this.formService.redondeo(cantfil-ingresoact,this.dec_cant);
+                        this.dataSource3[j].indicador=cantfil-ingresoact>0?0:1;
+                        aux2.push(this.dataSource3[j]);
+                        break;
+                      }
+                    }
+                  }
+                }
+                //actualizar tabla izquierda
+                let suma3=0;
+                let sald3b=0;
+                for(let row of this.dataSource3){
+                  suma3+=Number(row.saldo);
+                  sald3b+=(Number(row.ingreso)-Number(row.salida));
+                }
+                let estadoing=suma3>0?0:1;
+                let estadosal=sald3b>0?0:1;
+                const tabla1=JSON.stringify(aux2);
+                const body=JSON.stringify({
+                  'id_proyecto':this.id_proyecto,
+                  'idregmov':this.id_reg,
+                  'nroingreso':this.dataSource4[this.fila4_sel].nroingreso,
+                  'parcial':this.dataSource4[this.fila4_sel].parcial,
+                  'id_registro':this.dataSource2[this.fila2_sel].id_registro,
+                  'idgrupo':this.dataSource2[this.fila2_sel].idgrupo,
+                  'estadoing':estadoing,
+                  'estadosal':estadosal,
+                  'datos1':tabla1,
+                });
+                let res=await this._logisticaService.EliminarNotaIngAlmcObra(body);//iding idregmov
+                if(res?.id=='1'){
+                  this.fila4_sel=-1;
+                  await this.listar1();
+                  await this.cambindicesel2(this.fila2_sel,true)
+                  this.mostrar_carga_todo=false;
+                  this.listarpri.emit('1')
+                  SwalService.success('Correcto', res.mensaje)
+                }
+                else{
+                  this.mostrar_carga_todo=false;
+                  SwalService.error('Advertencia', res?res.mensaje:'Ocurrio una excepcion al momento de guardar.');
+                }
               }
               else{
                 this.mostrar_carga_todo=false;
-                SwalService.error('Advertencia', res?res.mensaje:'Ocurrio una excepcion al momento de guardar.');
+                this.toaster.error('No puede continuar porque se generará saldos negativos en salidas.', 'Advertencia', { closeButton: false,positionClass: 'toast-bottom-right',timeOut: 5000 });
               }
             }
-            else{
-              this.mostrar_carga_todo=false;
-              this.toaster.error('No puede continuar porque se generará saldos negativos en salidas.', 'Advertencia', { closeButton: false,positionClass: 'toast-bottom-right',timeOut: 5000 });
-            }
+          }
+          else{
+            this.toaster.error('Seleccione una Nota de Ingreso.', 'Advertencia', { closeButton: false,positionClass: 'toast-bottom-right',timeOut: 5000 });
           }
         }
         else{
-          this.toaster.error('Seleccione una Nota de Ingreso.', 'Advertencia', { closeButton: false,positionClass: 'toast-bottom-right',timeOut: 5000 });
+          this.toaster.error('Seleccione una Nota de Ingreso para Eliminar.', 'Advertencia', { closeButton: false,positionClass: 'toast-bottom-right',timeOut: 5000 });
         }
       }
       else{
-        this.toaster.error('Seleccione una Nota de Ingreso para Eliminar.', 'Advertencia', { closeButton: false,positionClass: 'toast-bottom-right',timeOut: 5000 });
+        this.toaster.error('No se puede modificar un requerimiento con estado CONFORME.', 'Advertencia', { closeButton: false,positionClass: 'toast-bottom-right',timeOut: 5000 });
       }
-    }
-    else{
-      this.toaster.error('No se puede modificar un requerimiento con estado CONFORME.', 'Advertencia', { closeButton: false,positionClass: 'toast-bottom-right',timeOut: 5000 });
+    }catch(e){
+      console.log(e)
+      this.mostrar_carga_todo=false;
+      this.toaster.error('No se puedo realizar la operación.', 'Advertencia', { closeButton: false,positionClass: 'toast-bottom-right',timeOut: 5000 });
     }
   }
   async cerrarModalIngreso1(){
@@ -573,101 +602,32 @@ export class AlmcingresoComponent implements OnInit {
     }
   }
   async guardarModalIngreso1(){
-    let monto0=false;
-    if(this.dataSource5.length>0){
-      if(this.bcambiost5){
-        if(!this.editaing){
-          let aux=[];
-          let aux2=[];
-          let ejm={id_proyecto:this.id_proyecto,idregmov:this.id_reg,nroingreso:this.nroingreso,idingreso:0,id_registro:this.dataSource2[this.fila2_sel].id_registro,idgrupo:this.dataSource2[this.fila2_sel].idgrupo,idfila:null,
-            indrep:null,codigo:null,descripcion:"Nota de Ingreso de Materiales",unidad:'',cantidad:null,precio:null,parcial:this.tott5,indice3:null,editar:0};
-          aux.push(ejm);
-          for(let i=0;i<this.dataSource5.length;i++){
-            aux.push(this.dataSource5[i]);
-            if(Number(this.dataSource5[i].cantidad)==0){
-              monto0=true;
+    try{
+      let monto0=false;
+      if(this.dataSource5.length>0){
+        if(this.bcambiost5){
+          if(!this.editaing){
+            const fecha = new Date(this.fechaSal);
+            if(isNaN(fecha.getTime())){
+              this.toaster.error('La Fecha de Salida asignada no es valida.', 'Advertencia', { closeButton: false,positionClass: 'toast-bottom-right',timeOut: 5000 });
+              return;
             }
-          }
-          if(!monto0){
-            this.mostrar_carga_todo=true;
-            let suma3=0;
-            let sald3b=0;
-            for(let i=0;i<this.dataSource3aux.length;i++){//hacer un listar general y volver a cargar la fila seleccionada sería mejor?
-              if(this.dataSource3aux[i].editado==1){
-                aux2.push(this.dataSource3aux[i]);
-                // //actualizar tabla 3 principal ingreso, saldo
-                // this.dataSource3[i].ingreso=this.dataSource3aux[i].ingreso;
-                // this.dataSource3[i].saldo=this.dataSource3aux[i].saldo;
-                // this.dataSource3[i].indicador=Number(this.dataSource3aux[i].saldo)>0?0:1;
-
-                // this.dataSource3b[i].ingreso=this.dataSource3aux[i].ingreso;//que tabla es datasource3b?
-                // let ingresot3=Number(this.dataSource3aux[i].ingreso);
-                // let salidat3b=Number(this.dataSource3b[i].salida);
-                // this.dataSource3b[i].saldo=this.formService.redondeo(ingresot3-salidat3b,2);
-                // this.dataSource3b[i].indicador=(ingresot3-salidat3b)>0?0:1;
-              }
-              suma3+=Number(this.dataSource3aux[i].saldo);//cantidad-ingreso
-              sald3b+=(Number(this.dataSource3aux[i].ingreso)-Number(this.dataSource3aux[i].salida));//ingreso-salida
-            }
-            let estadoing=suma3>0?0:1;
-            let estadosal=sald3b>0?0:1;
-            // nuevos parametros para metodo
-            const tabla1=JSON.stringify(aux);
-            const tabla2=JSON.stringify(aux2);
-            const body=JSON.stringify({
-              'id_proyecto':this.id_proyecto,
-              'idregmov':this.id_reg,
-              'id_registro':this.dataSource2[this.fila2_sel].id_registro,
-              'idgrupo':this.dataSource2[this.fila2_sel].idgrupo,
-              'estadoing':estadoing,
-              'estadosal':estadosal,
-              'datos1':tabla1,
-              'datos2':tabla2,
-            });
-            let res=await this._logisticaService.GuardarIngresoAmlcobra(body);//iding idregmov
-            if(res?.id=='1'){
-              SwalService.success('Correcto', res.mensaje)
-              await this.listar1();
-              //cargar los elementos seleccionados
-              await this.cambindicesel2(this.fila2_sel,true)
-              this.mostrar_carga_todo=false;
-              this.bcambiost5=false;
-              this.cerrarModalIngreso1();
-            }
-            else{
-              this.mostrar_carga_todo=false;
-              SwalService.error('Advertencia', res?res.mensaje:'Ocurrio una excepcion al momento de guardar.');
-            }
-          }
-          else{
-            this.toaster.error('Existen registros con cantidad 0.', 'Advertencia', { closeButton: false,positionClass: 'toast-bottom-right',timeOut: 5000 });
-          }
-        }
-        else{
-          let aux2=[];
-          for(let row of this.dataSource5){
-            if(Number(row.cantidad)==0){
-              monto0=true;
-            }
-          }
-          if(!monto0){
-            this.mostrar_carga_todo=true;
-            //verificar si se crearan saldos negativos
-            let existesalneg=false;
-            for(let i=0;i<this.dataSource3aux.length;i++){
-              if(this.dataSource3aux[i].editado==1){
-                let ingresot3=Number(this.dataSource3aux[i].ingreso);
-                let salidat3b=Number(this.dataSource3aux[i].salida);
-                let saldoauxsal=ingresot3-salidat3b;
-                if(saldoauxsal<0){
-                  existesalneg=true;
-                }
+            let aux=[];
+            let aux2=[];
+            let ejm={id_proyecto:this.id_proyecto,idregmov:this.id_reg,nroingreso:this.nroingreso,idingreso:0,id_registro:this.dataSource2[this.fila2_sel].id_registro,idgrupo:this.dataSource2[this.fila2_sel].idgrupo,idfila:null,
+              indrep:null,codigo:null,descripcion:"Nota de Ingreso de Materiales",unidad:'',cantidad:null,precio:null,parcial:this.tott5,indice3:null,editar:0};
+            aux.push(ejm);
+            for(let i=0;i<this.dataSource5.length;i++){
+              aux.push(this.dataSource5[i]);
+              if(Number(this.dataSource5[i].cantidad)==0){
+                monto0=true;
               }
             }
-            if(!existesalneg){
+            if(!monto0){
+              this.mostrar_carga_todo=true;
               let suma3=0;
               let sald3b=0;
-              for(let i=0;i<this.dataSource3aux.length;i++){
+              for(let i=0;i<this.dataSource3aux.length;i++){//hacer un listar general y volver a cargar la fila seleccionada sería mejor?
                 if(this.dataSource3aux[i].editado==1){
                   aux2.push(this.dataSource3aux[i]);
                   // //actualizar tabla 3 principal ingreso, saldo
@@ -675,10 +635,10 @@ export class AlmcingresoComponent implements OnInit {
                   // this.dataSource3[i].saldo=this.dataSource3aux[i].saldo;
                   // this.dataSource3[i].indicador=Number(this.dataSource3aux[i].saldo)>0?0:1;
 
-                  // this.dataSource3b[i].ingreso=this.dataSource3aux[i].ingreso;
+                  // this.dataSource3b[i].ingreso=this.dataSource3aux[i].ingreso;//que tabla es datasource3b?
                   // let ingresot3=Number(this.dataSource3aux[i].ingreso);
                   // let salidat3b=Number(this.dataSource3b[i].salida);
-                  // this.dataSource3b[i].saldo=this.formService.redondeo(ingresot3-salidat3b,this.dec_cant);
+                  // this.dataSource3b[i].saldo=this.formService.redondeo(ingresot3-salidat3b,2);
                   // this.dataSource3b[i].indicador=(ingresot3-salidat3b)>0?0:1;
                 }
                 suma3+=Number(this.dataSource3aux[i].saldo);//cantidad-ingreso
@@ -686,33 +646,30 @@ export class AlmcingresoComponent implements OnInit {
               }
               let estadoing=suma3>0?0:1;
               let estadosal=sald3b>0?0:1;
-              //actualizar tabla derecha
-              let idgru=this.dataSource2[this.fila2_sel].idgrupo;
-              let idreg=this.dataSource2[this.fila2_sel].id_registro;
               // nuevos parametros para metodo
-              const tabla1=JSON.stringify(this.dataSource5);
+              const tabla1=JSON.stringify(aux);
               const tabla2=JSON.stringify(aux2);
               const body=JSON.stringify({
                 'id_proyecto':this.id_proyecto,
                 'idregmov':this.id_reg,
-                'nroingreso':this.nroingreso,
-                'parcial':this.tott5,
                 'id_registro':this.dataSource2[this.fila2_sel].id_registro,
                 'idgrupo':this.dataSource2[this.fila2_sel].idgrupo,
                 'estadoing':estadoing,
                 'estadosal':estadosal,
+                'fecha':this.fechaSal,
                 'datos1':tabla1,
                 'datos2':tabla2,
               });
-              let res=await this._logisticaService.EditarIngresoAmlcobra(body);//iding idregmov
+              let res=await this._logisticaService.GuardarIngresoAlmcobra(body);//iding idregmov
               if(res?.id=='1'){
-                SwalService.success('Correcto', res.mensaje)
                 await this.listar1();
                 //cargar los elementos seleccionados
                 await this.cambindicesel2(this.fila2_sel,true)
                 this.mostrar_carga_todo=false;
                 this.bcambiost5=false;
                 this.cerrarModalIngreso1();
+                this.listarpri.emit('1')
+                SwalService.success('Correcto', res.mensaje)
               }
               else{
                 this.mostrar_carga_todo=false;
@@ -720,21 +677,105 @@ export class AlmcingresoComponent implements OnInit {
               }
             }
             else{
-              this.mostrar_carga_todo=false;
-              this.toaster.error('No puede continuar porque se generará saldos negativos en salidas.', 'Advertencia', { closeButton: false,positionClass: 'toast-bottom-right',timeOut: 5000 });
+              this.toaster.error('Existen registros con cantidad 0. Quitar de la tabla si no cambia de cantidad.', 'Advertencia', { closeButton: false,positionClass: 'toast-bottom-right',timeOut: 5000 });
             }
           }
           else{
-            this.toaster.error('Existen registros con cantidad 0.', 'Advertencia', { closeButton: false,positionClass: 'toast-bottom-right',timeOut: 5000 });
+            let aux2=[];
+            for(let row of this.dataSource5){
+              if(Number(row.cantidad)==0){
+                monto0=true;
+              }
+            }
+            if(!monto0){
+              this.mostrar_carga_todo=true;
+              //verificar si se crearan saldos negativos
+              let existesalneg=false;
+              for(let i=0;i<this.dataSource3aux.length;i++){
+                if(this.dataSource3aux[i].editado==1){
+                  let ingresot3=Number(this.dataSource3aux[i].ingreso);
+                  let salidat3b=Number(this.dataSource3aux[i].salida);
+                  let saldoauxsal=ingresot3-salidat3b;
+                  if(saldoauxsal<0){
+                    existesalneg=true;
+                  }
+                }
+              }
+              if(!existesalneg){
+                let suma3=0;
+                let sald3b=0;
+                for(let i=0;i<this.dataSource3aux.length;i++){
+                  if(this.dataSource3aux[i].editado==1){
+                    aux2.push(this.dataSource3aux[i]);
+                    // //actualizar tabla 3 principal ingreso, saldo
+                    // this.dataSource3[i].ingreso=this.dataSource3aux[i].ingreso;
+                    // this.dataSource3[i].saldo=this.dataSource3aux[i].saldo;
+                    // this.dataSource3[i].indicador=Number(this.dataSource3aux[i].saldo)>0?0:1;
+
+                    // this.dataSource3b[i].ingreso=this.dataSource3aux[i].ingreso;
+                    // let ingresot3=Number(this.dataSource3aux[i].ingreso);
+                    // let salidat3b=Number(this.dataSource3b[i].salida);
+                    // this.dataSource3b[i].saldo=this.formService.redondeo(ingresot3-salidat3b,this.dec_cant);
+                    // this.dataSource3b[i].indicador=(ingresot3-salidat3b)>0?0:1;
+                  }
+                  suma3+=Number(this.dataSource3aux[i].saldo);//cantidad-ingreso
+                  sald3b+=(Number(this.dataSource3aux[i].ingreso)-Number(this.dataSource3aux[i].salida));//ingreso-salida
+                }
+                let estadoing=suma3>0?0:1;
+                let estadosal=sald3b>0?0:1;
+                // nuevos parametros para metodo
+                const tabla1=JSON.stringify(this.dataSource5);
+                const tabla2=JSON.stringify(aux2);
+                const body=JSON.stringify({
+                  'id_proyecto':this.id_proyecto,
+                  'idregmov':this.id_reg,
+                  'nroingreso':this.nroingreso,
+                  'parcial':this.tott5,
+                  'id_registro':this.dataSource2[this.fila2_sel].id_registro,
+                  'idgrupo':this.dataSource2[this.fila2_sel].idgrupo,
+                  'estadoing':estadoing,
+                  'estadosal':estadosal,
+                  'datos1':tabla1,
+                  'datos2':tabla2,
+                });
+                let res=await this._logisticaService.EditarIngresoAmlcobra(body);//iding idregmov
+                if(res?.id=='1'){
+                  await this.listar1();
+                  //cargar los elementos seleccionados
+                  await this.cambindicesel2(this.fila2_sel,true)
+                  this.mostrar_carga_todo=false;
+                  this.bcambiost5=false;
+                  this.cerrarModalIngreso1();
+                  this.listarpri.emit('1')
+                  SwalService.success('Correcto', res.mensaje)
+                }
+                else{
+                  this.mostrar_carga_todo=false;
+                  SwalService.error('Advertencia', res?res.mensaje:'Ocurrio una excepcion al momento de guardar.');
+                }
+              }
+              else{
+                this.mostrar_carga_todo=false;
+                this.toaster.error('No puede continuar porque se generará saldos negativos en salidas.', 'Advertencia', { closeButton: false,positionClass: 'toast-bottom-right',timeOut: 5000 });
+              }
+            }
+            else{
+              this.toaster.error('Existen registros con cantidad 0. Quitar de la tabla si no cambia de cantidad.', 'Advertencia', { closeButton: false,positionClass: 'toast-bottom-right',timeOut: 5000 });
+            }
           }
+        }
+        else{
+          this.toaster.error('No hay cambios para guardar.', 'Advertencia', { closeButton: false,positionClass: 'toast-bottom-right',timeOut: 5000 });
         }
       }
       else{
-        this.toaster.error('No hay cambios para guardar.', 'Advertencia', { closeButton: false,positionClass: 'toast-bottom-right',timeOut: 5000 });
+        this.toaster.error('No hay detalles para guardar.', 'Advertencia', { closeButton: false,positionClass: 'toast-bottom-right',timeOut: 5000 });
       }
     }
-    else{
-      this.toaster.error('No hay detalles para guardar.', 'Advertencia', { closeButton: false,positionClass: 'toast-bottom-right',timeOut: 5000 });
+    catch(e){
+      console.log(e)
+      this.mostrar_carga_todo=false;
+      this.toaster.error('No se pudo realizar la operación.', 'Advertencia', { closeButton: false,positionClass: 'toast-bottom-right',timeOut: 5000 });
     }
   }
   cambindicesel3aux(ind:any){
@@ -753,7 +794,7 @@ export class AlmcingresoComponent implements OnInit {
   AgregarDetalle(){
     let totagrins=Number(this.tott5);
     let cont=0;
-    let ultiding=1
+    let ultiding=0
     for(let row of this.dataSource5){
       ultiding=Number(row.idingreso)>ultiding?Number(row.idingreso):ultiding;
     }
@@ -762,7 +803,7 @@ export class AlmcingresoComponent implements OnInit {
       {
         cont++;
         let parc=Number(this.dataSource3aux[i].saldo)*Number(this.dataSource3aux[i].precio);
-        let ejm={id_proyecto:this.id_proyecto,idregmov:this.id_reg,nroingreso:this.nroingreso,idingreso:ultiding++,
+        let ejm={id_proyecto:this.id_proyecto,idregmov:this.id_reg,nroingreso:this.nroingreso,idingreso:++ultiding,
           id_registro:this.dataSource3aux[i].id_registro,idgrupo:this.dataSource3aux[i].idgrupo,idfila:this.dataSource3aux[i].idfila,indrep:this.dataSource3aux[i].indrep,
           codigo:this.dataSource3aux[i].codigo,descripcion:this.dataSource3aux[i].descripcion,unidad:this.dataSource3aux[i].unidad,
           cantidad:this.dataSource3aux[i].saldo,precio:this.dataSource3aux[i].precio,parcial:this.formService.redondeo(parc,this.dec_parcial),indice3:i,editar:0};
@@ -988,5 +1029,4 @@ export class AlmcingresoComponent implements OnInit {
     this.bcambiost5=true;
     this.TotalSaldo(this.dataSource3aux);
   }
-  
 }

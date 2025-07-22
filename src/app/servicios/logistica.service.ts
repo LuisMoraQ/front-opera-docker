@@ -236,9 +236,9 @@ export class LogisticaService {
       catchError(err => throwError(err))
     ).toPromise()
   }
-  GuardarIngresoAmlcobra(params = {}):any//ejemplo con json
+  GuardarIngresoAlmcobra(params = {}):any//ejemplo con json
   {
-    const url = this.enviUrl + '/api/almacen/guardarIngresoAmlcobra';
+    const url = this.enviUrl + '/api/almacen/guardarIngresoAlmcobra';
     return this.http.post<any>(url, params, { headers: this.httpHeaders }).pipe(
       map(res => {
         if (!res) {
@@ -265,6 +265,54 @@ export class LogisticaService {
   EliminarNotaIngAlmcObra(params = {}):any//ejemplo con json
   {
     const url = this.enviUrl + '/api/almacen/eliminarNotaIngAlmcObra';
+    return this.http.post<any>(url, params, { headers: this.httpHeaders }).pipe(
+      map(res => {
+        if (!res) {
+          throw new Error
+        }
+        return res
+      }),
+      catchError(err => throwError(err))
+    ).toPromise()
+  }
+  UltNroSalAlmcobra(params = {}): Promise<any> {
+    const url = this.enviUrl + '/api/almacen/UltNrosalidaAlmcobra';
+    return this.http.post<any>(url, this.Cargafrmdata(params)).pipe(
+      map(res => {
+        return res
+      }),
+      catchError(err => throwError(err))
+    ).toPromise()
+  }
+  EliminarNotaSalAlmcObra(params = {}):any//ejemplo con json
+  {
+    const url = this.enviUrl + '/api/almacen/eliminarNotaSalAlmcObra';
+    return this.http.post<any>(url, params, { headers: this.httpHeaders }).pipe(
+      map(res => {
+        if (!res) {
+          throw new Error
+        }
+        return res
+      }),
+      catchError(err => throwError(err))
+    ).toPromise()
+  }
+  GuardarSalidaAlmcobra(params = {}):any//ejemplo con json
+  {
+    const url = this.enviUrl + '/api/almacen/guardarSalidaAlmcobra';
+    return this.http.post<any>(url, params, { headers: this.httpHeaders }).pipe(
+      map(res => {
+        if (!res) {
+          throw new Error
+        }
+        return res
+      }),
+      catchError(err => throwError(err))
+    ).toPromise()
+  }
+  EditarSalidaAlmcobra(params = {}):any//ejemplo con json
+  {
+    const url = this.enviUrl + '/api/almacen/editarSalidaAlmcobra';
     return this.http.post<any>(url, params, { headers: this.httpHeaders }).pipe(
       map(res => {
         if (!res) {

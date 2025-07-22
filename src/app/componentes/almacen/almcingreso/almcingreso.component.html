@@ -263,9 +263,7 @@
           <tfoot>
             <tr>
               <th style="min-width: 297px; max-width: 297px;width: calc(100% - 208px);">Total</th>
-              <th appAnchocol [ancho]="62" style="text-align: right;" >
-                {{simbolo}}
-              </th>
+              <th appAnchocol [ancho]="62" style="text-align: right;"></th>
               <th appAnchocol [ancho]="80">
                 <span class="float-left">{{simbolo}}</span>
                 <span class="float-right">{{tab4total | number: mask_parcial}}</span>
@@ -438,7 +436,14 @@
         <h4 class="modal-title tit-modal1" style="text-align: center;background-color: #7c7878; color: white; border-radius: 4px; padding-left: 4px; margin-top: 0px !important;margin-bottom: 4px !important;">
           <b>Nota de Ingreso de Materiales N° {{nroingreso}}</b>
         </h4>
-        <div [style.margin-bottom.px]="-paddingscroll2n" class="tabla-limp" [style.height.px]="heighttmodal2-52" id="tableBodyn" (scroll)="SyncScrolln()">
+        <div class="row">
+          <span class="letred-esp2 text-fecha"><b>Fecha de Salida : </b></span>&nbsp;&nbsp;
+          <mat-form-field class="mff-reduc mff-nopad" appearance="outline">
+            <!-- <mat-label>Fecha Salida</mat-label> -->
+            <input matInput type="date" [min]="fechamin" [max]="fechamax" [(ngModel)]="fechaSal">
+          </mat-form-field>
+        </div>
+        <div [style.margin-bottom.px]="-paddingscroll2n" class="tabla-limp" [style.height.px]="heighttmodal2-52-46" id="tableBodyn" (scroll)="SyncScrolln()">
           <table class="table-bordered tab-10 minspacelet">
             <thead>
               <tr class="headsticky header-custom">

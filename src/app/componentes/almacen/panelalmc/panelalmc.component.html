@@ -101,9 +101,9 @@
                 </div>
               </td>
               <td appAnchocol [ancho]="54"> 
-                <label *ngIf="row.estado==0  && row.fechaini!=''" class="label" style="padding-left: 2px; padding-right: 2px; margin-right: 2px !important; background-color: 'darkorange';">Pendiente</label>
-                <label *ngIf="row.estado==1  && row.fechaini!=''" class="label label-success" style="padding-left: 2px; padding-right: 2px; margin-right: 2px !important;">Aprobado</label>
-                <label *ngIf="row.estado==2  && row.fechaini!=''" class="label label-danger" style="padding-left: 2px; padding-right: 2px; margin-right: 2px !important;">Observado</label>
+                <label *ngIf="row.estado==0  && row.fechaini!=''" class="label spanest" style="background-color: 'darkorange';font-size: 85%;">Pendiente</label>
+                <label *ngIf="row.estado==1  && row.fechaini!=''" class="label label-success spanest" style="font-size: 85%;">Aprobado</label>
+                <label *ngIf="row.estado==2  && row.fechaini!=''" class="label label-danger spanest" style="font-size: 85%;">Observado</label>
               </td>
               <td appAnchocol [ancho]="100">
                 {{row.fecha}}
@@ -171,17 +171,6 @@
                   <mat-label>Fecha Final</mat-label>
                   <!-- <input matInput type="text" formControlName="Fechafin"> -->
                   <input matInput type="date" formControlName="Fechafin" (change)="cambiofecha2()">
-              </mat-form-field>
-          </div>
-          <div class="row">
-              <mat-form-field class="mff-reduc col-12 col-sm-8 col-md-6" appearance="outline">
-                  <mat-label>Reporte de almacen según</mat-label>
-                  <select matNativeControl formControlName="Tipo">
-                      <option value="" selected>--Seleccionar</option>
-                      <option value="1" selected>Expediente Técnico</option>
-                      <option value="2" selected>Mayores Metrado</option>
-                      <option value="3" selected>Partidas Nuevas</option>
-                  </select>
               </mat-form-field>
           </div>
       </form>

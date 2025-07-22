@@ -840,8 +840,8 @@ export class RelacioninsumosComponent implements OnInit {
     }
     else{
       if(this.bfaltactder){//se hizo cambios en Presupuesto Solicitado, pero no se actualizo
-        this.actualizarder();
-        this.toaster.info('Se esta actualizando la información. Hacer clic en guardar nuevamente.', 'Informacion', { closeButton: false,positionClass: 'toast-bottom-right',timeOut: 5000 });
+        //this.actualizarder();
+        this.toaster.info('Primero debe actualizar la Relacion de Insumos.', 'Informacion', { closeButton: false,positionClass: 'toast-bottom-right',timeOut: 5000 });
       }
       else{
         if(this.bactualizoder || this.bcambiost1){

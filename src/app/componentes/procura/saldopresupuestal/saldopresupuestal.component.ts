@@ -260,7 +260,7 @@ export class SaldopresupuestalComponent implements OnInit {
       tipo_reporte:0,
       orientacion:'landscape',
       moneda:this.simbolo,//condicionar
-      titulo:'SALDO PRESUPUESTAL'+this.filareg.detalle,
+      titulo:'SALDO PRESUPUESTAL '+this.filareg.detalle,
       //parametros filtro por titulo
       //tindirecto:this.tabindir,
       titulos:arrtit,
