@@ -316,8 +316,8 @@ export class PanelprocuraComponent implements OnInit {
     }
     if(nrofilas>0)
     {
-      this.promporc1=this.formService.redondeo(tot_porcdir/nrofilas,1);
-      this.promporc2=this.formService.redondeo(tot_porcind/nrofilas,1);
+      this.promporc1=this.formService.redondeo((this.tot_util1*100)/this.tot_asig1,1);//tot_porcdir/nrofilas
+      this.promporc2=this.formService.redondeo((this.tot_util2*100)/this.tot_asig2,1);//tot_porcind/nrofilas
     }
   }
   //registros
@@ -419,25 +419,65 @@ export class PanelprocuraComponent implements OnInit {
         mensaj=this.dataSource1[this.dataSource1.length-1].estado=='0'?'El ultimo registro BORRADOR se cambiara a DEFINITIVO. Esta seguro que desea continuar?':mensaj;
         idcamb=this.dataSource1[this.dataSource1.length-1].id_registro;
       }
-      const sw = await SwalService.confirm('Estas seguro?',null,mensaj);
-      if (sw.isConfirmed) {
-        //confirmar
-        var detalle=this.FrmProgadq0.get('Descreg').value;
-        var asignacion=this.FrmProgadq0.get('Asignacion').value;
-        var costodir=this.FrmProgadq0.get('Costodir').value=="" || this.FrmProgadq0.get('Costodir').value==null?"0":this.FrmProgadq0.get('Costodir').value;
-        var costoind=this.FrmProgadq0.get('Cosotind').value=="" || this.FrmProgadq0.get('Cosotind').value==null?"0":this.FrmProgadq0.get('Cosotind').value;
-        let idreg=0;
-        for(let row of this.dataSource1){
-          if(idreg<Number(row.id_registro))
-            idreg=Number(row.id_registro);
+      //condicionar si hay registro para actualizar a definitivo, para pasar fecha  (fechasol:)
+      if(idcamb!=''){
+        let fechamin
+        if(this.dataSource1[this.dataSource1.length-1].id_anterior){
+          for(let rw1 of this.dataSource1){
+            if(rw1.id_registro==this.dataSource1[this.dataSource1.length-1].id_anterior){
+              fechamin=rw1.fechadef
+            }
+          }
         }
-        let res=await this._logisticaService.GuardarAdquisicionProy({id_proyecto:this.id_proyecto,id_registro:idreg+1,detalle:detalle,asignacion:asignacion,costodir:costodir,costoind:costoind,idcamb:idcamb});
-        if(res.length>0)
-          SwalService.success('Correcto',res.mensaje)
-        else
-          SwalService.error('Advertencia','Ocurrio una excepcion al momento de guardar.');
-        this.cerrarModalProgAdq0();
-        this.ListarAdquisiciones();
+        const {value:date} = await SwalService.confirmDate('Estas seguro?',null,
+        mensaj+'<br>Seleccione la fecha de Confirmación:',fechamin);
+        if(date){
+          this.mostrar_carga_todo=true;
+          var detalle=this.FrmProgadq0.get('Descreg').value;
+          var asignacion=this.FrmProgadq0.get('Asignacion').value;
+          var costodir=this.FrmProgadq0.get('Costodir').value=="" || this.FrmProgadq0.get('Costodir').value==null?"0":this.FrmProgadq0.get('Costodir').value;
+          var costoind=this.FrmProgadq0.get('Cosotind').value=="" || this.FrmProgadq0.get('Cosotind').value==null?"0":this.FrmProgadq0.get('Cosotind').value;
+          let idreg=0;
+          for(let row of this.dataSource1){
+            if(idreg<Number(row.id_registro))
+              idreg=Number(row.id_registro);
+          }
+          let res=await this._logisticaService.GuardarAdquisicionProy({id_proyecto:this.id_proyecto,id_registro:idreg+1,detalle:detalle,asignacion:asignacion,costodir:costodir,costoind:costoind,idcamb:idcamb,fechasol:date});
+          if(res.length>0)
+            SwalService.success('Correcto',res.mensaje)
+          else
+            SwalService.error('Advertencia','Ocurrio una excepcion al momento de guardar.');
+          this.cerrarModalProgAdq0();
+          this.ListarAdquisiciones();
+          this.mostrar_carga_todo=false;
+        }
+        else if(date==''){
+          this.toaster.error('Seleccione una fecha valida para Continuar.', 'Advertencia', { closeButton: false,positionClass: 'toast-bottom-right',timeOut: 5000 });
+        }
+      }
+      else{
+        const sw = await SwalService.confirm('Estas seguro?',null,mensaj);
+        if (sw.isConfirmed) {
+          //confirmar
+          this.mostrar_carga_todo=true;
+          var detalle=this.FrmProgadq0.get('Descreg').value;
+          var asignacion=this.FrmProgadq0.get('Asignacion').value;
+          var costodir=this.FrmProgadq0.get('Costodir').value=="" || this.FrmProgadq0.get('Costodir').value==null?"0":this.FrmProgadq0.get('Costodir').value;
+          var costoind=this.FrmProgadq0.get('Cosotind').value=="" || this.FrmProgadq0.get('Cosotind').value==null?"0":this.FrmProgadq0.get('Cosotind').value;
+          let idreg=0;
+          for(let row of this.dataSource1){
+            if(idreg<Number(row.id_registro))
+              idreg=Number(row.id_registro);
+          }
+          let res=await this._logisticaService.GuardarAdquisicionProy({id_proyecto:this.id_proyecto,id_registro:idreg+1,detalle:detalle,asignacion:asignacion,costodir:costodir,costoind:costoind,idcamb:idcamb});
+          this.mostrar_carga_todo=false;
+          if(res.length>0)
+            SwalService.success('Correcto',res.mensaje)
+          else
+            SwalService.error('Advertencia','Ocurrio una excepcion al momento de guardar.');
+          this.cerrarModalProgAdq0();
+          this.ListarAdquisiciones();
+        }
       }
     }
     else
@@ -551,27 +591,64 @@ export class PanelprocuraComponent implements OnInit {
       this.ListarAdquisiciones();
     }
   }
-  async cambiarmodo1(row:any){
-    const sw = await SwalService.confirm('Estas seguro?',null,'Una vez realizada la acción cambiara a MODO DEFINITIVO, ya no podra editar el Presupuesto Solicitado!');
-    if (sw.isConfirmed) {
-      this.mostrar_carga=true;
-      let resp=await this._logisticaService.ActualizarEstAdqui({id_proyecto:this.id_proyecto,id_registro:row.id_registro});
-      this.fila1_sel=-1
-      this.filareg=null
-      this.mostrar_carga=false;
-      if(resp){
-        if(resp[0].id=="1"){
-          SwalService.success('Correcto', resp[0].mensaje)
+  async cambiarmodo1(row:any,caso:any){//caso 0:Cambio de borrador, asigna fecha ,1:cambio de Verificar no asigna fecha
+    if(caso==0){
+      let fechamin
+      if(row.id_anterior){
+        for(let rw1 of this.dataSource1){
+          if(rw1.id_registro==row.id_anterior){
+            fechamin=rw1.fechadef
+          }
+        }
+      }
+      const {value:date} = await SwalService.confirmDate('Estas seguro?',null,
+      'Una vez realizada la acción cambiara a MODO DEFINITIVO, ya no podra editar el Presupuesto Solicitado!<br>Seleccione la fecha de Confirmación:',fechamin);
+      if(date){
+        this.mostrar_carga=true;
+        let resp=await this._logisticaService.ActualizarEstAdqui({id_proyecto:this.id_proyecto,id_registro:row.id_registro,fechasol:date});
+        this.fila1_sel=-1
+        this.filareg=null
+        this.mostrar_carga=false;
+        if(resp){
+          if(resp[0].id=="1"){
+            SwalService.success('Correcto', resp[0].mensaje)
+          }
+          else{
+            SwalService.error('Advertencia', resp[0].mensaje);
+          }
         }
         else{
-          SwalService.error('Advertencia', resp[0].mensaje);
+          SwalService.error('Advertencia', 'No se pudo realizar la operación');
         }
+        await this.ListarAdquisiciones();
+        this.mostrar_carga=false;
       }
-      else{
-        SwalService.error('Advertencia', 'No se pudo realizar la operación');
+      else if(date==''){
+        this.toaster.error('Seleccione una fecha valida para Continuar.', 'Advertencia', { closeButton: false,positionClass: 'toast-bottom-right',timeOut: 5000 });
       }
-      await this.ListarAdquisiciones();
-      this.mostrar_carga=false;  
+    }
+    else{
+      const sw = await SwalService.confirm('Estas seguro?',null,'Una vez realizada la acción cambiara a MODO DEFINITIVO, ya no podra editar el Presupuesto Solicitado!');
+      if (sw.isConfirmed) {
+        this.mostrar_carga=true;
+        let resp=await this._logisticaService.ActualizarEstAdqui({id_proyecto:this.id_proyecto,id_registro:row.id_registro});
+        this.fila1_sel=-1
+        this.filareg=null
+        this.mostrar_carga=false;
+        if(resp){
+          if(resp[0].id=="1"){
+            SwalService.success('Correcto', resp[0].mensaje)
+          }
+          else{
+            SwalService.error('Advertencia', resp[0].mensaje);
+          }
+        }
+        else{
+          SwalService.error('Advertencia', 'No se pudo realizar la operación');
+        }
+        await this.ListarAdquisiciones();
+        this.mostrar_carga=false;
+      }
     }
   }
 }

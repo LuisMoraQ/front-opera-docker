@@ -531,4 +531,47 @@ export class SwalService {
   static getSwalTitle() {
     return Swal.getTitle()
   }
+
+  static confirmDate(title: string, text: string, html?,fechamin=null) {//fechamin yyyy-MM-dd
+    let color = '#f3f3f3'
+    let letra = '#545454'
+    let configsuser = localStorage.getItem('configtema');
+    if (configsuser) {
+      const colorTema = configsuser.split('|')
+      if (colorTema[0] == 'dark') {
+        color = '#4c626d'
+        letra = '#ffff'
+      }
+    }
+    const swalWithBootstrapButtons = Swal.mixin({
+      customClass: {
+        confirmButton: 'btn btn-sm btn-success',
+        cancelButton: 'btn btn-sm btn-danger mr-1',
+        input:'inpdate-swal'
+      },
+      buttonsStyling: false
+    })
+    return swalWithBootstrapButtons.fire({
+      title: `${title}`,
+      text: `${text}`,
+      icon: 'question',
+      reverseButtons: true,
+      showCancelButton: true,
+      focusConfirm: false,
+      focusCancel: false,
+      focusDeny: false,
+      input:"date",
+      didOpen: () => {
+        const today = (new Date()).toISOString();
+        Swal.getInput().value = today.split("T")[0];
+        Swal.getInput().min = fechamin;
+      },
+      confirmButtonText: `<i class="fa fa-floppy-o mr-2"></i> Si, de acuerdo!`,
+      cancelButtonText: `<i class="fa fa-times-circle mr-2"></i> No, cancelar`,
+      html: html,
+      background: color,
+      color: letra,
+      allowEnterKey: false,
+    })
+  }
 }

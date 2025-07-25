@@ -151,13 +151,13 @@
                 </button>
               </td>
               <td appAnchocol [ancho]="65"> 
-                <button type="button" *ngIf="row.estado=='0'" class="btn btn-mini2 btn-warning" placement="left" ngbTooltip="Hacer clic para Cambiar a Definitivo" container="body" style="background-color: darkorange; margin-right: 2px;" (click)="cambiarmodo1(row)">
+                <button type="button" *ngIf="row.estado=='0'" class="btn btn-mini2 btn-warning" placement="left" ngbTooltip="Hacer clic para Cambiar a Definitivo" container="body" style="background-color: darkorange; margin-right: 2px;" (click)="cambiarmodo1(row,0)">
                     Borrador
                 </button>
                 <button type="button" *ngIf="row.estado=='1'" class="btn btn-mini2 btn-success" style="cursor: default;" style="margin-right: 2px;">
                     Definitivo
                 </button>
-                <button type="button" *ngIf="row.estado=='2'" class="btn btn-mini2 btn-info" placement="left" ngbTooltip="Hacer clic para Cambiar a Definitivo" container="body" style="margin-right: 2px;" (click)="cambiarmodo1(row)">
+                <button type="button" *ngIf="row.estado=='2'" class="btn btn-mini2 btn-info" placement="left" ngbTooltip="Hacer clic para Cambiar a Definitivo" container="body" style="margin-right: 2px;" (click)="cambiarmodo1(row,1)">
                     Verificar
                 </button>
               </td>

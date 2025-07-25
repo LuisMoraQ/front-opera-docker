@@ -155,10 +155,11 @@ export class SaldopresupuestalComponent implements OnInit {
       const detalleProyecto = await this.principalService.recuperarDatosProyecto({id_proyecto: this.id_proyecto})
       this.datosproy=detalleProyecto;
     }
-    const arrayHeader = ['ITEM', 'DESCRIPCION', 'UNIDAD', 'METRADO2', 'PRECIO2', 'PARCIAL']
-    const arrayKeys = ['item', 'descripcion', 'unidad', 'metrado', 'precio', 'parcial']
-    const arrdec=[null,null,null,this.dec_metrado,this.dec_precio,this.dec_parcial];
-    const arralig=['left','left','center','right','right','right'];
+    //columnas con moneda: PRECIO,PARCIAL,
+    const arrayHeader = ['ITEM', 'DESCRIPCION', 'UNIDAD', 'METRADO', 'PRECIO', 'PARCIAL','METRADO','PARCIAL','%','METRADO','PARCIAL','%','METRADO SOLICITADO','PARCIAL','%SOL']//PRECIO,PARCIAL son columnas con moneda
+    const arrayKeys = ['item', 'descripcion', 'unidad', 'metrado', 'precio', 'parcial','metradouti','parcialuti','porcuti','metradosal','parcialsal','porcsal','metradosol','parcialsol','porcsol']
+    const arrdec=[null,null,null,this.dec_metrado,this.dec_precio,this.dec_parcial,this.dec_metrado,this.dec_parcial,null,this.dec_metrado,this.dec_parcial,null,this.dec_metrado,this.dec_parcial,null];
+    const arralig=['left','left','center','right','right','right','right','right','center','right','right','center','right','right','center'];
     let aux=JSON.parse(JSON.stringify(this.dataSource2));
     let arrpasa=[];
     let arrtit=[];
@@ -208,24 +209,31 @@ export class SaldopresupuestalComponent implements OnInit {
       }
       let esp=' ';
       let descp=esp.repeat(valor2.length-1)+row.descripcion;
-      arrpasa.push({
-        indice:row.indice,
-        item:row.item,
-        itemord:row.itemord,
-        descripcion:descp,
-        //id_unidad:row.id_unidad,
-        unidad:row.unidad,
-        metrado:row.id_unidad!=''?this.formService.redondeo(row.metrado,this.dec_metrado):null,
-        //jornada:,
-        precio:row.id_unidad!=''?this.formService.redondeo(row.precio,this.dec_precio):null,
-        parcial:this.formService.redondeo(row.parcial,this.dec_parcial),
-        //rendimiento:,
-        //tipofila:row.tipofila,
-        //und_rendi:,
-        tipoletra:tipol,
-        color:colorl=='unset'?'':colorl,
-        fondo:fondol=='none'?'':fondol
-      });
+      row.porcuti=this.formService.redondeo(row.porcuti,2);
+      row.porcsal=this.formService.redondeo(row.porcsal,2);
+      row.porcsol=this.formService.redondeo(row.porcsol,2);
+      row.tipoletra=tipol
+      row.color=colorl=='unset'?'':colorl
+      row.fondo=fondol=='none'?'':fondol
+      arrpasa.push(row)
+      // arrpasa.push({
+      //   indice:row.indice,
+      //   item:row.item,
+      //   itemord:row.itemord,
+      //   descripcion:descp,
+      //   //id_unidad:row.id_unidad,
+      //   unidad:row.unidad,
+      //   metrado:row.id_unidad!=''?this.formService.redondeo(row.metrado,this.dec_metrado):null,
+      //   //jornada:,
+      //   precio:row.id_unidad!=''?this.formService.redondeo(row.precio,this.dec_precio):null,
+      //   parcial:this.formService.redondeo(row.parcial,this.dec_parcial),
+      //   //rendimiento:,
+      //   //tipofila:row.tipofila,
+      //   //und_rendi:,
+      //   tipoletra:tipol,
+      //   color:colorl=='unset'?'':colorl,
+      //   fondo:fondol=='none'?'':fondol
+      // });
       if(!(row.item.includes('.'))){
         arrtit.push({
           indice:row.indice,

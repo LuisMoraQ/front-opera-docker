@@ -60,8 +60,9 @@ export class TipouserComponent implements OnInit {
   nombre:string;
   abrev:string;
   estado:any;
-  arrmenuproy=[{desc:'Aspectos Generales Proyecto',activo:1},{desc:'Edición del Presupuesto',activo:1},{desc:'Diseño de Costos Indirectos',activo:1},{desc:'Hoja de Metrados',activo:1},
-    {desc:'Formula Polinomica',activo:1},{desc:'Tiempo de Programación',activo:1},{desc:'Programacion de Obra',activo:1},{desc:'Especificaciones Tecnicas',activo:1},{desc:'Visor de Planos',activo:1}
+  arrmenuproy=[{desc:'Configuración General',activo:1},{desc:'Data del Proyecto',activo:1},{desc:'Registro de Actividades',activo:1},{desc:'Registro de Metrados',activo:1},
+    {desc:'Registro Financiero',activo:1},{desc:'Procura y Logística',activo:1},{desc:'Movimiento Almacen',activo:1},{desc:'Equipos y Herramientas',activo:1},{desc:'Recursos Humanos',activo:1},
+    {desc:'Cuaderno de Obra',activo:1},{desc:'Informes y Reportes',activo:1}
   ];
   titmodalcar:string;
   public nuevoTipo :UntypedFormGroup;
