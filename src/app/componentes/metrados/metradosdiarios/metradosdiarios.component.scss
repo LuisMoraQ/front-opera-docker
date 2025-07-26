@@ -1,0 +1,43 @@
+.blocked {
+  background-color: #ddd;
+  pointer-events: none;
+}
+.mini-tabla {
+  border-collapse: collapse;
+  font-size: 10px;
+  width: auto;
+}
+
+.mini-tabla th, .mini-tabla td {
+  border: 1px solid #ccc;
+  padding: 2px 4px;
+  width: 40px;
+  text-align: center;
+}
+.mini-tabla input {
+  width: 35px;
+  font-size: 10px;
+  text-align: center;
+  padding: 2px;
+}
+.pointer {
+  cursor: pointer;
+}
+.fecha-selected{
+ background-color: #14e914 !important
+}
+.width-descripcion2{
+  min-width: 100px !important;
+  max-width: 250px !important;
+}
+.row-seleccionado {
+  background-color: #bcbcbc !important;
+}
+.recortatextlinea2 {
+    min-width: 220px !important; 
+    max-width: 220px !important;
+}
+.mb-custom ::ng-deep .mat-checkbox-layout {
+  margin-bottom: 0 !important;
+  margin-left: 15px;
+}

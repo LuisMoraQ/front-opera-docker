@@ -502,13 +502,125 @@ export class MetradoService {
       catchError(err => throwError(err))
     ).toPromise()
   }
-    limpiarTopMetrado(params = {}): Promise<any>  {
+  limpiarTopMetrado(params = {}): Promise<any>  {
     let formData: FormData = new FormData();
     Object.entries(params).forEach(([key, value]) => {
       formData.append(key, value as string);
     });
     const url = this.enviUrl + '/api/metrados/limpiarTopMetrado';
     return this.http.post<any>(url, formData).pipe(
+      map(res => {
+        if (!res) {
+          throw new Error
+        }
+        return res
+      }),
+      catchError(err => throwError(err))
+    ).toPromise()
+  }
+  listarRegistroMetrados(params = {}): Promise<any>  {
+    let formData: FormData = new FormData();
+    Object.entries(params).forEach(([key, value]) => {
+      formData.append(key, value as string);
+    });
+    const url = this.enviUrl + '/api/metrados/listarRegistroMetrados';
+    return this.http.post<any>(url, formData).pipe(
+      map(res => {
+        if (!res) {
+          throw new Error
+        }
+        return res
+      }),
+      catchError(err => throwError(err))
+    ).toPromise()
+  }
+  guardarRegistroMetrado(params = {}): any {
+    let formData: FormData = new FormData();
+    Object.entries(params).forEach(([key, value]) => {
+      formData.append(key, value as string);
+    });
+    const url = this.enviUrl + '/api/metrados/guardarRegistroMetrado';
+    return this.http.post<any>(url, formData).pipe(
+      map(res => {
+        if (!res) {
+          throw new Error
+        }
+        return res
+      }),
+      catchError(err => throwError(err))
+    ).toPromise()
+  }
+  actEstadoRegistroMetrado(params = {}): any {
+    let formData: FormData = new FormData();
+    Object.entries(params).forEach(([key, value]) => {
+      formData.append(key, value as string);
+    });
+    const url = this.enviUrl + '/api/metrados/actEstadoRegistroMetrado';
+    return this.http.post<any>(url, formData).pipe(
+      map(res => {
+        if (!res) {
+          throw new Error
+        }
+        return res
+      }),
+      catchError(err => throwError(err))
+    ).toPromise()
+  }
+  eliminarRegistroMetrado(params = {}): any {
+    let formData: FormData = new FormData();
+    Object.entries(params).forEach(([key, value]) => {
+      formData.append(key, value as string);
+    });
+    const url = this.enviUrl + '/api/metrados/eliminarRegistroMetrado';
+    return this.http.post<any>(url, formData).pipe(
+      map(res => {
+        if (!res) {
+          throw new Error
+        }
+        return res
+      }),
+      catchError(err => throwError(err))
+    ).toPromise()
+  }
+  listarMetradosDiarios(params = {}): any {
+    let formData: FormData = new FormData();
+    Object.entries(params).forEach(([key, value]) => {
+      formData.append(key, value as string);
+    });
+    const url = this.enviUrl + '/api/metrados/listarMetradosDiarios';
+    return this.http.post<any>(url, formData).pipe(
+      map(res => {
+        if (!res) {
+          throw new Error
+        }
+        return res
+      }),
+      catchError(err => throwError(err))
+    ).toPromise()
+  }
+  // guardarMetradoDiario(params = {}): any {
+  //   let formData: FormData = new FormData();
+  //   Object.entries(params).forEach(([key, value]) => {
+  //     formData.append(key, value as string);
+  //   });
+  //   const url = this.enviUrl + '/api/metrados/guardarMetradoDiario';
+  //   return this.http.post<any>(url, formData).pipe(
+  //     map(res => {
+  //       if (!res) {
+  //         throw new Error
+  //       }
+  //       return res
+  //     }),
+  //     catchError(err => throwError(err))
+  //   ).toPromise()
+  // }
+    guardarMetradoDiario(params = {}): Promise<any> {
+    let formData: FormData = new FormData();
+    // Object.entries(params).forEach(([key, value]) => {
+    //   formData.append(key, value as string);
+    // });
+    const url = this.enviUrl + '/api/metrados/guardarMetradoDiario';
+    return this.http.post<any>(url, params, { headers: this.httpHeaders }).pipe(
       map(res => {
         if (!res) {
           throw new Error

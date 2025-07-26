@@ -1383,7 +1383,6 @@ export class DataProyectoComponent implements OnInit {
       this.mostrar_carga_todo = false;
       SwalService.error(err)
     }
-
   }
 
 }

@@ -157,7 +157,6 @@ export class ModalMetradoExcelComponent implements OnInit {
             if (this.listaHojasSeleccionadas.length) {
               await this.opcionHojasValidas(0)
             }
-            console.log(this.listaHojasSeleccionadas)
           }
         } else if (this.vista == 1) {
           let valido = true
@@ -506,7 +505,7 @@ export class ModalMetradoExcelComponent implements OnInit {
       }
       hoja.body_tabla = nuevo
       i++
-    }    
+    }  
   }
 
   async asignarPlantillasHoja(plantilla, indice) {

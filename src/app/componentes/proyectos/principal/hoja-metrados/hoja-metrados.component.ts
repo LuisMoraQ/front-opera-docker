@@ -297,11 +297,8 @@ export class HojaMetradosComponent implements OnInit, OnDestroy, AfterViewInit {
       this.aspectos = JSON.parse(this.colores);
       await this.pintar();
       this.token = await this.encriptadorService.recuperarlocalstory('token'); //temporales
-
       await this.listarMetrados();
-
       await this.listarPesosPorUsuario();
-
       this.mostrar_carga_todo = false;
     } catch (e) {
       console.log(e);
@@ -1278,7 +1275,6 @@ export class HojaMetradosComponent implements OnInit, OnDestroy, AfterViewInit {
         this.tablaExcelAdjunta = response2.body;
         this.headerExcel = response2.header;
       }
-     
       this.mostrar_carga_todo = false;
     }, 5);
   }
@@ -10129,13 +10125,55 @@ export class HojaMetradosComponent implements OnInit, OnDestroy, AfterViewInit {
       console.log(e);
     }
   }
-
+  leerHojaConFormulasEvaluadas(ws: XLSX.WorkSheet): any[][] {
+  const resultado: any[][] = [];
+  const range = XLSX.utils.decode_range(ws['!ref'] || 'A1');
+  for (let R = range.s.r; R <= range.e.r; ++R) {
+    const fila: any[] = [];
+    for (let C = range.s.c; C <= range.e.c; ++C) {
+      const cell_address = { c: C, r: R };
+      const cell_ref = XLSX.utils.encode_cell(cell_address);
+      const cell = ws[cell_ref];
+      if (!cell) {
+        fila.push('');
+        continue;
+      }
+      if (cell.f && cell.v !== undefined) {
+        fila.push(cell.v);
+      }else if (cell.f && cell.v === undefined) {
+        const formula = cell.f;
+        if (/^[A-Z]+\d+(\*[A-Z]+\d+)+$/.test(formula)) {
+          try {
+            const valores = formula
+              .split('*')
+              .map(ref => {
+                const c = ws[ref.trim()];
+                return c && c.v ? Number(c.v) : 1;
+              });
+            const resultadoFormula = valores.reduce((a, b) => a * b, 1);
+            fila.push(resultadoFormula);
+          } catch {
+            fila.push(`(no evaluada): =${formula}`);
+          }
+        } else {
+          fila.push(`(fórmula no evaluada): =${formula}`);
+        }
+      }
+      else {
+        fila.push(cell.v ?? '');
+      }
+    }
+    resultado.push(fila);
+  }
+  return resultado;
+  }
   async recuperarTablaExcel(webExcel, listaTablas) {
     for (let hoja of listaTablas) {
       let filasInvalidas = [];
       let excelData;
       const ws: XLSX.WorkSheet = webExcel.Sheets[hoja.nombre];
-      excelData = XLSX.utils.sheet_to_json(ws, { header: 1, blankrows: false });
+      // excelData = XLSX.utils.sheet_to_json(ws, { header: 1, blankrows: false, raw: false });
+      excelData = this.leerHojaConFormulasEvaluadas(ws);
       let mayor = 0;
       let header = [];
       await excelData.map((ele, index) => {

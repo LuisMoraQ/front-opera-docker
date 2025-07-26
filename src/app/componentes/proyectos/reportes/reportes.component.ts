@@ -2385,10 +2385,10 @@ export class ReportesComponent implements OnInit {
         //RESUMEN DEL METRADO
         titulo=this.CrearTitulo1(this.datos.titulo,tabla1)
         const { datosCombinados} = this.CuerpoPDF(this.datos.tabla,null)
-        ultimo=this.AlinearTablaMetrado1(datosCombinados,this.datos.keys_body)
+        ultimo=this.AlinearTablaMetrado1(datosCombinados,this.datos.keys_body,this.datos.titulo)
         this.hasitematlt=true
       }
-    // console.log(ultimo)
+    console.log(ultimo)
     var docDefinition = {
     header: this.createResponsiveHeader(this.arrayizq,this.arraycenter,this.arrayder, this.margenizq,this.margender), 
     pageOrientation: this.orientacion_pagina2,
@@ -2610,8 +2610,8 @@ export class ReportesComponent implements OnInit {
       margin:[0,0,0,15]
     }
   }
-  AlinearTablaMetrado1(content,header){
-    var widths=this.CrearTablaCompleta(header)
+  AlinearTablaMetrado1(content,header,titulo){
+    var widths=this.CrearTablaCompleta(header,titulo)
     return{
       table:{
         widths:widths,
@@ -2699,11 +2699,14 @@ export class ReportesComponent implements OnInit {
     }
     return resultado
   }
-  CrearTablaCompleta(array){
+  CrearTablaCompleta(array,titulo=null){
     const resultado:any[]= [];
    for(let i=0;i<array.length;i++){
     if(array[i]==='descripcion'){
       resultado.push('*')
+    }else if(titulo=='SALDO PRESUPUESTALpreuba reg 1'&&array[i]=='parcial'){
+      resultado.push('auto')
+      resultado.push('auto')
     }else{
       resultado.push('auto')
     }
@@ -2825,7 +2828,7 @@ export class ReportesComponent implements OnInit {
           }
         }
         this.exceltabla2= array
-      }else{
+    }else{
         this.exceltabla2=this.datos.tabla2
     }
     if(this.reportetitulo!=='' && tablaindire.length>1){

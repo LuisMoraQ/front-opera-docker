@@ -7,6 +7,9 @@ import {Component, OnInit, Input, ViewEncapsulation} from '@angular/core';
   encapsulation: ViewEncapsulation.None
 })
 export class ModalBasicComponent implements OnInit {
+  get(arg0: string) {
+    throw new Error('Method not implemented.');
+  }
   @Input() dialogClass: string;
   @Input() hideHeader = false;
   @Input() hideFooter = false;
