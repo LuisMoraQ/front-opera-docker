@@ -64,6 +64,7 @@ export class AlmcsalidaComponent implements OnInit {
   //agregar salida
   @ViewChild("modalSalida1") modalSalida1: ModalBasicComponent;
   nrosalida='';
+  fechasalida='';
   nroreqsel:any;
   detreqsol:any;
   lugreqsol:any;
@@ -110,7 +111,6 @@ export class AlmcsalidaComponent implements OnInit {
     this.heighttmodal=window.innerHeight-155;
     this.heighttmodal13=(window.innerHeight-106)/2;
     this.heighttmodal2=window.innerHeight-174;
-    console.log(this.heighttmodal,this.heighttmodal13)
     let decimales = this.decproy;
     if(decimales?.toString().includes('|')){
       let arrdec=decimales.split('|');
@@ -150,7 +150,6 @@ export class AlmcsalidaComponent implements OnInit {
     this.heighttmodal=window.innerHeight-155;
     this.heighttmodal13=(window.innerHeight-106)/2;
     this.heighttmodal2=window.innerHeight-174;
-    console.log(this.heighttmodal2)
   }
   ngAfterContentChecked(): void {
     //this.changeDetector.detectChanges();
@@ -272,7 +271,6 @@ export class AlmcsalidaComponent implements OnInit {
       this.datasalida=res[3]
       // this.DatosDisgre=res[1]
       let arrfini=this.filareg.fechaini.split('-');
-      console.log(moment(arrfini[2]+'-'+arrfini[1]+'-'+arrfini[0]).format('YYYY-MM-DD'))
       let ultfecha=moment(arrfini[2]+'-'+arrfini[1]+'-'+arrfini[0]).format('YYYY-MM-DD');
       for(let row of this.datasalida){
         let fechrow=moment(row.fecha).format('YYYY-MM-DD');
@@ -281,7 +279,7 @@ export class AlmcsalidaComponent implements OnInit {
         }
       }
       this.fechaSal=ultfecha
-      console.log(ultfecha)//menor a ult fecha no debe ser editable, si es igual o mayor , permitir editar
+      //console.log(ultfecha)//menor a ult fecha no debe ser editable, si es igual o mayor , permitir editar
       //agregar input fecha al agregar una nota de ingreso o salida?
       //tambien agregar fecha a las agrupaciones de las adquicisiones, lo que importa es la fecha de aprobacion, agregar fecha al hacer eso?
     }
@@ -324,7 +322,6 @@ export class AlmcsalidaComponent implements OnInit {
         }
       }
       let suma=0;
-      console.log(this.datasalida)
       for(let row of this.datasalida){
         if(row.idgrupo==idgru && row.id_registro==idreg)
         {
@@ -409,6 +406,8 @@ export class AlmcsalidaComponent implements OnInit {
           this.detreqsol=this.dataSource2[this.fila2_sel].descripcion;
           this.lugreqsol=this.dataSource2[this.fila2_sel].entrega;
           this.nrosalida=this.dataSource4[this.fila4_sel].nrosalida;
+          this.fechasalida=this.dataSource4[this.fila4_sel].fecha;
+          this.fechaSal=this.fechasalida
           this.dataSource3aux=[];
           for(let m=0;m<this.dataSource3.length;m++){
             let filaag=JSON.parse(JSON.stringify(this.dataSource3[m]))
@@ -423,21 +422,22 @@ export class AlmcsalidaComponent implements OnInit {
           for(let i=0;i<this.dataSource4.length;i++){
             if(this.dataSource4[i].nrosalida==this.nrosalida && this.dataSource4[i].unidad!='')
             {
+              let indicepri=-1;
               for(let j=0;j<this.dataSource3aux.length;j++){
                 if(this.dataSource3aux[j].id_registro==this.dataSource4[i].id_registro && this.dataSource3aux[j].idgrupo==this.dataSource4[i].idgrupo &&
                 this.dataSource3aux[j].idfila==this.dataSource4[i].idfila && this.dataSource3aux[j].indrep==this.dataSource4[i].indrep){
                   this.dataSource3aux[j].seleccion=2;//actualizar y buscar el indice correspondiente a la fila
+                  indicepri=j;
                   break;
                 }
               }
               let ejm={id_proyecto:this.id_proyecto,idregmov:this.id_reg,nrosalida:this.nrosalida,idsalida:this.dataSource4[i].idsalida,
                 id_registro:this.dataSource4[i].id_registro,idgrupo:this.dataSource4[i].idgrupo,idfila:this.dataSource4[i].idfila,indrep:this.dataSource4[i].indrep,
                 codigo:this.dataSource4[i].codigo,descripcion:this.dataSource4[i].descripcion,unidad:this.dataSource4[i].unidad,
-                cantidad:this.dataSource4[i].cantidad,precio:this.dataSource4[i].precio,parcial:this.dataSource4[i].parcial,indice3:ind3++,editar:0};
+                cantidad:this.dataSource4[i].cantidad,precio:this.dataSource4[i].precio,parcial:this.dataSource4[i].parcial,indice3:indicepri,editar:0};
               this.dataSource5.push(ejm);
             }
           }
-          console.log(this.dataSource5)
           this.tott5=this.dataSource4[this.fila4_sel].parcial;
           this.mostrar_carga_todo=false;
           this.modalSalida1.show();
@@ -546,6 +546,7 @@ export class AlmcsalidaComponent implements OnInit {
       else{
         //cancelar
         this.editasal=false;
+        this.fechasalida=null;
         this.seltodo5=0;
         this.dataSource5=[];
         this.bcambiost5=false;
@@ -556,6 +557,7 @@ export class AlmcsalidaComponent implements OnInit {
     }
     else{
       this.editasal=false;
+      this.fechasalida=null;
       this.seltodo5=0;
       this.bcambiost5=false;
       this.dataSource5=[];
@@ -681,6 +683,7 @@ export class AlmcsalidaComponent implements OnInit {
                 'id_registro':this.dataSource2[this.fila2_sel].id_registro,
                 'idgrupo':this.dataSource2[this.fila2_sel].idgrupo,
                 'estadosal':estadosal,
+                'fecha':this.fechasalida,
                 'datos1':tabla1,
                 'datos2':tabla2,
               });
@@ -768,7 +771,6 @@ export class AlmcsalidaComponent implements OnInit {
         this.bcambiost5=true;
       }
     }
-    console.log(this.dataSource5)
     this.tott5=this.formService.redondeo(totagrins,this.dec_parcial);
     if(cont<1){
       this.toaster.error('Seleccione los insumos para agregar al grupo.', 'Advertencia', { closeButton: false,positionClass: 'toast-bottom-right',timeOut: 5000 });
@@ -895,7 +897,6 @@ export class AlmcsalidaComponent implements OnInit {
     var actual=Number(this.dataSource5[ind].cantidad)
     var pactual=Number(this.dataSource5[ind].parcial)
     var aprecio=Number(this.dataSource5[ind].precio);
-    console.log(this.dataSource5[ind].indice3)
     var asaldo=Number(this.dataSource3aux[this.dataSource5[ind].indice3].saldo);
     var saldototal=asaldo+actual;
     this.dataSource5[ind].editar=false;

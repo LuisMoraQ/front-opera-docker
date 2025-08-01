@@ -417,7 +417,7 @@ export class PanelprocuraComponent implements OnInit {
       let mensaj='Una vez realizada la acción no se podra revertir los cambios!';
       if(this.dataSource1.length>0){
         mensaj=this.dataSource1[this.dataSource1.length-1].estado=='0'?'El ultimo registro BORRADOR se cambiara a DEFINITIVO. Esta seguro que desea continuar?':mensaj;
-        idcamb=this.dataSource1[this.dataSource1.length-1].id_registro;
+        idcamb=this.dataSource1[this.dataSource1.length-1].estado=='0'?this.dataSource1[this.dataSource1.length-1].id_registro:idcamb;
       }
       //condicionar si hay registro para actualizar a definitivo, para pasar fecha  (fechasol:)
       if(idcamb!=''){

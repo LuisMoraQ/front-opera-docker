@@ -140,10 +140,10 @@
                   </div>
                 </td>
                 <td *ngIf="!solover" appAnchocol [ancho]="60">
-                  <button *ngIf="row.estado==0" class="btn btn-mini3 btn-info" placement="top" ngbTooltip="Agregar Directo" container="body" (click)="agregardirecto(indice)" style="margin-right: 2px;">
+                  <button type="button" *ngIf="row.estado==0" class="btn btn-mini3 btn-info" placement="top" ngbTooltip="Agregar Directo" container="body" (click)="agregardirecto(indice)" style="margin-right: 2px;">
                     <i class="icofont icofont-arrow-right icono-but"></i>
                   </button>
-                  <button *ngIf="row.estado==0" class="btn btn-mini3 btn-success" placement="top" ngbTooltip="Disgregar Insumo" container="body" (click)="agregarinsumo(indice)">
+                  <button type="button" *ngIf="row.estado==0" class="btn btn-mini3 btn-success" placement="top" ngbTooltip="Disgregar Insumo" container="body" (click)="agregarinsumo(indice)">
                     <i class="icofont-chart-flow-2 icono-but"></i>
                   </button>
                 </td>
@@ -210,14 +210,22 @@
                   </span>
                 </td>
                 <td appAnchocol [ancho]="30">{{row.unidad}}</td>
-                <td appAnchocol [ancho]="60">
-                  {{row.codigo}}
+                <td appAnchocol [ancho]="60">{{row.codigo}}</td>
+                <td appAnchocol [ancho]="60" class="text-right">
+                  <div *ngIf="row.editar==0" (click)="editarcelda1(ind)" style="cursor: pointer;">
+                    {{row.cantidad | number: mask_cant}}
+                  </div >
+                  <input [textMask]="dec_cant == 4? formService.maskUsAmountDecimal4 : (dec_cant==3? formService.maskUsAmountDecimal3:formService.maskUsAmountDecimal2)" style="height: 20px;text-align: center;" 
+                  *ngIf="row.editar==1" type="text" class="formcontrol w-100 d-flex" autocomplete="off"
+                  value="{{row.cantidad}}" appAutoFocus (keyup)="presenter1($event,ind)" (blur)="caneditarcelda1($event.target.value,ind)">
                 </td>
                 <td appAnchocol [ancho]="60" class="text-right">
-                  {{row.cantidad | number: mask_cant}}
-                </td>
-                <td appAnchocol [ancho]="60" class="text-right">
-                  {{row.precio | number: mask_precio}}
+                  <div *ngIf="row.editar2==0" (click)="editarcelda2(ind)" style="cursor: pointer;">
+                    {{row.precio | number: mask_precio}}
+                  </div >
+                  <input [textMask]="dec_precio == 4? formService.maskUsAmountDecimal4 : (dec_precio==3? formService.maskUsAmountDecimal3:formService.maskUsAmountDecimal2)" style="height: 20px;text-align: center;" 
+                  *ngIf="row.editar2==1" type="text" class="formcontrol w-100 d-flex" autocomplete="off"
+                  value="{{row.precio}}" appAutoFocus (keyup)="presenter2($event,ind)" (blur)="caneditarcelda2($event.target.value,ind)">
                 </td>
                 <td appAnchocol [ancho]="75" class="text-right">
                   {{row.parcial | number: mask_parcial}}
@@ -226,7 +234,7 @@
                   {{row.acumulado | number: mask_parcial}}
                 </td>
                 <td *ngIf="!solover" appAnchocol [ancho]="30">
-                  <button *ngIf="row.estado==0 && row.idgrupo==tab6idgrsel && row.indice!=null" class="btn btn-mini3 btn-danger" placement="left" ngbTooltip="Quitar Fila" container="body" (click)="quitarfilat8(ind)">
+                  <button type="button" *ngIf="row.estado==0 && row.idgrupo==tab6idgrsel && row.indice!=null" class="btn btn-mini3 btn-danger" placement="left" ngbTooltip="Quitar Fila" container="body" (click)="quitarfilat8(ind)">
                     <i class="fa fa-times icono-but"></i>
                   </button>
                 </td>
@@ -362,7 +370,7 @@
                     {{row.parcial | number: mask_parcial}}
                   </td>
                   <td appAnchocol [ancho]="30">
-                    <button *ngIf="row.existe==0" class="btn btn-mini3 btn-danger" placement="left" ngbTooltip="Quitar Fila" container="body" (click)="quitarfilat8aux(ind)">
+                    <button type="button" *ngIf="row.existe==0" class="btn btn-mini3 btn-danger" placement="left" ngbTooltip="Quitar Fila" container="body" (click)="quitarfilat8aux(ind)">
                         <i class="fa fa-times icono-but"></i>
                     </button>
                   </td>

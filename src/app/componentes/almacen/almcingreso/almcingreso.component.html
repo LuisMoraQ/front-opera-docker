@@ -92,7 +92,7 @@
         <tbody>
           <ng-container *ngIf="dataSource3.length>0">
             <tr *ngFor="let row of dataSource3;let indice=index;" (click)="cambindicesel3(indice)" [ngClass]="{'highlight': fila3_sel == indice}">
-              <td appAnchocol [ancho]="35"> {{indice+1}} </td>
+              <td appAnchocol [ancho]="35"> {{row.orden}} </td>
               <td appAnchocol [ancho]="200" [detalle]="true" class="celdasalto text-left">
                 <span class="span-container" placement="top" ngbTooltip="{{row.descripcion}}" container="body">
                   <span class="span-ellipsis w-100 d-flex">
@@ -353,7 +353,7 @@
             <tbody>
               <ng-container *ngIf="dataSource3aux.length>0">
                 <tr *ngFor="let row of dataSource3aux;let indice=index;" (click)="cambindicesel3aux(indice)" [ngClass]="{'highlight': fila3_selaux == indice}">
-                  <td appAnchocol [ancho]="35"> {{row.nro}} </td>
+                  <td appAnchocol [ancho]="35"> {{row.orden}} </td>
                   <td appAnchocol [ancho]="200" [detalle]="true" class="celdasalto text-left">
                     <span class="span-container" placement="top" ngbTooltip="{{row.descripcion}}" container="body">
                       <span class="span-ellipsis w-100 d-flex">
@@ -437,10 +437,10 @@
           <b>Nota de Ingreso de Materiales N° {{nroingreso}}</b>
         </h4>
         <div class="row">
-          <span class="letred-esp2 text-fecha"><b>Fecha de Salida : </b></span>&nbsp;&nbsp;
+          <span class="letred-esp2 text-fecha"><b>Fecha de Ingreso : </b></span>&nbsp;&nbsp;
           <mat-form-field class="mff-reduc mff-nopad" appearance="outline">
             <!-- <mat-label>Fecha Salida</mat-label> -->
-            <input matInput type="date" [min]="fechamin" [max]="fechamax" [(ngModel)]="fechaSal">
+            <input matInput type="date" [min]="fechamin" [max]="fechamax" [(ngModel)]="fechaSal" [disabled]="editaing">
           </mat-form-field>
         </div>
         <div [style.margin-bottom.px]="-paddingscroll2n" class="tabla-limp" [style.height.px]="heighttmodal2-52-46" id="tableBodyn" (scroll)="SyncScrolln()">
@@ -521,8 +521,10 @@
       </div>
     </div>
   </div>
-  <div class="app-modal-footer">
-    <button type="button" style="margin-right: 5px; padding-top: 2px;padding-bottom: 2px;" class="btn btn-danger ripple" (click)="cerrarModalIngreso1()">Salir</button>
-    <button type="button" style="padding-top: 2px;padding-bottom: 2px;" class="btn btn-success ripple light" (click)="guardarModalIngreso1()">Guardar</button>
+  <div class="app-modal-footer w-100">
+    <div class="row px-3 justify-content-between d-flex">
+      <button type="button" style="margin-right: 5px; padding-top: 2px;padding-bottom: 2px;" class="btn btn-danger ripple" (click)="cerrarModalIngreso1()">Salir</button>
+      <button type="button" style="padding-top: 2px;padding-bottom: 2px;" class="btn btn-success ripple light" (click)="guardarModalIngreso1()">Guardar</button>
+    </div>
   </div>
 </app-modal-basic>

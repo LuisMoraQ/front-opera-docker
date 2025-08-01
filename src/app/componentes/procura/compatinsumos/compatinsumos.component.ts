@@ -240,7 +240,7 @@ export class CompatinsumosComponent implements OnInit {
         let idgrucom=this.dataSource6[j].idgrupo;
         let filagru={id_proyecto:this.id_proyecto,id_registro:this.id_reg,idgrupo:idgrucom,idfila:this.dataSource6[j].idfila,indrep:0,orden:null,indice:this.dataSource6[j].indice,id_filadetalle:this.dataSource6[j].id_filadetalle,
         num_det:this.dataSource6[j].num_det,codigo:this.dataSource6[j].codigo,descripcion:this.dataSource6[j].descripcion,unidad:this.dataSource6[j].unidad,cantidad:null,
-        precio:null,parcial:null,operador:null,acumulado:this.dataSource6[j].reqsol,proceso:'',princi:0,estado:0,ingreso:0,salida:0,fecha_sol:null,mostrar:1,icomost:1};
+        precio:null,parcial:null,operador:null,acumulado:this.dataSource6[j].reqsol,proceso:'',princi:0,estado:0,ingreso:0,salida:0,fecha_sol:null,mostrar:1,icomost:1,editar:0,editar2:0};
 
         this.dataSource8.push(filagru)
         totalgru=totalgru+Number(this.dataSource6[j].reqsol);
@@ -248,7 +248,10 @@ export class CompatinsumosComponent implements OnInit {
         if(this.DatosDisgre.length>0){
           for(let i=0;i<this.DatosDisgre.length;i++){
             if(this.DatosDisgre[i].idgrupo==idgrucom){
-              this.dataSource8.push(this.DatosDisgre[i]);
+              let filaaux=JSON.parse(JSON.stringify(this.DatosDisgre[i]))
+              filaaux.editar=0
+              filaaux.editar2=0
+              this.dataSource8.push(filaaux);
             }
           }
         }
@@ -305,7 +308,7 @@ export class CompatinsumosComponent implements OnInit {
     if(indgrupo==-1){//no existe entonces se puede agregar directo
       let ejm={id_proyecto:this.id_proyecto,id_registro:this.id_reg,idgrupo:idgru,idfila:this.dataSource7[ind].idfila,indrep:0,orden:this.UltOrden(),indice:this.dataSource7[ind].indice,id_filadetalle:this.dataSource7[ind].id_filadetalle,
         num_det:this.dataSource7[ind].num_det,codigo:this.dataSource7[ind].codigo,descripcion:this.dataSource7[ind].descripcion,unidad:this.dataSource7[ind].unidad,cantidad:this.dataSource7[ind].cantidad,
-        precio:this.dataSource7[ind].precio,parcial:this.dataSource7[ind].parcial,operador:this.dataSource7[ind].operador,acumulado:this.dataSource7[ind].parcial,proceso:'',princi:1,estado:0,ingreso:0,salida:0,fecha_sol:null,mostrar:1,icomost:1};
+        precio:this.dataSource7[ind].precio,parcial:this.dataSource7[ind].parcial,operador:this.dataSource7[ind].operador,acumulado:this.dataSource7[ind].parcial,proceso:'',princi:1,estado:0,ingreso:0,salida:0,fecha_sol:null,mostrar:1,icomost:1,editar:0,editar2:0};
       this.dataSource8.push(ejm);
       this.bcambiost8=true;
       //agregar tambien a data
@@ -654,6 +657,8 @@ export class CompatinsumosComponent implements OnInit {
           this.dataSource8aux[i].mostrar=1
           this.dataSource8aux[i].icomost=1
           this.dataSource8aux[i].orden=morden
+          this.dataSource8aux[i].editar=0
+          this.dataSource8aux[i].editar2=0
           this.dataSource8.push(this.dataSource8aux[i]);
           //agregar tambien a data
           this.DatosDisgre.push(JSON.parse(JSON.stringify(this.dataSource8aux[i])))
@@ -697,6 +702,8 @@ export class CompatinsumosComponent implements OnInit {
             this.dataSource8aux[i].mostrar=1
             this.dataSource8aux[i].icomost=1
             this.dataSource8aux[i].orden=this.dataSource8[indgrupo].orden
+            this.dataSource8aux[i].editar=0
+            this.dataSource8aux[i].editar2=0
             this.dataSource8.splice(indgrupo+1,0,this.dataSource8aux[i]);
             //agregar tambien a data
             this.DatosDisgre.push(JSON.parse(JSON.stringify(this.dataSource8aux[i])))
@@ -767,7 +774,7 @@ export class CompatinsumosComponent implements OnInit {
           //agregar a tabla 8 e datosdisg
           let ejm={id_proyecto:this.id_proyecto,id_registro:this.id_reg,idgrupo:idgru,idfila:this.dataSource7[this.ind_disgrega].idfila,indrep:0,orden:this.UltOrden(),indice:this.dataSource7[this.ind_disgrega].indice,id_filadetalle:this.dataSource7[this.ind_disgrega].id_filadetalle,
             num_det:this.dataSource7[this.ind_disgrega].num_det,codigo:this.dataSource7[this.ind_disgrega].codigo,descripcion:insumo,unidad:unid,cantidad:cantidad,
-            precio:precio,parcial:parcial,operador:this.dataSource7[this.ind_disgrega].operador,acumulado:parcial,proceso:'',princi:1,estado:0,ingreso:0,salida:0,fecha_sol:null,icomost:1,mostrar:1};
+            precio:precio,parcial:parcial,operador:this.dataSource7[this.ind_disgrega].operador,acumulado:parcial,proceso:'',princi:1,estado:0,ingreso:0,salida:0,fecha_sol:null,icomost:1,mostrar:1,editar:0,editar2:0};
           this.dataSource8.splice(indgrupo+1,0,ejm);
           //agregar tambien a data
           this.DatosDisgre.push(JSON.parse(JSON.stringify(ejm)))
@@ -805,7 +812,7 @@ export class CompatinsumosComponent implements OnInit {
 
           let ejm={id_proyecto:this.id_proyecto,id_registro:this.id_reg,idgrupo:idgru,idfila:this.dataSource7[this.ind_disgrega].idfila,indrep:nrorep,orden:this.dataSource8[indgrupo].orden,indice:this.dataSource7[this.ind_disgrega].indice,id_filadetalle:this.dataSource7[this.ind_disgrega].id_filadetalle,
             num_det:this.dataSource7[this.ind_disgrega].num_det,codigo:this.dataSource7[this.ind_disgrega].codigo,descripcion:insumo,unidad:unid,cantidad:cantidad,
-            precio:precio,parcial:parcial,operador:this.dataSource7[this.ind_disgrega].operador,acumulado:null,proceso:'',princi:0,estado:0,ingreso:0,salida:0,fecha_sol:null,icomost:1,mostrar:1};
+            precio:precio,parcial:parcial,operador:this.dataSource7[this.ind_disgrega].operador,acumulado:null,proceso:'',princi:0,estado:0,ingreso:0,salida:0,fecha_sol:null,icomost:1,mostrar:1,editar:0,editar2:0};
           this.dataSource8.splice(indgrupo+1,0,ejm);
           //agregar tambien a data
           this.DatosDisgre.push(JSON.parse(JSON.stringify(ejm)))
@@ -844,45 +851,213 @@ export class CompatinsumosComponent implements OnInit {
     }
   }
   async GuardarDatos(){
-      try{
-        if(this.bcambiost8){
-          this.mostrar_carga_todo=true;
-          let tabaux=[];
+    try{
+      if(this.bcambiost8){
+        this.mostrar_carga_todo=true;
+        let tabaux=[];
+        for(let row of this.dataSource6){
+          if(row.accion==1)
+            tabaux.push(row);
+        }
+        const datos1 = JSON.stringify(tabaux);
+        const datos2 = JSON.stringify(this.DatosDisgre);
+        let objpasa={
+          id_proyecto:this.id_proyecto,
+          id_registro:this.id_reg,
+          datos1:datos1,
+          datos2:datos2,
+        }
+        let res=await this._logisticaService.GuardarAdquiDisgreins(objpasa);
+        if(res.id==1)
+        {
+          this.bcambiost8=false;//Solicitud de presupuesto
           for(let row of this.dataSource6){
-            if(row.accion==1)
-              tabaux.push(row);
+            row.accion=0
           }
-          const datos1 = JSON.stringify(tabaux);
-          const datos2 = JSON.stringify(this.DatosDisgre);
-          let objpasa={
-            id_proyecto:this.id_proyecto,
-            id_registro:this.id_reg,
-            datos1:datos1,
-            datos2:datos2,
-          }
-          let res=await this._logisticaService.GuardarAdquiDisgreins(objpasa);
-          if(res.id==1)
-          {
-            this.bcambiost8=false;//Solicitud de presupuesto
-            for(let row of this.dataSource6){
-              row.accion=0
-            }
-            this.mostrar_carga_todo=false;
-            SwalService.success('Correcto',res.mensaje)
-          }
-          else
-          {
-            this.mostrar_carga_todo=false;
-            SwalService.error('Advertencia','No se pudo realizar la Operación. '+res.mensaje);
-          }
+          this.mostrar_carga_todo=false;
+          SwalService.success('Correcto',res.mensaje)
+        }
+        else
+        {
+          this.mostrar_carga_todo=false;
+          SwalService.error('Advertencia','No se pudo realizar la Operación. '+res.mensaje);
+        }
+      }
+      else{
+        this.toaster.info('No hay cambios para guardar.', 'Advertencia', { closeButton: false,positionClass: 'toast-bottom-right',timeOut: 5000 });
+      }
+    }catch(e){
+      this.mostrar_carga_todo=false;
+      console.log(e)
+      this.toaster.error('No se pudo realizar la operación.', 'Advertencia', { closeButton: false,positionClass: 'toast-bottom-right',timeOut: 5000 });
+    }
+  }
+  editarcelda1(ind:any){
+    this.dataSource8[ind].editar=1;
+  }
+  caneditarcelda1(eve:any,ind:any){
+    var valor=Number(eve);
+    var actual=Number(this.dataSource8[ind].cantidad)
+    var aprecio=Number(this.dataSource8[ind].precio);
+    var pactual=Number(this.dataSource8[ind].parcial)
+    this.dataSource8[ind].editar=0;
+    if(valor!=actual){
+      let indgrupo=-1;
+      for(let j=0;j<this.dataSource7.length;j++){//para condicionar si existe
+        if(this.dataSource7[j].idgrupo==this.dataSource8[ind].idgrupo && this.dataSource7[j].idfila==this.dataSource8[ind].idfila)
+        {
+          indgrupo=j;
+        }
+      }
+      //validar que no exista en t8 antes de agregar
+      if(indgrupo!=-1){//no existe entonces se puede agregar directo
+        let nparc=this.formService.redondeo((valor*aprecio),this.dec_parcial);
+        this.dataSource8[ind].cantidad=this.formService.redondeo(Number(valor),this.dec_cant);
+        this.dataSource8[ind].parcial=nparc;
+        let nacumu=0;
+        if(this.dataSource8[ind].princi==1){
+          nacumu=Number(this.dataSource8[ind].acumulado)-pactual+Number(nparc);
+          this.dataSource8[ind].acumulado=this.formService.redondeo(nacumu,this.dec_parcial);
         }
         else{
-          this.toaster.info('No hay cambios para guardar.', 'Advertencia', { closeButton: false,positionClass: 'toast-bottom-right',timeOut: 5000 });
+          let indacu=-1;
+          for(let j=0;j<this.dataSource8.length;j++){
+            if(this.dataSource8[j].idgrupo==this.dataSource8[ind].idgrupo && this.dataSource8[j].idfila==this.dataSource8[ind].idfila && this.dataSource8[j].princi==1)
+            {
+              indacu=j; break;
+            }
+          }
+          nacumu=Number(this.dataSource8[indacu].acumulado)-pactual+Number(nparc);//agrupacion suma tabla8
+          this.dataSource8[indacu].acumulado=this.formService.redondeo(nacumu,this.dec_parcial);//agrupacion suma tabla8
         }
-      }catch(e){
-        this.mostrar_carga_todo=false;
-        console.log(e)
-        this.toaster.error('No se pudo realizar la operación.', 'Advertencia', { closeButton: false,positionClass: 'toast-bottom-right',timeOut: 5000 });
+        this.bcambiost8=true;
+        //agregar tambien a data
+        for(let rowds of this.DatosDisgre){
+          if(rowds.idgrupo==this.dataSource8[ind].idgrupo && rowds.idfila==this.dataSource8[ind].idfila && rowds.indrep==this.dataSource8[ind].indrep){
+            rowds.cantidad=this.formService.redondeo(Number(valor),this.dec_cant);
+            rowds.parcial=nparc;
+          }
+          if(rowds.idgrupo==this.dataSource8[ind].idgrupo && rowds.idfila==this.dataSource8[ind].idfila && rowds.princi==1){
+            let suma=Number(rowds.acumulado)-pactual+Number(nparc);//agrupacion suma tabla8
+            rowds.acumulado=this.formService.redondeo(suma,this.dec_parcial);//agrupacion suma tabla8
+          }
+        }
+        //las desviaciones y requerimiento solicitado
+        let reqsoli=Number(this.dataSource6[this.fila6_sel].reqsol);
+        let paragre=Number(nparc)-pactual;
+        this.dataSource6[this.fila6_sel].reqsol=this.formService.redondeo((reqsoli+paragre),this.dec_parcial);
+        this.tab7total=this.formService.redondeo((reqsoli+paragre),this.dec_parcial);
+        let parcialgru=Number(this.dataSource6[this.fila6_sel].parcial);
+        let varia=this.formService.redondeo((((parcialgru-(reqsoli+paragre))/parcialgru)*100),2);
+        this.dataSource6[this.fila6_sel].variacion=this.dataSource6[this.fila6_sel].complemento==1?'':varia;
+        this.dataSource6[this.fila6_sel].accion=1
+        //para los saldos
+        let parc1=Number(this.dataSource7[indgrupo].parcial);
+        let sald=(((parc1-(nacumu))/parc1)*100);
+        for(let row of this.dataSource6){
+          if(row.idgrupo==this.dataSource8[ind].idgrupo && row.idfila==this.dataSource8[ind].idfila){
+            row.saldo=sald<0?'0.00':this.formService.redondeo(sald,2);
+            row.accion=1;
+            break;
+          }
+        }
+        this.dataSource7[indgrupo].saldo=sald<0?'0.00':this.formService.redondeo(sald,2);
+        this.cargartabla8mostrar(this.idcomple);//TAMBIEN ES NECESARIO?
       }
     }
+  }
+  presenter1(event:any,ind:any){
+    if(event.keyCode.toString()=="27"){//esc descartar los cambios
+      this.caneditarcelda1(this.dataSource8[ind].cantidad,ind)//el primer parametro es el valor de la celda a editar
+    }
+    else if(event.keyCode.toString()=="13")
+    {
+      event.target.blur();
+    }
+    else if(event.keyCode.toString()=="40"){
+      this.dataSource8[ind].editar=0;
+      if(ind+1<this.dataSource8.length){
+        this.dataSource8[ind+1].editar=this.dataSource8[ind+1].indice==null?0:1;
+      }
+    }
+    else if(event.keyCode.toString()=="38"){
+      this.dataSource8[ind].editar=0;
+      if(ind-1>=0){
+        this.dataSource8[ind-1].editar=this.dataSource8[ind-1].indice==null?0:1;
+      }
+    }
+  }
+  editarcelda2(ind:any){
+    this.dataSource8[ind].editar2=1;
+  }
+  caneditarcelda2(eve:any,ind:any){
+    var valor=Number(eve);
+    var actual=Number(this.dataSource8[ind].precio)
+    var acantidad=Number(this.dataSource8[ind].cantidad);
+    var pactual=Number(this.dataSource8[ind].parcial)
+    this.dataSource8[ind].editar2=0;
+    if(valor!=actual){
+      let nparc=this.formService.redondeo((valor*acantidad),this.dec_parcial);
+      this.dataSource8[ind].precio=this.formService.redondeo(Number(valor),this.dec_precio);
+      this.dataSource8[ind].parcial=nparc;
+      if(this.dataSource8[ind].princi==1){
+        let nacumu=Number(this.dataSource8[ind].acumulado)-pactual+Number(nparc);
+        this.dataSource8[ind].acumulado=this.formService.redondeo(nacumu,this.dec_parcial);
+      }
+      else{
+        let indacu=-1;
+        for(let j=0;j<this.dataSource8.length;j++){
+          if(this.dataSource8[j].idgrupo==this.dataSource8[ind].idgrupo && this.dataSource8[j].idfila==this.dataSource8[ind].idfila && this.dataSource8[j].princi==1)
+          {
+            indacu=j; break;
+          }
+        }
+        let suma=Number(this.dataSource8[indacu].acumulado)-pactual+Number(nparc);//agrupacion suma tabla8
+        this.dataSource8[indacu].acumulado=this.formService.redondeo(suma,this.dec_parcial);//agrupacion suma tabla8
+      }
+      this.bcambiost8=true;
+      //agregar tambien a data
+      for(let rowds of this.DatosDisgre){
+        if(rowds.idgrupo==this.dataSource8[ind].idgrupo && rowds.idfila==this.dataSource8[ind].idfila && rowds.indrep==this.dataSource8[ind].indrep){
+          rowds.precio=this.formService.redondeo(Number(valor),this.dec_precio);
+          rowds.parcial=nparc;
+        }
+        if(rowds.idgrupo==this.dataSource8[ind].idgrupo && rowds.idfila==this.dataSource8[ind].idfila && rowds.princi==1){
+          let suma=Number(rowds.acumulado)-pactual+Number(nparc);//agrupacion suma tabla8
+          rowds.acumulado=this.formService.redondeo(suma,this.dec_parcial);//agrupacion suma tabla8
+        }
+      }
+      //las desviaciones y requerimiento solicitado
+      let reqsoli=Number(this.dataSource6[this.fila6_sel].reqsol);
+      let paragre=Number(nparc)-pactual;
+      this.dataSource6[this.fila6_sel].reqsol=this.formService.redondeo((reqsoli+paragre),this.dec_parcial);
+      this.tab7total=this.formService.redondeo((reqsoli+paragre),this.dec_parcial);
+      let parcialgru=Number(this.dataSource6[this.fila6_sel].parcial);
+      let varia=this.formService.redondeo((((parcialgru-(reqsoli+paragre))/parcialgru)*100),2);
+      this.dataSource6[this.fila6_sel].variacion=this.dataSource6[this.fila6_sel].complemento==1?'':varia;
+      this.dataSource6[this.fila6_sel].accion=1
+      this.cargartabla8mostrar(this.idcomple);//TAMBIEN ES NECESARIO?
+    }
+  }
+  presenter2(event:any,ind:any){
+    if(event.keyCode.toString()=="27"){//esc descartar los cambios
+      this.caneditarcelda2(this.dataSource8[ind].precio,ind)//el primer parametro es el valor de la celda a editar
+    }
+    else if(event.keyCode.toString()=="13")
+    {
+      event.target.blur();
+    }
+    else if(event.keyCode.toString()=="40"){
+      this.dataSource8[ind].editar2=0;
+      if(ind+1<this.dataSource8.length){
+        this.dataSource8[ind+1].editar2=this.dataSource8[ind+1].indice==null?0:1;
+      }
+    }
+    else if(event.keyCode.toString()=="38"){
+      this.dataSource8[ind].editar2=0;
+      if(ind-1>=0){
+        this.dataSource8[ind-1].editar2=this.dataSource8[ind-1].indice==null?0:1;
+      }
+    }
+  }
 }

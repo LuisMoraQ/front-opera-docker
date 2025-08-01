@@ -64,6 +64,7 @@ export class AlmcingresoComponent implements OnInit {
   //agregar ingreso
   @ViewChild("modalIngreso1") modalIngreso1: ModalBasicComponent;
   nroingreso='';
+  fechaingreso='';
   nroreqsel:any;
   detreqsol:any;
   lugreqsol:any;
@@ -110,7 +111,6 @@ export class AlmcingresoComponent implements OnInit {
     this.heighttmodal=window.innerHeight-155;
     this.heighttmodal13=(window.innerHeight-106)/2;
     this.heighttmodal2=window.innerHeight-174;
-    console.log(this.heighttmodal,this.heighttmodal13)
     let decimales = this.decproy;
     if(decimales?.toString().includes('|')){
       let arrdec=decimales.split('|');
@@ -150,7 +150,6 @@ export class AlmcingresoComponent implements OnInit {
     this.heighttmodal=window.innerHeight-155;
     this.heighttmodal13=(window.innerHeight-106)/2;
     this.heighttmodal2=window.innerHeight-174;
-    console.log(this.heighttmodal2)
   }
   ngAfterContentChecked(): void {
     //this.changeDetector.detectChanges();
@@ -272,7 +271,6 @@ export class AlmcingresoComponent implements OnInit {
       this.datasalida=res[3]
       // this.DatosDisgre=res[1]
       let arrfini=this.filareg.fechaini.split('-');
-      console.log(moment(arrfini[2]+'-'+arrfini[1]+'-'+arrfini[0]).format('YYYY-MM-DD'))
       let ultfecha=moment(arrfini[2]+'-'+arrfini[1]+'-'+arrfini[0]).format('YYYY-MM-DD');
       for(let row of this.dataingreso){
         let fechrow=moment(row.fecha).format('YYYY-MM-DD');
@@ -281,7 +279,7 @@ export class AlmcingresoComponent implements OnInit {
         }
       }
       this.fechaSal=ultfecha
-      console.log(ultfecha)//menor a ult fecha no debe ser editable, si es igual o mayor , permitir editar
+      //console.log(ultfecha)//menor a ult fecha no debe ser editable, si es igual o mayor , permitir editar
       //agregar input fecha al agregar una nota de ingreso o salida?
       //tambien agregar fecha a las agrupaciones de las adquicisiones, lo que importa es la fecha de aprobacion, agregar fecha al hacer eso?
     }
@@ -324,7 +322,6 @@ export class AlmcingresoComponent implements OnInit {
         }
       }
       let suma=0;
-      console.log(this.dataingreso)
       for(let row of this.dataingreso){
         if(row.idgrupo==idgru && row.id_registro==idreg)
         {
@@ -410,6 +407,8 @@ export class AlmcingresoComponent implements OnInit {
           this.detreqsol=this.dataSource2[this.fila2_sel].descripcion;
           this.lugreqsol=this.dataSource2[this.fila2_sel].entrega;
           this.nroingreso=this.dataSource4[this.fila4_sel].nroingreso;
+          this.fechaingreso=this.dataSource4[this.fila4_sel].fecha;
+          this.fechaSal=this.fechaingreso
 
           this.dataSource3aux=[];
           for(let m=0;m<this.dataSource3.length;m++){
@@ -421,7 +420,6 @@ export class AlmcingresoComponent implements OnInit {
           this.tab3auxtotalcant=this.tab3totalcant;
           this.tab3auxtotalparc=this.tab3totalparc;
           this.tab3auxtotalsal=this.tab3totalsal;
-          let ind3=0
           for(let i=0;i<this.dataSource4.length;i++){
             if(this.dataSource4[i].nroingreso==this.nroingreso && this.dataSource4[i].unidad!='')
             {
@@ -437,11 +435,10 @@ export class AlmcingresoComponent implements OnInit {
               let ejm={id_proyecto:this.id_proyecto,idregmov:this.id_reg,nroingreso:this.nroingreso,idingreso:this.dataSource4[i].idingreso,
                 id_registro:this.dataSource4[i].id_registro,idgrupo:this.dataSource4[i].idgrupo,idfila:this.dataSource4[i].idfila,indrep:this.dataSource4[i].indrep,
                 codigo:this.dataSource4[i].codigo,descripcion:this.dataSource4[i].descripcion,unidad:this.dataSource4[i].unidad,
-                cantidad:this.dataSource4[i].cantidad,precio:this.dataSource4[i].precio,parcial:this.dataSource4[i].parcial,indice3:ind3++,editar:0};
+                cantidad:this.dataSource4[i].cantidad,precio:this.dataSource4[i].precio,parcial:this.dataSource4[i].parcial,indice3:indicepri,editar:0};
               this.dataSource5.push(ejm);
             }
           }
-          console.log(this.dataSource5)
           this.tott5=this.dataSource4[this.fila4_sel].parcial;
           this.mostrar_carga_todo=false;
           this.modalIngreso1.show();
@@ -579,6 +576,7 @@ export class AlmcingresoComponent implements OnInit {
       else{
         //cancelar
         this.editaing=false;
+        this.fechaingreso=null;
         this.seltodo5=0;
         this.dataSource5=[];
         this.bcambiost5=false;
@@ -589,11 +587,11 @@ export class AlmcingresoComponent implements OnInit {
     }
     else{
       this.editaing=false;
+      this.fechaingreso=null;
       this.seltodo5=0;
       this.bcambiost5=false;
       this.dataSource5=[];
       this.dataSource3aux=[]
-      console.log(this.dataSource3)
       for(let row of this.dataSource3){//mantener?
         row.seleccion=0;
       }
@@ -735,6 +733,7 @@ export class AlmcingresoComponent implements OnInit {
                   'idgrupo':this.dataSource2[this.fila2_sel].idgrupo,
                   'estadoing':estadoing,
                   'estadosal':estadosal,
+                  'fecha':this.fechaingreso,
                   'datos1':tabla1,
                   'datos2':tabla2,
                 });
@@ -952,7 +951,6 @@ export class AlmcingresoComponent implements OnInit {
     var actual=Number(this.dataSource5[ind].cantidad)
     var pactual=Number(this.dataSource5[ind].parcial)
     var aprecio=Number(this.dataSource5[ind].precio);
-    console.log(this.dataSource5[ind].indice3)
     var asaldo=Number(this.dataSource3aux[this.dataSource5[ind].indice3].saldo);
     var saldototal=asaldo+actual;
     this.dataSource5[ind].editar=false;
