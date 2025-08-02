@@ -144,7 +144,7 @@ export class ReportesComponent implements OnInit {
       // if(this.datos.tipo_reporte==4){
       //   await this.CrearWord()
       // }else{
-        // console.log(JSON.parse(JSON.stringify(this.datos)))
+        console.log(JSON.parse(JSON.stringify(this.datos)))
         this.mostrar_carga_todo=true
         this.orientacion_pagina2 = this.datos.titulo==='FORMULA POLINÓMICA' && !this.datos.tabla3? 'landscape':this.datos.orientacion?  this.datos.orientacion: ''
         var nuevo=this.datos.image? 'A0': this.datos.titulo==='CRONOGRAMA VALORIZADO'|| this.datos.titulo==='CRONOGRAMA DE ADQUISICIONES'? 'A3':'A4'

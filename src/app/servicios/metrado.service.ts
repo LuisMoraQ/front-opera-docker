@@ -103,7 +103,22 @@ export class MetradoService {
       catchError(err => throwError(err))
     ).toPromise()
   }
-
+    reporteMetradosMes(params = {}): Promise<any> {
+    let formData: FormData = new FormData();
+    Object.entries(params).forEach(([key, value]) => {
+      formData.append(key, value as string);
+    });
+    const url = this.enviUrl + '/api/metrados/reporteMetradosMes';
+    return this.http.post<any>(url, formData).pipe(
+      map(res => {
+        if (!res || res.id == '0') {
+          throw new Error
+        }
+        return res
+      }),
+      catchError(err => throwError(err))
+    ).toPromise()
+  }
   listarTablaDeMetradoXTitulo(params = {}): Promise<any> {
     let formData: FormData = new FormData();
     Object.entries(params).forEach(([key, value]) => {

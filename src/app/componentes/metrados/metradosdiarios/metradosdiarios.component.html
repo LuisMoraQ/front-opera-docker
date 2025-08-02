@@ -87,7 +87,9 @@
               <td appAnchocol [ancho]="100">{{ row.fechaini }}</td>
               <td appAnchocol [ancho]="100">{{ row.fechafin }}</td>
               <td appAnchocol [ancho]="100">{{ row.fechamodi }}</td>
-              <td appAnchocol [ancho]="100">{{ row.estado }}</td>
+              <td appAnchocol [ancho]="100">
+
+              </td>
               <td appAnchocol [ancho]="50">
                 <div class="d-flex">
                   <button
@@ -97,6 +99,17 @@
                     ngbTooltip="Ver"
                     container="body"
                     (click)="changeVista(row)"
+                    (mouseup)="quitarfoco($event)"
+                  >
+                    <i class="fa fa-search icono-but"></i>
+                  </button>
+                   <button
+                    *ngIf="row.filaagru == null && !esSecund"
+                    class="btn btn-mini2 btn-info"
+                    placement="top"
+                    ngbTooltip="Ver Metrado Diario"
+                    container="body"
+                    (click)="changeVista2(row)"
                     (mouseup)="quitarfoco($event)"
                   >
                     <i class="fa fa-search icono-but"></i>
@@ -159,12 +172,13 @@
           {{ dia.letraDia }} - {{ dia.dia }}
         </th> 
         <th>Metrado <br>Acumulado</th>
+        <th>Metrado <br>Posterior</th>
         <th>Saldo <br> Metrado</th>
       </tr>
     </thead>
     <tbody>
       <tr>
-        <td>500</td>
+        <td>{{metradoanterior==0?null:metradoanterior | number: '0.2'}}</td>
         <td
           *ngFor="let dia of diasCalendario"
           [class.bloqueado]="dia.bloqueado"
@@ -173,8 +187,9 @@
         >
           {{dia.value | number: '0.2'}}
         </td>
-        <td>200</td>
-        <td style="background-color:red;" >300</td>
+        <td>{{metradoacumulado==0?null:metradoacumulado | number: '0.2'}}</td>
+        <td>{{metradoposterior==0?null:metradoposterior | number: '0.2'}}</td>
+        <td style="background-color:red;" >{{saldometrado | number: '0.2'}}</td>
       </tr>
     </tbody>
   </table>
@@ -609,7 +624,6 @@
             <tr class="headsticky header-custom">
               <th appAnchocol [ancho]="30">Nro</th>
               <th appAnchocol [ancho]="150">Descripcion</th>
-              <th appAnchocol [ancho]="80">Fecha</th>
               <th appAnchocol [ancho]="60">Cantidad</th>
               <th appAnchocol [ancho]="60"># Veces</th>
               <th appAnchocol [ancho]="60">Longitud</th>
@@ -692,18 +706,6 @@
                       (keyup)="handleKeyDown($event, i, 'descripcion')"
                     />
                   </ng-container>
-                </td>
-                <td appAnchocol [ancho]="80"
-                  [ngClass]="{
-                    'row-seleccionado':
-                      IndexMetradoDiario == i && !copiadoCeldas,
-                    celdaSeleccionada:
-                      seleccionCelda &&
-                      IndexMetradoDiario == i &&
-                      celdaInicio == 'descripcion',
-                    celdaTabla: copiadoCeldas && evaluarPintadoCelda(i, 1)
-                  }">
-                  {{ fechaselecionada | date : "dd-MM-yyyy" }}
                 </td>
                 <td
                   class="td-custom text-center"
@@ -895,13 +897,13 @@
                     />
                   </ng-container>
                 </td>
-                <td appAnchocol [ancho]="100">{{ row.subtotal }}</td>
-                <td appAnchocol [ancho]="100">{{ row.parcial }}</td>
+                <td appAnchocol [ancho]="100">{{row.subtotal | number: '0.2'}}</td>
+                <td appAnchocol [ancho]="100">{{row.parcial | number: '0.2'}}</td>
               </tr>
               <tr class="footer-sticky filafoot">
-                  <td colspan="9" class="text-center"  [style.font-weight]="'bold'"><span >TOTAL</span></td>
+                  <td colspan="8" class="text-center"  [style.font-weight]="'bold'"><span >TOTAL</span></td>
                   <td  [style.font-weight]="'bold'" appAnchocol [ancho]="100">
-                      <span  *ngIf="!esCero(auxtotal)&&auxtotal!==null&&auxtotal!=''">{{auxtotal}}</span>
+                      <span  *ngIf="!esCero(auxtotal)&&auxtotal!==null&&auxtotal!=''">{{auxtotal|number: '0.2'}}</span>
                   </td>
                 </tr>
             </ng-container>
@@ -923,6 +925,14 @@
       </div>
     </div>
   </div>
+</div>
+<div style="overflow: auto; height: calc(100vh - 165px)" *ngIf="subvista == 3">
+  <app-card
+    class="card col-12"
+    style="margin-bottom: 5px; padding-left: 0; padding-right: 0"
+  >
+    
+  </app-card>
 </div>
 <app-modal-basic [dialogClass]="'modal-md'" #modalHojas>
   <div class="app-modal-header">
@@ -1038,7 +1048,7 @@
           <mat-label>Estado</mat-label>
           <select matNativeControl formControlName="estado">
             <option value="1">Aprobado</option>
-            <option value="0">Observado</option>
+            <option value="0">En Registro</option>
           </select>
         </mat-form-field>
         <mat-form-field
