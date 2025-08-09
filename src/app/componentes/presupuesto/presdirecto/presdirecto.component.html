@@ -156,7 +156,7 @@
             <!-- <ng-container *cdkVirtualFor="let row of dataSource.data"> -->
               <ng-container *ngIf="datasourcePri.length>0">
                 <tr (click)="cambindiceselpresu(indice)" *ngFor="let row of datasourcePri;let indice=index;" [hidden]="row.mostrar == 0"><!-- [ngStyle]="{'display': row.mostrar == 1 ? null : 'none'}" -->
-                  <td class="cellsinpadding" appAnchocol [ancho]="30"><!--[ngStyle]="{'background': row.colorvin??'#f8f8f8'}"-->
+                  <td class="cellsinpadding" appAnchocol [ancho]="30"[ngStyle]="{'background': row.colorvin??'#f8f8f8'}">
                           <!-- [ngClass]="{'highlight': filaSel == indice}" -->
                     <span *ngIf="!colselpri && !colselpri2">{{indice+1}}</span>
                     <mat-checkbox *ngIf="(row.unidad!='' && colselpri) || (row.unidad=='' && colselpri2 && row.tipofila!=0)" class="checktabla" [checked]="row.seleccion==0?false:true" (change)="$event ? Cambioseltpri(row,indice) : null"></mat-checkbox>
@@ -164,7 +164,9 @@
                   <td class="text-left cellsinpadding" appAnchocol [ancho]="220" [detalle]="true" [ngClass]="{'highlight': filaSel == indice}"
                   appPintarfilapre [tipo]="titulo1" [color]="titulo1color" [letra]="titulo1letra" [item]="row.item" [separador]="'.'" [partida]="row.unidad!=''?true:false">
                     <div class="d-flex">
-                        <div [ngClass]="{'recortatext':lineas2,'recortatextlinea':!lineas2}">
+                        <div [ngClass]="{'recortatext':lineas2,'recortatextlinea':!lineas2}"
+                        [style.padding-left.px]="((row.item.toString().split('.').length-1)*5)+(row.unidad!=''?17:0)"
+                      ngbTooltip="{{row.descripcion}}" #t="ngbTooltip" container="body">
                           <a *ngIf="row.unidad=='' && row.icomost=='0'"
                             style="padding: 0px 2px;color:#06bb06;cursor: pointer;"
                             (click)="toggleOnpresu(row.item,indice)">

@@ -2381,6 +2381,10 @@ export class ReportesComponent implements OnInit {
         titulo=this.CrearTitulo1(this.datos.titulo,tabla1)
         ultimo= await this.CrearEspecificaciones(this.datos.tabla)
         this.hasitematlt=true
+      }else if(this.datos.tipo_reporte===0){
+        titulo=this.CrearTitulo1(this.datos.titulo,tabla1)
+        const datosCombinados = this.CuerpoPDF2(this.datos.tabla)
+        ultimo=this.alinearTablaProcura(datosCombinados,this.datos.keys_body)
       }else{
         //RESUMEN DEL METRADO
         titulo=this.CrearTitulo1(this.datos.titulo,tabla1)
@@ -2622,6 +2626,18 @@ export class ReportesComponent implements OnInit {
       margin:[0,0,0,15]
     }
   }
+  alinearTablaProcura(content,header){
+    var widths=this.CrearTablaCompleta2(header)
+    return{
+      table:{
+        widths:widths,
+        headerRows: 1,
+        body: content,
+      },  
+      style: 'tablaConAlineacion',
+      margin:[0,0,0,15]
+    }
+  }
   CrearTablaMetrado(content,headerRows,header){
     var widths=this.CrearTablaCompleta(header)
     return{
@@ -2704,7 +2720,19 @@ export class ReportesComponent implements OnInit {
    for(let i=0;i<array.length;i++){
     if(array[i]==='descripcion'){
       resultado.push('*')
-    }else if(titulo=='SALDO PRESUPUESTALpreuba reg 1'&&array[i]=='parcial'){
+    }else{
+      resultado.push('auto')
+    }
+   }
+   return resultado
+  }
+  CrearTablaCompleta2(array){
+  const resultado:any[]= [];
+  let palabra='parcial'
+   for(let i=0;i<array.length;i++){
+    if(array[i]==='descripcion'){
+      resultado.push('*')
+    }else if(array[i].includes(palabra.toLowerCase())||array[i]=='precio'){
       resultado.push('auto')
       resultado.push('auto')
     }else{
@@ -2861,6 +2889,112 @@ export class ReportesComponent implements OnInit {
      } );    
     const datosCombinados = this.datos.tabla2? tableData.concat(newArray) : tableData
     return { datosCombinados: datosCombinados,tableData:tableData,tablafoot:tablafoot,header:this.datos.header,numerototal:numerototal}
+  }
+  AgregarSpan2(array=[]) {
+    let colorfondo='#F4F9FF'
+    let posicion='center'
+    let color= this.colorgeneral
+    array=array??[]
+    const newArray = [];
+    for (let i = 0; i < array.length; i++) {
+        const newRow = [];
+        let numero=0
+        for (let j = 0; j < array[i].length; j++) {
+            const cell = array[i][j]
+            if(cell!==null){ 
+              numero++
+              let borderColor=cell.borderColor? cell.borderColor : ['#acb2b4', '#acb2b4', '#acb2b4', '#acb2b4']
+              let bold = cell.tipoletra ==="4" || cell.tipoletra==="3"? true:false;
+              let italics =cell.tipoletra ==="4" || cell.tipoletra==="2"? true:false;
+              if(cell.text==='PRESUPUESTO APROBADO'){
+                cell.colSpan=cell.colSpan+2
+                 numero--
+                 numero--
+              }else if(cell.text==='PRESUPUESTO UTILIZADO'||cell.text==='SALDO PROYECTO'||cell.text==='PRESUPUESTO SOLICITADO'||cell.text==='PRECIO'||cell.text==='PARCIAL'){
+                cell.colSpan=cell.colSpan+1
+                numero--
+              }
+              newRow.push({...cell, alignment: posicion ,borderColor: borderColor,fillColor:colorfondo, color : color,bold:bold ,italics:italics})
+              if (cell.colSpan && cell.colSpan > 1) {
+                  for (let k = 1; k < cell.colSpan; k++) {
+                      newRow.push(null);
+                      numero++
+                  }
+              }
+              if ((cell.rowSpan && cell.rowSpan > 1)) {
+                for (let k = 1; k < cell.rowSpan; k++) {
+                    if (!array[i + k]) {
+                        array[i + k] = [];
+                    }
+                    for(let a=0;a<cell.colSpan;a++){
+                      array[i+k].splice(numero-1,0, null);
+                    }       
+                }
+              }
+            }else{
+              newRow.push(null);
+            }
+        }
+        newArray.push(newRow);
+    }
+    return newArray;
+  }
+  CuerpoPDF2(array) {
+    this.exceldatos=array
+    if(this.contador===1){
+      this.excelheader = this.ExcelHeaderRow(JSON.parse(JSON.stringify(this.datos.header)))
+    }
+    var ColumnasSeleccionadas = this.datos.keys_body;
+    var paginado=this.formulario1.get('opciones1').value
+    var padd=(paginado==='A4'|| paginado==='A5'||paginado==='FOLIO'||paginado==='LETTER')? -2:0
+    var monocromado = this.formulario1.get('opciones3').value;
+    var tableData = []
+    // var tablaaux=[]
+    // for (let i = 0; i < this.datos.header.length; i++) {
+    //   let color = this.colorgeneral
+    //   if(this.datos.header[i]=='PARCIAL'|| this.datos.header[i]=='PRECIO'){
+    //     tablaaux.push({ text: this.datos.header[i], fillColor: '#D6E3F4', alignment: 'center',color:color,colSpan:2,borderColor: ['#acb2b4', '#acb2b4', '#acb2b4', '#acb2b4']})
+    //     tablaaux.push(null)
+    //   }else{
+    //     tablaaux.push({ text: this.datos.header[i], fillColor: '#D6E3F4', alignment: 'center',color:color,borderColor: ['#acb2b4', '#acb2b4', '#acb2b4', '#acb2b4']})
+    //   }
+    // }
+    // tableData.push(tablaaux);
+    let tablaaux=this.AgregarSpan2(JSON.parse(JSON.stringify(this.datos.header)))
+    tableData.push(tablaaux[0])
+    tableData.push(tablaaux[1])
+    let colorgeneral=this.colorgeneral
+    var auxiliar = this.datos.col_alig
+    var moneda = this.datos.moneda? this.datos.moneda : 'S/'
+    let palabra ='parcial'
+    let palabra2='por'
+    array.forEach((persona)=>{
+      let array=[]
+      for(let i=0;i<ColumnasSeleccionadas.length;i++){
+        const column =ColumnasSeleccionadas[i];
+        let alignment = persona.alinea? persona.alinea:auxiliar[i];
+        let colorbackground = monocromado==='monocromado'? '': persona.fondo? persona.fondo.substring(0, 7): persona.alinea? '#DEDDE6':''
+        let color = monocromado==='monocromado'? colorgeneral:persona.color? persona.color:colorgeneral 
+        let bold = persona.tipoletra ==="4"|| persona.tipoletra==="3"? true:false
+        let italics =persona.tipoletra ==="4"|| persona.tipoletra==="2"? true:false
+        let espaciosinciales= (/^\s+/).test(persona[column])? persona[column].match(/^\s+/)![0].length:0
+        if(persona[column]!==null &&persona[column]!=='' &&persona[column]!==undefined &&(column.includes(palabra.toLowerCase())||column==='precio')){
+          var numerofor= this.formatearNumero(this.formService.redondeo(persona[column],this.datos.keys_dec[i]),null)
+          array.push({text:moneda,color : color,margin:[padd+espaciosinciales,0,0,0], bold:bold ,italics:italics,alignment:'left',fillColor:colorbackground,borderColor: ['#acb2b4', '#acb2b4', '', '#acb2b4'],border:[true,true,false,true]})
+          array.push({ text:numerofor,alignment: 'right' ,margin:[espaciosinciales,0,padd,0],  borderColor: ['', '#acb2b4', '#acb2b4', '#acb2b4'] ,fillColor:colorbackground, color : color, bold:bold ,italics:italics,border:[false,true,true,true]});
+        }else if((persona[column]===''||persona[column]===null )&&(column.includes(palabra.toLowerCase())||column==='precio')){
+          array.push({text:'',color : color,margin:[padd+espaciosinciales,0,0,0], bold:bold ,italics:italics,alignment:'left',fillColor:colorbackground,borderColor: ['#acb2b4', '#acb2b4', '', '#acb2b4'],border:[true,true,false,true]})
+          array.push({ text:'',alignment: alignment ,margin:[espaciosinciales,0,padd,0],  borderColor: ['', '#acb2b4', '#acb2b4', '#acb2b4'] ,fillColor:colorbackground, color : color, bold:bold ,italics:italics,border:[false,true,true,true]});
+        }else if(column.includes(palabra2.toLowerCase())){
+          array.push({ text:persona[column]+'%',margin:[padd+espaciosinciales,0,padd,0], alignment: alignment ,  borderColor: ['#acb2b4', '#acb2b4', '#acb2b4', '#acb2b4'] ,fillColor:colorbackground, color : color, bold:bold ,italics:italics});
+        }else{
+          let aux=this.esNumero(persona[column])===true&& column!=='item'&&column!=='auxiliar' && column!=='codigo' ? this.formatearNumero(this.formService.redondeo(persona[column],this.datos.keys_dec[i]),2) : persona[column]
+          array.push({ text:aux,margin:[padd+espaciosinciales,0,padd,0], alignment: alignment ,  borderColor: ['#acb2b4', '#acb2b4', '#acb2b4', '#acb2b4'] ,fillColor:colorbackground, color : color, bold:bold ,italics:italics});
+        }
+      }
+      tableData.push(array);
+    })
+    return tableData
   }
   formatearNumero(numero: any,decimales){
     if (typeof numero !== 'string') {

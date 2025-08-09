@@ -24,7 +24,7 @@
       style="padding: 4px 8px"
       (click)="cambioVista(2)"
       [ngClass]="{ 'btn-custom-active': subvista == 2 }"
-      [disabled]="!fechaselecionada"
+      [disabled]="!datosglo"
     >
       <i class="fa fa-list"></i> REGISTRO DE METRADO DIARIO
     </button>
@@ -35,6 +35,7 @@
       style="padding: 4px 8px"
       (click)="cambioVista(3)"
       [ngClass]="{ 'btn-custom-active': subvista == 3 }"
+      [disabled]="!datosglo"
     >
       <i class="fa fa-list"></i> VISTA DE METRADO DIARIO
     </button>
@@ -82,13 +83,26 @@
             <tr
               *ngFor="let row of dataSource1; let indice = index"
               [ngClass]="{ highlight: fila1_sel == indice }"
+              (click)="cambindicesel1(indice, row)"
             >
               <td appAnchocol [ancho]="200">{{ row.detalle }}</td>
               <td appAnchocol [ancho]="100">{{ row.fechaini }}</td>
               <td appAnchocol [ancho]="100">{{ row.fechafin }}</td>
               <td appAnchocol [ancho]="100">{{ row.fechamodi }}</td>
-              <td appAnchocol [ancho]="100">
-
+              <td appAnchocol [ancho]="100" class="text-center">
+                <span
+                  class="badge bg-danger pos-badge"
+                  style="width: 80px; border: 1px solid #bfbfbf"
+                  *ngIf="row.estado == 0"
+                  [ngbTooltip]="row.observacion"
+                  >EN REGISTRO</span
+                >
+                <span
+                  class="badge bg-success pos-badge text-dark"
+                  style="width: 80px"
+                  *ngIf="row.estado == 1"
+                  >APROBADO</span
+                >
               </td>
               <td appAnchocol [ancho]="50">
                 <div class="d-flex">
@@ -99,17 +113,6 @@
                     ngbTooltip="Ver"
                     container="body"
                     (click)="changeVista(row)"
-                    (mouseup)="quitarfoco($event)"
-                  >
-                    <i class="fa fa-search icono-but"></i>
-                  </button>
-                   <button
-                    *ngIf="row.filaagru == null && !esSecund"
-                    class="btn btn-mini2 btn-info"
-                    placement="top"
-                    ngbTooltip="Ver Metrado Diario"
-                    container="body"
-                    (click)="changeVista2(row)"
                     (mouseup)="quitarfoco($event)"
                   >
                     <i class="fa fa-search icono-but"></i>
@@ -160,7 +163,10 @@
   <table class="mini-tabla tab-10" style="overflow: auto; display: list-item">
     <thead>
       <tr>
-        <th>Metrado <br> Anterior</th>
+        <th>
+          Metrado <br />
+          Anterior
+        </th>
         <th
           *ngFor="let dia of diasCalendario"
           (click)="ChangeDia(dia)"
@@ -170,50 +176,88 @@
           }"
         >
           {{ dia.letraDia }} - {{ dia.dia }}
-        </th> 
-        <th>Metrado <br>Acumulado</th>
-        <th>Metrado <br>Posterior</th>
-        <th>Saldo <br> Metrado</th>
+        </th>
+        <th>Metrado <br />Acumulado</th>
+        <th>Metrado <br />Posterior</th>
+        <th>
+          Saldo <br />
+          Metrado
+        </th>
       </tr>
     </thead>
     <tbody>
       <tr>
-        <td>{{metradoanterior==0?null:metradoanterior | number: '0.2'}}</td>
+        <td>
+          {{ metradoanterior == 0 ? null : (metradoanterior | number : "0.2") }}
+        </td>
         <td
           *ngFor="let dia of diasCalendario"
           [class.bloqueado]="dia.bloqueado"
           [ngClass]="{ 'fecha-selected': dia.fecha == fechaselecionada }"
-          style="height: 24px;"
+          style="height: 24px"
         >
-          {{dia.value | number: '0.2'}}
+          {{ dia.value | number : "0.2" }}
         </td>
-        <td>{{metradoacumulado==0?null:metradoacumulado | number: '0.2'}}</td>
-        <td>{{metradoposterior==0?null:metradoposterior | number: '0.2'}}</td>
-        <td style="background-color:red;" >{{saldometrado | number: '0.2'}}</td>
+        <td>
+          {{
+            metradoacumulado == 0 ? null : (metradoacumulado | number : "0.2")
+          }}
+        </td>
+        <td>
+          {{
+            metradoposterior == 0 ? null : (metradoposterior | number : "0.2")
+          }}
+        </td>
+        <td style="background-color: red">
+          {{ saldometrado | number : "0.2" }}
+        </td>
       </tr>
     </tbody>
   </table>
   <div class="row mt-3">
     <div class="col-xl-6 col-md-12 col-sm-12">
-      <div class="col-12">
-        <mat-form-field
-          class="mff-reduc my-form-field col-8 wrapper-custom pl-0"
-          appearance="outline"
-        >
-          <mat-label>Titulo</mat-label>
-          <select
-            matNativeControl
-            [(ngModel)]="indiceTitulo"
-            (change)="verHojaMetrado()"
+      <div class="row">
+        <div class="col-md-6 col-xl-6 col-sm-12">
+          <mat-form-field
+            class="mff-reduc my-form-field col-8 wrapper-custom pl-0"
+            appearance="outline"
           >
-            <option
-              *ngFor="let titulo of tablaTitResumen"
-              value="{{ titulo.indice }}"
+            <mat-label>Titulo</mat-label>
+            <select
+              matNativeControl
+              [(ngModel)]="indiceTitulo"
+              (change)="verHojaMetrado()"
             >
-              {{ titulo?.item }}&nbsp;&#8702;&nbsp;{{ titulo?.descripcion }}
-            </option>
-          </select>
-        </mat-form-field>
+              <option
+                *ngFor="let titulo of tablaTitResumen"
+                value="{{ titulo.indice }}"
+              >
+                {{ titulo?.item }}&nbsp;&#8702;&nbsp;{{ titulo?.descripcion }}
+              </option>
+            </select>
+          </mat-form-field>
+        </div>
+        <div class="col-md-6 col-xl-6 col-sm-12">
+          <mat-form-field
+            class="mff-reduc my-form-field col-8 wrapper-custom pl-0"
+            appearance="outline"
+            style="width: auto"
+          >
+            <mat-label>Detalle</mat-label>
+            <select
+              matNativeControl
+              [(ngModel)]="registrotab3"
+              (change)="changeVista2(getItemByIndice(registrotab3))"
+            >
+              <option
+                *ngFor="let titulo of dataSource1"
+                value="{{ titulo.id_registro }}"
+              >
+                {{ titulo?.detalle }}
+              </option>
+            </select>
+          </mat-form-field>
+        </div>
       </div>
       <div class="col-12" style="height: calc(-320px + 100vh); overflow: auto">
         <div class="px-0 overflow-auto">
@@ -305,7 +349,6 @@
                       [item]="row.item"
                       [separador]="'.'"
                       [partida]="row.unidad != ''"
-                      class="td-custom"
                       [ngClass]="{
                         recortatextlinea2: head == 'descripcion',
                         'row-seleccionado': filaExcelSel == row,
@@ -330,10 +373,22 @@
                       </ng-container>
                       <div
                         class="recortatextlinea"
+                         [style.padding-left.px]="head=='descripcion'?((row.item.toString().split('.').length-1)*5)+(row.unidad!=''?17:0):0"
+                      ngbTooltip="{{row.descripcion}}" #t="ngbTooltip" container="body"
                         [ngClass]="{
-                          'ml-1':(head == 'descripcion' &&!row.item&&row.nivel == 2),
-                          'ml-2':(head == 'descripcion' &&!row.item&&row.nivel == 0),
-                          'ml-3':(head == 'descripcion' &&!row.item&&(row.nivel == 1||row.nivel == 3))
+                          'ml-3':
+                            head == 'descripcion' &&
+                            !row.item &&
+                            row.nivel == 2,
+                          'ml-4':
+                            head == 'descripcion' &&
+                            !row.item &&
+                            row.nivel == 0,
+                          'ml-5':
+                            head == 'descripcion' &&
+                            !row.item &&
+                            (row.nivel == 1 || row.nivel == 3),
+                          'text-center':head!=='descripcion'&&head!='item'
                         }"
                       >
                         {{ row[head] }}
@@ -352,51 +407,15 @@
         </div>
       </div>
     </div>
-    <div class="col-xl-6 col-md-12 col-sm-12" style="margin-top: 40px">
-      <div style="overflow: auto">
-        <button
-          class="btn btn-mini bg-success float-right"
-          container="body"
-          style="margin-left: 1px"
-          *ngIf="!solover"
-          [disabled]="!filaExcelSel"
-          (click)="guardarCambios()"
-          ngbTooltip="Guardar cambios realizados"
-          type="button"
-          (mouseup)="quitarfoco($event)"
-        >
-          <i class="fa fa-save icono-but"
-            ><span
-              *ngIf="existeTempFP"
-              class="badge ballalert balert-danger"
-            ></span
-          ></i>
-        </button>
-        <button
-          class="btn btn-mini bg-danger float-right"
-          container="body"
-          style="margin-left: 1px"
-          *ngIf="!solover"
-          [disabled]="disabAcciones || existTempCI"
-          ngbTooltip="Descartar todos los cambios realizados"
-          type="button"
-          (mouseup)="quitarfoco($event)"
-          (click)="descartarTodosLoscambios()"
-        >
-          <i class="fa fa-power-off icono-but"></i>
-        </button>
-      </div>
-      <div
-        class="col-sm-12 col-md-7 col-lg-7"
-        style="padding-top: 15px"
-      >
+    <div class="col-xl-6 col-md-12 col-sm-12">
+      <div class="col-sm-12 col-md-7 col-lg-7" style="padding-top: 15px">
         <div class="row" style="margin-bottom: 2px">
           <div
             id="divbut"
             style="width: calc(100% - 20px); margin-right: 18px"
             class="hidescroll"
           >
-          <!-- tamaño -->
+            <!-- tamaño -->
             <div #box2 class="d-flex">
               <span *ngIf="scrollbut" class="icscrol-l" (click)="rigthDivBut2()"
                 ><i class="icofont icofont-caret-left icono-but"></i
@@ -416,7 +435,10 @@
                     ngbTooltip="Agregar fila vacia"
                     type="button"
                     container="body"
-                    [disabled]="!filaExcelSel||(!filaExcelSel.unidad&&!filaExcelSel.tieneSubmetrado)"
+                    [disabled]="
+                      !filaExcelSel ||
+                      (!filaExcelSel.unidad && !filaExcelSel.tieneSubmetrado)
+                    "
                     (mouseup)="quitarfoco($event)"
                   >
                     <i class="fa fa-plus icono-but"></i>
@@ -425,7 +447,10 @@
                     class="btn btn-mini btn-group-mini btn-outline-primary btn-gru-multiple"
                     [ngbPopover]="popOptions3"
                     type="button"
-                    [disabled]="!filaExcelSel||(!filaExcelSel.unidad&&!filaExcelSel.tieneSubmetrado)"
+                    [disabled]="
+                      !filaExcelSel ||
+                      (!filaExcelSel.unidad && !filaExcelSel.tieneSubmetrado)
+                    "
                     [placement]="['bottom', 'auto']"
                     ngbTooltip="Agregar Multiple filas vacias"
                     #p3="ngbPopover"
@@ -444,7 +469,11 @@
                     type="button"
                     ngbTooltip="Mover Arriba (CTRL +  &#x2B06;)"
                     (mouseup)="quitarfoco($event)"
-                    [disabled]="!filaExcelSel||(!filaExcelSel.unidad&&!filaExcelSel.tieneSubmetrado)||metradoSeleccionado?.id_fila==null"
+                    [disabled]="
+                      !filaExcelSel ||
+                      (!filaExcelSel.unidad && !filaExcelSel.tieneSubmetrado) ||
+                      metradoSeleccionado?.id_fila == null
+                    "
                   >
                     <i class="icofont icofont-arrow-up icono-but"></i>
                   </button>
@@ -456,32 +485,46 @@
                     type="button"
                     container="body"
                     (mouseup)="quitarfoco($event)"
-                    [disabled]="!filaExcelSel||(!filaExcelSel.unidad&&!filaExcelSel.tieneSubmetrado)||metradoSeleccionado?.id_fila==null"
+                    [disabled]="
+                      !filaExcelSel ||
+                      (!filaExcelSel.unidad && !filaExcelSel.tieneSubmetrado) ||
+                      metradoSeleccionado?.id_fila == null
+                    "
                   >
                     <i class="icofont icofont-arrow-down icono-but"></i>
                   </button>
-                 <button
-                      class="btn btn-mini btn-group-mini btn-outline-primary"
-                      (click)="subirNivelfila(null)"
-                      type="button"
-                      container="body"
-                      [ngbTooltip]="'Subir de Nivel (CTRL + &#x2B05;)'"
-                      (mouseup)="quitarfoco($event)"
-                      [disabled]="!filaExcelSel||(!filaExcelSel.unidad&&!filaExcelSel.tieneSubmetrado)||metradoSeleccionado?.id_fila==null||metradoSeleccionado?.tipofila==1"
-                    >
-                      <i class="icofont icofont-arrow-left icono-but"></i>
-                    </button>
-                    <button
-                      class="btn btn-mini btn-group-mini btn-outline-primary"
-                      (click)="bajarNivel(null)"
-                      container="body"
-                      type="button"
-                      [ngbTooltip]="'Bajar de nivel (CTRL + 	&#x27A1;)'"
-                      (mouseup)="quitarfoco($event)"
-                      [disabled]="!filaExcelSel||(!filaExcelSel.unidad&&!filaExcelSel.tieneSubmetrado)||metradoSeleccionado?.id_fila==null||metradoSeleccionado?.tipofila==4" 
-                    >
-                      <i class="icofont icofont-arrow-right cono-but"></i>
-                    </button>
+                  <button
+                    class="btn btn-mini btn-group-mini btn-outline-primary"
+                    (click)="subirNivelfila(null)"
+                    type="button"
+                    container="body"
+                    [ngbTooltip]="'Subir de Nivel (CTRL + &#x2B05;)'"
+                    (mouseup)="quitarfoco($event)"
+                    [disabled]="
+                      !filaExcelSel ||
+                      (!filaExcelSel.unidad && !filaExcelSel.tieneSubmetrado) ||
+                      metradoSeleccionado?.id_fila == null ||
+                      metradoSeleccionado?.tipofila == 1
+                    "
+                  >
+                    <i class="icofont icofont-arrow-left icono-but"></i>
+                  </button>
+                  <button
+                    class="btn btn-mini btn-group-mini btn-outline-primary"
+                    (click)="bajarNivel(null)"
+                    container="body"
+                    type="button"
+                    [ngbTooltip]="'Bajar de nivel (CTRL + 	&#x27A1;)'"
+                    (mouseup)="quitarfoco($event)"
+                    [disabled]="
+                      !filaExcelSel ||
+                      (!filaExcelSel.unidad && !filaExcelSel.tieneSubmetrado) ||
+                      metradoSeleccionado?.id_fila == null ||
+                      metradoSeleccionado?.tipofila == 4
+                    "
+                  >
+                    <i class="icofont icofont-arrow-right cono-but"></i>
+                  </button>
                   <button
                     class="btn btn-mini btn-group-mini btn-outline-primary"
                     (click)="copiarFila()"
@@ -489,7 +532,11 @@
                     type="button"
                     [ngbTooltip]="'Copiar Fila (con formato)'"
                     (mouseup)="quitarfoco($event)"
-                    [disabled]="!filaExcelSel||(!filaExcelSel.unidad&&!filaExcelSel.tieneSubmetrado)||metradoSeleccionado?.id_fila==null"
+                    [disabled]="
+                      !filaExcelSel ||
+                      (!filaExcelSel.unidad && !filaExcelSel.tieneSubmetrado) ||
+                      metradoSeleccionado?.id_fila == null
+                    "
                   >
                     <i class="icofont-copy icono-but pos-r-3"></i>
                   </button>
@@ -500,7 +547,11 @@
                     type="button"
                     (mouseup)="quitarfoco($event)"
                     container="body"
-                    [disabled]="!filaExcelSel||(!filaExcelSel.unidad&&!filaExcelSel.tieneSubmetrado)||metradoSeleccionado?.id_fila==null"
+                    [disabled]="
+                      !filaExcelSel ||
+                      (!filaExcelSel.unidad && !filaExcelSel.tieneSubmetrado) ||
+                      metradoSeleccionado?.id_fila == null
+                    "
                   >
                     <i class="fa fa-trash icono-but"></i>
                   </button>
@@ -511,7 +562,10 @@
                     type="button"
                     (mouseup)="quitarfoco($event)"
                     container="body"
-                    [disabled]="!filaExcelSel||(!filaExcelSel.unidad&&!filaExcelSel.tieneSubmetrado)"
+                    [disabled]="
+                      !filaExcelSel ||
+                      (!filaExcelSel.unidad && !filaExcelSel.tieneSubmetrado)
+                    "
                   >
                     <i class="icofont-delete-alt icono-but pos-r-3"></i>
                   </button>
@@ -528,7 +582,11 @@
                         : habilitarMultiple('checkbox')
                     "
                     container="body"
-                    [disabled]="!filaExcelSel||(!filaExcelSel.unidad&&!filaExcelSel.tieneSubmetrado)||metradoSeleccionado?.id_fila==null"
+                    [disabled]="
+                      !filaExcelSel ||
+                      (!filaExcelSel.unidad && !filaExcelSel.tieneSubmetrado) ||
+                      metradoSeleccionado?.id_fila == null
+                    "
                     type="button"
                     [ngbTooltip]="
                       habilitadoCopiar
@@ -565,7 +623,8 @@
                     type="button"
                     [ngbTooltip]="'Pegar Seleccionados'"
                     (mouseup)="quitarfoco($event)"
-                    [disabled]="!filaExcelSel||(!filaExcelSel.unidad&&!filaExcelSel.tieneSubmetrado)||metradoSeleccionado?.id_fila==null"
+                    [disabled]="(!arrayCopiadosMetrado?.length &&
+                    !celdasCopiadosMetrado.length)"
                   >
                     <i class="icofont-copy-invert icono-but pos-r-3"></i>
                   </button>
@@ -574,7 +633,12 @@
                     (click)="cortarSeleccionados()"
                     container="body"
                     type="button"
-                    [disabled]="habilitadoItem||!filaExcelSel||(!filaExcelSel.unidad&&!filaExcelSel.tieneSubmetrado)||metradoSeleccionado?.id_fila==null"
+                    [disabled]="
+                      habilitadoItem ||
+                      !filaExcelSel ||
+                      (!filaExcelSel.unidad && !filaExcelSel.tieneSubmetrado) ||
+                      metradoSeleccionado?.id_fila == null
+                    "
                     [ngbTooltip]="'Cortar Seleccionados'"
                     (mouseup)="quitarfoco($event)"
                   >
@@ -587,7 +651,11 @@
                     type="button"
                     [ngbTooltip]="'Eliminar Seleccionados'"
                     (mouseup)="quitarfoco($event)"
-                    [disabled]="!filaExcelSel||(!filaExcelSel.unidad&&!filaExcelSel.tieneSubmetrado)||metradoSeleccionado?.id_fila==null"
+                    [disabled]="
+                      !filaExcelSel ||
+                      (!filaExcelSel.unidad && !filaExcelSel.tieneSubmetrado) ||
+                      metradoSeleccionado?.id_fila == null
+                    "
                   >
                     <i class="fa fa-trash icono-but"></i>
                   </button>
@@ -598,11 +666,47 @@
                     type="button"
                     [ngbTooltip]="'Cancelar acción'"
                     (mouseup)="quitarfoco($event)"
-                    [disabled]="!filaExcelSel||(!filaExcelSel.unidad&&!filaExcelSel.tieneSubmetrado)||metradoSeleccionado?.id_fila==null"
+                    [disabled]="
+                      !filaExcelSel ||
+                      (!filaExcelSel.unidad && !filaExcelSel.tieneSubmetrado) ||
+                      metradoSeleccionado?.id_fila == null
+                    "
                   >
                     <i class="fa fa-ban icono-but"></i>
                   </button>
+                   <button
+                    class="btn btn-mini bg-success float-right"
+                    container="body"
+                    style="margin-left: 1px"
+                    *ngIf="!solover"
+                    [disabled]="!filaExcelSel"
+                    (click)="guardarCambios()"
+                    ngbTooltip="Guardar cambios realizados"
+                    type="button"
+                    (mouseup)="quitarfoco($event)"
+                  >
+                    <i class="fa fa-save icono-but"
+                      ><span
+                        *ngIf="existeTempFP"
+                        class="badge ballalert balert-danger"
+                      ></span
+                    ></i>
+                  </button>
+                  <button
+                    class="btn btn-mini bg-danger float-right"
+                    container="body"
+                    style="margin-left: 1px"
+                    *ngIf="!solover"
+                    [disabled]="disabAcciones || existTempCI"
+                    ngbTooltip="Descartar todos los cambios realizados"
+                    type="button"
+                    (mouseup)="quitarfoco($event)"
+                    (click)="descartarTodosLoscambios()"
+                  >
+                    <i class="fa fa-power-off icono-but"></i>
+                  </button>
                 </div>
+               
                 <span
                   *ngIf="scrollbut"
                   (click)="leftDivBut2()"
@@ -619,8 +723,117 @@
         id="tableBody2"
         style="height: calc(-320px + 100vh); overflow: auto"
       >
-        <table class="table-bordered tab-10">
+        <table class="table-bordered tab-10 table-m">
           <thead>
+            <tr class="tr1-sticky celda-excel">
+              <th colspan="7" class="text-center font-weight-bolder td-custom">
+                METRADOS DIARIOS
+              </th>
+              <td
+                colspan="2"
+                class="text-center font-weight-bolder td-custom"
+                style="
+                  background: white !important;
+                  max-width: 80px;
+                  min-width: 80px;
+                  width: 80px;
+                  color: black;
+                "
+              >
+                <ng-container>
+                  <div class="d-flex mr-0">
+                    <span>fx:</span>
+                    <div
+                      id="spanformula"
+                      style="font-size: 12px; font-weight: 900"
+                      (click)="verificarHabForm()"
+                    >
+                      <input
+                        #inputformulapart
+                        type="text"
+                        [value]="
+                          metradoSeleccionado?.id_fila !== null &&
+                          metradoSeleccionado?.id_fila !== '' &&
+                          (metradoSeleccionado?.tipofila == 3 ||
+                            metradoSeleccionado?.tipofila == 2)
+                            ? metradoSeleccionado?.formula != null &&
+                              metradoSeleccionado?.formula != ''
+                              ? metradoSeleccionado?.formula
+                              : 'B*C*D*E*F'
+                            : ''
+                        "
+                        id="inputFormulaMet"
+                        appAutoFocus
+                        onPaste="return false"
+                        allow="clipboard-read; clipboard-write"
+                        class="mayuscula"
+                        style="width: calc(100%)"
+                        (select)="inputformulapart.select()"
+                        autocomplete="off"
+                        (keyup)="teclaFormula($event.target.value)"
+                        (keyup.enter)="
+                          evaluarFormula($event.target.value, 'ent')
+                        "
+                        (blur)="evaluarFormula($event.target.value, 'blur')"
+                        [disabled]="metradoSeleccionado?.tipofila!==2&&metradoSeleccionado?.tipofila!==3"
+                      />
+                    </div>
+                    <button
+                      class="btn btn-mini2 btn-outline-secondary btn-c-dark"
+                      type="button"
+                      placement="bottom"
+                      [disabled]="
+                        !metradoSeleccionado ||
+                        metradoSeleccionado?.id_fila == null
+                      "
+                      container="body"
+                      ngbTooltip="Reiniciar Fórmula"
+                      (click)="reiniciarFormula()"
+                    >
+                      <i
+                        class="fa fa-refresh icono-but"
+                        style="font-size: 12px"
+                      ></i>
+                    </button>
+                    <button
+                      class="btn btn-mini2 btn-outline-secondary btn-c-dark"
+                      type="button"
+                      placement="bottom"
+                      [disabled]="
+                        !metradoSeleccionado ||
+                        metradoSeleccionado?.id_fila == null
+                      "
+                      container="body"
+                      ngbTooltip="Copiar Fórmula"
+                      (click)="copiarFormula()"
+                    >
+                      <i
+                        class="fa fa-clone icono-but"
+                        style="font-size: 12px"
+                      ></i>
+                    </button>
+                    <button
+                      class="btn btn-mini2 btn-outline-secondary btn-c-dark"
+                      type="button"
+                      placement="bottom"
+                      [disabled]="
+                        !metradoSeleccionado ||
+                        metradoSeleccionado?.id_fila == null ||
+                        formulaCopiada == null
+                      "
+                      container="body"
+                      ngbTooltip="Pegar Fórmula"
+                      (click)="pegarFormula()"
+                    >
+                      <i
+                        class="fa fa-copy icono-but"
+                        style="font-size: 12px"
+                      ></i>
+                    </button>
+                  </div>
+                </ng-container>
+              </td>
+            </tr>
             <tr class="headsticky header-custom">
               <th appAnchocol [ancho]="30">Nro</th>
               <th appAnchocol [ancho]="150">Descripcion</th>
@@ -632,18 +845,82 @@
               <th appAnchocol [ancho]="100">SubTotal</th>
               <th appAnchocol [ancho]="100">Total</th>
             </tr>
+            <tr>
+              <td
+                appAnchocol
+                [ancho]="30"
+                class="celda-excel bor-bot td-custom"
+              ></td>
+              <td
+                appAnchocol
+                [ancho]="150"
+                class="celda-excel bor-bot td-custom"
+              >
+                A
+              </td>
+              <td
+                appAnchocol
+                [ancho]="60"
+                class="celda-excel bor-bot td-custom"
+              >
+                B
+              </td>
+              <td
+                appAnchocol
+                [ancho]="60"
+                class="celda-excel bor-bot td-custom"
+              >
+                C
+              </td>
+              <td
+                appAnchocol
+                [ancho]="60"
+                class="celda-excel bor-bot td-custom"
+              >
+                D
+              </td>
+              <td
+                appAnchocol
+                [ancho]="60"
+                class="celda-excel bor-bot td-custom"
+              >
+                E
+              </td>
+              <td
+                appAnchocol
+                [ancho]="60"
+                class="celda-excel bor-bot td-custom"
+              >
+                F
+              </td>
+              <td
+                appAnchocol
+                [ancho]="100"
+                class="celda-excel bor-bot td-custom"
+              >
+                G
+              </td>
+              <td
+                appAnchocol
+                [ancho]="100"
+                class="celda-excel bor-bot td-custom"
+              >
+                H
+              </td>
+            </tr>
           </thead>
           <tbody>
-            <ng-container>
-              <!-- fechas antiguas -->
-            </ng-container>
+            <!-- <ng-container>
+               fechas antiguas 
+            </ng-container> -->
             <ng-container *ngIf="tablaSistema.length > 0">
               <tr
                 *ngFor="let row of tablaSistema; let i = index"
                 (click)="seleccionMetradoDiario(row, i)"
               >
                 <td
-                  appAnchocol [ancho]="30"
+                  appAnchocol
+                  [ancho]="30"
                   class="celda-excel text-center td-custom"
                 >
                   <ng-container
@@ -684,10 +961,11 @@
                     [ngClass]="{
                       'ml-1': row.tipofila == 1,
                       'ml-2': row.tipofila == 2,
-                      'ml-3': row.tipofila == 3||row.tipofila==4
+                      'ml-3': row.tipofila == 3 || row.tipofila == 4
                     }"
                   >
-                    <div  *ngIf="!row.editardescripcion"
+                    <div
+                      *ngIf="!row.editardescripcion"
                       class="recortatext1l"
                       [ngbTooltip]="row.id_fila !== null ? row.descripcion : ''"
                     >
@@ -719,9 +997,9 @@
                       seleccionCelda &&
                       IndexMetradoDiario == i &&
                       celdaInicio == 'cantidad',
-                    'c-select':
+                    'b-select':
                       IndexMetradoDiario == i &&
-                      ((mostrarColrs && pintarCelda('C')) ||
+                      ((mostrarColrs && pintarCelda('B')) ||
                         existeEdicion('C')),
                     celdaTabla: copiadoCeldas && evaluarPintadoCelda(i, 1)
                   }"
@@ -759,9 +1037,9 @@
                       seleccionCelda &&
                       IndexMetradoDiario == i &&
                       celdaInicio == 'n_veces',
-                    'd-select':
+                    'c-select':
                       IndexMetradoDiario == i &&
-                      ((mostrarColrs && pintarCelda('D')) ||
+                      ((mostrarColrs && pintarCelda('C')) ||
                         existeEdicion('D')),
                     celdaTabla: copiadoCeldas && evaluarPintadoCelda(i, 2)
                   }"
@@ -789,15 +1067,17 @@
                   class="td-custom text-center"
                   appAnchocol
                   [ancho]="60"
-                  (click)="
-                    habilitarEditarSistema('largo', i);"
+                  (click)="habilitarEditarSistema('largo', i)"
                   [ngClass]="{
-                    'row-seleccionado': IndexMetradoDiario == i && !copiadoCeldas,
+                    'row-seleccionado':
+                      IndexMetradoDiario == i && !copiadoCeldas,
                     celdaSeleccionada:
-                      seleccionCelda && IndexMetradoDiario == i && celdaInicio == 'largo',
-                    'e-select':
+                      seleccionCelda &&
                       IndexMetradoDiario == i &&
-                      ((mostrarColrs && pintarCelda('E')) ||
+                      celdaInicio == 'largo',
+                    'd-select':
+                      IndexMetradoDiario == i &&
+                      ((mostrarColrs && pintarCelda('D')) ||
                         existeEdicion('E')),
                     celdaTabla: copiadoCeldas && evaluarPintadoCelda(i, 3)
                   }"
@@ -825,16 +1105,17 @@
                   class="td-custom text-center"
                   appAnchocol
                   [ancho]="60"
-                  (click)="
-                    habilitarEditarSistema('ancho', i);
-                  "
+                  (click)="habilitarEditarSistema('ancho', i)"
                   [ngClass]="{
-                    'row-seleccionado': IndexMetradoDiario == i && !copiadoCeldas,
+                    'row-seleccionado':
+                      IndexMetradoDiario == i && !copiadoCeldas,
                     celdaSeleccionada:
-                      seleccionCelda && IndexMetradoDiario == i && celdaInicio == 'ancho',
-                    'f-select':
+                      seleccionCelda &&
                       IndexMetradoDiario == i &&
-                      ((mostrarColrs && pintarCelda('F')) ||
+                      celdaInicio == 'ancho',
+                    'e-select':
+                      IndexMetradoDiario == i &&
+                      ((mostrarColrs && pintarCelda('E')) ||
                         existeEdicion('F')),
                     celdaTabla: copiadoCeldas && evaluarPintadoCelda(i, 4)
                   }"
@@ -862,23 +1143,22 @@
                   class="td-custom text-center"
                   appAnchocol
                   [ancho]="60"
-                  (click)="
-                    habilitarEditarSistema('altura', i);
-                  "
+                  (click)="habilitarEditarSistema('altura', i)"
                   [ngClass]="{
-                    'row-seleccionado': IndexMetradoDiario == i && !copiadoCeldas,
+                    'row-seleccionado':
+                      IndexMetradoDiario == i && !copiadoCeldas,
                     celdaSeleccionada:
                       seleccionCelda &&
                       IndexMetradoDiario == i &&
                       celdaInicio == 'altura',
-                    'g-select':
+                    'f-select':
                       IndexMetradoDiario == i &&
-                      ((mostrarColrs && pintarCelda('G')) ||
+                      ((mostrarColrs && pintarCelda('F')) ||
                         existeEdicion('G')),
                     celdaTabla: copiadoCeldas && evaluarPintadoCelda(i, 5)
                   }"
-                 >
-                  <div *ngIf="!row.editaraltura" >
+                >
+                  <div *ngIf="!row.editaraltura">
                     <ng-container>{{ row.altura }} </ng-container>
                   </div>
                   <ng-container *ngIf="row.editaraltura">
@@ -897,21 +1177,36 @@
                     />
                   </ng-container>
                 </td>
-                <td appAnchocol [ancho]="100">{{row.subtotal | number: '0.2'}}</td>
-                <td appAnchocol [ancho]="100">{{row.parcial | number: '0.2'}}</td>
+                <td appAnchocol [ancho]="100" (dblclick)="mostrarColores(row)">
+                  {{ row.subtotal | number : "0.2" }}
+                </td>
+                <td appAnchocol [ancho]="100" (dblclick)="mostrarColores(row)">
+                  {{ row.parcial | number : "0.2" }}
+                </td>
               </tr>
               <tr class="footer-sticky filafoot">
-                  <td colspan="8" class="text-center"  [style.font-weight]="'bold'"><span >TOTAL</span></td>
-                  <td  [style.font-weight]="'bold'" appAnchocol [ancho]="100">
-                      <span  *ngIf="!esCero(auxtotal)&&auxtotal!==null&&auxtotal!=''">{{auxtotal|number: '0.2'}}</span>
-                  </td>
-                </tr>
+                <td
+                  colspan="8"
+                  class="text-center"
+                  [style.font-weight]="'bold'"
+                >
+                  <span>TOTAL</span>
+                </td>
+                <td [style.font-weight]="'bold'" appAnchocol [ancho]="100">
+                  <span
+                    *ngIf="
+                      !esCero(auxtotal) && auxtotal !== null && auxtotal != ''
+                    "
+                    >{{ auxtotal | number : "0.2" }}</span
+                  >
+                </td>
+              </tr>
             </ng-container>
             <ng-container *ngIf="tablaSistema.length <= 0">
               <tr>
                 <td class="mat-cell text-center" colspan="13">
                   <label *ngIf="!buscando2">No se encontraron resultados</label>
-                  <div *ngIf="buscando2" class="preloader3 loader-block">
+                  <div *  ngIf="buscando2" class="preloader3 loader-block">
                     <div class="circ1"></div>
                     <div class="circ2"></div>
                     <div class="circ3"></div>
@@ -931,7 +1226,106 @@
     class="card col-12"
     style="margin-bottom: 5px; padding-left: 0; padding-right: 0"
   >
-    
+    <div class="flex-container">
+      <mat-form-field
+        class="mff-reduc my-form-field col-8 wrapper-custom pl-0"
+        appearance="outline"
+        style="width: auto"
+      >
+        <mat-label>Detalle</mat-label>
+        <select
+          matNativeControl
+          [(ngModel)]="registrotab3"
+          (change)="changeVista2(getItemByIndice(registrotab3))"
+        >
+          <option
+            *ngFor="let titulo of dataSource1"
+            value="{{ titulo.id_registro }}"
+          >
+            {{ titulo?.detalle }}
+          </option>
+        </select>
+      </mat-form-field>
+      <div
+        class="flex-container"
+        style="display: flex; align-items: center; width: 100%"
+      >
+        <label class="mt-3">Activar Diario:</label>
+        <form [formGroup]="formulario1">
+          <div class="switch" style="margin-left: 10px">
+            <input
+              type="checkbox"
+              id="switch-p-89"
+              formControlName="activardiario"
+              (change)="ChangeOption()"
+            />
+            <label for="switch-p-89" class="cr" disabled></label>
+          </div>
+        </form>
+      </div>
+    </div>
+    <table class="mini-tabla tab-10" style="overflow: auto; display: list-item">
+      <thead>
+        <tr>
+          <th rowspan="2">Item</th>
+          <th rowspan="2">Descripcion</th>
+          <th rowspan="2">Uni</th>
+          <th rowspan="2">Metrado <br />Total</th>
+          <th rowspan="2">Metrado <br />Anterior</th>
+          <th *ngFor="let dia of diasCalendario2">
+            {{ dia.letraDia }}
+          </th>
+          <th rowspan="2">Metrado Ejecutado</th>
+          <th rowspan="2">Acumulado</th>
+          <th rowspan="2">Saldo</th>
+        </tr>
+        <tr>
+          <th *ngFor="let dia of diasCalendario2">
+            {{ dia.dia }}
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let row of this.tablavistametradodiario">
+          <ng-container>
+            <td class="text-left">{{ row.item }}</td>
+            <td class="text-left">{{ row.descripcion }}</td>
+            <td>{{ row.unidad }}</td>
+            <td>{{ row.cantidad | number : "0.2" }}</td>
+            <td>{{ row.metradoant | number : "0.2" }}</td>
+            <td
+              *ngFor="
+                let dato of getMontos(row.montodias, row.id);
+                let j = index
+              "
+              [style.cursor]="activarDiarios ? 'pointer' : 'default'"
+              (click)="
+                activarDiarios &&
+                  AbrilModalDiario(row, diasCalendario2[j].fecha, j)
+              "
+            >
+              {{ dato === 0 ? "" : (dato | number : "0.2") }}
+            </td>
+            <td>{{ row.total | number : "0.2" }}</td>
+            <td>
+              {{
+                row.unidad
+                  ? (row.total + row.metradoant | number : "0.2")
+                  : null
+              }}
+            </td>
+            <td>
+              {{
+                row.unidad
+                  ? (row.cantidad - (row.total + row.metradoant)
+                    | number : "0.2")
+                  : null
+              }}
+            </td>
+          </ng-container>
+        </tr>
+      </tbody>
+    </table>
   </app-card>
 </div>
 <app-modal-basic [dialogClass]="'modal-md'" #modalHojas>
@@ -1055,7 +1449,7 @@
           appearance="outline"
           class="mff-reduc col-sm-12 col-12 mt-2"
         >
-          <mat-label>Observacion</mat-label>
+          <mat-label>Comentario</mat-label>
           <input
             matInput
             type="text"
@@ -1088,19 +1482,156 @@
 </app-modal-basic>
 <ng-template #popOptions3>
   <div class="custom-popover custom-popover3">
-    <mat-form-field appearance="outline" class="mff-reduc w-100 mt-1 wrapper-custom pd0">
-      <input matInput [(ngModel)]="cantFil" type="text" [textMask]="this.formsService.maskUsAmountDecimal2"
-        class="text-center" autocomplete="off" onClick="this.select();" maxlength="2" />
+    <mat-form-field
+      appearance="outline"
+      class="mff-reduc w-100 mt-1 wrapper-custom pd0"
+    >
+      <input
+        matInput
+        [(ngModel)]="cantFil"
+        type="text"
+        [textMask]="this.formsService.maskUsAmountDecimal2"
+        class="text-center"
+        autocomplete="off"
+        onClick="this.select();"
+        maxlength="2"
+      />
     </mat-form-field>
     <div class="d-flex">
-      <button class="btn btn-secondary btn-mini2 w-50" (click)="agregarFilas(true)">
+      <button
+        class="btn btn-secondary btn-mini2 w-50"
+        (click)="agregarFilas(true)"
+      >
         Arriba
       </button>
-      <button class="btn btn-secondary btn-mini2 w-50" (click)="agregarFilas(false)">
+      <button
+        class="btn btn-secondary btn-mini2 w-50"
+        (click)="agregarFilas(false)"
+      >
         Abajo
       </button>
     </div>
   </div>
 </ng-template>
+<app-modal-basic #modalTotale [dialogClass]="'modal-lg'">
+  <div class="app-modal-header">
+    <h4 class="modal-title tit-modal1"><b>Resumen de Metrados Diarios</b></h4>
+    <button type="button" class="close basic-close" (click)="cerrarModal3()">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="app-modal-body">
+    <table class="table-bordered tab-10 table-p table-custom">
+      <thead>
+        <tr class="headsticky header-custom" style="height: 22px !important">
+          <th appAnchocol [ancho]="30">Nro</th>
+          <th appAnchocol [ancho]="150">Descripcion</th>
+          <th appAnchocol [ancho]="60">Cantidad</th>
+          <th appAnchocol [ancho]="60"># Veces</th>
+          <th appAnchocol [ancho]="60">Longitud</th>
+          <th appAnchocol [ancho]="60">Ancho</th>
+          <th appAnchocol [ancho]="60">Alto</th>
+          <th appAnchocol [ancho]="100">SubTotal</th>
+          <th appAnchocol [ancho]="100">Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        <ng-container *ngIf="tablaaux.length > 0">
+          <tr
+            *ngFor="let row of tablaaux; let i = index"
+            style="height: 22px !important"
+          >
+            <td class="td-custom text-center" appAnchocol [ancho]="30">
+              <span>{{ i + 1 }}</span>
+            </td>
+            <td class="td-custom text-left" appAnchocol [ancho]="150">
+              <div
+                [ngClass]="{
+                  'ml-1': row.tipofila == 1,
+                  'ml-2': row.tipofila == 2,
+                  'ml-3': row.tipofila == 3 || row.tipofila == 4
+                }"
+              >
+                {{ row.descripcion }}
+              </div>
+            </td>
+            <td class="td-custom text-center" appAnchocol [ancho]="60">
+              {{ row.cantidad | number : "0.2" }}
+            </td>
+            <td class="td-custom text-center" appAnchocol [ancho]="60">
+              {{ row.n_veces | number : "0.2" }}
+            </td>
+            <td class="td-custom text-center" appAnchocol [ancho]="60">
+              {{ row.largo | number : "0.2" }}
+            </td>
+            <td class="td-custom text-center" appAnchocol [ancho]="60">
+              {{ row.ancho | number : "0.2" }}
+            </td>
+            <td class="td-custom text-center" appAnchocol [ancho]="60">
+              {{ row.altura | number : "0.2" }}
+            </td>
+            <td class="td-custom text-right" appAnchocol [ancho]="100">
+              {{ row.subtotal | number : "0.2" }}
+            </td>
+            <td class="td-custom text-right" appAnchocol [ancho]="100">
+              {{ row.parcial | number : "0.2" }}
+            </td>
+          </tr>
+          <tr class="footer-sticky filafoot">
+            <td colspan="8" class="text-center" [style.font-weight]="'bold'">
+              <span>TOTAL</span>
+            </td>
+            <td
+              [style.font-weight]="'bold'"
+              appAnchocol
+              [ancho]="100"
+              class="text-right"
+            >
+              <span
+                *ngIf="
+                  !esCero(nuevoauxtotal) &&
+                  nuevoauxtotal !== null &&
+                  nuevoauxtotal != ''
+                "
+                >{{ nuevoauxtotal | number : "0.2" }}</span
+              >
+            </td>
+          </tr>
+        </ng-container>
+        <ng-container *ngIf="tablaaux.length <= 0">
+          <tr>
+            <td class="mat-cell text-center" colspan="13">
+              <label *ngIf="!buscando2">No se encontraron resultados</label>
+              <div *ngIf="buscando2" class="preloader3 loader-block">
+                <div class="circ1"></div>
+                <div class="circ2"></div>
+                <div class="circ3"></div>
+                <div class="circ4"></div>
+              </div>
+            </td>
+          </tr>
+        </ng-container>
+      </tbody>
+    </table>
+  </div>
+  <div class="app-modal-footer w-100">
+    <div class="row px-3 justify-content-between">
+      <button
+        type="button"
+        class="btn btn-sm btn-secondary ripple"
+        (click)="cerrarModal3()"
+      >
+        Cerrar
+      </button>
+      <button
+        type="button"
+        class="btn btn-sm btn-success ripple"
+        (click)="cerrarModal3()"
+      >
+        OK
+      </button>
+    </div>
+  </div>
+</app-modal-basic>
 <app-cargando [bloquearTodo]="true" *ngIf="mostrar_carga_todo"></app-cargando>
 <app-cargando [bloquearTodo]="false" *ngIf="mostrar_carga"></app-cargando>

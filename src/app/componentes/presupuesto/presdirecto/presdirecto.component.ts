@@ -9524,7 +9524,8 @@ export class PresdirectoComponent implements OnInit,OnDestroy {
       // let res=await this.presuservice.ReiniciarPresupuesto({id_proyecto:this.id_proyecto,id_usuario:this.id_userproy});
       // console.log(res)
       let res=await this.presuservice.limpiarTopPresupuesto({id_proyecto:this.id_proyecto});
-      if(res[0]?.id=="1"){
+      console.log(res)
+      if(res?.id=="1"){
         this.datasourcePri=[];
         this.datasourcePriacu=[];
         this.datasourcePrisub=[];

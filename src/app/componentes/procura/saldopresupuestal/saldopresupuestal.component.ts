@@ -54,7 +54,6 @@ export class SaldopresupuestalComponent implements OnInit {
     this.id_proyecto=this.filareg.id_proyecto
     this.simbolo=this.filareg.simbolo
     this.aspectos = this.colproy?JSON.parse(this.colproy):null;
-    console.log(this.filareg)
     this.pintar();
     let decimales = this.decproy;
     if(decimales?.toString().includes('|')){
@@ -72,7 +71,6 @@ export class SaldopresupuestalComponent implements OnInit {
       this.buscando1=true;
       let tablares=await this._logisticaService.ListarSaldoPresu({id_proyecto:this.id_proyecto,id_registro:this.id_reg,fuente:this.filareg.excuagru});//falta 1 parametro this.filareg
       if(tablares){
-        console.log(tablares)
         this.dataSource2=tablares;//presupuesto
       }
       this.buscando1=false;
@@ -156,7 +154,8 @@ export class SaldopresupuestalComponent implements OnInit {
       this.datosproy=detalleProyecto;
     }
     //columnas con moneda: PRECIO,PARCIAL,
-    const arrayHeader = ['ITEM', 'DESCRIPCION', 'UNIDAD', 'METRADO', 'PRECIO', 'PARCIAL','METRADO','PARCIAL','%','METRADO','PARCIAL','%','METRADO SOLICITADO','PARCIAL','%SOL']//PRECIO,PARCIAL son columnas con moneda
+    const arrayHeader =[[{text:'ITEM',colSpan:1,rowSpan:2},{text:'DESCRIPCION',colSpan:1,rowSpan:2},{text:'UNIDAD',colSpan:1,rowSpan:2},{text:'PRESUPUESTO APROBADO',colSpan:3,rowSpan:1},{text:'PRESUPUESTO UTILIZADO',colSpan:3,rowSpan:1},{text:'SALDO PROYECTO',colSpan:3,rowSpan:1},{text:'PRESUPUESTO SOLICITADO',colSpan:3,rowSpan:1} ],
+    [{text:'METRADO',colSpan:1,rowSpan:1}, {text:'PRECIO',colSpan:1,rowSpan:1}, {text:'PARCIAL',colSpan:1,rowSpan:1},{text:'METRADO',colSpan:1,rowSpan:1},{text:'PARCIAL',colSpan:1,rowSpan:1},{text:'%',colSpan:1,rowSpan:1},{text:'METRADO',colSpan:1,rowSpan:1},{text:'PARCIAL',colSpan:1,rowSpan:1},{text:'%',colSpan:1,rowSpan:1},{text:'METRADO SOLICITADO',colSpan:1,rowSpan:1},{text:'PARCIAL',colSpan:1,rowSpan:1},{text:'%SOL',colSpan:1,rowSpan:1}]]
     const arrayKeys = ['item', 'descripcion', 'unidad', 'metrado', 'precio', 'parcial','metradouti','parcialuti','porcuti','metradosal','parcialsal','porcsal','metradosol','parcialsol','porcsol']
     const arrdec=[null,null,null,this.dec_metrado,this.dec_precio,this.dec_parcial,this.dec_metrado,this.dec_parcial,null,this.dec_metrado,this.dec_parcial,null,this.dec_metrado,this.dec_parcial,null];
     const arralig=['left','left','center','right','right','right','right','right','center','right','right','center','right','right','center'];
@@ -274,7 +273,6 @@ export class SaldopresupuestalComponent implements OnInit {
       titulos:arrtit,
       dec_parcial:this.dec_parcial,
     }
-    console.log(datos)
     const modalRef = this.modalService.open(ReportesComponent, { size: 'lg modalgrande', backdrop: 'static', windowClass: 'pcoded', keyboard: false, });
     modalRef.componentInstance.datos = datos;
     const result = await modalRef.result;
