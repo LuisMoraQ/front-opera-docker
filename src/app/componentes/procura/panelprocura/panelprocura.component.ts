@@ -78,6 +78,7 @@ export class PanelprocuraComponent implements OnInit {
   tot_asig2:any;
   tot_util2:any;
   promporc2:any;
+  esSecund=false
 
   @ViewChild("modalmodadqui") modalmodadqui: ModalBasicComponent;
   FrmModadqui = new FormGroup({
@@ -125,6 +126,9 @@ export class PanelprocuraComponent implements OnInit {
         this.solover=true;
       }
     }
+    //usuario principal puede cambiar a aprobado
+    let uidadmin = await this.encriptadorService.recuperarlocalstory('id_admin');
+    this.esSecund=id_user!=uidadmin?true:false;
     let decimales = this.decima;
     if(decimales?.toString().includes('|')){
       let arrdec=decimales.split('|');

@@ -323,4 +323,13 @@ export class LogisticaService {
       catchError(err => throwError(err))
     ).toPromise()
   }
+  ActEstadoMovAlmcReg(params = {}): Promise<any> {
+    const url = this.enviUrl + '/api/almacen/actEstMovalmcRegistro';
+    return this.http.post<any>(url, this.Cargafrmdata(params)).pipe(
+      map(res => {
+        return res
+      }),
+      catchError(err => throwError(err))
+    ).toPromise()
+  }
 }

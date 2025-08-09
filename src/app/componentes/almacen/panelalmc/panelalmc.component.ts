@@ -7,6 +7,7 @@ import * as moment from 'moment';
 import { SwalService } from 'src/app/servicios/swal.service';
 import { LogisticaService } from 'src/app/servicios/logistica.service';
 import { FormsService } from 'src/app/servicios/forms.service';
+import { PrincipalService } from 'src/app/servicios/principal.service';
 
 @Component({
   selector: 'app-panelalmc',
@@ -58,6 +59,7 @@ export class PanelalmcComponent implements OnInit {
   dataSource1=[]
   fila1_sel=-1
   buscando1=false
+  esSecund=false
 
   @ViewChild("modalagre0") modalagre0: ModalBasicComponent;
   FrmAgre0 = new FormGroup({
@@ -72,12 +74,22 @@ export class PanelalmcComponent implements OnInit {
   constructor(
     private _logisticaService:LogisticaService,
     private _EncriptadorService:EncriptadorService,
+    private principalService:PrincipalService,
     public formService: FormsService,
     private toaster: ToastrService,
   ) { }
 
   async ngOnInit() {
-    console.log('entra')
+    let id_user = await this._EncriptadorService.recuperarlocalstory('idusuario');
+    const datoaccs = await this.principalService.ConfgsAsignaUserProy({id_proyecto: this.id_proyecto,id_usuario:id_user});
+    if(datoaccs?.length>0){//accesos para usuarios secundarios
+      if(datoaccs[0].movalmc==0){
+        this.solover=true;
+      }
+    }
+    //usuario principal puede cambiar a aprobado
+    let uidadmin = await this._EncriptadorService.recuperarlocalstory('id_admin');
+    this.esSecund=id_user!=uidadmin?true:false;
     //listar y otras funciones
     let resfec = await this._EncriptadorService.FechaActualBack();
     if (resfec.id == 1) {
@@ -318,6 +330,54 @@ export class PanelalmcComponent implements OnInit {
   ListarExterno(val:any){
     if(val==1){
       this.Listar1();
+    }
+  }
+  async cambiarmodo1(row:any,caso:any){//caso 0:Cambio de borrador, asigna fecha ,1:cambio de Verificar no asigna fecha
+    if(caso==0){
+      const sw = await SwalService.confirm('Estas seguro?', 'Una vez realizada la acción cambiara a MODO APROBADO, ya no podra editar los registros!')
+      if (sw.isConfirmed) {
+        this.mostrar_carga=true;
+        let resp=await this._logisticaService.ActEstadoMovAlmcReg({id_proyecto:this.id_proyecto,idregmov:row.idregmov});
+        this.fila1_sel=-1
+        this.filareg=null
+        this.mostrar_carga=false;
+        if(resp){
+          if(resp[0].id=="1"){
+            SwalService.success('Correcto', resp[0].mensaje)
+          }
+          else{
+            SwalService.error('Advertencia', resp[0].mensaje);
+          }
+        }
+        else{
+          SwalService.error('Advertencia', 'No se pudo realizar la operación');
+        }
+        await this.Listar1();
+        this.mostrar_carga=false;
+      }
+    }
+    else{
+      const sw = await SwalService.confirm('Estas seguro?',null,'Una vez realizada la acción cambiara a MODO APROBADO, ya no podra editar los registros!');
+      if (sw.isConfirmed) {
+        this.mostrar_carga=true;
+        let resp=await this._logisticaService.ActEstadoMovAlmcReg({id_proyecto:this.id_proyecto,idregmov:row.idregmov});
+        this.fila1_sel=-1
+        this.filareg=null
+        this.mostrar_carga=false;
+        if(resp){
+          if(resp[0].id=="1"){
+            SwalService.success('Correcto', resp[0].mensaje)
+          }
+          else{
+            SwalService.error('Advertencia', resp[0].mensaje);
+          }
+        }
+        else{
+          SwalService.error('Advertencia', 'No se pudo realizar la operación');
+        }
+        await this.Listar1();
+        this.mostrar_carga=false;
+      }
     }
   }
 }

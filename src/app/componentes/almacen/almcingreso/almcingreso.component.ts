@@ -63,6 +63,7 @@ export class AlmcingresoComponent implements OnInit {
 
   //agregar ingreso
   @ViewChild("modalIngreso1") modalIngreso1: ModalBasicComponent;
+  @ViewChild("modalVerIng") modalVerIng: ModalBasicComponent;
   nroingreso='';
   fechaingreso='';
   nroreqsel:any;
@@ -75,6 +76,8 @@ export class AlmcingresoComponent implements OnInit {
   paddingscrollm=17
   paddingscroll2n=17
   paddingscrolln=17
+  paddingscroll2v=17
+  paddingscrollv=17
 
   dataSource5= [];
   fila5_sel=-1;
@@ -102,7 +105,7 @@ export class AlmcingresoComponent implements OnInit {
     this.id_reg=this.filareg.idregmov;
     this.id_proyecto=this.filareg.id_proyecto
     this.simbolo=this.filareg.simbolo
-    this.solover=this.filareg.solover
+    this.solover=this.filareg.estado==1?true:this.filareg.solover
     //evitar salto de tabla por scroll
     let resto=this.solover?70:90;
     this.widthm1b2=(window.innerWidth/2)-resto;
@@ -202,6 +205,17 @@ export class AlmcingresoComponent implements OnInit {
       let sizeef2 = element.offsetHeight - element.clientHeight;
       if (this.paddingscroll2n != sizeef2) {
         this.paddingscroll2n = sizeef2;
+      }
+    }
+    var element = document.getElementById('tableBodyv');
+    if (element != undefined) {
+      let sizeef = element.offsetWidth - element.clientWidth;
+      if (this.paddingscrollv != sizeef) {
+        this.paddingscrollv = sizeef;
+      }
+      let sizeef2 = element.offsetHeight - element.clientHeight;
+      if (this.paddingscroll2v != sizeef2) {
+        this.paddingscroll2v = sizeef2;
       }
     }
   }
@@ -372,7 +386,7 @@ export class AlmcingresoComponent implements OnInit {
             this.tab3auxtotalparc=this.tab3totalparc;
             this.tab3auxtotalsal=this.tab3totalsal;
             
-            let res=await this._logisticaService.UltNroIngAlmcobra({id_proyecto:this.id_proyecto,idregmov:this.id_reg});
+            let res=await this._logisticaService.UltNroIngAlmcobra({id_proyecto:this.id_proyecto});
             if(res.length>0){
               this.nroingreso=res[0].ultimo;
             }
@@ -1026,5 +1040,100 @@ export class AlmcingresoComponent implements OnInit {
     this.dataSource5.splice(ind,1);
     this.bcambiost5=true;
     this.TotalSaldo(this.dataSource3aux);
+  }
+  VerIngreso(rowi:any){
+    if(rowi)
+    {
+      let tipofila=rowi.unidad==''?1:0;
+      if(tipofila==1){
+        this.editaing=true;
+        // this.nroreqsel=this.dataSource2[this.fila2_sel].idgrupo;
+        // this.detreqsol=this.dataSource2[this.fila2_sel].descripcion;
+        // this.lugreqsol=this.dataSource2[this.fila2_sel].entrega;
+        this.nroingreso=rowi.nroingreso;
+        this.fechaingreso=rowi.fecha;
+        this.fechaSal=this.fechaingreso
+        for(let i=0;i<this.dataSource4.length;i++){
+          if(this.dataSource4[i].nroingreso==this.nroingreso && this.dataSource4[i].unidad!='')
+          {
+            // let indicepri=-1;
+            // for(let j=0;j<this.dataSource3aux.length;j++){
+            //   if(this.dataSource3aux[j].id_registro==this.dataSource4[i].id_registro && this.dataSource3aux[j].idgrupo==this.dataSource4[i].idgrupo &&
+            //   this.dataSource3aux[j].idfila==this.dataSource4[i].idfila && this.dataSource3aux[j].indrep==this.dataSource4[i].indrep){
+            //     this.dataSource3aux[j].seleccion=2;//actualizar y buscar el indice correspondiente a la fila
+            //     indicepri=j;
+            //     break;
+            //   }
+            // }
+            let ejm={id_proyecto:this.id_proyecto,idregmov:this.id_reg,nroingreso:this.nroingreso,idingreso:this.dataSource4[i].idingreso,
+              id_registro:this.dataSource4[i].id_registro,idgrupo:this.dataSource4[i].idgrupo,idfila:this.dataSource4[i].idfila,indrep:this.dataSource4[i].indrep,
+              codigo:this.dataSource4[i].codigo,descripcion:this.dataSource4[i].descripcion,unidad:this.dataSource4[i].unidad,
+              cantidad:this.dataSource4[i].cantidad,precio:this.dataSource4[i].precio,parcial:this.dataSource4[i].parcial,indice3:/* indicepri */null,editar:0};
+            this.dataSource5.push(ejm);
+          }
+        }
+        this.tott5=rowi.parcial;
+        this.mostrar_carga_todo=false;
+        this.modalVerIng.show();
+      }
+    }
+  }
+  cerrarModalVerIng(){
+    this.editaing=false;
+    this.fechaingreso=null;
+    this.dataSource5=[];
+    this.tott5='0.00';
+    this.modalVerIng.hide();
+  }
+  SyncScrollv() {
+    try{
+      if (this.preventscroll) {
+        this.preventscroll = false;
+        return;
+      }
+      this.preventscroll = true;
+      var face2 = document.getElementById("tableBodyv");
+      var face3 = document.getElementById("tableFootv");
+      face3.scrollLeft = face2.scrollLeft;
+    }
+    catch(ex){}
+  }
+  SyncScroll2v() {
+    try{
+      if (this.preventscroll) {
+        this.preventscroll = false;
+        return;
+      }
+      this.preventscroll = true;
+      var face2 = document.getElementById("tableBodyv");
+      var face3 = document.getElementById("tableFootv");
+      face2.scrollLeft = face3.scrollLeft;
+    }catch(ex){}
+  }
+  Imprimir(rowi:any){
+    //usar variables temporales, no usar this.nroingreso,this.fechaingreso,this.fechaSal,this.datasource5
+    console.log(this.filareg)//datos de la registro principal tab 1
+    if(rowi)//rowi es la fila seleccionada para imprimir
+    {
+      let tipofila=rowi.unidad==''?1:0;
+      if(tipofila==1){
+        this.nroingreso=rowi.nroingreso;
+        this.fechaingreso=rowi.fecha;
+        this.fechaSal=this.fechaingreso
+        for(let i=0;i<this.dataSource4.length;i++){
+          if(this.dataSource4[i].nroingreso==this.nroingreso && this.dataSource4[i].unidad!='')
+          {
+            let ejm={id_proyecto:this.id_proyecto,idregmov:this.id_reg,nroingreso:this.nroingreso,idingreso:this.dataSource4[i].idingreso,
+              id_registro:this.dataSource4[i].id_registro,idgrupo:this.dataSource4[i].idgrupo,idfila:this.dataSource4[i].idfila,indrep:this.dataSource4[i].indrep,
+              codigo:this.dataSource4[i].codigo,descripcion:this.dataSource4[i].descripcion,unidad:this.dataSource4[i].unidad,
+              cantidad:this.dataSource4[i].cantidad,precio:this.dataSource4[i].precio,parcial:this.dataSource4[i].parcial,indice3:/* indicepri */null,editar:0};
+            this.dataSource5.push(ejm);//datos de los detalles de la nota de entrada
+          }
+        }
+        this.tott5=rowi.parcial;//total de la nota de entrada
+        this.mostrar_carga_todo=false;
+        //this.modalVerIng.show();
+      }
+    }
   }
 }

@@ -1000,8 +1000,9 @@ export class CompatinsumosComponent implements OnInit {
       let nparc=this.formService.redondeo((valor*acantidad),this.dec_parcial);
       this.dataSource8[ind].precio=this.formService.redondeo(Number(valor),this.dec_precio);
       this.dataSource8[ind].parcial=nparc;
+      let nacumu=0;
       if(this.dataSource8[ind].princi==1){
-        let nacumu=Number(this.dataSource8[ind].acumulado)-pactual+Number(nparc);
+        nacumu=Number(this.dataSource8[ind].acumulado)-pactual+Number(nparc);
         this.dataSource8[ind].acumulado=this.formService.redondeo(nacumu,this.dec_parcial);
       }
       else{
@@ -1012,8 +1013,8 @@ export class CompatinsumosComponent implements OnInit {
             indacu=j; break;
           }
         }
-        let suma=Number(this.dataSource8[indacu].acumulado)-pactual+Number(nparc);//agrupacion suma tabla8
-        this.dataSource8[indacu].acumulado=this.formService.redondeo(suma,this.dec_parcial);//agrupacion suma tabla8
+        nacumu=Number(this.dataSource8[indacu].acumulado)-pactual+Number(nparc);//agrupacion suma tabla8
+        this.dataSource8[indacu].acumulado=this.formService.redondeo(nacumu,this.dec_parcial);//agrupacion suma tabla8
       }
       this.bcambiost8=true;
       //agregar tambien a data
@@ -1036,6 +1037,24 @@ export class CompatinsumosComponent implements OnInit {
       let varia=this.formService.redondeo((((parcialgru-(reqsoli+paragre))/parcialgru)*100),2);
       this.dataSource6[this.fila6_sel].variacion=this.dataSource6[this.fila6_sel].complemento==1?'':varia;
       this.dataSource6[this.fila6_sel].accion=1
+      //para los saldos
+      let indgrupo=-1;
+      for(let j=0;j<this.dataSource7.length;j++){//para condicionar si existe
+        if(this.dataSource7[j].idgrupo==this.dataSource8[ind].idgrupo && this.dataSource7[j].idfila==this.dataSource8[ind].idfila)
+        {
+          indgrupo=j;
+        }
+      }
+      let parc1=Number(this.dataSource7[indgrupo].parcial);
+      let sald=(((parc1-(nacumu))/parc1)*100);
+      for(let row of this.dataSource6){
+        if(row.idgrupo==this.dataSource8[ind].idgrupo && row.idfila==this.dataSource8[ind].idfila){
+          row.saldo=sald<0?'0.00':this.formService.redondeo(sald,2);
+          row.accion=1;
+          break;
+        }
+      }
+      this.dataSource7[indgrupo].saldo=sald<0?'0.00':this.formService.redondeo(sald,2);
       this.cargartabla8mostrar(this.idcomple);//TAMBIEN ES NECESARIO?
     }
   }

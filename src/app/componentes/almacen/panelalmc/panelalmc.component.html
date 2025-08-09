@@ -100,22 +100,30 @@
                   <div class="progressj-fill" [ngStyle]="{'width': row.porcsaldo+'%' }"></div>
                 </div>
               </td>
-              <td appAnchocol [ancho]="54"> 
-                <label *ngIf="row.estado==0  && row.fechaini!=''" class="label spanest" style="background-color: 'darkorange';font-size: 85%;">Pendiente</label>
-                <label *ngIf="row.estado==1  && row.fechaini!=''" class="label label-success spanest" style="font-size: 85%;">Aprobado</label>
-                <label *ngIf="row.estado==2  && row.fechaini!=''" class="label label-danger spanest" style="font-size: 85%;">Observado</label>
+              <td appAnchocol [ancho]="54">
+                <ng-container *ngIf="esSecund">
+                  <label *ngIf="row.estado==0  && row.fechaini!=''" class="label spanest cpoint" style="background-color: 'darkorange';font-size: 85%;">Pendiente</label>
+                  <label *ngIf="row.estado==1  && row.fechaini!=''" class="label label-success spanest" style="font-size: 85%;">Aprobado</label>
+                  <label *ngIf="row.estado==2  && row.fechaini!=''" class="label label-danger spanest" style="font-size: 85%;">Observado</label>
+                </ng-container>
+                <ng-container *ngIf="!esSecund">
+                  <label *ngIf="row.estado==0  && row.fechaini!=''" class="label spanest cpoint" style="background-color: 'darkorange';font-size: 85%;" placement="left" 
+                  ngbTooltip="Hacer clic para Cambiar a Definitivo" container="body" (click)="cambiarmodo1(row,0)">Pendiente</label>
+                  <label *ngIf="row.estado==1  && row.fechaini!=''" class="label label-success spanest" style="font-size: 85%;">Aprobado</label>
+                  <label *ngIf="row.estado==2  && row.fechaini!=''" class="label label-danger spanest" style="font-size: 85%;">Observado</label>
+                </ng-container>
               </td>
               <td appAnchocol [ancho]="100">
                 {{row.fecha}}
               </td>
-              <td appAnchocol [ancho]="65"> 
-                <button type="button" *ngIf="row.fecha!='' && row.estado!=1" class="btn btn-mini2 btn-primary" placement="top" ngbTooltip="Editar" container="body" style="margin-right: 2px; margin-top: 1px; margin-bottom: 1px;"  (click)="Editar1(row);" (mouseup)="quitarfoco($event);">
+              <td appAnchocol [ancho]="65">
+                <button type="button" *ngIf="!solover && row.fecha!='' && row.estado!=1" class="btn btn-mini2 btn-primary" placement="top" ngbTooltip="Editar" container="body" style="margin-right: 2px; margin-top: 1px; margin-bottom: 1px;"  (click)="Editar1(row);" (mouseup)="quitarfoco($event);">
                   <i class="fa fa-edit icono-but"></i>
                 </button>
-                <button type="button" *ngIf="row.fecha!='' && row.estado==1" class="btn btn-mini2 btn-info" placement="top" ngbTooltip="Ver" container="body" style="margin-right: 2px; margin-top: 1px; margin-bottom: 1px;" (click)="Ver1(row);" (mouseup)="quitarfoco($event);">
+                <button type="button" *ngIf="!solover && row.fecha!='' && row.estado==1" class="btn btn-mini2 btn-info" placement="top" ngbTooltip="Ver" container="body" style="margin-right: 2px; margin-top: 1px; margin-bottom: 1px;" (click)="Editar1(row);" (mouseup)="quitarfoco($event);">
                   <i class="fa fa-search icono-but"></i>
                 </button>
-                <button type="button" *ngIf="row.fecha!='' && row.estado==0" class="btn btn-mini2 btn-danger" placement="top" ngbTooltip="Eliminar Registro" container="body" (click)="Eliminar1(row)" (mouseup)="quitarfoco($event);">
+                <button type="button" *ngIf="!solover && row.fecha!='' && row.estado==0" class="btn btn-mini2 btn-danger" placement="top" ngbTooltip="Eliminar Registro" container="body" (click)="Eliminar1(row)" (mouseup)="quitarfoco($event);">
                   <i class="fa fa-remove icono-but"></i>
                 </button>
               </td>

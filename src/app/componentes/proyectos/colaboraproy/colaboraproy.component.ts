@@ -140,25 +140,23 @@ export class ColaboraproyComponent implements OnInit {
       //cargar usuarios
       this.valactivo=row.asignado==1?true:false;
       this.tablaUser=[];
-      this.tablaUser.push({user:'Principal',nombres:this.nomUsuario.replace('"',''),edpresu:'1',menu_proy:'1|1|1|1|1|1|1|1|1'});
+      this.tablaUser.push({user:'Principal',nombres:this.nomUsuario.replace('"',''),edpresu:'1',menu_proy:'1|1|1|1|1|1|1|1|1|1|1'});
       for(let fil=0;fil<this.secundarios.length;fil++){
         this.tablaUser.push({user:'Secundario '+(fil+1),nombres:this.secundarios[fil].nombres,edpresu:this.secundarios[fil].edpresu,menu_proy:this.secundarios[fil].menu_proy});
       }
       this.proysel=row.id_proyecto;
-      this.tablaPrinc=[];
+      this.tablaPrinc=[]
       this.buscando2 = true;
       await this.listarTitulos(row.id_proyecto);
       let datos=await this.principalService.ListarProyAsig({id_proyecto:row.id_proyecto});
-      this.tablaPrinc=[];
       console.log(datos)
+      this.tablaPrinc=[]
       if(datos?.length>0){
-        let addfil=this.crearFila(1,0,1,null,'PRESUPUESTO DIRECTO',datos[0].presu,datos.length>=2?datos[1].presu:0,datos.length>=3?datos[2].presu:0,datos.length>=4?datos[3].presu:0,datos.length>=5?datos[4].presu:0,1);
-        this.tablaPrinc.push(addfil);
-        addfil=this.crearFila(2,0,2,null,'COSTOS INDIRECTOS',datos[0].indir,datos.length>=2?datos[1].indir:0,datos.length>=3?datos[2].indir:0,datos.length>=4?datos[3].indir:0,datos.length>=5?datos[4].indir:0,2);
+        let addfil=this.crearFila(1,0,1,null,'REGISTRO DE ACTIVIDADES',datos[0].registroacti,datos.length>=2?datos[1].registroacti:0,datos.length>=3?datos[2].registroacti:0,datos.length>=4?datos[3].registroacti:0,datos.length>=5?datos[4].registroacti:0,2);
         this.tablaPrinc.push(addfil);
         //addfil=this.crearFila(3,0,3,null,'HOJAS DE METRADO',datos[0].metra/* this.titulos.length>0?3:1 */,this.titulos.length>0?3:0,this.titulos.length>0?3:0,this.titulos.length>0?3:0,this.titulos.length>0?3:0);
-        addfil=this.crearFila(3,0,3,null,'HOJAS DE METRADO',datos[0].metra,datos.length>=2?datos[1].metra:(this.titulos.length>0?3:0),datos.length>=3?datos[2].metra:(this.titulos.length>0?3:0),
-        datos.length>=4?datos[3].metra:(this.titulos.length>0?3:0),datos.length>=5?datos[4].metra:(this.titulos.length>0?3:0),3);
+        addfil=this.crearFila(2,0,2,null,'REGISTRO DE METRADOS',datos[0].registrometra,datos.length>=2?datos[1].registrometra:(this.titulos.length>0?3:0),datos.length>=3?datos[2].registrometra:(this.titulos.length>0?3:0),
+        datos.length>=4?datos[3].registrometra:(this.titulos.length>0?3:0),datos.length>=5?datos[4].registrometra:(this.titulos.length>0?3:0),3);
         this.tablaPrinc.push(addfil);
         let titmetra1=JSON.parse(datos[0].titmetra);
         let titmetra2=datos.length>=2?JSON.parse(datos[1].titmetra):[];
@@ -173,55 +171,46 @@ export class ColaboraproyComponent implements OnInit {
           let objenc4=titmetra4.find(ele=>ele.ind==row.indice);
           let objenc5=titmetra5.find(ele=>ele.ind==row.indice);
           //addfil=this.crearFila('',1,3,row.indice,row.descripcion,1,0,0,0,0);
-          addfil=this.crearFila('',1,3,row.indice,row.item+' '+row.descripcion,objenc1?objenc1.edit:1,objenc2?objenc2.edit:0,objenc3?objenc3.edit:0,objenc4?objenc4.edit:0,objenc5?objenc5.edit:0,3);
+          addfil=this.crearFila('',1,2,row.indice,row.item+' '+row.descripcion,objenc1?objenc1.edit:1,objenc2?objenc2.edit:0,objenc3?objenc3.edit:0,objenc4?objenc4.edit:0,objenc5?objenc5.edit:0,3);
           this.tablaPrinc.push(addfil);
         }
-        addfil=this.crearFila(4,0,4,null,'FÓRMULA POLINÓMICA',datos[0].formu,datos.length>=2?datos[1].formu:0,datos.length>=3?datos[2].formu:0,datos.length>=4?datos[3].formu:0,datos.length>=5?datos[4].formu:0,4);
+        addfil=this.crearFila(3,0,3,null,'REGISTRO FINANCIERO',datos[0].registrofinan,datos.length>=2?datos[1].registrofinan:0,datos.length>=3?datos[2].registrofinan:0,datos.length>=4?datos[3].registrofinan:0,datos.length>=5?datos[4].registrofinan:0,4);
         this.tablaPrinc.push(addfil);
-        addfil=this.crearFila(5,0,5,null,'PROGRAMACIÓN DE OBRA',datos[0].progra,datos.length>=2?datos[1].progra:0,datos.length>=3?datos[2].progra:0,datos.length>=4?datos[3].progra:0,datos.length>=5?datos[4].progra:0,6);
+        addfil=this.crearFila(4,0,4,null,'PROCURA Y LOGISTICA',datos[0].procura,datos.length>=2?datos[1].procura:0,datos.length>=3?datos[2].procura:0,datos.length>=4?datos[3].procura:0,datos.length>=5?datos[4].procura:0,5);
         this.tablaPrinc.push(addfil);
-        //addfil=this.crearFila(6,0,6,null,'ESPECIFICACIONES TÉCNICAS',datos[0].espec,this.titulos.length>0?3:0,this.titulos.length>0?3:0,this.titulos.length>0?3:0,this.titulos.length>0?3:0);
-        addfil=this.crearFila(6,0,6,null,'ESPECIFICACIONES TÉCNICAS',datos[0].espec,datos.length>=2?datos[1].espec:(this.titulos.length>0?3:0),datos.length>=3?datos[2].espec:(this.titulos.length>0?3:0),
-        datos.length>=4?datos[3].espec:(this.titulos.length>0?3:0),datos.length>=5?datos[4].espec:(this.titulos.length>0?3:0),7);
+        addfil=this.crearFila(5,0,5,null,'MOVIMIENTO ALMACEN',datos[0].movalmc,datos.length>=2?datos[1].movalmc:0,datos.length>=3?datos[2].movalmc:0,datos.length>=4?datos[3].movalmc:0,datos.length>=5?datos[4].movalmc:0,6);
         this.tablaPrinc.push(addfil);
-        let titespec1=JSON.parse(datos[0].titespec);
-        let titespec2=datos.length>=2?JSON.parse(datos[1].titespec):[];
-        let titespec3=datos.length>=3?JSON.parse(datos[2].titespec):[];
-        let titespec4=datos.length>=4?JSON.parse(datos[3].titespec):[];
-        let titespec5=datos.length>=5?JSON.parse(datos[4].titespec):[];
-        for(let row of this.titulos){
-          //verificar titulos y asignar si existe, sino por defecto 
-          let objenc1=titespec1.find(ele=>ele.ind==row.indice);
-          let objenc2=titespec2.find(ele=>ele.ind==row.indice);
-          let objenc3=titespec3.find(ele=>ele.ind==row.indice);
-          let objenc4=titespec4.find(ele=>ele.ind==row.indice);
-          let objenc5=titespec5.find(ele=>ele.ind==row.indice);
-          //addfil=this.crearFila('',1,6,row.indice,row.descripcion,1,0,0,0,0);
-          addfil=this.crearFila('',1,6,row.indice,row.item+' '+row.descripcion,objenc1?objenc1.edit:1,objenc2?objenc2.edit:0,objenc3?objenc3.edit:0,objenc4?objenc4.edit:0,objenc5?objenc5.edit:0,7);
-          this.tablaPrinc.push(addfil);
-        }
+        // addfil=this.crearFila(6,0,6,null,'EQUIPOS Y HERRAMIENTAS',datos[0].espec,datos.length>=2?datos[1].espec:(this.titulos.length>0?3:0),datos.length>=3?datos[2].espec:(this.titulos.length>0?3:0),
+        // datos.length>=4?datos[3].espec:(this.titulos.length>0?3:0),datos.length>=5?datos[4].espec:(this.titulos.length>0?3:0),7);
+        // this.tablaPrinc.push(addfil);
+        addfil=this.crearFila(6,0,6,null,'EQUIPOS Y HERRAMIENTAS',datos[0].equipo,datos.length>=2?datos[1].equipo:0,datos.length>=3?datos[2].equipo:0,datos.length>=4?datos[3].equipo:0,datos.length>=5?datos[4].equipo:0,7);
+        this.tablaPrinc.push(addfil);
+        addfil=this.crearFila(7,0,7,null,'RECURSOS HUMANOS',datos[0].rechum,datos.length>=2?datos[1].rechum:0,datos.length>=3?datos[2].rechum:0,datos.length>=4?datos[3].rechum:0,datos.length>=5?datos[4].rechum:0,8);
+        this.tablaPrinc.push(addfil);
+        addfil=this.crearFila(8,0,8,null,'CUADERNO DE OBRA',datos[0].cuaderno,datos.length>=2?datos[1].cuaderno:0,datos.length>=3?datos[2].cuaderno:0,datos.length>=4?datos[3].cuaderno:0,datos.length>=5?datos[4].cuaderno:0,9);
+        this.tablaPrinc.push(addfil);
       }
       else{
-        let addfil=this.crearFila(1,0,1,null,'PRESUPUESTO DIRECTO',1,0,0,0,0,1);
+        let addfil=this.crearFila(1,0,1,null,'REGISTRO DE ACTIVIDADES',1,0,0,0,0,2);
         this.tablaPrinc.push(addfil);
-        addfil=this.crearFila(2,0,2,null,'COSTOS INDIRECTOS',1,0,0,0,0,2);
-        this.tablaPrinc.push(addfil);
-        addfil=this.crearFila(3,0,3,null,'HOJAS DE METRADO',this.titulos.length>0?3:1,this.titulos.length>0?3:0,this.titulos.length>0?3:0,this.titulos.length>0?3:0,this.titulos.length>0?3:0,3);
+        addfil=this.crearFila(2,0,2,null,'REGISTRO DE METRADOS',this.titulos.length>0?3:1,this.titulos.length>0?3:0,this.titulos.length>0?3:0,this.titulos.length>0?3:0,this.titulos.length>0?3:0,3);
         this.tablaPrinc.push(addfil);
         for(let row of this.titulos){
-          addfil=this.crearFila('',1,3,row.indice,row.item+' '+row.descripcion,1,0,0,0,0,3);
+          addfil=this.crearFila('',1,2,row.indice,row.item+' '+row.descripcion,1,0,0,0,0,3);
           this.tablaPrinc.push(addfil);
         }
-        addfil=this.crearFila(4,0,4,null,'FÓRMULA POLINÓMICA',1,0,0,0,0,4);
+        addfil=this.crearFila(3,0,3,null,'REGISTRO FINANCIERO',1,0,0,0,0,4);
         this.tablaPrinc.push(addfil);
-        addfil=this.crearFila(5,0,5,null,'PROGRAMACIÓN DE OBRA',1,0,0,0,0,6);
+        addfil=this.crearFila(4,0,4,null,'PROCURA Y LOGISTICA',1,0,0,0,0,5);
         this.tablaPrinc.push(addfil);
-        addfil=this.crearFila(6,0,6,null,'ESPECIFICACIONES TÉCNICAS',this.titulos.length>0?3:1,this.titulos.length>0?3:0,this.titulos.length>0?3:0,this.titulos.length>0?3:0,this.titulos.length>0?3:0,7);
+        addfil=this.crearFila(5,0,5,null,'MOVIMIENTO ALMACEN',1,0,0,0,0,6);
         this.tablaPrinc.push(addfil);
-        for(let row of this.titulos){
-          addfil=this.crearFila('',1,6,row.indice,row.item+' '+row.descripcion,1,0,0,0,0,7);
-          this.tablaPrinc.push(addfil);
-        }
+        addfil=this.crearFila(6,0,6,null,'EQUIPOS Y HERRAMIENTAS',1,0,0,0,0,7);
+        this.tablaPrinc.push(addfil);
+        addfil=this.crearFila(7,0,7,null,'RECURSOS HUMANOS',1,0,0,0,0,8);
+        this.tablaPrinc.push(addfil);
+        addfil=this.crearFila(8,0,8,null,'CUADERNO DE OBRA',1,0,0,0,0,9);
+        this.tablaPrinc.push(addfil);
       }
       this.buscando2 = false;
     }
@@ -253,11 +242,12 @@ export class ColaboraproyComponent implements OnInit {
       return;
     }
     if(user==1){
+      console.log(this.tablaUser)
       if(this.tablaUser.length>0){
-        if(this.tablaUser[0].edpresu==0 && ind==0){//fila presupuesto
+        /* if(this.tablaUser[0].edpresu==0 && ind==0){//fila presupuesto
           this.toaster.error('No tiene opcion de Edicion de Presupuesto.', 'Advertencia', { closeButton: false, positionClass: 'toast-bottom-right', timeOut: 5000 });
           return;
-        }
+        } */
         let arrmen=this.tablaUser[0].menu_proy.split('|');//[asp,presu.indir,metra,formu,tiem,progra,espec],ifc
         if(arrmen[this.tablaPrinc[ind].clave]==0){
           this.toaster.error('El tipo de usuario no tienen Acceso a Presupuesto.', 'Advertencia', { closeButton: false, positionClass: 'toast-bottom-right', timeOut: 5000 });
@@ -285,10 +275,10 @@ export class ColaboraproyComponent implements OnInit {
     }
     if(user==2){
       if(this.tablaUser.length>1){
-        if(this.tablaUser[1].edpresu==0 && ind==0){//fila presupuesto
+        /* if(this.tablaUser[1].edpresu==0 && ind==0){//fila presupuesto
           this.toaster.error('No tiene opcion de Edicion de Presupuesto.', 'Advertencia', { closeButton: false, positionClass: 'toast-bottom-right', timeOut: 5000 });
           return;
-        }
+        } */
         let arrmen=this.tablaUser[1].menu_proy.split('|');//[asp,presu.indir,metra,formu,tiem,progra,espec],ifc
         if(arrmen[this.tablaPrinc[ind].clave]==0){
           this.toaster.error('El tipo de usuario no tienen Acceso al Proceso Seleccionado.', 'Advertencia', { closeButton: false, positionClass: 'toast-bottom-right', timeOut: 5000 });
@@ -316,10 +306,10 @@ export class ColaboraproyComponent implements OnInit {
     }
     if(user==3){
       if(this.tablaUser.length>2){
-        if(this.tablaUser[2].edpresu==0 && ind==0){//fila presupuesto
+        /* if(this.tablaUser[2].edpresu==0 && ind==0){//fila presupuesto
           this.toaster.error('No tiene opcion de Edicion de Presupuesto.', 'Advertencia', { closeButton: false, positionClass: 'toast-bottom-right', timeOut: 5000 });
           return;
-        }
+        } */
         let arrmen=this.tablaUser[2].menu_proy.split('|');//[asp,presu.indir,metra,formu,tiem,progra,espec],ifc
         if(arrmen[this.tablaPrinc[ind].clave]==0){
           this.toaster.error('El tipo de usuario no tienen Acceso al Proceso Seleccionado.', 'Advertencia', { closeButton: false, positionClass: 'toast-bottom-right', timeOut: 5000 });
@@ -347,10 +337,10 @@ export class ColaboraproyComponent implements OnInit {
     }
     if(user==4){
       if(this.tablaUser.length>3){
-        if(this.tablaUser[3].edpresu==0 && ind==0){//fila presupuesto
+        /* if(this.tablaUser[3].edpresu==0 && ind==0){//fila presupuesto
           this.toaster.error('No tiene opcion de Edicion de Presupuesto.', 'Advertencia', { closeButton: false, positionClass: 'toast-bottom-right', timeOut: 5000 });
           return;
-        }
+        } */
         let arrmen=this.tablaUser[3].menu_proy.split('|');//[asp,presu.indir,metra,formu,tiem,progra,espec],ifc
         if(arrmen[this.tablaPrinc[ind].clave]==0){
           this.toaster.error('El tipo de usuario no tienen Acceso al Proceso Seleccionado.', 'Advertencia', { closeButton: false, positionClass: 'toast-bottom-right', timeOut: 5000 });
@@ -378,11 +368,12 @@ export class ColaboraproyComponent implements OnInit {
     }
     if(user==5){
       if(this.tablaUser.length>4){
-        if(this.tablaUser[4].edpresu==0 && ind==0){//fila presupuesto
+        /* if(this.tablaUser[4].edpresu==0 && ind==0){//fila presupuesto
           this.toaster.error('No tiene opcion de Edicion de Presupuesto.', 'Advertencia', { closeButton: false, positionClass: 'toast-bottom-right', timeOut: 5000 });
           return;
-        }
+        } */
         let arrmen=this.tablaUser[4].menu_proy.split('|');//[asp,presu.indir,metra,formu,tiem,progra,espec],ifc
+        console.log(arrmen)
         if(arrmen[this.tablaPrinc[ind].clave]==0){
           this.toaster.error('El tipo de usuario no tienen Acceso al Proceso Seleccionado.', 'Advertencia', { closeButton: false, positionClass: 'toast-bottom-right', timeOut: 5000 });
             return;
@@ -418,77 +409,83 @@ export class ColaboraproyComponent implements OnInit {
       this.mostrar_carga_todo=true;
       let tabadd=[];
       let arrtits1=[];
-      let arrtits2=[];
+      //let arrtits2=[];
       let objadd={
         id_proyecto:this.proysel,
         id_usuario:this.idUsuario,
-        presu:null,
-        indir:null,
-        metra:null,
+        registroacti:null,
+        registrometra:null,
         titmetra:null,
-        formu:null,
-        progra:null,
-        espec:null,
-        titespec:null,
+        registrofinan:null,
+        procura:null,
+        movalmc:null,
+        equipo:null,
+        rechum:null,
+        cuaderno:null,
       }
       //generar objeto, usuario principal
       for(let a=0;a<this.tablaPrinc.length;a++){
         if(this.tablaPrinc[a].tipo==0){//acceso
-          objadd.presu=this.tablaPrinc[a].ident==1?this.tablaPrinc[a].usuario1:objadd.presu;
-          objadd.indir=this.tablaPrinc[a].ident==2?this.tablaPrinc[a].usuario1:objadd.indir;
-          objadd.metra=this.tablaPrinc[a].ident==3?this.tablaPrinc[a].usuario1:objadd.metra;
-          objadd.formu=this.tablaPrinc[a].ident==4?this.tablaPrinc[a].usuario1:objadd.formu;
-          objadd.progra=this.tablaPrinc[a].ident==5?this.tablaPrinc[a].usuario1:objadd.progra;
-          objadd.espec=this.tablaPrinc[a].ident==6?this.tablaPrinc[a].usuario1:objadd.espec;
+          objadd.registroacti=this.tablaPrinc[a].ident==1?this.tablaPrinc[a].usuario1:objadd.registroacti;
+          objadd.registrometra=this.tablaPrinc[a].ident==2?this.tablaPrinc[a].usuario1:objadd.registrometra;
+          objadd.registrofinan=this.tablaPrinc[a].ident==3?this.tablaPrinc[a].usuario1:objadd.registrofinan;
+          objadd.procura=this.tablaPrinc[a].ident==4?this.tablaPrinc[a].usuario1:objadd.procura;
+          objadd.movalmc=this.tablaPrinc[a].ident==5?this.tablaPrinc[a].usuario1:objadd.movalmc;
+          objadd.equipo=this.tablaPrinc[a].ident==6?this.tablaPrinc[a].usuario1:objadd.equipo;
+          objadd.rechum=this.tablaPrinc[a].ident==7?this.tablaPrinc[a].usuario1:objadd.rechum;
+          objadd.cuaderno=this.tablaPrinc[a].ident==8?this.tablaPrinc[a].usuario1:objadd.cuaderno;
         }
         else{//titulo
-          if(this.tablaPrinc[a].ident==3){
+          if(this.tablaPrinc[a].ident==2){
             arrtits1.push({ind: this.tablaPrinc[a].indice,edit:this.tablaPrinc[a].usuario1});
           }
-          else if(this.tablaPrinc[a].ident==6){
-            arrtits2.push({ind: this.tablaPrinc[a].indice,edit:this.tablaPrinc[a].usuario1});
-          }
+          // else if(this.tablaPrinc[a].ident==6){
+          //   arrtits2.push({ind: this.tablaPrinc[a].indice,edit:this.tablaPrinc[a].usuario1});
+          // }
         }
       }
       objadd.titmetra=JSON.stringify(arrtits1);
-      objadd.titespec=JSON.stringify(arrtits2);
+      //objadd.titespec=JSON.stringify(arrtits2);
       tabadd.push(objadd)
       //generar objeto usuarios sec
       for(let b=0;b<this.secundarios.length;b++){
         arrtits1=[];
-        arrtits2=[];
+        // arrtits2=[];
         objadd={
           id_proyecto:this.proysel,
           id_usuario:this.secundarios[b].id_usuario,
-          presu:null,
-          indir:null,
-          metra:null,
+          registroacti:null,
+          registrometra:null,
           titmetra:null,
-          formu:null,
-          progra:null,
-          espec:null,
-          titespec:null,
+          registrofinan:null,
+          procura:null,
+          movalmc:null,
+          equipo:null,
+          rechum:null,
+          cuaderno:null,
         }
         for(let a=0;a<this.tablaPrinc.length;a++){
           if(this.tablaPrinc[a].tipo==0){//acceso
-            objadd.presu=this.tablaPrinc[a].ident==1?this.tablaPrinc[a]['usuario'+(b+2)]:objadd.presu;
-            objadd.indir=this.tablaPrinc[a].ident==2?this.tablaPrinc[a]['usuario'+(b+2)]:objadd.indir;
-            objadd.metra=this.tablaPrinc[a].ident==3?this.tablaPrinc[a]['usuario'+(b+2)]:objadd.metra;
-            objadd.formu=this.tablaPrinc[a].ident==4?this.tablaPrinc[a]['usuario'+(b+2)]:objadd.formu;
-            objadd.progra=this.tablaPrinc[a].ident==5?this.tablaPrinc[a]['usuario'+(b+2)]:objadd.progra;
-            objadd.espec=this.tablaPrinc[a].ident==6?this.tablaPrinc[a]['usuario'+(b+2)]:objadd.espec;
+            objadd.registroacti=this.tablaPrinc[a].ident==1?this.tablaPrinc[a]['usuario'+(b+2)]:objadd.registroacti;
+            objadd.registrometra=this.tablaPrinc[a].ident==2?this.tablaPrinc[a]['usuario'+(b+2)]:objadd.registrometra;
+            objadd.registrofinan=this.tablaPrinc[a].ident==3?this.tablaPrinc[a]['usuario'+(b+2)]:objadd.registrofinan;
+            objadd.procura=this.tablaPrinc[a].ident==4?this.tablaPrinc[a]['usuario'+(b+2)]:objadd.procura;
+            objadd.movalmc=this.tablaPrinc[a].ident==5?this.tablaPrinc[a]['usuario'+(b+2)]:objadd.movalmc;
+            objadd.equipo=this.tablaPrinc[a].ident==6?this.tablaPrinc[a]['usuario'+(b+2)]:objadd.equipo;
+            objadd.rechum=this.tablaPrinc[a].ident==7?this.tablaPrinc[a]['usuario'+(b+2)]:objadd.rechum;
+            objadd.cuaderno=this.tablaPrinc[a].ident==8?this.tablaPrinc[a]['usuario'+(b+2)]:objadd.cuaderno;
           }
           else{//titulo
-            if(this.tablaPrinc[a].ident==3){
+            if(this.tablaPrinc[a].ident==2){
               arrtits1.push({ind: this.tablaPrinc[a].indice,edit:this.tablaPrinc[a]['usuario'+(b+2)]});
             }
-            else if(this.tablaPrinc[a].ident==6){
-              arrtits2.push({ind: this.tablaPrinc[a].indice,edit:this.tablaPrinc[a]['usuario'+(b+2)]});
-            }
+            // else if(this.tablaPrinc[a].ident==6){
+            //   arrtits2.push({ind: this.tablaPrinc[a].indice,edit:this.tablaPrinc[a]['usuario'+(b+2)]});
+            // }
           }
         }
         objadd.titmetra=JSON.stringify(arrtits1);
-        objadd.titespec=JSON.stringify(arrtits2);
+        // objadd.titespec=JSON.stringify(arrtits2);
         tabadd.push(objadd)
       }
       const body = JSON.stringify({
