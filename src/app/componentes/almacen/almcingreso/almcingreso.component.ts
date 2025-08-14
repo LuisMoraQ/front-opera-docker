@@ -1072,6 +1072,7 @@ export class AlmcingresoComponent implements OnInit {
             this.dataSource5.push(ejm);
           }
         }
+        console.log(this.dataSource5)
         this.tott5=rowi.parcial;
         this.mostrar_carga_todo=false;
         this.modalVerIng.show();
