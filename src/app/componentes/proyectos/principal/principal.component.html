@@ -571,15 +571,14 @@
                                 [ocultarMenu]="ocultarMenu"
                                 [nombreProyecto]="tab.get('nombre_proyecto').value"></app-programacion-obra>
                             </ng-container>
-                            <ng-container *ngIf="tab.get('menu_proyecto_seleccionado').value == 10">
+                            <!-- <ng-container *ngIf="tab.get('menu_proyecto_seleccionado').value == 10">
                               <app-especificaciones-tecnicas [idProyecto]="tab.get('id_proyecto').value"
                                 [tabproyecto]="tab">
                               </app-especificaciones-tecnicas>
-                            </ng-container>
-                            <!-- <ng-container *ngIf="tab.get('menu_proyecto_seleccionado').value == 11">
-                              <app-visor-de-plano [idProyecto]="tab.get('id_proyecto').value" [tabproyecto]="tab">
-                              </app-visor-de-plano>
                             </ng-container> -->
+                              <ng-container *ngIf="tab.get('menu_proyecto_seleccionado').value ==10">
+                              <app-informes-reportes [tabproyecto]="tab"></app-informes-reportes>
+                            </ng-container>
                           </app-card>
                         </div>
                       </div>

@@ -104,7 +104,8 @@ import { AlmacenModule } from '../almacen/almacen.module';
     VisorDePlanoComponent,
     ConfproyimprComponent,
     DataProyectoComponent,
-    AddproybiplanComponent
+    AddproybiplanComponent,
+    
   ],
   imports: [
     CommonModule,

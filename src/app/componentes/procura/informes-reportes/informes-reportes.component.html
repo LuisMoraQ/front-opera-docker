@@ -1,0 +1,461 @@
+<div
+  id="divbut"
+  style="width: calc(100% - 58px); margin-left: 44px"
+  class="hidescroll m-b-10"
+>
+  <div class="row" style="width: 805px; margin-right: 0px; margin-left: 0px">
+    <button
+      class="btn btn-sm btn-outline-secondary btn-menu-top"
+      type="button"
+      (mouseup)="quitarfoco($event)"
+      (click)="cambioVista(1)"
+      style="padding: 4px 8px"
+      [ngClass]="{ active: subvista === 1 }"
+    >
+      <i class="fa fa-list"></i> RESUMEN DE VALORIZACION REALIZADOS
+    </button>
+    <button
+      class="btn btn-sm btn-outline-secondary btn-menu-top"
+      type="button"
+      (mouseup)="quitarfoco($event)"
+      style="padding: 4px 8px"
+      [ngClass]="{ active: subvista === 2 }"
+      (click)="cambioVista(2)"
+      [disabled]=""
+    >
+      <i class="fa fa-list"></i> VALORIZACION PROGRAMADA
+    </button>
+    <button
+      class="btn btn-sm btn-outline-secondary btn-menu-top"
+      type="button"
+      (mouseup)="quitarfoco($event)"
+      style="padding: 4px 8px"
+      [ngClass]="{ active: subvista === 3 }"
+      (click)="cambioVista(3)"
+      [disabled]=""
+    >
+      <i class="fa fa-list"></i> MOVIMIENTO DE ALMACEN
+    </button>
+    <button
+      class="btn btn-sm btn-outline-secondary btn-menu-top"
+      type="button"
+      (mouseup)="quitarfoco($event)"
+      style="padding: 4px 8px"
+      [ngClass]="{ active: subvista === 4 }"
+      (click)="cambioVista(4)"
+      [disabled]=""
+    >
+      <i class="fa fa-list"></i> REPORTE DE ADQUISICIONES
+    </button>
+  </div>
+</div>
+<div style="overflow: auto; height: calc(100vh - 165px)" *ngIf="subvista == 1">
+  <app-card
+    class="card col-12"
+    style="margin-bottom: 5px; padding-left: 0; padding-right: 0"
+  >
+    <h4 style="margin-bottom: 5px"><b>Resumen de Valorizaciones</b></h4>
+   
+    <div
+      [style.margin-bottom.px]="-paddingscroll2"
+      class="tabla-limp height-t1"
+      id="tableBody"
+    >
+      <table class="table-bordered tab-10">
+        <thead>
+          <tr class="headsticky header-custom">
+            <th appAnchocol [ancho]="200">Detalle Hoja de Metrado</th>
+            <th appAnchocol [ancho]="100">Fecha Inicio</th>
+            <th appAnchocol [ancho]="100">Fecha Fin</th>
+            <th appAnchocol [ancho]="100">Ultimo Registro</th>
+            <th appAnchocol [ancho]="100">Visado</th>
+            <th appAnchocol [ancho]="50">Registro</th>
+          </tr>
+        </thead>
+        <tbody>
+          <ng-container *ngIf="dataSource1.length > 0">
+            <tr
+              *ngFor="let row of dataSource1; let indice = index"
+              [ngClass]="{ highlight: fila1_sel == indice }"
+              (click)="cambindicesel1(indice, row)"
+            >
+              <td appAnchocol [ancho]="200">{{ row.detalle }}</td>
+              <td appAnchocol [ancho]="100">{{ row.fechaini }}</td>
+              <td appAnchocol [ancho]="100">{{ row.fechafin }}</td>
+              <td appAnchocol [ancho]="100">{{ row.fechamodi }}</td>
+              <td appAnchocol [ancho]="100" class="text-center">
+                <span
+                  class="badge bg-danger pos-badge"
+                  style="width: 80px; border: 1px solid #bfbfbf"
+                  *ngIf="row.estado == 0"
+                  [ngbTooltip]="row.observacion"
+                  >EN REGISTRO</span
+                >
+                <span
+                  class="badge bg-success pos-badge text-dark"
+                  style="width: 80px"
+                  *ngIf="row.estado == 1"
+                  >APROBADO</span
+                >
+              </td>
+              <td appAnchocol [ancho]="50">
+                <div class="d-flex">
+                  <button
+                    *ngIf="row.filaagru == null && !esSecund"
+                    class="btn btn-mini2 btn-info"
+                    placement="top"
+                    ngbTooltip="Ver"
+                    container="body"
+                    (click)="changeVista(row)"
+                    (mouseup)="quitarfoco($event)"
+                  >
+                    <i class="fa fa-search icono-but"></i>
+                  </button>
+                  <!-- <button
+                    class="btn btn-mini2 btn-success"
+                    placement="top"
+                    ngbTooltip="Editar"
+                    container="body"
+                    (click)="openModal2(row)"
+                    (mouseup)="quitarfoco($event)"
+                  >
+                    <i class="fa fa-edit icono-but"></i>
+                  </button>
+                  <button
+                    class="btn btn-mini2 btn-danger"
+                    placement="top"
+                    ngbTooltip="Eliminar"
+                    container="body"
+                    (click)="eliminarHoja(row)"
+                    (mouseup)="quitarfoco($event)"
+                    [disabled]="row.estado == 1"
+                  >
+                    <i class="fa fa-remove icono-but"></i>
+                  </button> -->
+                </div>
+              </td>
+            </tr>
+          </ng-container>
+          <ng-container *ngIf="dataSource1.length <= 0">
+            <tr>
+              <td class="mat-cell text-center" colspan="13">
+                <label *ngIf="!buscando1">No se encontraron resultados</label>
+                <div *ngIf="buscando1" class="preloader3 loader-block">
+                  <div class="circ1"></div>
+                  <div class="circ2"></div>
+                  <div class="circ3"></div>
+                  <div class="circ4"></div>
+                </div>
+              </td>
+            </tr>
+          </ng-container>
+        </tbody>
+      </table>
+    </div>
+  </app-card>
+</div>
+<div style="overflow: auto; height: calc(100vh - 165px)" *ngIf="subvista == 2">
+  <app-card
+    class="card col-12"
+    style="margin-bottom: 5px; padding-left: 0; padding-right: 0"
+  >
+    <div class="row">
+      <div class="col-sm-12 col-md-3 col-lg-3">
+        <mat-form-field
+          class="mff-reduc my-form-field col-8 wrapper-custom pl-0"
+          appearance="outline"
+          style="width: auto"
+        >
+          <mat-label>Detalle</mat-label>
+          <select
+            matNativeControl
+            [(ngModel)]="registrotab3"
+            (change)="changeVista2(getItemByIndice(registrotab3))"
+          >
+            <option
+              *ngFor="let titulo of dataSource1"
+              value="{{ titulo.id_registro }}"
+            >
+              {{ titulo?.detalle }}
+            </option>
+          </select>
+        </mat-form-field>
+      </div>
+      <div
+        class="col-sm-12 col-md-3 col-lg-3 d-flex"
+        style="display: flex; align-items: center; width: 100%"
+      >
+        <mat-form-field
+          class="mff-reduc my-form-field col-8 wrapper-custom pl-0"
+          appearance="outline"
+          style="display: contents"
+        >
+          <mat-label>Titulo</mat-label>
+          <select
+            matNativeControl
+            [(ngModel)]="indiceTitulo"
+            (change)="verHojaResumenDiario()"
+          >
+            <option
+              *ngFor="let titulo of tablaTitResumen"
+              value="{{ titulo.indice }}"
+            >
+              {{ titulo?.item }}&nbsp;&#8702;&nbsp;{{ titulo?.descripcion }}
+            </option>
+          </select>
+        </mat-form-field>
+      </div>
+    </div>
+     <table class="mini-tabla tab-10" style="overflow: auto; display: list-item">
+      <thead>
+        <tr>
+          <th rowspan="3">PARTIDA</th>
+          <th rowspan="3">DESCRIPCION</th>
+          <th rowspan="2"colspan="4">PRESUPUESTO PROGRAMADO </th>
+          <th colspan="9">AVANCES</th>
+          <th rowspan="2" colspan="3">SALDO</th>
+        </tr>
+        <tr>
+          <th colspan="3">ANTERIOR </th>
+          <th colspan="3">ACTUAL</th>
+          <th colspan="3">ACUMULADO</th>
+        </tr>
+        <tr>
+          <th>Unid</th>
+          <th>Metrado</th>
+          <th>P. Unit.<br>S/.</th>
+          <th>Presu <br>S/. </th>
+          <th>Metrado </th>
+          <th>Valorizado <br>S/.</th>
+          <th>%</th>
+          <th>Metrado </th>
+          <th>Valorizado <br>S/.</th>
+          <th>%</th>
+          <th>Metrado </th>
+          <th>Valorizado <br>S/.</th>
+          <th>%</th>
+          <th>Metrado </th>
+          <th>Valorizado <br>S/.</th>
+          <th>%</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let row of this.tablaExcelAdjunta">
+          <ng-container>
+            <td
+              class="text-left"
+              appPintarfilapre
+              [tipo]="titulo1"
+              [color]="row.item ? titulo1color : ''"
+              [letra]="titulo1letra"
+              [item]="row.item"
+              [separador]="'.'"
+              [partida]="row.unidad != ''"
+            >
+              {{ row.item }}
+            </td>
+            <td
+              class="text-left"
+              appPintarfilapre
+              [tipo]="titulo1"
+              [color]="row.item ? titulo1color : ''"
+              [letra]="titulo1letra"
+              [item]="row.item"
+              [separador]="'.'"
+              [partida]="row.unidad != ''"
+            >
+              <div
+                [style.padding-left.px]="
+                  (row.item.toString().split('.').length - 1) * 5 +
+                  (row.unidad != '' ? 17 : 0)
+                "
+              >
+                {{ row.descripcion }}
+              </div>
+            </td>
+            <td
+              appPintarfilapre
+              [tipo]="titulo1"
+              [color]="row.item ? titulo1color : ''"
+              [letra]="titulo1letra"
+              [item]="row.item"
+              [separador]="'.'"
+              [partida]="row.unidad != ''"
+            >
+              {{ row.unidad }}
+            </td>
+              <td
+              appPintarfilapre
+              [tipo]="titulo1"
+              [color]="row.item ? titulo1color : ''"
+              [letra]="titulo1letra"
+              [item]="row.item"
+              [separador]="'.'"
+              [partida]="row.unidad != ''"
+            >
+              {{ row.mtotal }}
+            </td>
+              <td
+              appPintarfilapre
+              [tipo]="titulo1"
+              [color]="row.item ? titulo1color : ''"
+              [letra]="titulo1letra"
+              [item]="row.item"
+              [separador]="'.'"
+              [partida]="row.unidad != ''"
+            >
+              {{ row.precio }}
+            </td>
+
+              <td
+              appPintarfilapre
+              [tipo]="titulo1"
+              [color]="row.item ? titulo1color : ''"
+              [letra]="titulo1letra"
+              [item]="row.item"
+              [separador]="'.'"
+              [partida]="row.unidad != ''"
+            >
+              {{ row.precio?row.mtotal*row.precio:'' }}
+            </td>
+              <td
+              appPintarfilapre
+              [tipo]="titulo1"
+              [color]="row.item ? titulo1color : ''"
+              [letra]="titulo1letra"
+              [item]="row.item"
+              [separador]="'.'"
+              [partida]="row.unidad != ''"
+            >
+              {{ row.unidad }}
+            </td>
+              <td
+              appPintarfilapre
+              [tipo]="titulo1"
+              [color]="row.item ? titulo1color : ''"
+              [letra]="titulo1letra"
+              [item]="row.item"
+              [separador]="'.'"
+              [partida]="row.unidad != ''"
+            >
+              {{ row.unidad }}
+            </td>
+              <td
+              appPintarfilapre
+              [tipo]="titulo1"
+              [color]="row.item ? titulo1color : ''"
+              [letra]="titulo1letra"
+              [item]="row.item"
+              [separador]="'.'"
+              [partida]="row.unidad != ''"
+            >
+              {{ row.unidad }}
+            </td>
+              <td
+              appPintarfilapre
+              [tipo]="titulo1"
+              [color]="row.item ? titulo1color : ''"
+              [letra]="titulo1letra"
+              [item]="row.item"
+              [separador]="'.'"
+              [partida]="row.unidad != ''"
+            >
+              {{ row.unidad }}
+            </td>
+              <td
+              appPintarfilapre
+              [tipo]="titulo1"
+              [color]="row.item ? titulo1color : ''"
+              [letra]="titulo1letra"
+              [item]="row.item"
+              [separador]="'.'"
+              [partida]="row.unidad != ''"
+            >
+              {{ row.unidad }}
+            </td>
+              <td
+              appPintarfilapre
+              [tipo]="titulo1"
+              [color]="row.item ? titulo1color : ''"
+              [letra]="titulo1letra"
+              [item]="row.item"
+              [separador]="'.'"
+              [partida]="row.unidad != ''"
+            >
+              {{ row.unidad }}
+            </td>
+              <td
+              appPintarfilapre
+              [tipo]="titulo1"
+              [color]="row.item ? titulo1color : ''"
+              [letra]="titulo1letra"
+              [item]="row.item"
+              [separador]="'.'"
+              [partida]="row.unidad != ''"
+            >
+              {{ row.unidad }}
+            </td>
+              <td
+              appPintarfilapre
+              [tipo]="titulo1"
+              [color]="row.item ? titulo1color : ''"
+              [letra]="titulo1letra"
+              [item]="row.item"
+              [separador]="'.'"
+              [partida]="row.unidad != ''"
+            >
+              {{ row.unidad }}
+            </td>
+              <td
+              appPintarfilapre
+              [tipo]="titulo1"
+              [color]="row.item ? titulo1color : ''"
+              [letra]="titulo1letra"
+              [item]="row.item"
+              [separador]="'.'"
+              [partida]="row.unidad != ''"
+            >
+              {{ row.unidad }}
+            </td>
+              <td
+              appPintarfilapre
+              [tipo]="titulo1"
+              [color]="row.item ? titulo1color : ''"
+              [letra]="titulo1letra"
+              [item]="row.item"
+              [separador]="'.'"
+              [partida]="row.unidad != ''"
+            >
+              {{ row.unidad }}
+            </td>
+              <td
+              appPintarfilapre
+              [tipo]="titulo1"
+              [color]="row.item ? titulo1color : ''"
+              [letra]="titulo1letra"
+              [item]="row.item"
+              [separador]="'.'"
+              [partida]="row.unidad != ''"
+            >
+              {{ row.unidad }}
+            </td>
+               <td
+              appPintarfilapre
+              [tipo]="titulo1"
+              [color]="row.item ? titulo1color : ''"
+              [letra]="titulo1letra"
+              [item]="row.item"
+              [separador]="'.'"
+              [partida]="row.unidad != ''"
+            >
+              {{ row.unidad }}
+            </td>
+
+           
+          </ng-container>
+        </tr>
+      </tbody>
+    </table>
+
+  </app-card>
+</div>

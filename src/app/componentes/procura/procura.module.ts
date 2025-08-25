@@ -25,6 +25,7 @@ import { RelacioninsumosComponent } from './relacioninsumos/relacioninsumos.comp
 import { AgrupinsumosComponent } from './agrupinsumos/agrupinsumos.component';
 import { CompatinsumosComponent } from './compatinsumos/compatinsumos.component';
 import { SaldopresupuestalComponent } from './saldopresupuestal/saldopresupuestal.component';
+import { InformesReportesComponent } from './informes-reportes/informes-reportes.component';
 
 
 @NgModule({
@@ -33,7 +34,8 @@ import { SaldopresupuestalComponent } from './saldopresupuestal/saldopresupuesta
     RelacioninsumosComponent,
     AgrupinsumosComponent,
     CompatinsumosComponent,
-    SaldopresupuestalComponent
+    SaldopresupuestalComponent,
+    InformesReportesComponent
   ],
   imports: [
     CommonModule,
@@ -58,6 +60,6 @@ import { SaldopresupuestalComponent } from './saldopresupuestal/saldopresupuesta
     PintarfilapreModule,
     MinmaxnumModule,
   ],
-  exports: [ PanelprocuraComponent ]
+  exports: [ PanelprocuraComponent,InformesReportesComponent ]
 })
 export class ProcuraModule { }

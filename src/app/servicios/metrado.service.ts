@@ -613,6 +613,22 @@ export class MetradoService {
       catchError(err => throwError(err))
     ).toPromise()
   }
+  historialMetrdiarioPartida(params = {}): any {
+    let formData: FormData = new FormData();
+    Object.entries(params).forEach(([key, value]) => {
+      formData.append(key, value as string);
+    });
+    const url = this.enviUrl + '/api/metrados//api/metrados/historialMetrdiarioPartida';
+    return this.http.post<any>(url, formData).pipe(
+      map(res => {
+        if (!res) {
+          throw new Error
+        }
+        return res
+      }),
+      catchError(err => throwError(err))
+    ).toPromise()
+  }
   // guardarMetradoDiario(params = {}): any {
   //   let formData: FormData = new FormData();
   //   Object.entries(params).forEach(([key, value]) => {
@@ -645,5 +661,20 @@ export class MetradoService {
       catchError(err => throwError(err))
     ).toPromise()
   }
-
+listarTopMetradosDiarios(params = {}): Promise<any>  {
+    let formData: FormData = new FormData();
+    Object.entries(params).forEach(([key, value]) => {
+      formData.append(key, value as string);
+    });
+    const url = this.enviUrl + '/api/metrados/listarPrueba';
+    return this.http.post<any>(url, formData).pipe(
+      map(res => {
+        if (!res) {
+          throw new Error
+        }
+        return res
+      }),
+      catchError(err => throwError(err))
+    ).toPromise()
+  }
 }

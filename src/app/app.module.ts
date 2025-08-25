@@ -36,7 +36,7 @@ export const options: Partial<IConfig> | (() => Partial<IConfig>) = null;
     AuthComponent,
     BreadcrumbsComponent,
     MenuProyectoComponent,
-    LoginComponent
+    LoginComponent,
   ],
   imports: [
     FormsModule,
