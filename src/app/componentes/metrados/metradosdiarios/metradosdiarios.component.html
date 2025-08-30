@@ -178,7 +178,8 @@
           (click)="ChangeDia(dia)"
           [ngClass]="{
             pointer: !dia.bloqueado,
-            'fecha-selected': dia.fecha == fechaselecionada
+            'fecha-selected': dia.fecha == fechaselecionada,
+            'bloqueado':bloqueado
           }"
         >
           {{ dia.letraDia }} - {{ dia.dia }}
@@ -766,12 +767,30 @@
                 class="btn-group d-inline-flex"
                 style="margin-bottom: 3px; margin-left: 50px"
               >
+              <button
+                *ngIf="!solover"
+                type="button"
+                class="btn btn-mini btn-success"
+                ngbTooltip="Aprobar Metrado"
+                container="body"
+                (click)="CambiarEstado()"
+                (mouseup)="quitarfoco($event)"
+                [disabled]="
+                    !filaExcelSel ||
+                    (!filaExcelSel.unidad && !filaExcelSel.tieneSubmetrado)
+                "
+              >
+                <i class="fa fa-save icono-but"></i>
+                <span
+                  *ngIf="existetemp"
+                  class="badge ballalert balert-danger"
+                ></span>
+                </button>
                 <button
                   class="btn btn-mini bg-danger float-right"
                   container="body"
                   style="margin-left: 1px"
                   *ngIf="!solover"
-                  [disabled]="disabAcciones || existTempCI"
                   ngbTooltip="Descartar todos los cambios realizados"
                   type="button"
                   (mouseup)="quitarfoco($event)"
@@ -1614,7 +1633,7 @@
           <select
             matNativeControl
             [(ngModel)]="registrotab3"
-            (change)="changeVista2(getItemByIndice(registrotab3))"
+            (change)="changeVista3(getItemByIndice(registrotab3))"
           >
             <option
               *ngFor="let titulo of dataSource1"
@@ -1637,12 +1656,13 @@
           <mat-label>Titulo</mat-label>
           <select
             matNativeControl
-            [(ngModel)]="indiceTitulo"
-            (change)="verHojaResumenDiario()"
+            [(ngModel)]="itemTitulo"
+            (change)="FiltrarDiarios()"
           >
+            <option value="All">C &nbsp;&#8702;&nbsp;Completo</option>
             <option
               *ngFor="let titulo of tablaTitResumen"
-              value="{{ titulo.indice }}"
+              value="{{ titulo.item }}"
             >
               {{ titulo?.item }}&nbsp;&#8702;&nbsp;{{ titulo?.descripcion }}
             </option>
@@ -1655,20 +1675,19 @@
         <tr>
           <th rowspan="2">Item</th>
           <th rowspan="2">Descripcion</th>
-          <th rowspan="2">Uni</th>
-          <th rowspan="2">Metrado <br />Total</th>
-          <th rowspan="2">Metrado <br />Anterior</th>
-          <th *ngFor="let dia of diasCalendario2">
-            {{ dia.letraDia }}
-          </th>
-          <th rowspan="2">Metrado Ejecutado</th>
-          <th rowspan="2">Acumulado</th>
-          <th rowspan="2">Saldo</th>
+          <th rowspan="2">Fecha Registrada</th>
+          <th colspan="6">Geometria Calculada</th>
+          <th rowspan="2">Metrado Parcial</th>
+          <th rowspan="2">Metrado Realizado</th>
+          <th rowspan="2">Und.</th>
         </tr>
         <tr>
-          <th *ngFor="let dia of diasCalendario2">
-            {{ dia.dia }}
-          </th>
+          <th>Cant.</th>
+          <th>#Veces</th>
+          <th>Longitud</th>
+          <th>Ancho</th>
+          <th>Altura</th>
+          <th>Subtotal</th>
         </tr>
       </thead>
       <tbody>
@@ -1697,9 +1716,9 @@
               [partida]="row.unidad != ''"
             >
               <div
-                [style.padding-left.px]="
+                [style.padding-left.px]="row.item?
                   (row.item.toString().split('.').length - 1) * 5 +
-                  (row.unidad != '' ? 17 : 0)
+                  (row.unidad != '' ? 8 : 0):18 + (row.tipofila * 7)
                 "
               >
                 {{ row.descripcion }}
@@ -1714,7 +1733,18 @@
               [separador]="'.'"
               [partida]="row.unidad != ''"
             >
-              {{ row.unidad }}
+              {{ row.fecha }}
+            </td>
+            <td
+              appPintarfilapre
+              [tipo]="titulo1"
+              [color]="row.item ? titulo1color : ''"
+              [letra]="titulo1letra"
+              [item]="row.item"
+              [separador]="'.'"
+              [partida]="row.unidad != ''"
+            >
+              {{row.cantidad}}
             </td>
             <td
               appPintarfilapre
@@ -1726,9 +1756,19 @@
               [partida]="row.unidad != ''"
             >
               {{
-                row.cantidad
-                  | number : "0." + this.dec_metrado + "-" + this.dec_metrado
+                row.n_veces
               }}
+            </td>
+             <td
+              appPintarfilapre
+              [tipo]="titulo1"
+              [color]="row.item ? titulo1color : ''"
+              [letra]="titulo1letra"
+              [item]="row.item"
+              [separador]="'.'"
+              [partida]="row.unidad != ''"
+            >
+              {{row.largo}}
             </td>
             <td
               appPintarfilapre
@@ -1739,30 +1779,7 @@
               [separador]="'.'"
               [partida]="row.unidad != ''"
             >
-              {{
-                row.metradoant
-                  | number : "0." + this.dec_metrado + "-" + this.dec_metrado
-              }}
-            </td>
-            <td
-              *ngFor="
-                let dato of getMontos(row.montodias, row.id);
-                let j = index
-              "
-              [style.cursor]="activarDiarios ? 'pointer' : 'default'"
-              (click)="
-                activarDiarios &&
-                  AbrilModalDiario(row, diasCalendario2[j].fecha, j)
-              "
-              appPintarfilapre
-              [tipo]="titulo1"
-              [color]="row.item ? titulo1color : ''"
-              [letra]="titulo1letra"
-              [item]="row.item"
-              [separador]="'.'"
-              [partida]="row.unidad != ''"
-            >
-              {{ dato === 0 ? "" : dato }}
+              {{row.ancho}}
             </td>
             <td
               appPintarfilapre
@@ -1773,10 +1790,7 @@
               [separador]="'.'"
               [partida]="row.unidad != ''"
             >
-              {{
-                row.total
-                  | number : "0." + this.dec_metrado + "-" + this.dec_metrado
-              }}
+              {{row.altura}}
             </td>
             <td
               appPintarfilapre
@@ -1787,12 +1801,7 @@
               [separador]="'.'"
               [partida]="row.unidad != ''"
             >
-              {{
-                row.unidad
-                  ? (row.total + row.metradoant
-                    | number : "0." + this.dec_metrado + "-" + this.dec_metrado)
-                  : null
-              }}
+              {{row.subtotal}}
             </td>
             <td
               appPintarfilapre
@@ -1803,12 +1812,29 @@
               [separador]="'.'"
               [partida]="row.unidad != ''"
             >
-              {{
-                row.unidad
-                  ? (row.cantidad - (row.total + row.metradoant)
-                    | number : "0." + this.dec_metrado + "-" + this.dec_metrado)
-                  : null
-              }}
+              {{row.parcial}}
+            </td>
+            <td
+              appPintarfilapre
+              [tipo]="titulo1"
+              [color]="row.item ? titulo1color : ''"
+              [letra]="titulo1letra"
+              [item]="row.item"
+              [separador]="'.'"
+              [partida]="row.unidad != ''"
+            >
+              {{row.total_nuevo==0?'':row.total_nuevo}}
+            </td>
+            <td
+              appPintarfilapre
+              [tipo]="titulo1"
+              [color]="row.item ? titulo1color : ''"
+              [letra]="titulo1letra"
+              [item]="row.item"
+              [separador]="'.'"
+              [partida]="row.unidad != ''"
+            >
+              {{row.unidad}}
             </td>
           </ng-container>
         </tr>

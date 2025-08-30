@@ -21,7 +21,7 @@
       style="padding: 4px 8px"
       [ngClass]="{ active: subvista === 2 }"
       (click)="cambioVista(2)"
-      [disabled]=""
+      [disabled]="!datosglo"
     >
       <i class="fa fa-list"></i> VALORIZACION PROGRAMADA
     </button>
@@ -55,7 +55,6 @@
     style="margin-bottom: 5px; padding-left: 0; padding-right: 0"
   >
     <h4 style="margin-bottom: 5px"><b>Resumen de Valorizaciones</b></h4>
-   
     <div
       [style.margin-bottom.px]="-paddingscroll2"
       class="tabla-limp height-t1"
@@ -64,11 +63,14 @@
       <table class="table-bordered tab-10">
         <thead>
           <tr class="headsticky header-custom">
+            <th appAnchocol [ancho]="10">N°</th>
             <th appAnchocol [ancho]="200">Detalle Hoja de Metrado</th>
             <th appAnchocol [ancho]="100">Fecha Inicio</th>
             <th appAnchocol [ancho]="100">Fecha Fin</th>
-            <th appAnchocol [ancho]="100">Ultimo Registro</th>
-            <th appAnchocol [ancho]="100">Visado</th>
+            <th appAnchocol [ancho]="100">Monto Valorizado (CD)</th>
+            <th appAnchocol [ancho]="100">Avance</th>
+            <th appAnchocol [ancho]="100">Monto Acumulado(CD)</th>
+            <th appAnchocol [ancho]="50">Fecha Vinculada</th>
             <th appAnchocol [ancho]="50">Registro</th>
           </tr>
         </thead>
@@ -79,25 +81,30 @@
               [ngClass]="{ highlight: fila1_sel == indice }"
               (click)="cambindicesel1(indice, row)"
             >
+              <td appAnchocol [ancho]="10">{{ indice + 1 }}</td>
               <td appAnchocol [ancho]="200">{{ row.detalle }}</td>
               <td appAnchocol [ancho]="100">{{ row.fechaini }}</td>
               <td appAnchocol [ancho]="100">{{ row.fechafin }}</td>
-              <td appAnchocol [ancho]="100">{{ row.fechamodi }}</td>
-              <td appAnchocol [ancho]="100" class="text-center">
-                <span
-                  class="badge bg-danger pos-badge"
-                  style="width: 80px; border: 1px solid #bfbfbf"
-                  *ngIf="row.estado == 0"
-                  [ngbTooltip]="row.observacion"
-                  >EN REGISTRO</span
+              <td appAnchocol [ancho]="100">
+                <ng-container
+                  *ngIf="row.total_proyecto && row.total_proyecto > 0"
                 >
-                <span
-                  class="badge bg-success pos-badge text-dark"
-                  style="width: 80px"
-                  *ngIf="row.estado == 1"
-                  >APROBADO</span
-                >
+                  <span class="float-left">S/.</span>
+                  <span class="float-right">{{
+                    row.total_proyecto | number : "0.2"
+                  }}</span>
+                </ng-container>
               </td>
+              <td appAnchocol [ancho]="100">{{ row.avance }}</td>
+              <td appAnchocol [ancho]="100">
+                <ng-container
+                  *ngIf="row.total_proyecto && row.total_proyecto > 0"
+                >
+                  <span class="float-left">S/.</span>
+                  <span class="float-right">{{ row.acumulado }}</span>
+                </ng-container>
+              </td>
+              <td appAnchocol [ancho]="50">{{ row.fechamodi }}</td>
               <td appAnchocol [ancho]="50">
                 <div class="d-flex">
                   <button
@@ -181,7 +188,7 @@
           </select>
         </mat-form-field>
       </div>
-      <div
+      <!-- <div
         class="col-sm-12 col-md-3 col-lg-3 d-flex"
         style="display: flex; align-items: center; width: 100%"
       >
@@ -204,44 +211,44 @@
             </option>
           </select>
         </mat-form-field>
-      </div>
+      </div> -->
     </div>
-     <table class="mini-tabla tab-10" style="overflow: auto; display: list-item">
+    <table class="mini-tabla tab-10" style="overflow: auto; display: list-item">
       <thead>
         <tr>
           <th rowspan="3">PARTIDA</th>
           <th rowspan="3">DESCRIPCION</th>
-          <th rowspan="2"colspan="4">PRESUPUESTO PROGRAMADO </th>
+          <th rowspan="2" colspan="4">PRESUPUESTO PROGRAMADO</th>
           <th colspan="9">AVANCES</th>
           <th rowspan="2" colspan="3">SALDO</th>
         </tr>
         <tr>
-          <th colspan="3">ANTERIOR </th>
+          <th colspan="3">ANTERIOR</th>
           <th colspan="3">ACTUAL</th>
           <th colspan="3">ACUMULADO</th>
         </tr>
         <tr>
           <th>Unid</th>
           <th>Metrado</th>
-          <th>P. Unit.<br>S/.</th>
-          <th>Presu <br>S/. </th>
-          <th>Metrado </th>
-          <th>Valorizado <br>S/.</th>
+          <th>P. Unit.<br />S/.</th>
+          <th>Presu <br />S/.</th>
+          <th>Metrado</th>
+          <th>Valorizado <br />S/.</th>
           <th>%</th>
-          <th>Metrado </th>
-          <th>Valorizado <br>S/.</th>
+          <th>Metrado</th>
+          <th>Valorizado <br />S/.</th>
           <th>%</th>
-          <th>Metrado </th>
-          <th>Valorizado <br>S/.</th>
+          <th>Metrado</th>
+          <th>Valorizado <br />S/.</th>
           <th>%</th>
-          <th>Metrado </th>
-          <th>Valorizado <br>S/.</th>
+          <th>Metrado</th>
+          <th>Valorizado <br />S/.</th>
           <th>%</th>
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let row of this.tablaExcelAdjunta">
-          <ng-container>
+         <ng-container *ngIf="tablasaldos.length > 0">
+            <tr *ngFor="let row of tablasaldos; let indice = index">
             <td
               class="text-left"
               appPintarfilapre
@@ -263,13 +270,12 @@
               [item]="row.item"
               [separador]="'.'"
               [partida]="row.unidad != ''"
-            >
+            > 
               <div
-                [style.padding-left.px]="
+               [style.padding-left.px]="row.item?
                   (row.item.toString().split('.').length - 1) * 5 +
-                  (row.unidad != '' ? 17 : 0)
-                "
-              >
+                  (row.unidad != '' ? 8 : 0):18 + (row.tipofila * 7)
+                ">
                 {{ row.descripcion }}
               </div>
             </td>
@@ -284,7 +290,7 @@
             >
               {{ row.unidad }}
             </td>
-              <td
+            <td
               appPintarfilapre
               [tipo]="titulo1"
               [color]="row.item ? titulo1color : ''"
@@ -293,9 +299,9 @@
               [separador]="'.'"
               [partida]="row.unidad != ''"
             >
-              {{ row.mtotal }}
+              {{ row.cantidad==0?'':row.cantidad | number : "0." + this.dec_metrado + "-" + this.dec_metrado}}
             </td>
-              <td
+            <td
               appPintarfilapre
               [tipo]="titulo1"
               [color]="row.item ? titulo1color : ''"
@@ -304,10 +310,9 @@
               [separador]="'.'"
               [partida]="row.unidad != ''"
             >
-              {{ row.precio }}
+              {{ row.precio==0?'':row.precio| number : "0." + this.dec_parcial + "-" + this.dec_parcial }}
             </td>
-
-              <td
+            <td
               appPintarfilapre
               [tipo]="titulo1"
               [color]="row.item ? titulo1color : ''"
@@ -316,9 +321,9 @@
               [separador]="'.'"
               [partida]="row.unidad != ''"
             >
-              {{ row.precio?row.mtotal*row.precio:'' }}
+              {{ row.parcial==0?'':row.parcial| number : "0." + this.dec_parcial + "-" + this.dec_parcial }}
             </td>
-              <td
+            <td
               appPintarfilapre
               [tipo]="titulo1"
               [color]="row.item ? titulo1color : ''"
@@ -327,135 +332,148 @@
               [separador]="'.'"
               [partida]="row.unidad != ''"
             >
-              {{ row.unidad }}
-            </td>
-              <td
-              appPintarfilapre
-              [tipo]="titulo1"
-              [color]="row.item ? titulo1color : ''"
-              [letra]="titulo1letra"
-              [item]="row.item"
-              [separador]="'.'"
-              [partida]="row.unidad != ''"
-            >
-              {{ row.unidad }}
-            </td>
-              <td
-              appPintarfilapre
-              [tipo]="titulo1"
-              [color]="row.item ? titulo1color : ''"
-              [letra]="titulo1letra"
-              [item]="row.item"
-              [separador]="'.'"
-              [partida]="row.unidad != ''"
-            >
-              {{ row.unidad }}
-            </td>
-              <td
-              appPintarfilapre
-              [tipo]="titulo1"
-              [color]="row.item ? titulo1color : ''"
-              [letra]="titulo1letra"
-              [item]="row.item"
-              [separador]="'.'"
-              [partida]="row.unidad != ''"
-            >
-              {{ row.unidad }}
-            </td>
-              <td
-              appPintarfilapre
-              [tipo]="titulo1"
-              [color]="row.item ? titulo1color : ''"
-              [letra]="titulo1letra"
-              [item]="row.item"
-              [separador]="'.'"
-              [partida]="row.unidad != ''"
-            >
-              {{ row.unidad }}
-            </td>
-              <td
-              appPintarfilapre
-              [tipo]="titulo1"
-              [color]="row.item ? titulo1color : ''"
-              [letra]="titulo1letra"
-              [item]="row.item"
-              [separador]="'.'"
-              [partida]="row.unidad != ''"
-            >
-              {{ row.unidad }}
-            </td>
-              <td
-              appPintarfilapre
-              [tipo]="titulo1"
-              [color]="row.item ? titulo1color : ''"
-              [letra]="titulo1letra"
-              [item]="row.item"
-              [separador]="'.'"
-              [partida]="row.unidad != ''"
-            >
-              {{ row.unidad }}
-            </td>
-              <td
-              appPintarfilapre
-              [tipo]="titulo1"
-              [color]="row.item ? titulo1color : ''"
-              [letra]="titulo1letra"
-              [item]="row.item"
-              [separador]="'.'"
-              [partida]="row.unidad != ''"
-            >
-              {{ row.unidad }}
-            </td>
-              <td
-              appPintarfilapre
-              [tipo]="titulo1"
-              [color]="row.item ? titulo1color : ''"
-              [letra]="titulo1letra"
-              [item]="row.item"
-              [separador]="'.'"
-              [partida]="row.unidad != ''"
-            >
-              {{ row.unidad }}
-            </td>
-              <td
-              appPintarfilapre
-              [tipo]="titulo1"
-              [color]="row.item ? titulo1color : ''"
-              [letra]="titulo1letra"
-              [item]="row.item"
-              [separador]="'.'"
-              [partida]="row.unidad != ''"
-            >
-              {{ row.unidad }}
-            </td>
-              <td
-              appPintarfilapre
-              [tipo]="titulo1"
-              [color]="row.item ? titulo1color : ''"
-              [letra]="titulo1letra"
-              [item]="row.item"
-              [separador]="'.'"
-              [partida]="row.unidad != ''"
-            >
-              {{ row.unidad }}
-            </td>
-               <td
-              appPintarfilapre
-              [tipo]="titulo1"
-              [color]="row.item ? titulo1color : ''"
-              [letra]="titulo1letra"
-              [item]="row.item"
-              [separador]="'.'"
-              [partida]="row.unidad != ''"
-            >
-              {{ row.unidad }}
+              {{ row.metrado_anterior==0?'':row.metrado_anterior | number : "0." + this.dec_metrado + "-" + this.dec_metrado}}
             </td>
 
-           
+            <td
+              appPintarfilapre
+              [tipo]="titulo1"
+              [color]="row.item ? titulo1color : ''"
+              [letra]="titulo1letra"
+              [item]="row.item"
+              [separador]="'.'"
+              [partida]="row.unidad != ''"
+            >
+              {{ row.total_anterior ==0?'':row.total_anterior | number : "0." + this.dec_parcial + "-" + this.dec_parcial}}
+            </td>
+            <td
+              appPintarfilapre
+              [tipo]="titulo1"
+              [color]="row.item ? titulo1color : ''"
+              [letra]="titulo1letra"
+              [item]="row.item"
+              [separador]="'.'"
+              [partida]="row.unidad != ''"
+            >
+              {{ row.porcentaje_anterior }}
+            </td>
+            <td
+              appPintarfilapre
+              [tipo]="titulo1"
+              [color]="row.item ? titulo1color : ''"
+              [letra]="titulo1letra"
+              [item]="row.item"
+              [separador]="'.'"
+              [partida]="row.unidad != ''"
+            >
+              {{ row.metrado_actual==0?'':row.metrado_actual | number : "0." + this.dec_metrado + "-" + this.dec_metrado}}
+            </td>
+            <td
+              appPintarfilapre
+              [tipo]="titulo1"
+              [color]="row.item ? titulo1color : ''"
+              [letra]="titulo1letra"
+              [item]="row.item"
+              [separador]="'.'"
+              [partida]="row.unidad != ''"
+            >
+              {{ row.total_actual==0?'':row.total_actual | number : "0." + this.dec_parcial + "-" + this.dec_parcial}}
+            </td>
+            <td
+              appPintarfilapre
+              [tipo]="titulo1"
+              [color]="row.item ? titulo1color : ''"
+              [letra]="titulo1letra"
+              [item]="row.item"
+              [separador]="'.'"
+              [partida]="row.unidad != ''"
+            >
+              {{ row.porcentaje_actual }}
+            </td>
+            <td
+              appPintarfilapre
+              [tipo]="titulo1"
+              [color]="row.item ? titulo1color : ''"
+              [letra]="titulo1letra"
+              [item]="row.item"
+              [separador]="'.'"
+              [partida]="row.unidad != ''"
+            >
+              {{ row.metrado_acumulado==0?'':row.metrado_acumulado | number : "0." + this.dec_metrado + "-" + this.dec_metrado}}
+            </td>
+            <td
+              appPintarfilapre
+              [tipo]="titulo1"
+              [color]="row.item ? titulo1color : ''"
+              [letra]="titulo1letra"
+              [item]="row.item"
+              [separador]="'.'"
+              [partida]="row.unidad != ''"
+            >
+              {{ row.total_acumulado ==0?'':row.total_acumulado | number : "0." + this.dec_parcial + "-" + this.dec_parcial}}
+            </td>
+            <td
+              appPintarfilapre
+              [tipo]="titulo1"
+              [color]="row.item ? titulo1color : ''"
+              [letra]="titulo1letra"
+              [item]="row.item"
+              [separador]="'.'"
+              [partida]="row.unidad != ''"
+            >
+              {{ row.porcentaje_acumulado }}
+            </td>
+            <td
+              appPintarfilapre
+              [tipo]="titulo1"
+              [color]="row.item ? titulo1color : ''"
+              [letra]="titulo1letra"
+              [item]="row.item"
+              [separador]="'.'"
+              [partida]="row.unidad != ''"
+            >
+              {{row.metrado_saldo==0?'': row.metrado_saldo | number : "0." + this.dec_metrado + "-" + this.dec_metrado}}
+            </td>
+            <td
+              appPintarfilapre
+              [tipo]="titulo1"
+              [color]="row.item ? titulo1color : ''"
+              [letra]="titulo1letra"
+              [item]="row.item"
+              [separador]="'.'"
+              [partida]="row.unidad != ''"
+            >
+              {{ row.total_saldo==0?'': row.total_saldo | number : "0." + this.dec_parcial + "-" + this.dec_parcial}}
+            </td>
+            <td
+              appPintarfilapre
+              [tipo]="titulo1"
+              [color]="row.item ? titulo1color : ''"
+              [letra]="titulo1letra"
+              [item]="row.item"
+              [separador]="'.'"
+              [partida]="row.unidad != ''"
+            >
+              {{ row.porcentaje_saldo }}
+            </td>
+            </tr>
           </ng-container>
-        </tr>
+          <ng-container *ngIf="tablasaldos.length <= 0">
+            <tr>
+              <td class="mat-cell text-center" colspan="18">
+                <label *ngIf="!buscando1">No se encontraron resultados</label>
+                <div *ngIf="buscando1" class="preloader3 loader-block">
+                  <div class="circ1"></div>
+                  <div class="circ2"></div>
+                  <div class="circ3"></div>
+                  <div class="circ4"></div>
+                </div>
+              </td>
+            </tr>
+          </ng-container>
       </tbody>
     </table>
-
   </app-card>
 </div>
+<app-cargando [bloquearTodo]="true" *ngIf="mostrar_carga_todo"></app-cargando>
+<app-cargando [bloquearTodo]="false" *ngIf="mostrar_carga"></app-cargando>

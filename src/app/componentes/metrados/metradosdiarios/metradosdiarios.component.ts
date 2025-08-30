@@ -537,7 +537,8 @@ export class MetradosdiariosComponent implements OnInit {
     this.metradoanterior = 0;
     this.metradoposterior = 0;
     this.metradoacumulado = 0;
-    this.fechaselecionada = this.diasCalendario[0].fecha;
+    const index= this.diasCalendario.findIndex(ele=>ele.bloqueado==false)
+    this.fechaselecionada = this.diasCalendario[index].fecha;
     await this.listarTitulos();
     this.mostrar_carga_todo = false;
   }
@@ -582,7 +583,6 @@ export class MetradosdiariosComponent implements OnInit {
     this.tablavistametradodiario = await this.metradoService.reporteMetradosMes(
       obj
     );
-    console.log(this.tablavistametradodiario)
     const aspectos = await this.principalService.ListarAspectosDiasProy({
       id_proyecto: this.id_proyecto,
     });
@@ -601,33 +601,72 @@ export class MetradosdiariosComponent implements OnInit {
     this.datosglo = datos;
     this.mostrar_carga_todo = true;
     this.subvista = 4;
-    this.listarTitulosDiarios()
+    const obj = {
+      id_proyecto: this.id_proyecto,
+    };
+    const response = await this.metradoService.listarTitulosDeMetrados(obj);
+    if (response.length) {
+      this.tablaTitResumen = response;
+      this.itemTitulo = this.tablaTitResumen[0].item;
+    } else {
+      this.tablaTitResumen = [];
+      this.itemTitulo = null;
+    }
+    await this.listarTitulosDiarios()
+    await this.FiltrarDiarios()
     this.mostrar_carga_todo = false;
   }
+  itemTitulo
+  tabladiariostotal
   async listarTitulosDiarios(){
     const obj={
       id_proyecto:this.id_proyecto,
-      indice:this.indiceTitulo
+      indice:this.datosglo.id_registro
     }
-    console.log(obj)
-    const respuesta= await this.metradoService.historialMetrdiarioPartida(obj)
-    console.log(respuesta)
-    
-    
+    const respuesta= await this.metradoService.historialMetradosDiarios(obj)
+    this.tabladiariostotal=respuesta
+  }
+  async FiltrarDiarios(){
+    if(this.itemTitulo=='All'){
+      this.tablametradodiario= this.tabladiariostotal.map(row => ({
+        ...row,
+        mostrar: !!row.item,
+        icomost: !!row.item ? "con-item" : "sin-item"
+      }));
+    }else{
+      const itemStr = this.itemTitulo.toString();
+      const filtrados: any[] = [];
+      for (let row of this.tabladiariostotal) {
+        if (row.itemord_orden.startsWith(itemStr + ".") || row.itemord_orden == this.itemTitulo) {
+          row.mostrar = !!row.item;
+          row.icomost = row.item ? "con-item" : "sin-item";
+          filtrados.push(row);
+        }
+      }
+      this.tablametradodiario=filtrados
+    }
+       console.log(this.tablametradodiario)
   }
   diasCalendario2;
   diasCalendario;
   valordia;
-  async MostrarTotales(array) {
+  estadodia
+  async MostrarTotales(array,array2) {
+    console.log(array)
+    console.log(array2)
     const valores = array.split('/').map(Number);
+    const estados = array2?.split('/').map(Number);
     let suma = 0;
     for (let k = 0; k < this.diasCalendario.length; k++) {
       const value = k == 0 && valores[k] == 0 ? null : valores[k] ?? null;
+      const estado = k == 0 && estados[k] == 0 ? 0 : estados[k] ?? 0;
       suma += isNaN(value) ? 0 : value;
       this.diasCalendario[k].value = value;
+      this.diasCalendario[k].estado =estado ;
       if (this.diasCalendario[k].fecha == this.fechaselecionada) {
         this.auxtotal = value;
         this.valordia = value ?? 0;
+        this.estadodia= estado
       }
     }
     this.metradoacumulado = this.metradoanterior + suma;
@@ -647,7 +686,7 @@ export class MetradosdiariosComponent implements OnInit {
     const end = new Date(fechafin);
     end.setDate(end.getDate() + 1);
     const diasNoLaborables = jornada[0]?.nolabo1 || [];
-    const diasNoLaborables2 = jornada[0]?.nolabo2 || [];
+    // const diasNoLaborables2 = jornada[0]?.nolabo2 || [];
     const feriadosMap = new Set(
       feriados.map((f) => new Date(f.fecha).toDateString())
     );
@@ -660,23 +699,25 @@ export class MetradosdiariosComponent implements OnInit {
       const nombreDia = current
         .toLocaleDateString('es-PE', { weekday: 'long' })
         .toUpperCase();
-      const esDomingo = diasNoLaborables.includes(nombreDia);
-      const NoLabo = diasNoLaborables2.includes(nombreDia);
+      const noLaborable = diasNoLaborables.includes(nombreDia);
+      // const NoLabo = diasNoLaborables2.includes(nombreDia);
       const esFeriado = feriadosMap.has(current.toDateString());
       dias.push({
         fecha: new Date(current),
         dia: current.getDate(),
         letraDia: diaLetra,
-        bloqueado: esDomingo || esFeriado || NoLabo,
+        bloqueado: noLaborable || esFeriado ,
         value: null,
+        estado:null,
       });
       current = new Date(current.setDate(current.getDate() + 1));
     }
+    console.log(dias)
     return dias;
   }
   tablaTitResumen;
   indiceTitulo;
-    async listarTitulos2() {
+  async listarTitulos2() {
     const obj = {
       id_proyecto: this.id_proyecto,
     };
@@ -760,7 +801,6 @@ export class MetradosdiariosComponent implements OnInit {
         this.tablaTitulo = tabla;
       }
       const response = await this.listarTablaExcel(titulo.indice, titulo.item);
-      console.log(response)
       const response2 = await this.tablaTipoExcel(response, this.tablaTitulo);
       this.tablaExcelAdjunta = response2.body;
       for (let i = 0; i < this.tablaExcelAdjunta.length; i++) {
@@ -770,9 +810,6 @@ export class MetradosdiariosComponent implements OnInit {
         row.tieneSiguiente = row.item && nextRow && !nextRow.item ? 1 : 0;
       }
       this.headerExcel = response2.header;
-      console.log(this.tablaTitResumen);
-      console.log(this.tablaExcelAdjunta);
-      console.log(this.headerExcel);
       this.mostrar_carga_todo = false;
     }, 5);
   }
@@ -812,9 +849,6 @@ export class MetradosdiariosComponent implements OnInit {
         row.tieneSiguiente = row.item && nextRow && !nextRow.item ? 1 : 0;
       }
       this.headerExcel = response2.header;
-      console.log(this.tablaTitResumen);
-      console.log(this.tablaExcelAdjunta);
-      console.log(this.headerExcel);
       this.mostrar_carga_todo = false;
     }, 5);
   }
@@ -1093,8 +1127,12 @@ export class MetradosdiariosComponent implements OnInit {
     return filtrados;
   }
   fechaselecionada = null;
-  ChangeDia(dia) {
+  async ChangeDia(dia) {
     if (!dia.bloqueado) {
+      if (this.existecambios) {
+        await this.guardarCambios();
+        this.existecambios = false;
+      }
       this.saldometrado = 0;
       this.metradoanterior = 0;
       this.metradoposterior = 0;
@@ -1106,7 +1144,7 @@ export class MetradosdiariosComponent implements OnInit {
       this.IndexMetradoDiario = null;
       this.indexTablaExcel = null;
       this.tablaSistema = [];
-      this.MostrarTotales('');
+      this.MostrarTotales('','');
     } else {
       return;
     }
@@ -1147,7 +1185,8 @@ export class MetradosdiariosComponent implements OnInit {
         fecha: moment(this.fechaselecionada).format('YYYY-MM-DD'),
       };
       const respuesta = await this.metradoService.listarMetradosDiarios(edatos);
-      this.auxidfila = respuesta[1].length + 1;
+      console.log(respuesta)
+      this.auxidfila = respuesta[1]?.length + 1;
       this.tablaSistema = respuesta[1];
       for (let row of this.tablaSistema) {
         if (row.tipofila == 1 || row.tipofila == 2) {
@@ -1190,9 +1229,9 @@ export class MetradosdiariosComponent implements OnInit {
         }
       }
       if (respuesta[2].length) {
-        this.MostrarTotales(respuesta[2][0].montodias);
+        this.MostrarTotales(respuesta[2][0].montodias,respuesta[2][0].estadodias);
       } else {
-        this.MostrarTotales('');
+        this.MostrarTotales('','');
       }
     } else {
       return;
@@ -1501,20 +1540,46 @@ export class MetradosdiariosComponent implements OnInit {
     }
     return pintar;
   }
+  async CambiarEstado(){
+  let estadosConcatenados = '';
+  let dias = this.diasCalendario
+  dias.forEach((dia, index) => {
+    if (dia.fecha === this.fechaselecionada) {
+      dia.estado = 2
+    }
+    estadosConcatenados += dia.estado;
+    if (index < dias.length - 1) {
+      estadosConcatenados += '/';
+    }
+  });
+  const datos = {
+      id_proyecto: this.id_proyecto,
+      id_registro: this.id_registroact,
+      indice: this.filaExcelSel.indice,
+      estadodias: estadosConcatenados,
+    };
+  const respuesta=await this.metradoService.CambiarEstado(datos);
+  console.log(respuesta)
+
+  }
   async guardarCambios() {
     let sumaTotal = 0;
     let letrasConcatenadas = '';
-    let dias = this.diasCalendario;
+    let estadosConcatenados = '';
+    let dias = this.diasCalendario
     dias.forEach((dia, index) => {
       if (dia.fecha === this.fechaselecionada) {
         dia.value = this.auxtotal ? this.auxtotal : null;
+        dia.estado = dia.estado!=2? dia.estado:2
       }
       sumaTotal += parseFloat(
         dia.value == null || isNaN(dia.value) ? 0 : dia.value
       );
       letrasConcatenadas += isNaN(dia.value) ? '' : dia.value;
+      estadosConcatenados += dia.estado;
       if (index < dias.length - 1) {
         letrasConcatenadas += '/';
+        estadosConcatenados += '/';
       }
     });
     const filteredData = await JSON.parse(
@@ -1533,42 +1598,11 @@ export class MetradosdiariosComponent implements OnInit {
       indice: this.filaExcelSel.indice,
       total: sumaTotal,
       montodias: letrasConcatenadas,
+      estadodias: estadosConcatenados,
       fecha: moment(this.fechaselecionada).format('YYYY-MM-DD'),
       datos1: JSON.stringify(filteredData),
     };
-    const respuesta = await this.metradoService.guardarMetradoDiario(datos);
-    // try {
-    //   const sw = await SwalService.confirm(
-    //     'Estas seguro?',
-    //     'Se guardara todos los cambios realizados'
-    //   );
-    //   if (sw.isConfirmed) {
-    //     const datos = {
-    //       id_proyecto: this.id_proyecto,
-    //       id_registro: this.id_registroact,
-    //       indice: this.filaExcelSel.indice,
-    //       total: sumaTotal,
-    //       montodias: letrasConcatenadas,
-    //       fecha: moment(this.fechaselecionada).format('YYYY-MM-DD'),
-    //       datos1: JSON.stringify(filteredData),
-    //     };
-    //     const respuesta = await this.metradoService.guardarMetradoDiario(datos);
-    //     if (respuesta.id == '1') {
-    //       this.toaster.success('Se guardo correctamente', 'Ëxito', {
-    //         closeButton: false,
-    //         positionClass: 'toast-bottom-right',
-    //         timeOut: 4000,
-    //       });
-    //       await this.SelecionarMetradoDiario();
-    //       this.mostrar_carga_todo = false;
-    //     } else {
-    //       SwalService.error('Advertencia', respuesta[0].mensaje);
-    //     }
-    //   }
-    // } catch (err) {
-    //   SwalService.error(err);
-    //   console.log(err);
-    // }
+    await this.metradoService.guardarMetradoDiario(datos);
   }
   async cambioCheckboxCopiar(valor, index) {
     if (!valor) {
@@ -1951,7 +1985,7 @@ export class MetradosdiariosComponent implements OnInit {
           altura: '',
           total: '',
           parcial: '',
-          tipofila: 2,
+          tipofila: '',
           subtotal: '',
           mostrar: 1,
           icomost: 0,
@@ -2427,6 +2461,9 @@ export class MetradosdiariosComponent implements OnInit {
       }
     }
     this.auxtotal = this.formsService.redondeo(totalSup, this.dec_metrado);
+    console.log(this.saldometrado)
+    console.log(this.valordia)
+    console.log(this.auxtotal)
     if (validarSaldo) {
       const excedido =
         parseFloat(this.saldometrado) +
