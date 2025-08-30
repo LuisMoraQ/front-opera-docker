@@ -544,7 +544,8 @@
                               <app-data-proyecto [tabproyecto]="tab"></app-data-proyecto>
                             </ng-container>
                             <ng-container *ngIf="tab.get('menu_proyecto_seleccionado').value == 2">
-                              <app-presdirecto [tabproyecto]="tab"></app-presdirecto>
+                              <!-- <app-presdirecto [tabproyecto]="tab"></app-presdirecto> -->
+                               <app-registro-actividades [tabproyecto]="tab"></app-registro-actividades>
                             </ng-container>
                             <ng-container *ngIf="tab.get('menu_proyecto_seleccionado').value == 3">
                               <app-metradosdiarios [tabproyecto]="tab"></app-metradosdiarios>
