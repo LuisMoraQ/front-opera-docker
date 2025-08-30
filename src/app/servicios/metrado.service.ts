@@ -677,4 +677,21 @@ listarTopMetradosDiarios(params = {}): Promise<any>  {
       catchError(err => throwError(err))
     ).toPromise()
   }
+
+  listarTotalmetradosPresu(params = {}): Promise<any>  {
+    let formData: FormData = new FormData();
+    Object.entries(params).forEach(([key, value]) => {
+      formData.append(key, value as string);
+    });
+    const url = this.enviUrl + '/api/metrados/listarTotalmetradosPresu';
+    return this.http.post<any>(url, formData).pipe(
+      map(res => {
+        if (!res) {
+          throw new Error
+        }
+        return res
+      }),
+      catchError(err => throwError(err))
+    ).toPromise()
+  }
 }

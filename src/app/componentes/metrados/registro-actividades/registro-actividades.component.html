@@ -1,0 +1,217 @@
+<div id="divbut" style="width: calc(100% - 58px); margin-left: 44px" class="hidescroll m-b-10">
+    <div class="row " style="margin-right: 0px; margin-left: 0px">
+        <button class="btn btn-sm btn-outline-secondary btn-menu-top" type="button" (mouseup)="quitarfoco($event)"
+            (click)="cambioVista(1)" style="padding: 4px 8px" [ngClass]="{ active: subvista === 1 }">
+            <i class="fa fa-list"></i> VINCULO DE INSUMOS CON PARTIDAS
+        </button>
+        <button class="btn btn-sm btn-outline-secondary btn-menu-top" type="button" (mouseup)="quitarfoco($event)"
+            style="padding: 4px 8px" [ngClass]="{ active: subvista === 2 }" (click)="cambioVista(2)"
+            [disabled]="!datosglo">
+            <i class="fa fa-list"></i> RECURSOS UTILIZADOS PROGRAMADO
+        </button>
+        <button class="btn btn-sm btn-outline-secondary btn-menu-top" type="button" (mouseup)="quitarfoco($event)"
+            style="padding: 4px 8px" [ngClass]="{ active: subvista === 3 }" (click)="cambioVista(3)"
+            [disabled]="!datosglo">
+            <i class="fa fa-list"></i> COMPARATIVA DE ACU EJECUTADO VS PROGRAMADO
+        </button>
+        <button class="btn btn-sm btn-outline-secondary btn-menu-top" type="button" (mouseup)="quitarfoco($event)"
+            style="padding: 4px 8px" [ngClass]="{ active: subvista === 4 }" (click)="cambioVista(4)"
+            [disabled]="!datosglo">
+            <i class="fa fa-list"></i> GRAFICOS COMPARATIVOS
+        </button>
+        <button class="btn btn-sm btn-outline-secondary btn-menu-top" type="button" (mouseup)="quitarfoco($event)"
+            style="padding: 4px 8px" [ngClass]="{ active: subvista === 5 }" (click)="cambioVista(5)"
+            [disabled]="!datosglo">
+            <i class="fa fa-list"></i> PANEL FOTOGRAFICO
+        </button>
+    </div>
+
+    <div class=" w-100 mt-2 h-contenedor-principal">
+        <ng-container *ngIf="subvista==1">
+            <div class="d-flex w-100">
+
+                <table class="mini-tabla tab-10 " style="overflow: auto; display: list-item">
+                    <thead>
+                        <tr>
+                            <th>
+                                Tipo de
+                                Registro
+                            </th>
+                            <th *ngFor="let dia of diasCalendario" (click)="ChangeDia(dia)"
+                                [class.bloqueado]="dia.bloqueado" [ngClass]="{
+            'fecha-selected': dia.fecha == fechaselecionada
+          }">
+                                {{ dia.letraDia }} - {{ dia.dia }}
+                            </th>
+                            <th>Estado</th>
+
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>
+                                Registro Metradado
+                            </td>
+                            <td *ngFor="let dia of diasCalendario" [class.bloqueado]="dia.bloqueado"
+                                (click)="ChangeDia(dia)" [ngClass]="{ 'fecha-selected': dia.fecha == fechaselecionada }"
+                                style="height: 24px">
+                                {{ dia.value | number : "0.2" }}
+                            </td>
+
+                            <td>
+
+                            </td>
+                        </tr>
+                        <!-- <tr>
+                    <td>
+                        Registro Metradado
+                    </td>
+                    <td *ngFor="let dia of diasCalendario" [class.bloqueado]="dia.bloqueado"
+                        [ngClass]="{ 'fecha-selected': dia.fecha == fechaselecionada }" style="height: 24px">
+                        -
+                    </td>
+
+                    <td>
+
+                    </td>
+                </tr> -->
+
+                        <tr>
+                            <td>
+                                Registro Metradado
+                            </td>
+                            <td *ngFor="let dia of diasCalendario" [class.bloqueado]="dia.bloqueado"
+                                (click)="ChangeDia(dia)" [ngClass]="{ 'fecha-selected': dia.fecha == fechaselecionada }"
+                                style="height: 24px">
+                                -
+                            </td>
+
+                            <td>
+
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="col-12 d-flex mt-2 px-0 h-100">
+                <div class="col-6 pl-0">
+                    <div class="d-flex">
+                        <mat-form-field appearance="outline" class="mff-reduc my-form-field" [floatLabel]="'always'">
+                            <mat-label>Metrado Registrado </mat-label>
+                            <select matNativeControl [(ngModel)]="metradoMes" (change)="cambioFechasMetrado()">
+                                <option value="">--Seleccionar--</option>
+                                <option *ngFor="let registro of tablaRegistroMetrados" [value]="registro.id_registro">
+                                    {{registro.detalle}} ( {{registro.fechaini | date:'dd/MM/yy'}} - {{registro.fechafin
+                                    |
+                                    date:'dd/MM/yy'}})
+                                </option>
+                            </select>
+                        </mat-form-field>
+                        <mat-form-field class="mff-reduc my-form-field col-8 wrapper-custom pl-0 ml-2"
+                            appearance="outline" style="display: contents">
+                            <mat-label>Titulo</mat-label>
+                            <select matNativeControl [(ngModel)]="indiceTitulo"
+                                (change)="filtroTitulo(indiceTitulo, this.tablaPresCompleto)">
+                                <option *ngFor="let titulo of titulos" value="{{ titulo.indice }}">
+                                    {{ titulo?.item }}&nbsp;&#8702;&nbsp;{{ titulo?.descripcion }}
+                                </option>
+                            </select>
+                        </mat-form-field>
+                    </div>
+                    <div class="col-12 px-0">
+                        <div class="px-0 overflow-auto h-tab-pres">
+                            <ng-container *ngIf="tablaPresupuesto.length; else noDataExcel">
+                                <table class="tabla-general tab-10 table-bordered table-m">
+                                    <thead>
+                                        <tr class="headsticky" style="height: 22px;">
+                                            <th class="text-center" appAnchocol [ancho]="70">Item</th>
+                                            <th class="text-center" appAnchocol [ancho]="200" [detalle]="true">
+                                                Descripcion</th>
+                                            <th class="text-center" appAnchocol [ancho]="50">Unidad</th>
+                                            <th class="text-center" appAnchocol [ancho]="100">Metrado Total</th>
+                                            <th class="text-center" appAnchocol [ancho]="100">Metrado Ejecutado</th>
+                                            <th class="text-center" appAnchocol [ancho]="100">Saldo Metrado</th>
+                                            <th class="text-center" appAnchocol [ancho]="100">Metrado Diario</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr *ngFor="let row of this.tablaPresupuesto; let i = index">
+                                            <td class="text-left" appPintarfilapre [tipo]="titulo1"
+                                                [color]="row.item ? titulo1color : ''" [letra]="titulo1letra"
+                                                [item]="row.item" [separador]="'.'" [partida]="row.unidad != ''">
+                                                {{row.item}}</td>
+                                            <td class="text-left" appPintarfilapre [tipo]="titulo1"
+                                                [color]="row.item ? titulo1color : ''" [letra]="titulo1letra"
+                                                [item]="row.item" [separador]="'.'" [partida]="row.unidad != ''">
+                                                {{row.descripcion}}</td>
+                                            <td class="text-center" appPintarfilapre [tipo]="titulo1"
+                                                [color]="row.item ? titulo1color : ''" [letra]="titulo1letra"
+                                                [item]="row.item" [separador]="'.'" [partida]="row.unidad != ''">
+                                                {{row.unidad}}</td>
+                                            <td class="text-right" appPintarfilapre [tipo]="titulo1"
+                                                [color]="row.item ? titulo1color : ''" [letra]="titulo1letra"
+                                                [item]="row.item" [separador]="'.'" [partida]="row.unidad != ''">
+                                                {{row.cantidad | number: '0.'+ this.dec_metrado + '-' +
+                                                this.dec_metrado}}</td>
+                                            <td class="text-right" appPintarfilapre [tipo]="titulo1"
+                                                [color]="row.item ? titulo1color : ''" [letra]="titulo1letra"
+                                                [item]="row.item" [separador]="'.'" [partida]="row.unidad != ''">
+                                                {{row.total | number: '0.'+ this.dec_metrado + '-' +
+                                                this.dec_metrado}}</td>
+                                            <td class="text-right" appPintarfilapre [tipo]="titulo1"
+                                                [color]="row.item ? titulo1color : ''" [letra]="titulo1letra"
+                                                [item]="row.item" [separador]="'.'" [partida]="row.unidad != ''">
+                                                {{row.saldo | number: '0.'+ this.dec_metrado + '-' +
+                                                this.dec_metrado}}</td>
+                                            <td class="text-right" appPintarfilapre [tipo]="titulo1"
+                                                [color]="row.item ? titulo1color : ''" [letra]="titulo1letra"
+                                                [item]="row.item" [separador]="'.'" [partida]="row.unidad != ''">
+                                                <ng-container *ngIf="indiceDia !==null && row.metradodiario?.length">
+                                                    {{row.metradodiario[indiceDia]}}
+                                                </ng-container>
+
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </ng-container>
+                            <ng-template #noDataExcel>
+                                <div class="alert alert-warning-custom text-center" role="alert">
+                                    Información no asignada al titulo seleccionado.
+                                </div>
+                            </ng-template>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-6 pr-0">
+                    <ul ngbNav #nav="ngbNav" [(activeId)]="active" class="custom-tabs nav-tabs"
+                        (navChange)="onNavChange($event)">
+                        <li [ngbNavItem]="1" [disabled]="active == 0">
+                            <a ngbNavLink>MANO DE OBRA</a>
+                            <ng-template ngbNavContent>
+                            </ng-template>
+                        </li>
+                        <li [ngbNavItem]="5" [disabled]="active == 0">
+                            <a ngbNavLink>REGISTRO MATERIALES</a>
+                            <ng-template ngbNavContent>
+                            </ng-template>
+                        </li>
+                        <li [ngbNavItem]="5" [disabled]="active == 0">
+                            <a ngbNavLink>REGISTRO EQUIPOS</a>
+                            <ng-template ngbNavContent>
+                            </ng-template>
+                        </li>
+                        <li [ngbNavItem]="5" [disabled]="active == 0">
+                            <a ngbNavLink>SUBCONTRATOS</a>
+                            <ng-template ngbNavContent>
+                            </ng-template>
+                        </li>
+                    </ul>
+                    <div [ngbNavOutlet]="nav" class="mt-2"></div>
+                </div>
+            </div>
+        </ng-container>
+    </div>
+</div>
+
+<app-cargando [bloquearTodo]="true" *ngIf="mostrar_carga_todo"></app-cargando>
