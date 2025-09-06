@@ -85,6 +85,7 @@ export class RegistroActividadesComponent implements OnInit {
     this.tablaRegistroMetrados = await this.metradoService.listarRegistroMetrados({
       id_proyecto: this.id_proyecto,
     });
+    console.log('this.tablaRegistroMetrados', this.tablaRegistroMetrados)
     if (this.tablaRegistroMetrados.length) {
       this.metradoMes = this.tablaRegistroMetrados[0].id_registro
       await this.generarCalendario(this.tablaRegistroMetrados[0])
@@ -102,9 +103,13 @@ export class RegistroActividadesComponent implements OnInit {
       id_registro: id_registro
     }
     const response = await this.metradoService.listarTotalmetradosPresu(obj)
+    console.log('response', response)
     if (response.length) {
       this.tablaPresCompleto = response
+      console.log('this.tablaPresCompleto', this.tablaPresCompleto)
+     
       this.titulos = this.tablaPresCompleto.filter(ele => ele.item.split('.').length == 1)
+       console.log('this.titulos', this.titulos)
     }
   }
 

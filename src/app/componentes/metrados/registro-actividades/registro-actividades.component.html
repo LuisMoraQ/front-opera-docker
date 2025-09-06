@@ -26,7 +26,7 @@
         </button>
     </div>
 
-    <div class=" w-100 mt-2 h-contenedor-principal">
+    <div class=" w-100 mt-2 h-contenedor-principal" *ngIf="tablaRegistroMetrados.length">
         <ng-container *ngIf="subvista==1">
             <div class="d-flex w-100">
 
@@ -156,7 +156,7 @@
                                             <td class="text-right" appPintarfilapre [tipo]="titulo1"
                                                 [color]="row.item ? titulo1color : ''" [letra]="titulo1letra"
                                                 [item]="row.item" [separador]="'.'" [partida]="row.unidad != ''">
-                                                {{row.total | number: '0.'+ this.dec_metrado + '-' +
+                                                {{row.total_registrado | number: '0.'+ this.dec_metrado + '-' +
                                                 this.dec_metrado}}</td>
                                             <td class="text-right" appPintarfilapre [tipo]="titulo1"
                                                 [color]="row.item ? titulo1color : ''" [letra]="titulo1letra"
