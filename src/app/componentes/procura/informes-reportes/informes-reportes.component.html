@@ -70,7 +70,8 @@
             <th appAnchocol [ancho]="100">Monto Valorizado (CD)</th>
             <th appAnchocol [ancho]="100">Avance</th>
             <th appAnchocol [ancho]="100">Monto Acumulado(CD)</th>
-            <th appAnchocol [ancho]="50">Fecha Vinculada</th>
+            <th appAnchocol [ancho]="50">Estado</th>
+            <th appAnchocol [ancho]="50">Fecha Aprobado</th>
             <th appAnchocol [ancho]="50">Registro</th>
           </tr>
         </thead>
@@ -104,7 +105,22 @@
                   <span class="float-right">{{ row.acumulado }}</span>
                 </ng-container>
               </td>
-              <td appAnchocol [ancho]="50">{{ row.fechamodi }}</td>
+                <td appAnchocol [ancho]="100" class="text-center">
+                <span
+                  class="badge bg-danger pos-badge"
+                  style="width: 80px; border: 1px solid #bfbfbf"
+                  *ngIf="row.estado == 0"
+                  [ngbTooltip]="row.observacion"
+                  >EN REGISTRO</span
+                >
+                <span
+                  class="badge bg-success pos-badge text-dark"
+                  style="width: 80px"
+                  *ngIf="row.estado == 1"
+                  >APROBADO</span
+                >
+              </td>
+              <td appAnchocol [ancho]="50">{{ row.fecha_aprob }}</td>
               <td appAnchocol [ancho]="50">
                 <div class="d-flex">
                   <button
@@ -118,16 +134,18 @@
                   >
                     <i class="fa fa-search icono-but"></i>
                   </button>
-                  <!-- <button
-                    class="btn btn-mini2 btn-success"
+                  <button
+                    class="btn btn-mini2 btn-danger"
                     placement="top"
-                    ngbTooltip="Editar"
+                    ngbTooltip="Retornar Estado"
                     container="body"
                     (click)="openModal2(row)"
                     (mouseup)="quitarfoco($event)"
+                    [disabled]="row.estado==0"
                   >
                     <i class="fa fa-edit icono-but"></i>
                   </button>
+                  <!-- 
                   <button
                     class="btn btn-mini2 btn-danger"
                     placement="top"
@@ -177,7 +195,7 @@
           <select
             matNativeControl
             [(ngModel)]="registrotab3"
-            (change)="changeVista2(getItemByIndice(registrotab3))"
+            (change)="changeVista(getItemByIndice(registrotab3))"
           >
             <option
               *ngFor="let titulo of dataSource1"
@@ -475,5 +493,83 @@
     </table>
   </app-card>
 </div>
+<app-modal-basic [dialogClass]="'modal-md'" #modalEstado>
+  <div class="app-modal-header">
+    <h4 class="modal-title tit-modal1">
+      <b>Actualizar Estado de Registro Mensual Metrados</b>
+    </h4>
+    <button type="button" class="close basic-close" (click)="closeModal2()">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="app-modal-body">
+    <form [formGroup]="formEstado">
+      <div class="row">
+        <div class="w-100">
+          <mat-form-field
+            appearance="outline"
+            class="mff-reduc col-sm-12 col-12 mt-2"
+          >
+            <mat-label>Detalle</mat-label>
+            <input
+              matInput
+              type="text"
+              class="mayuscula"
+              maxlength="100"
+              formControlName="detalle2"
+              [maxlength]="100"
+              class="mayuscula"
+              readonly
+            />
+          </mat-form-field>
+        </div>
+        <div class="w-100" style="margin: 0 12px">
+          <mat-form-field
+            appearance="outline"
+            class="mff-reduc col-12 alto-35 px-0 mt-2"
+          >
+            <mat-label>Estado</mat-label>
+            <select matNativeControl formControlName="estado">
+              <option value="0">En Registro</option>
+            </select>
+          </mat-form-field>
+        </div>
+        <div class="w-100">
+          <mat-form-field
+            appearance="outline"
+            class="mff-reduc col-sm-12 col-12 mt-2"
+          >
+            <mat-label>Comentario</mat-label>
+            <input
+              matInput
+              type="text"
+              autocomplete="off"
+              formControlName="observacion"
+              [maxlength]="250"
+            />
+          </mat-form-field>
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="app-modal-footer w-100">
+    <div class="row px-3">
+      <button
+        type="button"
+        class="btn btn-danger btn-sm"
+        (click)="closeModal2()"
+      >
+        <i class="fa fa-times"></i>Cerrar
+      </button>
+      <button
+        type="button"
+        class="btn btn-success btn-sm"
+        (click)="almacenar2()"
+      >
+        <i class="fa fa-check"></i>Guardar
+      </button>
+    </div>
+  </div>
+</app-modal-basic>
 <app-cargando [bloquearTodo]="true" *ngIf="mostrar_carga_todo"></app-cargando>
 <app-cargando [bloquearTodo]="false" *ngIf="mostrar_carga"></app-cargando>

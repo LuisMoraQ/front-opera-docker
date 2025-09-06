@@ -8,6 +8,7 @@
   <li [ngbNavItem]="1">
     <a ngbNavLink>DATOS PROYECTOS</a>
     <ng-template ngbNavContent>
+      <div style="max-height:800px ;overflow-y: auto;   padding: 10px;  ">
       <div class="card-header py-1">
         <h5>INFORMACIÓN GENERAL</h5>
         <button
@@ -483,14 +484,15 @@
                         'f-w-900':
                           row.tipo_registro == 3 || row.tipo_registro == 2
                       }"
+                      (click)="Editar5(indice)"
                     >
                       <div
                         *ngIf="row.editar5 == 0"
                         style="cursor: pointer"
                         class="float-right w-100"
-                        (click)="Editar5(indice)"
-                      >
-                        <span class="float-left"
+                        
+                      > <ng-container *ngIf="row.monto2">
+                         <span class="float-left"
                           >{{ simbolo
                           }}<i
                             *ngIf="row.monto2 == 0"
@@ -500,6 +502,7 @@
                         <span class="float-right">{{
                           row.monto2 | number : mask_parcial
                         }}</span>
+                      </ng-container>
                       </div>
                       <input
                         *ngIf="row.editar5 == 1"
@@ -599,7 +602,7 @@
           </div>
         </div>
       </div>
-      <div [style.height.px]="height - 50" class="overflow-auto tabla-limp">
+      <div class="overflow-auto tabla-limp">
         <table class="table-bordered tab-10">
           <thead class="text-center">
             <tr class="headsticky header-custom">
@@ -751,6 +754,10 @@
             </ng-container>
           </tbody>
         </table>
+      </div>
+      <div class="col-12" style="margin:20px 0">
+         <app-tiempos-programacion [tabproyecto]="prueba"></app-tiempos-programacion>
+      </div>
       </div>
     </ng-template>
   </li>

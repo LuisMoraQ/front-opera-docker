@@ -53,7 +53,7 @@ export class MetradosdiariosComponent implements OnInit {
   nomproy = '';
   mostrar_carga_todo = false;
   mostrar_carga = false;
-
+  fechas1;
   @ViewChild('p3') public popover3: NgbPopover;
   @ViewChild('modalHojas') modalHojas: ModalBasicComponent;
   @ViewChild('modalTotale') modalTotale: ModalBasicComponent;
@@ -73,6 +73,7 @@ export class MetradosdiariosComponent implements OnInit {
     this.simbolo = datosrec.value.simbolo;
     this.nomproy = this.id_userproy = datosrec.value.descripcion;
     this.dec_metrado = this.prueba.value.decimal.split('|')[0] ?? 2;
+    this.fechas1 = datosrec.value;
   }
   constructor(
     private toaster: ToastrService,
@@ -83,7 +84,6 @@ export class MetradosdiariosComponent implements OnInit {
   ) {
     window.addEventListener('beforeunload', this.handleBeforeUnload.bind(this));
   }
-
   dataSource1 = [];
   id_registro;
   id_registro2;
@@ -91,6 +91,49 @@ export class MetradosdiariosComponent implements OnInit {
   titulo1: any = '';
   titulo1color: any = '';
   titulo1letra: any = '';
+  // stilosTit = { color: '', alineamiento: 'left', tipo: '', size: '10' };
+  // stilosMet = { color: '', alineamiento: 'left', tipo: '', size: '10' };
+  // stilosSubM = { color: '', alineamiento: 'left', tipo: '', size: '10' };
+  // stilosTexto = { color: '', alineamiento: 'left', tipo: '', size: '10' };
+  tablametradodiario = [];
+  tablaaux = [];
+  nuevoauxtotal;
+  mostrarColrs: boolean = false;
+  tablavistametradodiario;
+  registrotab3;
+  getMontosParsed: { [id: string]: number[] } = {};
+  tablaExcelAdjunta = [];
+  headerExcel = [];
+  filaSel;
+  titInformSel;
+  tablaTitulo;
+  diasCalendario2;
+  diasCalendario;
+  valordia;
+  estadodia;
+  itemTitulo;
+  tabladiariostotal;
+  tablaTitResumen;
+  indiceTitulo;
+  filaExcelSel;
+  indexTablaExcel;
+  noConsistente;
+  vinculadoExcel;
+  noConsistente2;
+  faltantesPresupuesto = [];
+  tablaPrincipal;
+  dec_metrado;
+  fechaselecionada = null;
+  IndexMetradoDiario;
+  tablaSistema = [];
+  id_registroact;
+  saldometrado = 0;
+  metradoanterior = 0;
+  metradoposterior = 0;
+  metradoacumulado = 0;
+  activarDiarios;
+  tablainicialdiario = [];
+  cantidadFilasTabla = 15;
   async ngOnInit() {
     var resto = 210;
     this.height = window.innerHeight - resto;
@@ -111,11 +154,10 @@ export class MetradosdiariosComponent implements OnInit {
           ? this.dataSource1[this.dataSource1.length - 1].id_registro + 1
           : 1;
     }
-    this.dataSource1 = this.dataSource1.slice().sort((a, b) => {
-      return new Date(a.fechaini).getTime() - new Date(b.fechaini).getTime();
-    });
+    // this.dataSource1 = this.dataSource1.slice().sort((a, b) => {
+    //   return new Date(a.fechaini).getTime() - new Date(b.fechaini).getTime();
+    // });
   }
-  tablametradodiario=[]
   quitarfoco(element: any) {
     element.target.blur();
     element.target.parentElement.blur();
@@ -139,12 +181,12 @@ export class MetradosdiariosComponent implements OnInit {
         await this.guardarCambios();
         this.existecambios = false;
       }
-    }else if (ind == 4) {
+    } else if (ind == 4) {
       if (this.existecambios) {
         await this.guardarCambios();
         this.existecambios = false;
       }
-      await this.changeVista3(this.datosglo);
+      await this.changeVista3(this.datosglo, true);
     }
   }
   closeModal() {
@@ -154,8 +196,7 @@ export class MetradosdiariosComponent implements OnInit {
     if (datos != null) {
       this.id_registro2 = datos.id_registro;
       this.formEstado.get('detalle2').setValue(datos?.detalle);
-      this.formEstado.get('estado').setValue(datos?.estado);
-      this.formEstado.get('observacion').setValue(datos?.observacion);
+      this.formEstado.get('observacion').setValue(datos.observacion=='null'||datos.observacion==null|| !datos.observacion?'':datos.observacion);
       this.modalEstado.show();
     }
   }
@@ -178,7 +219,7 @@ export class MetradosdiariosComponent implements OnInit {
   }
   formEstado = new UntypedFormGroup({
     detalle2: new UntypedFormControl('', [Validators.required]),
-    estado: new UntypedFormControl('', [Validators.required]),
+    estado: new UntypedFormControl(1, [Validators.required]),
     observacion: new UntypedFormControl(''),
   });
   get detalle2(): UntypedFormControl {
@@ -215,8 +256,12 @@ export class MetradosdiariosComponent implements OnInit {
     const [anio2, mes2] = fechaFin.split('-').map(Number);
     return anio1 === anio2 && mes1 === mes2;
   }
+  validarRango(fechaini: string, fechainicpru: string): boolean {
+    const inicio = moment(fechaini).format('YYYY-MM-DD');
+    const inicioPrueba = moment(fechainicpru).format('YYYY-MM-DD');
+    return inicioPrueba >= inicio;
+  }
   async almacenar() {
-    //aca
     try {
       if (this.formHojas.invalid) {
         this.formHojas.markAllAsTouched();
@@ -255,7 +300,13 @@ export class MetradosdiariosComponent implements OnInit {
           );
           return;
         }
-
+        if (!this.validarRango(this.fechas1.fecha_inicio, datos.fechaini)) {
+          SwalService.error(
+            'Error',
+            'El intervalo de fecha no esta en el rango de fechas del proyecto.'
+          );
+          return;
+        }
         this.mostrar_carga_todo = true;
         const respuesta = await this.metradoService.guardarRegistroMetrado(
           datos
@@ -326,16 +377,34 @@ export class MetradosdiariosComponent implements OnInit {
   }
   async eliminarHoja(row) {
     try {
-      const sw = await SwalService.confirm(
+      const datos = {
+        id_proyecto: this.id_proyecto,
+        id_registro: row.id_registro,
+      };
+      const metrado= await this.metradoService.BuscarMetradoDiario(datos)
+      let confirmacion: boolean = false;
+      if(metrado.length>0){
+         const respu=await SwalService.confirmCheck('Esta seguro que desea Reiniciar el Presupuesto?',
+        'Se eliminará todo el Presupuesto importados.');
+        if (respu.isConfirmed) {
+          confirmacion=true
+        }
+      }else{
+        const respu =await SwalService.confirm(
         'Estas seguro?',
-        'Se eliminarà la fila selecionada'
-      );
-      if (sw.isConfirmed) {
+        'Se eliminarà el registro selecionado'
+        );
+        if (respu.isConfirmed) {
+          confirmacion=true
+        }
+      }
+      if (confirmacion) {
         this.mostrar_carga_todo = true;
         const edatos = {
           id_proyecto: this.id_proyecto,
           id_registro: row.id_registro,
         };
+        //elimina en su totalidad todos los metrados diairos, registros, y mes
         const respuesta = await this.metradoService.eliminarRegistroMetrado(
           edatos
         );
@@ -347,13 +416,12 @@ export class MetradosdiariosComponent implements OnInit {
         }
         this.mostrar_carga_todo = false;
       }
+      // }
     } catch (err) {
       this.mostrar_carga_todo = false;
       SwalService.error(err);
     }
   }
-  tablaaux = [];
-  nuevoauxtotal;
   async AbrilModalDiario(row, fecha, busq) {
     const edatos = {
       id_proyecto: row.id_proyecto,
@@ -413,33 +481,6 @@ export class MetradosdiariosComponent implements OnInit {
       }
     }, 50);
   }
-  mostrarColrs: boolean = false;
-  // verificarHabForm() {
-  //   this.tempFormula = [];
-  //   this.mostrarColrs = false;
-  //   if (this.solover) {
-  //     return;
-  //   }
-  //   if (this.IndexMetradoDiario !== null) {
-  //     if (this.tablaSistema[this.IndexMetradoDiario].tipofila !== 4&&this.tablaSistema[this.IndexMetradoDiario].tipofila !==3) {
-  //       this.mostrarError('Formula no editable', null, 3000);
-  //       return;
-  //     }
-  //     this.habEditFormula = true;
-  //     // this.mostrarColrs = true
-  //     this.teclaFormula(
-  //       this.metradoSeleccionado.formula == null ||
-  //         this.metradoSeleccionado.formula == ''
-  //         ? 'B*C*D*E*F'
-  //         : this.metradoSeleccionado.formula
-  //     );
-  //   } else {
-  //     this.mostrarError('Ninguna fila seleccionada de la tabla', null, 3000);
-  //     this.mostrarColrs = false;
-  //     this.habEditFormula = false;
-  //     return;
-  //   }
-  // }
   async previaPruebaFormula(texto) {
     const columnas = ['B', 'C', 'D', 'E', 'F'];
     let nuevoString = [];
@@ -514,7 +555,6 @@ export class MetradosdiariosComponent implements OnInit {
     }
     return array;
   }
-
   async changeVista(datos) {
     this.aspectos = JSON.parse(this.colores);
     await this.pintar();
@@ -537,14 +577,13 @@ export class MetradosdiariosComponent implements OnInit {
     this.metradoanterior = 0;
     this.metradoposterior = 0;
     this.metradoacumulado = 0;
-    const index= this.diasCalendario.findIndex(ele=>ele.bloqueado==false)
+    const index = this.diasCalendario.findIndex(
+      (ele) => ele.bloqueado == false
+    );
     this.fechaselecionada = this.diasCalendario[index].fecha;
     await this.listarTitulos();
     this.mostrar_carga_todo = false;
   }
-  tablavistametradodiario;
-  registrotab3;
-  getMontosParsed: { [id: string]: number[] } = {};
   getMontos(montoDiasStr: string, filaId?: string): number[] {
     const cantidadDias = this.diasCalendario2?.length || 0;
     if (filaId && this.getMontosParsed[filaId]) {
@@ -595,65 +634,61 @@ export class MetradosdiariosComponent implements OnInit {
     );
     this.mostrar_carga_todo = false;
   }
-  async changeVista3(datos) {
-    this.aspectos = JSON.parse(this.colores);
-    await this.pintar();
+  async changeVista3(datos, bool = false) {
     this.datosglo = datos;
     this.mostrar_carga_todo = true;
-    this.subvista = 4;
-    const obj = {
-      id_proyecto: this.id_proyecto,
-    };
-    const response = await this.metradoService.listarTitulosDeMetrados(obj);
-    if (response.length) {
-      this.tablaTitResumen = response;
-      this.itemTitulo = this.tablaTitResumen[0].item;
-    } else {
-      this.tablaTitResumen = [];
-      this.itemTitulo = null;
+    if (bool) {
+      this.subvista = 4;
+      this.aspectos = JSON.parse(this.colores);
+      await this.pintar();
+      const obj = {
+        id_proyecto: this.id_proyecto,
+      };
+      const response = await this.metradoService.listarTitulosDeMetrados(obj);
+      if (response.length) {
+        this.tablaTitResumen = response;
+        this.itemTitulo = this.tablaTitResumen[0].item;
+      } else {
+        this.tablaTitResumen = [];
+        this.itemTitulo = null;
+      }
     }
-    await this.listarTitulosDiarios()
-    await this.FiltrarDiarios()
+    await this.listarTitulosDiarios();
+    await this.FiltrarDiarios();
     this.mostrar_carga_todo = false;
   }
-  itemTitulo
-  tabladiariostotal
-  async listarTitulosDiarios(){
-    const obj={
-      id_proyecto:this.id_proyecto,
-      indice:this.datosglo.id_registro
-    }
-    const respuesta= await this.metradoService.historialMetradosDiarios(obj)
-    this.tabladiariostotal=respuesta
+  async listarTitulosDiarios() {
+    const obj = {
+      id_proyecto: this.id_proyecto,
+      indice: this.datosglo.id_registro,
+    };
+    const respuesta = await this.metradoService.historialMetradosDiarios(obj);
+    this.tabladiariostotal = respuesta;
   }
-  async FiltrarDiarios(){
-    if(this.itemTitulo=='All'){
-      this.tablametradodiario= this.tabladiariostotal.map(row => ({
+  async FiltrarDiarios() {
+    if (this.itemTitulo == 0) {
+      this.tablametradodiario = this.tabladiariostotal.map((row) => ({
         ...row,
-        mostrar: !!row.item,
-        icomost: !!row.item ? "con-item" : "sin-item"
+        mostrar: 1,
+        icomost: row.tipofila == 1 || row.tipofila == 2 ? 0 : null,
       }));
-    }else{
+    } else {
       const itemStr = this.itemTitulo.toString();
       const filtrados: any[] = [];
       for (let row of this.tabladiariostotal) {
-        if (row.itemord_orden.startsWith(itemStr + ".") || row.itemord_orden == this.itemTitulo) {
-          row.mostrar = !!row.item;
-          row.icomost = row.item ? "con-item" : "sin-item";
+        if (
+          row.itemord_orden.startsWith(itemStr + '.') ||
+          row.itemord_orden == this.itemTitulo
+        ) {
+          row.mostrar = 1;
+          row.icomost = row.tipofila == 1 || row.tipofila == 2 ? 0 : null;
           filtrados.push(row);
         }
       }
-      this.tablametradodiario=filtrados
+      this.tablametradodiario = filtrados;
     }
-       console.log(this.tablametradodiario)
   }
-  diasCalendario2;
-  diasCalendario;
-  valordia;
-  estadodia
-  async MostrarTotales(array,array2) {
-    console.log(array)
-    console.log(array2)
+  async MostrarTotales(array, array2) {
     const valores = array.split('/').map(Number);
     const estados = array2?.split('/').map(Number);
     let suma = 0;
@@ -662,18 +697,18 @@ export class MetradosdiariosComponent implements OnInit {
       const estado = k == 0 && estados[k] == 0 ? 0 : estados[k] ?? 0;
       suma += isNaN(value) ? 0 : value;
       this.diasCalendario[k].value = value;
-      this.diasCalendario[k].estado =estado ;
+      this.diasCalendario[k].estado = estado;
       if (this.diasCalendario[k].fecha == this.fechaselecionada) {
-        this.auxtotal = value;
-        this.valordia = value ?? 0;
-        this.estadodia= estado
+        this.auxtotal = !value || isNaN(value) ? 0 : value;
+        this.valordia = !value || isNaN(value) ? 0 : value;
+        this.estadodia = estado;
       }
     }
     this.metradoacumulado = this.metradoanterior + suma;
     this.saldometrado = this.filaExcelSel
       ? this.filaExcelSel.mtotal -
         (this.metradoacumulado + this.metradoposterior)
-      : null;
+      : 0;
   }
   async generateCalendar(
     fechaini: string,
@@ -706,17 +741,14 @@ export class MetradosdiariosComponent implements OnInit {
         fecha: new Date(current),
         dia: current.getDate(),
         letraDia: diaLetra,
-        bloqueado: noLaborable || esFeriado ,
+        bloqueado: noLaborable || esFeriado,
         value: null,
-        estado:null,
+        estado: null,
       });
       current = new Date(current.setDate(current.getDate() + 1));
     }
-    console.log(dias)
     return dias;
   }
-  tablaTitResumen;
-  indiceTitulo;
   async listarTitulos2() {
     const obj = {
       id_proyecto: this.id_proyecto,
@@ -729,7 +761,7 @@ export class MetradosdiariosComponent implements OnInit {
       this.tablaTitResumen = [];
       this.indiceTitulo = null;
     }
-    this.verHojaResumenDiario()
+    this.verHojaResumenDiario();
   }
   async listarTitulos() {
     const obj = {
@@ -745,8 +777,6 @@ export class MetradosdiariosComponent implements OnInit {
       this.indiceTitulo = null;
     }
   }
-  filaExcelSel;
-  indexTablaExcel;
   async seleccionTablaExcel(row, i) {
     let aux = this.indexTablaExcel;
     if (
@@ -773,12 +803,7 @@ export class MetradosdiariosComponent implements OnInit {
       this.AbrirAcordion(i);
     }
   }
-  tablaExcelAdjunta = [];
-  headerExcel = [];
-  filaSel;
-  titInformSel;
-  tablaTitulo;
-  async verHojaResumenDiario(){
+  async verHojaResumenDiario() {
     this.mostrar_carga_todo = true;
     setTimeout(async () => {
       this.tablaSistema = [];
@@ -791,10 +816,10 @@ export class MetradosdiariosComponent implements OnInit {
       this.faltantesPresupuesto = [];
       this.vinculadoExcel = true;
       let titulo = await this.tablaTitResumen.find(
-          (ele) => ele.indice == this.indiceTitulo
-        );
-        this.titInformSel = titulo;
-     
+        (ele) => ele.indice == this.indiceTitulo
+      );
+      this.titInformSel = titulo;
+
       if (this.indiceTitulo !== titulo.indice) {
         this.indiceTitulo = titulo.indice;
         let tabla = await this.filtrarTitulo(titulo);
@@ -813,7 +838,6 @@ export class MetradosdiariosComponent implements OnInit {
       this.mostrar_carga_todo = false;
     }, 5);
   }
-  
   async verHojaMetrado() {
     this.metradoSeleccionado = null;
     this.filaExcelSel = null;
@@ -830,10 +854,10 @@ export class MetradosdiariosComponent implements OnInit {
       this.faltantesPresupuesto = [];
       this.vinculadoExcel = true;
       let titulo = await this.tablaTitResumen.find(
-          (ele) => ele.indice == this.indiceTitulo
-        );
-        this.titInformSel = titulo;
-     
+        (ele) => ele.indice == this.indiceTitulo
+      );
+      this.titInformSel = titulo;
+
       if (this.indiceTitulo !== titulo.indice) {
         this.indiceTitulo = titulo.indice;
         let tabla = await this.filtrarTitulo(titulo);
@@ -881,10 +905,6 @@ export class MetradosdiariosComponent implements OnInit {
       console.log(e);
     }
   }
-  noConsistente;
-  vinculadoExcel;
-  noConsistente2;
-  faltantesPresupuesto = [];
   async tablaTipoExcel(response, tablaPresu) {
     let header = null;
     let body = [];
@@ -1059,8 +1079,6 @@ export class MetradosdiariosComponent implements OnInit {
     }
     return headerExcel;
   }
-  tablaPrincipal;
-  dec_metrado;
   async filtrarTitulo(titulo) {
     const obj2 = {
       id_proyecto: this.id_proyecto,
@@ -1126,7 +1144,6 @@ export class MetradosdiariosComponent implements OnInit {
     filtrados.map((ele, index) => (ele.ind2 = index));
     return filtrados;
   }
-  fechaselecionada = null;
   async ChangeDia(dia) {
     if (!dia.bloqueado) {
       if (this.existecambios) {
@@ -1144,33 +1161,25 @@ export class MetradosdiariosComponent implements OnInit {
       this.IndexMetradoDiario = null;
       this.indexTablaExcel = null;
       this.tablaSistema = [];
-      this.MostrarTotales('','');
+      this.MostrarTotales('', '');
     } else {
       return;
     }
   }
-  IndexMetradoDiario;
   async seleccionMetradoDiario(row, i) {
     this.metradoSeleccionado = row;
     this.IndexMetradoDiario = i;
   }
-  tablaSistema = [];
-  id_registroact;
-  saldometrado;
-  metradoanterior;
-  metradoposterior;
-  metradoacumulado;
   formulario1 = new UntypedFormGroup({
     activardiario: new UntypedFormControl(false),
   });
-  activarDiarios;
   ChangeOption() {
     this.activarDiarios = this.formulario1.get('activardiario').value;
   }
-  tablainicialdiario = [];
-  cantidadFilasTabla = 15;
   async SelecionarMetradoDiario() {
-    this.buscando2 = true
+    this.mostrar_carga_todo=true
+    this.mostrarColrs = false;
+    this.buscando2 = true;
     this.metradoSeleccionado = null;
     this.saldometrado = 0;
     this.metradoanterior = 0;
@@ -1185,7 +1194,6 @@ export class MetradosdiariosComponent implements OnInit {
         fecha: moment(this.fechaselecionada).format('YYYY-MM-DD'),
       };
       const respuesta = await this.metradoService.listarMetradosDiarios(edatos);
-      console.log(respuesta)
       this.auxidfila = respuesta[1]?.length + 1;
       this.tablaSistema = respuesta[1];
       for (let row of this.tablaSistema) {
@@ -1222,21 +1230,29 @@ export class MetradosdiariosComponent implements OnInit {
             moment(respuesta[0][i].fechafin).format('YYYY-MM-DD') >
             moment(this.fechaselecionada).format('YYYY-MM-DD')
           ) {
-            this.metradoposterior += parseFloat(respuesta[0][i].total);
+            this.metradoposterior += parseFloat(
+              respuesta[0][i].total ? respuesta[0][i].total : 0
+            );
           } else {
-            this.metradoanterior += parseFloat(respuesta[0][i].total);
+            this.metradoanterior += parseFloat(
+              respuesta[0][i].total ? respuesta[0][i].total : 0
+            );
           }
         }
       }
       if (respuesta[2].length) {
-        this.MostrarTotales(respuesta[2][0].montodias,respuesta[2][0].estadodias);
+        this.MostrarTotales(
+          respuesta[2][0].montodias,
+          respuesta[2][0].estadodias
+        );
       } else {
-        this.MostrarTotales('','');
+        this.MostrarTotales('', '');
       }
     } else {
       return;
     }
-    this.buscando2 = false
+    this.buscando2 = false;
+    this.mostrar_carga_todo=false
   }
   async AbrirAcordion(indice) {
     let ind2 = indice + 1;
@@ -1293,6 +1309,7 @@ export class MetradosdiariosComponent implements OnInit {
   metradoSeleccionado = null;
   buscando2: boolean = false;
   habilitarEditarSistema(celda, rowIndex) {
+    this.mostrarColrs =false
     if (this.bloquearBotones && this.tablaSistema[rowIndex].id_fila == null) {
       return;
     }
@@ -1540,37 +1557,45 @@ export class MetradosdiariosComponent implements OnInit {
     }
     return pintar;
   }
-  async CambiarEstado(){
-  let estadosConcatenados = '';
-  let dias = this.diasCalendario
-  dias.forEach((dia, index) => {
-    if (dia.fecha === this.fechaselecionada) {
-      dia.estado = 2
-    }
-    estadosConcatenados += dia.estado;
-    if (index < dias.length - 1) {
-      estadosConcatenados += '/';
-    }
-  });
-  const datos = {
+  async CambiarEstado(value) {
+    let estadosConcatenados = '';
+    let dias = this.diasCalendario;
+    dias.forEach((dia, index) => {
+      if (dia.fecha === this.fechaselecionada) {
+        dia.estado = value;
+      }
+      estadosConcatenados += dia.estado;
+      if (index < dias.length - 1) {
+        estadosConcatenados += '/';
+      }
+    });
+    const datos = {
       id_proyecto: this.id_proyecto,
       id_registro: this.id_registroact,
       indice: this.filaExcelSel.indice,
       estadodias: estadosConcatenados,
     };
-  const respuesta=await this.metradoService.CambiarEstado(datos);
-  console.log(respuesta)
-
+    const respuesta = await this.metradoService.CambiarEstado(datos);
+    if (respuesta.id == '1') {
+      this.toaster.success('Se guardo correctamente', 'Ëxito', {
+        closeButton: false,
+        positionClass: 'toast-bottom-right',
+        timeOut: 4000,
+      });
+      this.estadodia = value;
+    } else {
+      SwalService.error('Advertencia', respuesta[0].mensaje);
+    }
   }
   async guardarCambios() {
     let sumaTotal = 0;
     let letrasConcatenadas = '';
     let estadosConcatenados = '';
-    let dias = this.diasCalendario
+    let dias = this.diasCalendario;
     dias.forEach((dia, index) => {
       if (dia.fecha === this.fechaselecionada) {
         dia.value = this.auxtotal ? this.auxtotal : null;
-        dia.estado = dia.estado!=2? dia.estado:2
+        dia.estado = this.estadodia != 2 ? 1 : 2;
       }
       sumaTotal += parseFloat(
         dia.value == null || isNaN(dia.value) ? 0 : dia.value
@@ -1713,7 +1738,7 @@ export class MetradosdiariosComponent implements OnInit {
   @HostListener('document:keydown.control.arrowup', ['$event'])
   async moverArriba() {
     const filaSel2 = JSON.parse(JSON.stringify(this.IndexMetradoDiario));
-    if (this.metradoSeleccionado?.id_fila == null) {
+    if (this.metradoSeleccionado?.id_fila == null || this.estadodia != 2) {
       this.mostrarError('No se puede mover', 'Error', 2000);
       return;
     } else if (this.metradoSeleccionado.tipofila === 1) {
@@ -1842,7 +1867,7 @@ export class MetradosdiariosComponent implements OnInit {
   auxidfila;
   modificandofila = false;
   async blurInputSistema(event, i, input) {
-    let auxiliar;
+    let auxiliar = '';
     this.tablaSistema[i]['editar' + input] = 0;
     this.saltardescripcion = false;
     this.modificandofila = true;
@@ -1997,7 +2022,8 @@ export class MetradosdiariosComponent implements OnInit {
       this.tempFormula = [];
       this.habilitadoCopiar = false;
     }
-    this.auxtotal = null;
+    this.auxtotal = 0;
+    this.guardarCambios();
   }
   cantFil: any = 0;
   async agregarFilas(arriba = false) {
@@ -2010,7 +2036,7 @@ export class MetradosdiariosComponent implements OnInit {
   @HostListener('document:keydown.control.arrowdown', ['$event'])
   async moverAbajo() {
     const filaSel2 = JSON.parse(JSON.stringify(this.IndexMetradoDiario));
-    if (this.metradoSeleccionado.id_fila == null) {
+    if (this.metradoSeleccionado.id_fila == null || this.estadodia != 2) {
       this.mostrarError('No se puede mover', 'Error', 2000);
       return;
     } else if (this.metradoSeleccionado.tipofila < 5) {
@@ -2252,7 +2278,7 @@ export class MetradosdiariosComponent implements OnInit {
     let auxi;
     const filaSel2 = JSON.parse(JSON.stringify(this.IndexMetradoDiario));
     if (this.metradoSeleccionado.id_fila !== null) {
-      if (this.metradoSeleccionado.tipofila !== 4) {
+      if (this.metradoSeleccionado.tipofila !== 4 && this.estadodia != 2) {
         const compr = await this.EncontrarTitulo();
         if (
           compr ||
@@ -2300,7 +2326,7 @@ export class MetradosdiariosComponent implements OnInit {
     let auxili2;
     const filaSel2 = JSON.parse(JSON.stringify(this.IndexMetradoDiario));
     if (this.metradoSeleccionado.id_fila !== null) {
-      if (this.metradoSeleccionado.tipofila !== 1) {
+      if (this.metradoSeleccionado.tipofila !== 1 && this.estadodia != 2) {
         if (this.metradoSeleccionado.tipofila == 2) {
           const nue = await this.EncontrarTituloAfter();
           if (nue) {
@@ -2461,12 +2487,9 @@ export class MetradosdiariosComponent implements OnInit {
       }
     }
     this.auxtotal = this.formsService.redondeo(totalSup, this.dec_metrado);
-    console.log(this.saldometrado)
-    console.log(this.valordia)
-    console.log(this.auxtotal)
     if (validarSaldo) {
       const excedido =
-        parseFloat(this.saldometrado) +
+        this.saldometrado +
           parseFloat(this.valordia) -
           parseFloat(this.auxtotal) <
         0;
@@ -2891,6 +2914,8 @@ export class MetradosdiariosComponent implements OnInit {
       let arrayIndices = [];
       let formulas = [];
       if (this.metradoSeleccionado.tipofila == 2) {
+        arrayIndices.push(this.IndexMetradoDiario);
+        formulas.push(this.metradoSeleccionado.formula);
         for (let i = filaSel2 + 1; i < this.tablaSistema.length; i++) {
           const row = this.tablaSistema[i];
           if (row.id_fila !== null && row.id_fila !== '') {
@@ -3000,34 +3025,76 @@ export class MetradosdiariosComponent implements OnInit {
     var face1 = document.getElementById('divbut2');
     face1.scrollLeft -= 15;
   }
-  toggleOnSistema(index) {
-    this.tablaSistema[index].icomost = 0
-    const total = this.tablaSistema.length
+  async toggleOnSistema(index) {
+    this.tablaSistema[index].icomost = 0;
+    const total = this.tablaSistema.length;
     if (this.tablaSistema[index].tipofila < 4 && total - 1 > index) {
       const resp = this.BuscarSiguiente(
         index + 1,
         this.tablaSistema[index].tipofila
       );
-      let nuevo = resp == total - 1 ? resp + 1 : resp
+      let nuevo = resp == total - 1 ? resp + 1 : resp;
       for (let i = index + 1; i < nuevo; i++) {
         const row = this.tablaSistema[i];
-        row.mostrar = 1
+        row.mostrar = 1;
         if (row.icomost == 1) {
-          row.icomost = 0
+          row.icomost = 0;
         }
       }
     }
   }
   async toggleOffSistema(index) {
-    const total = this.tablaSistema.length
-    this.tablaSistema[index].icomost = 1
+    const total = this.tablaSistema.length;
+    this.tablaSistema[index].icomost = 1;
     if (this.tablaSistema[index].tipofila < 4 && total - 1 > index) {
-      const resp = this.BuscarSiguiente(index + 1,this.tablaSistema[index].tipofila)
+      const resp = this.BuscarSiguiente(
+        index + 1,
+        this.tablaSistema[index].tipofila
+      );
       let nuevo = resp == total - 1 ? resp + 1 : resp;
       for (let i = index + 1; i < nuevo; i++) {
-        const row = this.tablaSistema[i]
+        const row = this.tablaSistema[i];
         if (row.id_fila != null && row.id_fila != '') {
-          row.mostrar = 0
+          row.mostrar = 0;
+        }
+      }
+    }
+  }
+  async toggleOnSistema2(index) {
+    this.tablametradodiario[index].icomost = 0;
+    const total = this.tablametradodiario.length;
+    if (this.tablametradodiario[index].tipofila < 4 && total - 1 > index) {
+      for (let i = index + 1; i < total; i++) {
+        const row = this.tablametradodiario[i];
+        if (
+          row.tipofila != null &&
+          row.tipofila != '' &&
+          row.tipofila > this.tablametradodiario[index].tipofila
+        ) {
+          row.mostrar = 1;
+          if (row.icomost == 1) {
+            row.icomost = 0;
+          }
+        } else {
+          break;
+        }
+      }
+    }
+  }
+  async toggleOffSistema2(index) {
+    const total = this.tablametradodiario.length;
+    this.tablametradodiario[index].icomost = 1;
+    if (this.tablametradodiario[index].tipofila < 4 && total - 1 > index) {
+      for (let i = index + 1; i < total; i++) {
+        const row = this.tablametradodiario[i];
+        if (
+          row.tipofila != null &&
+          row.tipofila != '' &&
+          row.tipofila > this.tablametradodiario[index].tipofila
+        ) {
+          row.mostrar = 0;
+        } else {
+          break;
         }
       }
     }

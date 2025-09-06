@@ -29,13 +29,14 @@ export class PanelalmcComponent implements OnInit {
   solover
   simbolo
   fechaac:any;
-
+  datospro
   @Input() set tabproyecto(value: any) {
     this.id_proyecto = value.get('id_proyecto').value;
     const aspectosGen = (value.get('aspectos_generales') as FormGroup)
     const datosproy = (aspectosGen.get('datos_proyecto') as FormGroup)
     const datosrec = (aspectosGen.get('datos_recuperado') as FormGroup)
     this.id_userproy=datosrec.value.id_usuario;
+    this.datospro=datosrec.value;
     this.nomproy=this.id_userproy=datosrec.value.descripcion;
     this.tipoProy=datosproy.get('id_clasificacion').value;
     this.colores=value.get('aspectab').value;

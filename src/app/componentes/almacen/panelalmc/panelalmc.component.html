@@ -148,10 +148,10 @@
   </app-card>
 </div>
 <div *ngIf="subvista==2">
-  <app-almcingreso [filareg]="filareg" [decproy]="decpasa"  (listarpri)="ListarExterno($event)"></app-almcingreso>
+  <app-almcingreso [filareg]="filareg" [decproy]="decpasa" [datospro]="datospro" (listarpri)="ListarExterno($event)"></app-almcingreso>
 </div>
 <div *ngIf="subvista==3">
-  <app-almcsalida [filareg]="filareg" [decproy]="decpasa" (listarpri)="ListarExterno($event)"></app-almcsalida>
+  <app-almcsalida [filareg]="filareg" [decproy]="decpasa" [datospro]="datospro" (listarpri)="ListarExterno($event)"></app-almcsalida>
 </div>
 
 <app-modal-basic #modalagre0 [dialogClass]="'modal-lg'">

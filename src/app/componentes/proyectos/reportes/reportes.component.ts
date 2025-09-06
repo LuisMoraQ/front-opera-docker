@@ -2201,6 +2201,11 @@ export class ReportesComponent implements OnInit {
       [{text:'UBICACION',style: 'subtitle'},{text:':',style: 'subtitle'},{ text:this.ubicacion ,style:'subtitle'}],
       [{text:'FECHA ELAB.',style: 'subtitle'},{text:':',style: 'subtitle'},{ text: moment(this.datos.datos_proyecto.fecha_elaboracion).format('DD-MM-YYYY'),style:'subtitle'}]
       ]
+    let tabla2=[
+      [{text:'PROYECTO',style: 'subtitle'},{text:':',style: 'subtitle'},{ text: this.datos.datos_proyecto.descripcion,style:'subtitle'}],
+      [{text:'UBICACION',style: 'subtitle'},{text:':',style: 'subtitle'},{ text:this.ubicacion ,style:'subtitle'}],
+      [{text:'FECHA ELAB.',style: 'subtitle'},{text:':',style: 'subtitle'},{ text: moment(this.datos.datos_proyecto.fecha_elaboracion).format('DD-MM-YYYY'),style:'subtitle'}]
+    ]
       var tituloext
      //tablas para costos unitarios que tienen titulos 
       if(this.datos.tipo_reporte===1 && this.datos.titulos && this.datos.titulos.length>0){
@@ -2385,6 +2390,8 @@ export class ReportesComponent implements OnInit {
         titulo=this.CrearTitulo1(this.datos.titulo,tabla1)
         const datosCombinados = this.CuerpoPDF2(this.datos.tabla)
         ultimo=this.alinearTablaProcura(datosCombinados,this.datos.keys_body)
+      }else if(this.datos.tipo_reporte===8){
+        
       }else{
         //RESUMEN DEL METRADO
         titulo=this.CrearTitulo1(this.datos.titulo,tabla1)

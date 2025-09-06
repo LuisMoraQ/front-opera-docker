@@ -1,4 +1,4 @@
-import { Component, OnInit, Input } from '@angular/core';
+import { Component, OnInit, Input,ViewChild } from '@angular/core';
 import {
   UntypedFormArray,
   UntypedFormControl,
@@ -7,14 +7,11 @@ import {
 } from '@angular/forms';
 import { FormsService } from 'src/app/servicios/forms.service';
 import { MetradoService } from 'src/app/servicios/metrado.service';
-import {
-  arraydcols,
-  arraygcols,
-  arrayicols,
-} from '../../proyectos/principal/hoja-metrados/modal-metrado-excel/metrado';
 import { SwalService } from 'src/app/servicios/swal.service';
+import { ModalBasicComponent } from 'src/app/shared/modal-basic/modal-basic.component';
 import { PresupuestosService } from 'src/app/servicios/presupuestos.service';
 import * as moment from 'moment';
+import { ToastrService } from 'ngx-toastr';
 
 @Component({
   selector: 'app-informes-reportes',
@@ -52,14 +49,19 @@ export class InformesReportesComponent implements OnInit {
     this.dec_parcial = this.prueba.value.decimal.split('|')[2] ?? 2;
   }
   dataSource1 = [];
+  @ViewChild('modalEstado') modalEstado: ModalBasicComponent;
   constructor(
     public metradoService: MetradoService,
     public formsService: FormsService,
+    private toaster: ToastrService,
     private presuservice: PresupuestosService
   ) {}
   directototal;
   async ngOnInit() {
-    this.mostrar_carga_todo = true;
+    await this.CargarTabla1()
+  }
+  async CargarTabla1(){
+     this.mostrar_carga_todo = true;
     this.dataSource1 = await this.metradoService.ListarTotalRegistros({
       id_proyecto: this.id_proyecto,
     });
@@ -147,9 +149,71 @@ export class InformesReportesComponent implements OnInit {
     this.datosglo=datos
     this.cambioVista(2)
   }
-  //falta
-  async changeVista2(datos) {
-    this.datosglo=datos
-     this.cambioVista(2)
+  formEstado = new UntypedFormGroup({
+    detalle2: new UntypedFormControl('', [Validators.required]),
+    estado: new UntypedFormControl(0, [Validators.required]),
+    observacion: new UntypedFormControl(''),
+  });
+  get detalle2(): UntypedFormControl {
+    return this.formEstado.get('detalle2') as UntypedFormControl;
+  }
+  get estado(): UntypedFormControl {
+    return this.formEstado.get('estado') as UntypedFormControl;
+  }
+  get observacion(): UntypedFormControl {
+    return this.formEstado.get('observacion') as UntypedFormControl;
+  }
+  id_registro2
+  openModal2(datos = null) {
+    if (datos != null) {
+      this.id_registro2 = datos.id_registro;
+      this.formEstado.get('detalle2').setValue(datos?.detalle);
+      this.formEstado.get('observacion').setValue(datos.observacion=='null'||datos.observacion==null|| !datos.observacion?'':datos.observacion);
+      this.modalEstado.show();
+    }
+  }
+  closeModal2() {
+    this.modalEstado.hide();
+  }
+  async almacenar2() {
+    try {
+      if (this.formEstado.invalid) {
+        this.formEstado.markAllAsTouched();
+        this.toaster.error('Datos incompletos', 'Error', {
+          closeButton: false,
+          positionClass: 'toast-bottom-right',
+          timeOut: 5000,
+        });
+        return;
+      } else {
+        this.mostrar_carga_todo = true;
+        const datos = {
+          id_proyecto: this.id_proyecto,
+          id_registro: this.id_registro2,
+          observacion: this.formEstado.get('observacion').value,
+          estado: this.formEstado.get('estado').value,
+        };
+        const respuesta = await this.metradoService.actEstadoRegistroMetrado(
+          datos
+        );
+        if (respuesta[0].id == '1') {
+          this.toaster.success('Se guardo correctamente', 'Ëxito', {
+            closeButton: false,
+            positionClass: 'toast-bottom-right',
+            timeOut: 4000,
+          });
+          this.dataSource1[this.fila1_sel].estado=0
+          this.dataSource1[this.fila1_sel].fecha_aprob=''
+          this.closeModal2();
+          this.mostrar_carga_todo = false;
+        } else {
+          SwalService.error('Advertencia', respuesta[0].mensaje);
+        }
+      }
+    } catch (e) {
+      this.mostrar_carga_todo = false;
+      console.log(e);
+      SwalService.error();
+    }
   }
 }
