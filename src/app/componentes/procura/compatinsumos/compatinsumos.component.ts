@@ -3,8 +3,11 @@ import { ToastrService } from 'ngx-toastr';
 import { FormsService } from 'src/app/servicios/forms.service';
 import { LogisticaService } from 'src/app/servicios/logistica.service';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { PrincipalService } from 'src/app/servicios/principal.service';
 import { ModalBasicComponent } from 'src/app/shared/modal-basic/modal-basic.component';
 import { SwalService } from 'src/app/servicios/swal.service';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { ReportesComponent } from '../../proyectos/reportes/reportes.component';
 
 @Component({
   selector: 'app-compatinsumos',
@@ -85,6 +88,8 @@ export class CompatinsumosComponent implements OnInit {
   constructor(
     private _logisticaService:LogisticaService,
     private toaster: ToastrService,
+    private principalService:PrincipalService,
+    private modalService: NgbModal,
     public formService: FormsService,
   ) { }
 
@@ -113,7 +118,6 @@ export class CompatinsumosComponent implements OnInit {
     if(res?.length>0){
       this.dataSource6=res[0]
       this.DatosDisgre=res[1]
-      console.log(this.dataSource6)
       this.ordenart6();
     }
     else{
@@ -241,10 +245,8 @@ export class CompatinsumosComponent implements OnInit {
         let filagru={id_proyecto:this.id_proyecto,id_registro:this.id_reg,idgrupo:idgrucom,idfila:this.dataSource6[j].idfila,indrep:0,orden:null,indice:this.dataSource6[j].indice,id_filadetalle:this.dataSource6[j].id_filadetalle,
         num_det:this.dataSource6[j].num_det,codigo:this.dataSource6[j].codigo,descripcion:this.dataSource6[j].descripcion,unidad:this.dataSource6[j].unidad,cantidad:null,
         precio:null,parcial:null,operador:null,acumulado:this.dataSource6[j].reqsol,proceso:'',princi:0,estado:0,ingreso:0,salida:0,fecha_sol:null,mostrar:1,icomost:1,editar:0,editar2:0};
-
         this.dataSource8.push(filagru)
         totalgru=totalgru+Number(this.dataSource6[j].reqsol);
-        
         if(this.DatosDisgre.length>0){
           for(let i=0;i<this.DatosDisgre.length;i++){
             if(this.DatosDisgre[i].idgrupo==idgrucom){
@@ -1078,5 +1080,121 @@ export class CompatinsumosComponent implements OnInit {
         this.dataSource8[ind-1].editar2=this.dataSource8[ind-1].indice==null?0:1;
       }
     }
+  }
+  datosproy=null
+  async Imprimir1() {
+    if (this.datosproy == null) {
+      const detalleProyecto =
+        await this.principalService.recuperarDatosProyecto({
+          id_proyecto: this.id_proyecto,
+        });
+      this.datosproy = detalleProyecto;
+    }
+    const arrayHeader = ['AGRUPAMIENTO','ITEM','INS. EXPEDIENTE','LUGAR DE ENTREGA','FECHA PROG.','FECHA SOL.','PLAZO','ESTADO','REQ. PROGRAMADO','REQ. SOLICITADO','VARIACION']
+    const arrayHeader2 = ['IND. UNIF.','INSUMO PROGRAMADO','UND','CANTIDAD','P.U.','PARCIAL','SALDO']
+    const arrayKeys2 = [
+      'indiceunif',
+      'descripcion',
+      'unidad',
+      'cantidad',
+      'precio',
+      'parcial',
+      'saldo'
+    ];
+    const arralig2 = [
+      'center',
+      'left',
+      'center',
+      'right',
+      'right',
+      'right',
+      'center'
+    ];
+    const arrayHeader3 = ['INS. SOLICITADO','UND','CODIGO','CANTIDAD','P.U.','PARCIAL','ACUMULADO']
+    const arrayKeys3 = [
+      'descripcion',
+      'unidad',
+      'codigo',
+      'cantidad',
+      'precio',
+      'parcial',
+      'acumulado'
+    ];
+    const arralig3 = [
+      'left',
+      'center',
+      'center',
+      'right',
+      'right',
+      'right',
+      'right'
+    ];
+    const arrayKeys = [
+      'id_comple',
+      'idgrupo',
+      'descripcion',
+      'entrega',
+      'fecha',
+      'fecha_sol',
+      'plazo_ate',
+      'estado',
+      'parcial',
+      'reqsol',
+      'variacion'
+    ];
+    const arrdec = [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      this.dec_precio,
+      this.dec_precio,
+      null,
+    ];
+    const arralig = [
+      'center',
+      'center',
+      'left',
+      'center',
+      'center',
+      'center',
+      'center',
+      'center',
+      'right',
+      'right',
+      'center',
+    ];
+    const datos = {
+      datos_proyecto: this.datosproy,
+      header: arrayHeader,
+      keys_body: arrayKeys,
+      keys_dec: arrdec,
+      col_alig: arralig,
+      header2: arrayHeader2,
+      keys_body2: arrayKeys2,
+      header3: arrayHeader3,
+      keys_body3: arrayKeys3,
+      col_alig2: arralig2,
+      col_alig3: arralig3,
+      tabla:this.dataSource6,
+      tabla2:JSON.parse(JSON.stringify(this.DatosDisgre)),
+      tipo_reporte: 0,
+      orientacion: 'landscape',
+      moneda: this.simbolo, 
+      titulo: 'COMPATIBILIZACION DE INSUMOS',
+      dec_parcial: this.dec_parcial,
+    };
+    const modalRef = this.modalService.open(ReportesComponent, {
+      size: 'lg modalgrande',
+      backdrop: 'static',
+      windowClass: 'pcoded',
+      keyboard: false,
+    });
+    modalRef.componentInstance.datos = datos;
+    const result = await modalRef.result;
   }
 }

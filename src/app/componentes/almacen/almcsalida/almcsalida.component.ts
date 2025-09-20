@@ -13,8 +13,17 @@ import { FormsService } from 'src/app/servicios/forms.service';
 import { LogisticaService } from 'src/app/servicios/logistica.service';
 import { ModalBasicComponent } from 'src/app/shared/modal-basic/modal-basic.component';
 import { SwalService } from 'src/app/servicios/swal.service';
+import {
+  UntypedFormControl,
+  UntypedFormGroup,
+  Validators,
+  AbstractControl,
+  ValidationErrors,
+  ValidatorFn,
+} from '@angular/forms';
 import * as moment from 'moment';
-import { PrincipalService } from 'src/app/servicios/principal.service';
+import { ReportesComponent } from '../../proyectos/reportes/reportes.component';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 @Component({
   selector: 'app-almcsalida',
@@ -74,6 +83,7 @@ export class AlmcsalidaComponent implements OnInit {
   //agregar salida
   @ViewChild('modalSalida1') modalSalida1: ModalBasicComponent;
   @ViewChild('modalVerSal') modalVerSal: ModalBasicComponent;
+  @ViewChild('modalHojas') modalHojas: ModalBasicComponent;
   nrosalida = '';
   fechasalida = '';
   nroreqsel: any;
@@ -106,9 +116,9 @@ export class AlmcsalidaComponent implements OnInit {
 
   constructor(
     private _EncriptadorService: EncriptadorService,
+    private modalService: NgbModal,
     private _logisticaService: LogisticaService,
     public formService: FormsService,
-    private principalService: PrincipalService,
     private toaster: ToastrService
   ) {}
 
@@ -1317,10 +1327,12 @@ export class AlmcsalidaComponent implements OnInit {
       face2.scrollLeft = face3.scrollLeft;
     } catch (ex) {}
   }
-  Imprimir(rowi: any) {
+  async Imprimir(rowi: any) {
+    let tablaCompleta
     this.dataSource5 = [];
-    //usar variables temporales, no usar this.nrosalida,this.fechasalida,this.fechaSal,this.dataSource5
-    console.log(this.filareg); //datos de la registro principal tab 1
+    let fecha;
+    let total
+    //usar variables temporales, no usar this.nroingreso,this.fechaingreso,this.fechaSal,this.datasource5
     if (rowi) {
       //rowi es la fila seleccionada para imprimir
       let tipofila = rowi.unidad == '' ? 1 : 0;
@@ -1328,6 +1340,7 @@ export class AlmcsalidaComponent implements OnInit {
         this.nrosalida = rowi.nrosalida;
         this.fechasalida = rowi.fecha;
         this.fechaSal = this.fechasalida;
+        fecha = this.fechasalida;
         for (let i = 0; i < this.dataSource4.length; i++) {
           if (
             this.dataSource4[i].nrosalida == this.nrosalida &&
@@ -1354,125 +1367,190 @@ export class AlmcsalidaComponent implements OnInit {
             this.dataSource5.push(ejm); //datos de los detalles de la nota de salida
           }
         }
-        this.tott5 = rowi.parcial; //total de la nota de salida
-        this.mostrar_carga_todo = false;
-        //this.modalVerSal.show();
+        total = rowi.parcial;
+      }
+      tablaCompleta = this.dataSource5.map((item, index) => {
+        let nuevoItem = { ...item };
+        nuevoItem.tipoletra = '';
+        nuevoItem.color = '';
+        nuevoItem.alinea = '';
+        nuevoItem.item = `IT-${String(index + 1).padStart(2, '0')}`;
+        return nuevoItem;
+      });
+    } else {
+      if (this.formHojas.invalid) {
+        this.formHojas.markAllAsTouched();
+        this.toaster.error('Datos incompletos', 'Error', {
+          closeButton: false,
+          positionClass: 'toast-bottom-right',
+          timeOut: 5000,
+        });
+        return;
+      } else {
+        let contador = 0;
+        let suma = 0;
+        tablaCompleta = this.dataSource4.reduce((acum, item) => {
+          const fechaItem = moment(item.solofecha, 'DD/MM/YYYY');
+          if (fechaItem.isBetween(this.formHojas.get('fechaini').value,this.formHojas.get('fechafin').value,undefined,'[]')) {
+            let nuevoItem = { ...item };
+            nuevoItem.tipoletra = !nuevoItem.unidad ? '3' : '';
+            nuevoItem.color = '';
+            nuevoItem.alinea = '';
+            nuevoItem.precio = !nuevoItem.unidad? nuevoItem.solofecha: nuevoItem.precio
+            nuevoItem.descripcion = !nuevoItem.unidad? nuevoItem.descripcion + ' ' + nuevoItem.nrosalida: nuevoItem.descripcion;
+            if (!nuevoItem.unidad || nuevoItem.unidad.trim() === '') {
+              nuevoItem.item = null;
+              contador = 0;
+              suma += Number(nuevoItem.parcial) || 0; 
+            } else {
+              contador++;
+              nuevoItem.item = `IT-${String(contador).padStart(2, '0')}`;
+            }
+            acum.push(nuevoItem);
+          }
+          return acum;
+        }, [] as any[]);
+         total = suma;
+      }
+      if (tablaCompleta.length < 1) {
+        this.toaster.error(
+          'Selecione correctamente el intervalo de fechas',
+          'Advertencia',
+          {
+            closeButton: false,
+            positionClass: 'toast-bottom-right',
+            timeOut: 4000,
+          }
+        );
+        return;
       }
     }
+    try {
+      this.mostrar_carga_todo = true;
+      const obj2 = [
+        {
+          text: '',
+          colSpan: 1,
+          tipoletra: '3',
+          color: '',
+          fondo: '',
+          alinea: 'center',
+        },
+        {
+          text: '',
+          colSpan: 1,
+          tipoletra: '3',
+          color: '',
+          fondo: '',
+          alinea: 'center',
+        },
+        {
+          text: '',
+          colSpan: 1,
+          tipoletra: '3',
+          color: '',
+          fondo: '',
+          alinea: 'center',
+        },
+        {
+          text: '',
+          colSpan: 1,
+          tipoletra: '3',
+          color: '',
+          fondo: '',
+          alinea: 'center',
+        },
+        {
+          text: 'TOTAL',
+          colSpan: 1,
+          tipoletra: '3',
+          color: '',
+          fondo: '',
+          alinea: 'center',
+        },
+        { text: this.formService.redondeo(Number(total.toString()),this.dec_precio), colSpan: 2, tipoletra:'3',color:'',fondo:'',alinea:'right' },
+      ];
+      const arralig = [
+        'center',
+        'center',
+        'left',
+        'center',
+        'center',
+        'right',
+        'right',
+      ];
+      const keys_body = [
+        'idsalida',
+        'item',
+        'descripcion',
+        'unidad',
+        'cantidad',
+        'precio',
+        'parcial',
+      ];
+      const keys_dec = [
+        null,
+        null,
+        null,
+        null,
+        this.dec_precio,
+        this.dec_precio,
+        this.dec_precio,
+      ];
+      const arrayHeader = [
+        'N°',
+        'OC/OS',
+        'DESCRIPCION DEL BIEN/SERVICIO',
+        'UND',
+        'CANTIDAD',
+        'P.U.',
+        'TOTAL',
+      ];
+      let datos = {
+        datos_proyecto: this.datospro,
+        fecha_ingreso: fecha,
+        header: arrayHeader,
+        keys_body: keys_body,
+        keys_dec: keys_dec,
+        col_alig: arralig,
+        tabla: tablaCompleta,
+        concat_tabla2: false,
+        tabla2: obj2,
+        tipo_reporte: 8,
+        orientacion: '',
+        moneda: this.simbolo,
+        titulo: 'NOTA DE SALIDA DE MATERIALES N° ______',
+      };
+      const modalRef = this.modalService.open(ReportesComponent, {
+        size: 'lg modalgrande',
+        backdrop: 'static',
+        windowClass: 'pcoded',
+        keyboard: false,
+      });
+      modalRef.componentInstance.datos = datos;
+      this.closeModal()
+      this.mostrar_carga_todo = false;
+    } catch (e) {
+      this.mostrar_carga_todo = false;
+      SwalService.error();
+      console.log(e);
+    }
   }
-  // async enviarDataImpresion() {
-  //   try {
-  //     this.mostrar_carga_todo = true;
-  //     const detalleProyecto =
-  //       await this.principalService.recuperarDatosProyecto({
-  //         id_proyecto: this.id_proyecto,
-  //       });
-  //     const arralig = [
-  //       'center',
-  //       'left',
-  //       'center',
-  //       'center',
-  //       'center',
-  //       'center',
-  //       'center',
-  //       'right',
-  //     ];
-  //     const keys_body = [
-  //       'item',
-  //       'descripcion',
-  //       'unidad',
-  //       'incidencia',
-  //       'cantidad',
-  //       'tiempo',
-  //       'tarifa',
-  //       'total',
-  //     ];
-  //     const keys_dec = [
-  //       null,
-  //       null,
-  //       null,
-  //       this.dec_indirectos,
-  //       this.dec_indirectos,
-  //       this.dec_indirectos,
-  //       this.dec_indirectos,
-  //       this.dec_indirectos,
-  //     ];
-  //     const arrayHeader = [
-  //       'N°',
-  //       'DESCRIPCION',
-  //       'UNIDAD',
-  //       'INCIDENCIA',
-  //       'CANTIDAD',
-  //       'TIEMPO',
-  //       'TARIFA',
-  //       'VALOR TOTAL',
-  //     ];
-  //     let resp = await this.listIndirectoProy({
-  //       id_proyecto: this.id_proyecto,
-  //     });
-  //     const tablaCompleta = resp[1].map((item) => {
-  //       let nuevoItem = { ...item };
-  //       switch (nuevoItem.tipofila) {
-  //         case 1:
-  //           nuevoItem.tipoletra = this.stilosTit.tipo;
-  //           nuevoItem.color = this.stilosTit.color;
-  //           nuevoItem.alinea = this.stilosTit.alineamiento;
-  //           break;
-  //         case 2:
-  //           nuevoItem.tipoletra = this.stilosMet.tipo;
-  //           nuevoItem.color = this.stilosMet.color;
-  //           nuevoItem.alinea = this.stilosMet.alineamiento;
-  //           break;
-  //         case 3:
-  //           nuevoItem.tipoletra = this.stilosSubM.tipo;
-  //           nuevoItem.color = this.stilosSubM.color;
-  //           nuevoItem.alinea = this.stilosSubM.alineamiento;
-  //           break;
-  //         case 4:
-  //           nuevoItem.tipoletra = this.stilosTexto.tipo;
-  //           nuevoItem.color = this.stilosTexto.color;
-  //           nuevoItem.alinea = this.stilosTexto.alineamiento;
-  //           break;
-  //         case 5:
-  //           nuevoItem.tipoletra = this.stilosTexto2.tipo;
-  //           nuevoItem.color = this.stilosTexto2.color;
-  //           nuevoItem.alinea = this.stilosTexto2.alineamiento;
-  //           break;
-  //         default:
-  //           nuevoItem.tipoletra = '';
-  //           nuevoItem.color = '';
-  //           nuevoItem.alinea = '';
-  //           break;
-  //       }
-  //       return nuevoItem;
-  //     });
-  //     let datos = {
-  //       datos_proyecto: detalleProyecto,
-  //       header: arrayHeader,
-  //       keys_body: keys_body,
-  //       keys_dec: keys_dec,
-  //       col_alig: arralig,
-  //       tabla: tablaCompleta,
-  //       concat_tabla2: false,
-  //       tipo_reporte: 7,
-  //       orientacion: '',
-  //       moneda: this.simbolo, // condicionar
-  //       titulo: 'COSTOS INDIRECTOS',
-  //       actual: this.auxindice,
-  //     };
-  //     const modalRef = this.modalService.open(ReportesComponent, {
-  //       size: 'lg modalgrande',
-  //       backdrop: 'static',
-  //       windowClass: 'pcoded',
-  //       keyboard: false,
-  //     });
-  //     modalRef.componentInstance.datos = datos;
-  //     const result = await modalRef.result;
-  //     this.mostrar_carga_todo = false;
-  //   } catch (e) {
-  //     this.mostrar_carga_todo = false;
-  //     SwalService.error();
-  //     console.log(e);
-  //   }
-  // }
+  formHojas = new UntypedFormGroup({
+      fechaini: new UntypedFormControl('', [Validators.required]),
+      fechafin: new UntypedFormControl('', [Validators.required]),
+    });
+    get fechaini(): UntypedFormControl {
+      return this.formHojas.get('fechaini') as UntypedFormControl;
+    }
+    get fechafin(): UntypedFormControl {
+      return this.formHojas.get('fechafin') as UntypedFormControl;
+    }
+    closeModal() {
+      this.modalHojas.hide();
+    }
+    async OpenModal() {
+      this.formHojas.reset();
+      this.modalHojas.show();
+    }
 }

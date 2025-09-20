@@ -205,6 +205,13 @@
             </option>
           </select>
         </mat-form-field>
+
+          <button type="button"  class="btn btn-mini btn-group-mini btn-outline-primary" placement="top"
+              ngbTooltip="Generar reporte" container="body"
+              (click)="enviarDataImpresion2()" (mouseup)="quitarfoco($event);">
+              <i class="fa fa-print icono-but"></i>
+            </button>
+    
       </div>
       <!-- <div
         class="col-sm-12 col-md-3 col-lg-3 d-flex"
@@ -490,6 +497,58 @@
             </tr>
           </ng-container>
       </tbody>
+      <tfoot>
+        <ng-container *ngIf="tablafooter.length > 0">
+            <tr *ngFor="let row of tablafooter; let indice = index" style="font-weight: bold;">
+            <td>
+            </td>
+            <td
+              class="text-left"
+              appPintarfilapre
+              [tipo]="titulo1"
+              [color]="row.item ? titulo1color : ''"
+              [letra]="titulo1letra"
+              [item]="row.item"
+              [separador]="'.'"
+              [partida]="row.unidad != ''"
+            > 
+             
+                {{ row.descripcion }}
+            </td>
+              <td></td>
+              <td></td>
+              <td></td>
+            <td>
+              {{ row.monto==0?'':row.monto| number : "0." + this.dec_parcial + "-" + this.dec_parcial }}
+            </td>
+
+           <td></td>
+            <td>
+              {{ row.suma_total_anterior==0?'':row.suma_total_anterior| number : "0." + this.dec_parcial + "-" + this.dec_parcial}}
+            </td>
+           <td>
+              {{(row.suma_total_anterior / row.monto) * 100 | number:'1.2-2' }}%
+            </td>
+
+          <td></td>
+            <td>
+              {{ row.suma_total_actual==0?'':row.suma_total_actual| number : "0." + this.dec_parcial + "-" + this.dec_parcial}}
+            </td>
+           <td>{{(row.suma_total_actual / row.monto) * 100 | number:'1.2-2' }}%</td>
+
+          <td></td>
+            <td>
+              {{ row.acumulado==0?'':row.acumulado| number : "0." + this.dec_parcial + "-" + this.dec_parcial}}
+            </td>
+           <td>{{(row.acumulado / row.monto) * 100 | number:'1.2-2' }}%</td>
+           <td></td>
+            <td>
+              {{ row.saldo==0?'':row.saldo| number : "0." + this.dec_parcial + "-" + this.dec_parcial}}
+            </td>
+            <td>{{(row.saldo / row.monto) * 100 | number:'1.2-2' }}%</td>
+            </tr>
+          </ng-container>
+      </tfoot>
     </table>
   </app-card>
 </div>

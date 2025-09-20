@@ -177,6 +177,9 @@
       <button type="button" class="btn btn-danger light ripple m-b-10 botton-icono" placement="bottom" ngbTooltip="Eliminar Nota de Ingreso" container="body" style="margin-bottom: 5px;" (click)="EliminarIng1()" (mouseup)="quitarfoco($event);">
         <i class="fa fa-minus"></i>
       </button>
+       <button type="button" class="btn btn-primary light ripple m-b-10 botton-icono" placement="bottom" ngbTooltip="Imprimir" container="body" style="margin-bottom: 5px;" (click)="OpenModal()" (mouseup)="quitarfoco($event);" [disabled]="dataSource4.length==0">
+        <i class="icofont icofont-print" style="width: 11.8px;"></i>
+      </button>
     </div>
   </div>
   <div style="padding-left: 5px; padding-right: 5px;" [style.width.px]="widthm1b2-(this.paddingscrollsup/2)-20">
@@ -619,6 +622,68 @@
     <div class="row px-3 justify-content-between d-flex">
       <button type="button" style="margin-right: 5px; padding-top: 2px;padding-bottom: 2px;" class="btn btn-danger ripple" (click)="cerrarModalVerIng()">Salir</button>
       <!-- <button type="button" style="padding-top: 2px;padding-bottom: 2px;" class="btn btn-success ripple light" (click)="guardarModalVerIng()">Guardar</button> -->
+    </div>
+  </div>
+</app-modal-basic>
+<app-modal-basic [dialogClass]="'modal-md'" #modalHojas>
+  <div class="app-modal-header">
+    <h4 class="modal-title tit-modal1">
+      <b>Agregar Detalle de Hoja de Metrado</b>
+    </h4>
+    <button type="button" class="close basic-close" (click)="closeModal()">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="app-modal-body">
+    <form [formGroup]="formHojas">
+      <div class="row mt-4">
+        <mat-form-field
+          appearance="outline"
+          class="mff-reduc my-form-field col-sm-6 col-12"
+        >
+          <mat-label>Fecha Inicio</mat-label>
+          <input matInput type="date" formControlName="fechaini" />
+          <mat-error *ngIf="fechaini?.hasError('required')">
+            La fecha es obligatoria.
+          </mat-error>
+          <!-- Error cuando el valor está fuera del rango (validador personalizado) -->
+          <mat-error *ngIf="fechaini?.hasError('fechaInvalida')">
+            La fecha ingresada no es valida.
+          </mat-error>
+        </mat-form-field>
+        <mat-form-field
+          appearance="outline"
+          class="mff-reduc my-form-field col-sm-6 col-12"
+        >
+          <mat-label>Fecha Fin</mat-label>
+          <input matInput type="date" formControlName="fechafin" />
+          <mat-error *ngIf="fechafin?.hasError('required')">
+            La fecha es obligatoria.
+          </mat-error>
+          <!-- Error cuando el valor está fuera del rango (validador personalizado) -->
+          <mat-error *ngIf="fechafin?.hasError('fechaInvalida')">
+            La fecha ingresada no es valida.
+          </mat-error>
+        </mat-form-field>
+      </div>
+    </form>
+  </div>
+  <div class="app-modal-footer w-100">
+    <div class="row px-3">
+      <button
+        type="button"
+        class="btn btn-danger btn-sm"
+        (click)="closeModal()"
+      >
+        <i class="fa fa-times"></i>Cerrar
+      </button>
+      <button
+        type="button"
+        class="btn btn-success btn-sm"
+        (click)="Imprimir(null)"
+      >
+        <i class="fa fa-check"></i>Imprimir
+      </button>
     </div>
   </div>
 </app-modal-basic>

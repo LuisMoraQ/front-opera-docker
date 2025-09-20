@@ -1,4 +1,4 @@
-import { Component, OnInit, Input,ViewChild } from '@angular/core';
+import { Component, OnInit, Input, ViewChild } from '@angular/core';
 import {
   UntypedFormArray,
   UntypedFormControl,
@@ -11,6 +11,10 @@ import { SwalService } from 'src/app/servicios/swal.service';
 import { ModalBasicComponent } from 'src/app/shared/modal-basic/modal-basic.component';
 import { PresupuestosService } from 'src/app/servicios/presupuestos.service';
 import * as moment from 'moment';
+import { PrincipalService } from 'src/app/servicios/principal.service';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { ReportesComponent } from '../../proyectos/reportes/reportes.component';
+import * as math from 'mathjs';
 import { ToastrService } from 'ngx-toastr';
 
 @Component({
@@ -30,7 +34,7 @@ export class InformesReportesComponent implements OnInit {
   simbolo;
   nomproy;
   dec_metrado;
-  dec_parcial
+  dec_parcial;
   @Input() set tabproyecto(value: any) {
     this.prueba = value;
     this.id_proyecto = value.get('id_proyecto').value;
@@ -52,16 +56,18 @@ export class InformesReportesComponent implements OnInit {
   @ViewChild('modalEstado') modalEstado: ModalBasicComponent;
   constructor(
     public metradoService: MetradoService,
-    public formsService: FormsService,
+    public formService: FormsService,
+    private modalService: NgbModal,
+    public principalService: PrincipalService,
     private toaster: ToastrService,
     private presuservice: PresupuestosService
   ) {}
   directototal;
   async ngOnInit() {
-    await this.CargarTabla1()
+    await this.CargarTabla1();
   }
-  async CargarTabla1(){
-     this.mostrar_carga_todo = true;
+  async CargarTabla1() {
+    this.mostrar_carga_todo = true;
     this.dataSource1 = await this.metradoService.ListarTotalRegistros({
       id_proyecto: this.id_proyecto,
     });
@@ -80,14 +86,11 @@ export class InformesReportesComponent implements OnInit {
     let actual = 0;
     for (let row of this.dataSource1) {
       row.avance =
-        this.formsService.redondeo(
+        this.formService.redondeo(
           (row.total_proyecto * 100) / this.directototal,
           2
         ) + '%';
-      row.acumulado = this.formsService.redondeo(
-        actual + row.total_proyecto,
-        2
-      );
+      row.acumulado = this.formService.redondeo(actual + row.total_proyecto, 2);
       actual = actual + row.total_proyecto;
     }
     this.mostrar_carga_todo = false;
@@ -106,7 +109,7 @@ export class InformesReportesComponent implements OnInit {
   }
   fila1_sel;
   registrotab3;
-  datosglo
+  datosglo;
   cambindicesel1(ind: any, datos) {
     if (ind != this.fila1_sel) {
       this.fila1_sel = ind;
@@ -129,25 +132,254 @@ export class InformesReportesComponent implements OnInit {
     this.titulo1letra = this.aspectos.letraPresupuesto.split('|');
   }
   buscando1: boolean = false;
-  tablasaldos=[]
+  tablasaldos = [];
+  tablafooter = [];
   async listarTitulos2() {
     this.aspectos = JSON.parse(this.colores);
     await this.pintar();
     this.mostrar_carga_todo = true;
-    this.buscando1=true
+    this.buscando1 = true;
     const datos = {
-          id_proyecto: this.id_proyecto,
-          id_registro: this.datosglo.id_registro,
-          fecha: moment(this.datosglo.fechaini).format('YYYY-MM-DD'),
-        };
-    const respuesta= await this.metradoService.ListarMetradosSaldos(datos);
-    this.tablasaldos=respuesta[0]
-    this.buscando1=false
+      id_proyecto: this.id_proyecto,
+      id_registro: this.datosglo.id_registro,
+      fecha: moment(this.datosglo.fechaini).format('YYYY-MM-DD'),
+      titulo: 0,
+    };
+    const respuesta = await this.metradoService.ListarMetradosSaldos(datos);
+    this.tablasaldos = respuesta[0] || [];
+    this.tablafooter = respuesta[1] || [];
+    let aux;
+    let aux2;
+    for (let k = 0; k < this.tablafooter.length; k++) {
+      let array = this.tablafooter[k];
+      if (k == 0) {
+        aux = array.suma_total_actual / array.monto;
+        aux2 = array.suma_total_anterior / array.monto;
+        array.acumulado = array.suma_total_actual + array.suma_total_anterior;
+        array.saldo = array.monto - array.acumulado;
+      } else {
+        array.suma_total_actual = array.monto * aux;
+        array.suma_total_anterior = array.monto * aux2;
+        array.acumulado = array.suma_total_actual + array.suma_total_anterior;
+        array.saldo = array.monto - array.acumulado;
+      }
+    }
+    this.buscando1 = false;
     this.mostrar_carga_todo = false;
+    console.log(this.tablasaldos)
+    console.log(this.tablafooter)
+  }
+  datosproy=null
+  async enviarDataImpresion2() {
+    if (this.datosproy == null) {
+      const detalleProyecto =
+        await this.principalService.recuperarDatosProyecto({
+          id_proyecto: this.id_proyecto,
+        });
+      this.datosproy = detalleProyecto;
+    }
+    const arrayHeader = [
+      [
+        { text: 'ITEM', colSpan: 1, rowSpan: 3 },
+        { text: 'DESCRIPCION', colSpan: 1, rowSpan: 3 },
+        { text: 'PRESUPUESTO PROGRAMADO', colSpan: 4, rowSpan: 2 },
+        { text: 'AVANCES', colSpan: 9, rowSpan: 1 },
+        { text: 'SALDO', colSpan: 3, rowSpan: 2 },
+      ],
+      [
+        { text: 'ANTERIOR', colSpan: 3, rowSpan: 1 },
+        { text: 'ACTUAL', colSpan: 3, rowSpan: 1 },
+        { text: 'ACUMULADO', colSpan: 3, rowSpan: 1 },
+      ],
+      [
+        { text: 'Unid', colSpan: 1, rowSpan: 1 },
+        { text: 'Metrado', colSpan: 1, rowSpan: 1 },
+        { text: 'P. Unitario', colSpan: 1, rowSpan: 1 },
+        { text: 'Presu', colSpan: 1, rowSpan: 1 },
+        { text: 'Metrado', colSpan: 1, rowSpan: 1 },
+        { text: 'Valorizado', colSpan: 1, rowSpan: 1 },
+        { text: '%', colSpan: 1, rowSpan: 1 },
+        { text: 'Metrado', colSpan: 1, rowSpan: 1 },
+        { text: 'Valorizado', colSpan: 1, rowSpan: 1 },
+        { text: '%', colSpan: 1, rowSpan: 1 },
+        { text: 'Metrado', colSpan: 1, rowSpan: 1 },
+        { text: 'Valorizado', colSpan: 1, rowSpan: 1 },
+        { text: '%', colSpan: 1, rowSpan: 1 },
+        { text: 'Metrado', colSpan: 1, rowSpan: 1 },
+        { text: 'Valorizado', colSpan: 1, rowSpan: 1 },
+        { text: '%', colSpan: 1, rowSpan: 1 },
+      ],
+    ];
+    const arrayKeys = [
+      'item',
+      'descripcion',
+      'unidad',
+      'cantidad',
+      'precio',
+      'parcial',
+      'metrado_anterior',
+      'total_anterior',
+      'porcentaje_anterior',
+      'metrado_actual',
+      'total_actual',
+      'porcentaje_actual',
+      'metrado_acumulado',
+      'total_acumulado',
+      'porcentaje_acumulado',
+      'metradosaldoo',
+      'total_saldo',
+      'porcentaje_saldo',
+    ];
+    const arrdec = [
+      null,
+      null,
+      null,
+      this.dec_metrado,
+      this.dec_parcial,
+      this.dec_parcial,
+      this.dec_metrado,
+      this.dec_parcial,
+      null,
+      this.dec_metrado,
+      this.dec_parcial,
+      null,
+      this.dec_metrado,
+      this.dec_parcial,
+      null,
+      this.dec_metrado,
+      this.dec_parcial,
+      null
+    ];
+    const arralig = [
+      'left',
+      'center',
+      'center',
+      'center',
+      'center',
+      'center',
+      'center',
+      'center',
+      'center',
+      'center',
+      'center',
+      'center',
+      'center',
+      'center',
+      'center',
+      'center',
+      'center',
+      'center',      
+    ];
+    let aux = JSON.parse(JSON.stringify(this.tablasaldos));
+    let arrpasa = [];
+    for (let row of aux) {
+      //asignar colores
+      let tipol = '';
+      let colorl = '';
+      let fondol = '';
+      let valor2 = row.item.toString().split('.');
+      if (this.titulo1letra != undefined) {
+        if (row.unidad != '') {
+          colorl = this.titulo1letra[11];
+        } else {
+          let ind = valor2.length >= 12 ? 11 : valor2.length - 1;
+          colorl = this.titulo1letra[ind];
+        }
+      }
+      if (this.titulo1color != undefined) {
+        if (row.unidad != '') {
+          fondol = this.titulo1color[11];
+        } else {
+          let ind = valor2.length >= 12 ? 11 : valor2.length - 1;
+          fondol = this.titulo1color[ind];
+        }
+      }
+      if (this.titulo1 != undefined) {
+        if (row.unidad != '') {
+          tipol = this.titulo1[11];
+        } else {
+          let ind = valor2.length >= 12 ? 11 : valor2.length - 1;
+          tipol = this.titulo1[ind];
+        }
+      }
+      let esp = ' ';
+      let descp = esp.repeat(valor2.length - 1) + row.descripcion;
+      arrpasa.push({
+        item: row.item,
+        descripcion: descp,
+        unidad: row.unidad,
+        cantidad: !row.cantidad? '': this.formService.redondeo(row.cantidad, this.dec_metrado),
+        precio: !row.precio ? '' : this.formService.redondeo(row.precio, this.dec_parcial),
+        parcial: !row.parcial ? '' : this.formService.redondeo(row.parcial, this.dec_parcial),
+        metrado_anterior: !row.metrado_anterior? '': this.formService.redondeo(row.metrado_anterior, this.dec_metrado),
+        total_anterior: !row.total_anterior ? '' : this.formService.redondeo(row.total_anterior, this.dec_parcial),
+        porcentaje_anterior: row.porcentaje_anterior,
+        metrado_actual: !row.metrado_actual? '': this.formService.redondeo(row.metrado_actual, this.dec_metrado),
+        total_actual: !row.total_actual ? '' : this.formService.redondeo(row.total_actual, this.dec_parcial),
+        porcentaje_actual: row.porcentaje_actual,
+        metrado_acumulado: !row.metrado_acumulado? '': this.formService.redondeo(row.metrado_acumulado, this.dec_metrado),
+        total_acumulado: !row.total_acumulado ? '' : this.formService.redondeo(row.total_acumulado, this.dec_parcial),
+        porcentaje_acumulado: row.porcentaje_acumulado,
+        metradosaldoo: !row.metradosaldoo? '': this.formService.redondeo(row.metradosaldoo, this.dec_metrado),
+        total_saldo: !row.total_saldo ? '' : this.formService.redondeo(row.total_saldo, this.dec_parcial),
+        porcentaje_saldo: row.porcentaje_saldo,
+        tipoletra: tipol,
+        color: colorl == 'unset' ? '' : colorl,
+        fondo: fondol == 'none' ? '' : fondol,
+      });
+    }
+    const datos = {
+      datos_proyecto: this.datosproy,
+      header: arrayHeader,
+      keys_body: arrayKeys,
+      keys_dec: arrdec,
+      col_alig: arralig,
+      tabla: arrpasa,
+      tabla2: [],
+      concat_tabla2: false,
+      tipo_reporte: 6,
+      orientacion: '',
+      moneda: this.simbolo,
+      titulo: 'VALORIZACION PROGRAMADA',
+      dec_parcial: this.dec_parcial,
+    };
+    const modalRef = this.modalService.open(ReportesComponent, {
+      size: 'lg modalgrande',
+      backdrop: 'static',
+      windowClass: 'pcoded',
+      keyboard: false,
+    });
+    modalRef.componentInstance.datos = datos;
+    const result = await modalRef.result;
+  }
+  calcularTotal(array) {
+    let total = 0;
+    for (let k = 0; k < array.length; k++) {
+      if (
+        array[k].tipofila == 2 &&
+        array[k].total !== '' &&
+        array[k].total !== null
+      ) {
+        total = total + parseFloat(array[k].total);
+      }
+    }
+    return total;
+  }
+  convertirAArray(expresion: string): string[] {
+    const partes = expresion.split(/([\+\-\*/\(\)])/);
+    const resultado = partes.filter((elemento) => elemento !== '');
+    return resultado;
+  }
+  calcularformula(texto) {
+    try {
+      return math.evaluate(texto);
+    } catch {
+      return null;
+    }
   }
   async changeVista(datos) {
-    this.datosglo=datos
-    this.cambioVista(2)
+    this.datosglo = datos;
+    this.cambioVista(2);
   }
   formEstado = new UntypedFormGroup({
     detalle2: new UntypedFormControl('', [Validators.required]),
@@ -163,12 +395,20 @@ export class InformesReportesComponent implements OnInit {
   get observacion(): UntypedFormControl {
     return this.formEstado.get('observacion') as UntypedFormControl;
   }
-  id_registro2
+  id_registro2;
   openModal2(datos = null) {
     if (datos != null) {
       this.id_registro2 = datos.id_registro;
       this.formEstado.get('detalle2').setValue(datos?.detalle);
-      this.formEstado.get('observacion').setValue(datos.observacion=='null'||datos.observacion==null|| !datos.observacion?'':datos.observacion);
+      this.formEstado
+        .get('observacion')
+        .setValue(
+          datos.observacion == 'null' ||
+            datos.observacion == null ||
+            !datos.observacion
+            ? ''
+            : datos.observacion
+        );
       this.modalEstado.show();
     }
   }
@@ -202,8 +442,8 @@ export class InformesReportesComponent implements OnInit {
             positionClass: 'toast-bottom-right',
             timeOut: 4000,
           });
-          this.dataSource1[this.fila1_sel].estado=0
-          this.dataSource1[this.fila1_sel].fecha_aprob=''
+          this.dataSource1[this.fila1_sel].estado = 0;
+          this.dataSource1[this.fila1_sel].fecha_aprob = '';
           this.closeModal2();
           this.mostrar_carga_todo = false;
         } else {
