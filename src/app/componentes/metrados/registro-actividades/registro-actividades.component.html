@@ -52,10 +52,19 @@
                             <td>
                                 Registro Metradado
                             </td>
-                            <td *ngFor="let dia of diasCalendario" [class.bloqueado]="dia.bloqueado"
-                                (click)="ChangeDia(dia)" [ngClass]="{ 'fecha-selected': dia.fecha == fechaselecionada }"
-                                style="height: 24px">
-                                {{ dia.value | number : "0.2" }}
+                            <td *ngFor="let dia of estadoXPart; let i = index" (click)="ChangeDia(diasCalendario[i])"
+                                [ngClass]="{ 'fecha-selected': diasCalendario[i].fecha == fechaselecionada ,
+                                    'bg-danger':!dia && filaSeleccionada?.unidad, 'bg-primary': dia == 1 && filaSeleccionada?.unidad, 'bg-success': dia == 2 && filaSeleccionada?.unidad
+                                }" style="height: 24px">
+                                <ng-container *ngIf="!dia && filaSeleccionada?.unidad">
+                                    <!-- <span class="badge bg-danger pos-badge text-white">F</span> --> F
+                                </ng-container>
+                                <ng-container *ngIf="dia == 1 && filaSeleccionada?.unidad">
+                                    <!-- <span class="badge bg-primary pos-badge text-white">R</span> --> R
+                                </ng-container>
+                                <ng-container *ngIf="dia == 2 && filaSeleccionada?.unidad">
+                                    <!-- <span class="badge bg-success pos-badge text-white">A</span> --> A
+                                </ng-container>
                             </td>
 
                             <td>
@@ -135,35 +144,43 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <tr *ngFor="let row of this.tablaPresupuesto; let i = index">
+                                        <tr *ngFor="let row of this.tablaPresupuesto; let i = index"
+                                            (click)="selPartida(i,row)">
                                             <td class="text-left" appPintarfilapre [tipo]="titulo1"
+                                                [ngClass]="{'row-seleccionado': row == filaSeleccionada}"
                                                 [color]="row.item ? titulo1color : ''" [letra]="titulo1letra"
                                                 [item]="row.item" [separador]="'.'" [partida]="row.unidad != ''">
                                                 {{row.item}}</td>
                                             <td class="text-left" appPintarfilapre [tipo]="titulo1"
+                                                [ngClass]="{'row-seleccionado': row == filaSeleccionada}"
                                                 [color]="row.item ? titulo1color : ''" [letra]="titulo1letra"
                                                 [item]="row.item" [separador]="'.'" [partida]="row.unidad != ''">
                                                 {{row.descripcion}}</td>
                                             <td class="text-center" appPintarfilapre [tipo]="titulo1"
+                                                [ngClass]="{'row-seleccionado': row == filaSeleccionada}"
                                                 [color]="row.item ? titulo1color : ''" [letra]="titulo1letra"
                                                 [item]="row.item" [separador]="'.'" [partida]="row.unidad != ''">
                                                 {{row.unidad}}</td>
                                             <td class="text-right" appPintarfilapre [tipo]="titulo1"
+                                                [ngClass]="{'row-seleccionado': row == filaSeleccionada}"
                                                 [color]="row.item ? titulo1color : ''" [letra]="titulo1letra"
                                                 [item]="row.item" [separador]="'.'" [partida]="row.unidad != ''">
                                                 {{row.cantidad | number: '0.'+ this.dec_metrado + '-' +
                                                 this.dec_metrado}}</td>
                                             <td class="text-right" appPintarfilapre [tipo]="titulo1"
+                                                [ngClass]="{'row-seleccionado': row == filaSeleccionada}"
                                                 [color]="row.item ? titulo1color : ''" [letra]="titulo1letra"
                                                 [item]="row.item" [separador]="'.'" [partida]="row.unidad != ''">
                                                 {{row.total_registrado | number: '0.'+ this.dec_metrado + '-' +
                                                 this.dec_metrado}}</td>
                                             <td class="text-right" appPintarfilapre [tipo]="titulo1"
+                                                [ngClass]="{'row-seleccionado': row == filaSeleccionada}"
                                                 [color]="row.item ? titulo1color : ''" [letra]="titulo1letra"
                                                 [item]="row.item" [separador]="'.'" [partida]="row.unidad != ''">
                                                 {{row.saldo | number: '0.'+ this.dec_metrado + '-' +
                                                 this.dec_metrado}}</td>
                                             <td class="text-right" appPintarfilapre [tipo]="titulo1"
+                                                [ngClass]="{'row-seleccionado': row == filaSeleccionada}"
                                                 [color]="row.item ? titulo1color : ''" [letra]="titulo1letra"
                                                 [item]="row.item" [separador]="'.'" [partida]="row.unidad != ''">
                                                 <ng-container *ngIf="indiceDia !==null && row.metradodiario?.length">
@@ -208,6 +225,64 @@
                         </li>
                     </ul>
                     <div [ngbNavOutlet]="nav" class="mt-2"></div>
+
+                    <div class="col-12 h-100 ">
+                        <table class="mini-tabla tab-10 w-100" style="overflow: auto; display: list-item">
+                            <thead>
+                                <tr>
+                                    <th appAnchocol [ancho]="50">ITEM</th>
+                                    <th appAnchocol [ancho]="200" [detalle]="true">DESCRIPCION</th>
+                                    <th appAnchocol [ancho]="50">UND</th>
+                                    <!-- <th appAnchocol [ancho]="120">INGRESADO</th> -->
+                                    <th appAnchocol [ancho]="120">INGRESADO </th>
+                                    <th appAnchocol [ancho]="120">DISPONIBLE</th>
+                                    <th appAnchocol [ancho]="100">REGISTRADO</th>
+
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <ng-container *ngIf="tablaMovAlmcSalida.length; else noTablaSalida">
+                                    <tr *ngFor="let row  of tablaMovAlmcSalida; let i = index">
+                                        <td class="text-left">{{row.item}}</td>
+                                        <td class="text-left">{{row.descripcion }}</td>
+                                        <td>{{row.unidad}}</td>
+                                        <td class="text-right">{{row.cantidad | number: '0.'+ this.dec_metrado + '-' +
+                                            this.dec_metrado}}</td>
+                                        <!-- <td class="text-right">{{row.registrado}}</td> -->
+                                        <td class="text-right">{{row.disponible}}</td>
+                                        <td (click)="habilitarEditar(i,'disponible')">
+                                            <ng-container *ngIf="row.editardisponible; else noeditdisponible">
+                                                <input
+                                                    [textMask]="dec_cant == 4? formService.maskUsAmountDecimal4 : (dec_cant==3? formService.maskUsAmountDecimal3:formService.maskUsAmountDecimal2)"
+                                                    style="height: 20px;text-align: center;" *ngIf="row.editar==1"
+                                                    type="text" class="formcontrol w-100 d-flex" autocomplete="off"
+                                                    value="{{row.disponible}}" appAutoFocus
+                                                    (keyup)="presenter1($event,indice)"
+                                                    (blur)="caneditarcelda1($event.target.value,indice,'disponible')">
+                                            </ng-container>
+                                            <ng-template #noeditdisponible>
+                                                {{row.disponibles}}
+                                            </ng-template>
+
+                                        </td>
+                                    </tr>
+                                </ng-container>
+                                <ng-template #noTablaSalida>
+                                    <tr>
+                                        <td class="mat-cell text-center" colspan="8">
+                                            <label *ngIf="!buscando">No se encontraron resultados</label>
+                                            <div *ngIf="buscando" class="preloader3 loader-block">
+                                                <div class="circ1"></div>
+                                                <div class="circ2"></div>
+                                                <div class="circ3"></div>
+                                                <div class="circ4"></div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </ng-template>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </ng-container>
