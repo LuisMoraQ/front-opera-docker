@@ -1,9 +1,6 @@
-<div
-  id="divbut"
-  style="width: calc(100% - 58px); margin-left: 44px"
-  class="hidescroll m-b-10"
->
-  <div class="row" style="width: 805px; margin-right: 0px; margin-left: 0px">
+<div id="divbut3" style="width: calc(100% - 58px);margin-left:44px" class="hidescroll m-b-10">
+  <span *ngIf="scrollbut" class="icscrol-l" (click)="rigthDivBut()"><i class="icofont icofont-caret-left icono-but"></i></span>
+  <div class="row" style="width: 800px ;margin-right: 0px;margin-left: 0px;">
     <button
       class="btn btn-sm btn-outline-secondary btn-menu-top"
       type="button"
@@ -48,6 +45,7 @@
       <i class="fa fa-list"></i> REPORTE DE ADQUISICIONES
     </button>
   </div>
+   <span *ngIf="scrollbut" class="icscrol-r" (click)="leftDivBut()"><i class="icofont icofont-caret-right icono-but"></i></span>
 </div>
 <div style="overflow: auto; height: calc(100vh - 165px)" *ngIf="subvista == 1">
   <app-card
@@ -96,13 +94,13 @@
                   }}</span>
                 </ng-container>
               </td>
-              <td appAnchocol [ancho]="100">{{ row.avance }}</td>
+              <td appAnchocol [ancho]="100">{{((row.total_proyecto * 100)/directototal) | number: '0.2'}}%</td>
               <td appAnchocol [ancho]="100">
                 <ng-container
                   *ngIf="row.total_proyecto && row.total_proyecto > 0"
                 >
                   <span class="float-left">S/.</span>
-                  <span class="float-right">{{ row.acumulado }}</span>
+                  <span class="float-right">{{ row.acumulado| number: '0.2' }}</span>
                 </ng-container>
               </td>
                 <td appAnchocol [ancho]="100" class="text-center">
@@ -205,13 +203,11 @@
             </option>
           </select>
         </mat-form-field>
-
           <button type="button"  class="btn btn-mini btn-group-mini btn-outline-primary" placement="top"
               ngbTooltip="Generar reporte" container="body"
               (click)="enviarDataImpresion2()" (mouseup)="quitarfoco($event);">
               <i class="fa fa-print icono-but"></i>
             </button>
-    
       </div>
       <!-- <div
         class="col-sm-12 col-md-3 col-lg-3 d-flex"

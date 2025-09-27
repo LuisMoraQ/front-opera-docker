@@ -57,7 +57,20 @@
   border: 3px solid #3b9061 !important;
   border-style: double !important;
 }
-
+.icscrol-l{
+    font-size: 24px;
+    position: absolute;
+    left: 32px;
+    top:12px;
+    cursor: pointer;
+}
+.icscrol-r{
+    font-size: 24px;
+    position: absolute;
+    right: 2px;
+    top:12px;
+    cursor: pointer;
+}
 .d-select {
   background-color: #fcf0fd !important;
   border: 3px solid #b352a4 !important;
@@ -86,7 +99,7 @@
   cursor: pointer;
   margin-top: 2px;
 }
-.icscrol-l {
+.icscrol-l3 {
   font-size: 24px;
   cursor: pointer;
   margin-right: -15px;

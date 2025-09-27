@@ -1758,7 +1758,7 @@ export class AgrupinsumosComponent implements OnInit {
     }
     const arrayHeader = ['N°','DESCRIPCION','UNIDAD','CANTIDAD','PRECIO','PARCIAL','INDICE UNIFICADO']
     const arrayKeys = [
-      'id_filadetalle',
+      'num_det',
       'descripcion',
       'unidad',
       'cantidad',
@@ -1779,15 +1779,18 @@ export class AgrupinsumosComponent implements OnInit {
       'center',
       'left',
       'center',
-      'center',
+      'right',
       'right',
       'right',
       'center',
     ];
     let tabla= this.dataSource4.map((item)=>{
-      let nuevoItem = { ...item };
-      nuevoItem.tipoletra = !nuevoItem.id_filadetalle?'3':'';
-      nuevoItem.color = '';
+      let nuevoItem = { ...item }
+      nuevoItem.cantidad= this.formService.redondeo(nuevoItem.cantidad,this.dec_metrado)
+      nuevoItem.tipoletra = !nuevoItem.id_filadetalle?'3':''
+      nuevoItem.color = ''
+      nuevoItem.fondo= nuevoItem.num_det==0?'#F5F4C6':''
+      nuevoItem.num_det= nuevoItem.num_det==0?'':nuevoItem.num_det
       return nuevoItem;
     })
     const datos = {
@@ -1798,6 +1801,7 @@ export class AgrupinsumosComponent implements OnInit {
       col_alig: arralig,
       tabla: tabla,
       tipo_reporte: 0,
+      reporte:0,
       orientacion: '',
       moneda: this.simbolo, //condicionar
       titulo: 'RELACION DE INSUMOS PROGRAMADOS',
@@ -1822,7 +1826,7 @@ export class AgrupinsumosComponent implements OnInit {
     }
     const arrayHeader = ['ITEM','DESCRIPCION','FECHA','AGRU. INSUMO','ESTADO','MONTO PRO.','MONTO SOL.']
     const arrayKeys = [
-      'id_filadetalle',
+      'num_det',
       'descripcion',
       'fecha',
       'id_comple',
@@ -1852,7 +1856,8 @@ export class AgrupinsumosComponent implements OnInit {
       let nuevoItem = { ...item };
       nuevoItem.tipoletra = nuevoItem.fecha?'3':'';
       nuevoItem.estado= nuevoItem.estado==1?'APROBADO':'BORRADOR'
-      nuevoItem.color = '';
+      nuevoItem.fondo= !nuevoItem.num_det?'#F5F4C6':''
+      nuevoItem.reqsol= !nuevoItem.reqsol?'':nuevoItem.reqsol
       return nuevoItem;
     })
     const datos = {
@@ -1863,6 +1868,7 @@ export class AgrupinsumosComponent implements OnInit {
       col_alig: arralig,
       tabla: tabla,
       tipo_reporte: 0,
+      reporte: 0,
       orientacion: '',
       moneda: this.simbolo, //condicionar
       titulo: 'RELACION DE REQUERIMIENTOS',

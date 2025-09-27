@@ -1,4 +1,4 @@
-import { Component, OnInit, Input, ViewChild } from '@angular/core';
+import { Component, OnInit, Input, ViewChild,HostListener } from '@angular/core';
 import {
   UntypedFormArray,
   UntypedFormControl,
@@ -35,6 +35,7 @@ export class InformesReportesComponent implements OnInit {
   nomproy;
   dec_metrado;
   dec_parcial;
+  scrollbut=false
   @Input() set tabproyecto(value: any) {
     this.prueba = value;
     this.id_proyecto = value.get('id_proyecto').value;
@@ -64,6 +65,7 @@ export class InformesReportesComponent implements OnInit {
   ) {}
   directototal;
   async ngOnInit() {
+    this.scrollbut=document.body.clientWidth <= 980?true:false;
     await this.CargarTabla1();
   }
   async CargarTabla1() {
@@ -82,16 +84,6 @@ export class InformesReportesComponent implements OnInit {
         (item) => item.tipo_registro === 3
       );
       this.directototal = elementoEncontrado?.monto;
-    }
-    let actual = 0;
-    for (let row of this.dataSource1) {
-      row.avance =
-        this.formService.redondeo(
-          (row.total_proyecto * 100) / this.directototal,
-          2
-        ) + '%';
-      row.acumulado = this.formService.redondeo(actual + row.total_proyecto, 2);
-      actual = actual + row.total_proyecto;
     }
     this.mostrar_carga_todo = false;
   }
@@ -166,10 +158,20 @@ export class InformesReportesComponent implements OnInit {
     }
     this.buscando1 = false;
     this.mostrar_carga_todo = false;
-    console.log(this.tablasaldos)
-    console.log(this.tablafooter)
   }
-  datosproy=null
+  datosproy = null;
+  @HostListener('window:resize', ['$event'])
+  async onResize() {
+    this.scrollbut=document.body.clientWidth <= 980?true:false;
+  }
+  leftDivBut(){
+    var face1 = document.getElementById('divbut3');
+    face1.scrollLeft+=15;
+  }
+  rigthDivBut(){
+    var face1 = document.getElementById('divbut3');
+    face1.scrollLeft-=15;
+  }
   async enviarDataImpresion2() {
     if (this.datosproy == null) {
       const detalleProyecto =
@@ -248,9 +250,10 @@ export class InformesReportesComponent implements OnInit {
       null,
       this.dec_metrado,
       this.dec_parcial,
-      null
+      null,
     ];
     const arralig = [
+      'left',
       'left',
       'center',
       'center',
@@ -268,8 +271,28 @@ export class InformesReportesComponent implements OnInit {
       'center',
       'center',
       'center',
-      'center',      
     ];
+    const tabla2 = []
+     for (const iterator of this.tablafooter) {
+      const obj2 = [
+        { text: '', colSpan: 1, tipoletra:'3',color:'',fondo:'',alinea:'left'},
+        { text: iterator.descripcion, colSpan: 4, tipoletra:'3',color:'',fondo:'',alinea:'left' },
+        { text: iterator.monto, colSpan: 1, tipoletra:'3',color:'',fondo:'',alinea:'center' },
+        { text: '', colSpan: 1, tipoletra:'3',color:'',fondo:'',alinea:'left'},
+        { text: iterator.suma_total_anterior??'', colSpan: 1, tipoletra:'3',color:'',fondo:'',alinea:'center' },
+        { text: this.formService.redondeo(iterator.suma_total_anterior*100/iterator.monto,2)+'%', colSpan: 1, tipoletra:'3',color:'',fondo:'',alinea:'center' },
+        { text: '', colSpan: 1, tipoletra:'3',color:'',fondo:'',alinea:'left'},
+        { text: iterator.suma_total_actual??'', colSpan: 1, tipoletra:'3',color:'',fondo:'',alinea:'center' },
+        { text: this.formService.redondeo(iterator.suma_total_actual*100/iterator.monto,2)+'%', colSpan: 1, tipoletra:'3',color:'',fondo:'',alinea:'center' },
+        { text: '', colSpan: 1, tipoletra:'3',color:'',fondo:'',alinea:'left'},
+        { text: iterator.acumulado??'', colSpan: 1, tipoletra:'3',color:'',fondo:'',alinea:'center' },
+        { text: this.formService.redondeo(iterator.acumulado*100/iterator.monto,2)+'%', colSpan: 1, tipoletra:'3',color:'',fondo:'',alinea:'center' },
+        { text: '', colSpan: 1, tipoletra:'3',color:'',fondo:'',alinea:'left'},
+        { text: iterator.saldo??'', colSpan: 1, tipoletra:'3',color:'',fondo:'',alinea:'center' },
+        { text: this.formService.redondeo(iterator.saldo*100/iterator.monto,2)+'%', colSpan: 1, tipoletra:'3',color:'',fondo:'',alinea:'center' },
+      ]
+      tabla2.push(obj2)
+    }
     let aux = JSON.parse(JSON.stringify(this.tablasaldos));
     let arrpasa = [];
     for (let row of aux) {
@@ -308,20 +331,42 @@ export class InformesReportesComponent implements OnInit {
         item: row.item,
         descripcion: descp,
         unidad: row.unidad,
-        cantidad: !row.cantidad? '': this.formService.redondeo(row.cantidad, this.dec_metrado),
-        precio: !row.precio ? '' : this.formService.redondeo(row.precio, this.dec_parcial),
-        parcial: !row.parcial ? '' : this.formService.redondeo(row.parcial, this.dec_parcial),
-        metrado_anterior: !row.metrado_anterior? '': this.formService.redondeo(row.metrado_anterior, this.dec_metrado),
-        total_anterior: !row.total_anterior ? '' : this.formService.redondeo(row.total_anterior, this.dec_parcial),
+        cantidad: !row.cantidad
+          ? ''
+          : this.formService.redondeo(row.cantidad, this.dec_metrado),
+        precio: !row.precio
+          ? ''
+          : this.formService.redondeo(row.precio, this.dec_parcial),
+        parcial: !row.parcial
+          ? ''
+          : this.formService.redondeo(row.parcial, this.dec_parcial),
+        metrado_anterior: !row.metrado_anterior
+          ? ''
+          : this.formService.redondeo(row.metrado_anterior, this.dec_metrado),
+        total_anterior: !row.total_anterior
+          ? ''
+          : this.formService.redondeo(row.total_anterior, this.dec_parcial),
         porcentaje_anterior: row.porcentaje_anterior,
-        metrado_actual: !row.metrado_actual? '': this.formService.redondeo(row.metrado_actual, this.dec_metrado),
-        total_actual: !row.total_actual ? '' : this.formService.redondeo(row.total_actual, this.dec_parcial),
+        metrado_actual: !row.metrado_actual
+          ? ''
+          : this.formService.redondeo(row.metrado_actual, this.dec_metrado),
+        total_actual: !row.total_actual
+          ? ''
+          : this.formService.redondeo(row.total_actual, this.dec_parcial),
         porcentaje_actual: row.porcentaje_actual,
-        metrado_acumulado: !row.metrado_acumulado? '': this.formService.redondeo(row.metrado_acumulado, this.dec_metrado),
-        total_acumulado: !row.total_acumulado ? '' : this.formService.redondeo(row.total_acumulado, this.dec_parcial),
+        metrado_acumulado: !row.metrado_acumulado
+          ? ''
+          : this.formService.redondeo(row.metrado_acumulado, this.dec_metrado),
+        total_acumulado: !row.total_acumulado
+          ? ''
+          : this.formService.redondeo(row.total_acumulado, this.dec_parcial),
         porcentaje_acumulado: row.porcentaje_acumulado,
-        metradosaldoo: !row.metradosaldoo? '': this.formService.redondeo(row.metradosaldoo, this.dec_metrado),
-        total_saldo: !row.total_saldo ? '' : this.formService.redondeo(row.total_saldo, this.dec_parcial),
+        metradosaldoo: !row.metradosaldoo
+          ? ''
+          : this.formService.redondeo(row.metradosaldoo, this.dec_metrado),
+        total_saldo: !row.total_saldo
+          ? ''
+          : this.formService.redondeo(row.total_saldo, this.dec_parcial),
         porcentaje_saldo: row.porcentaje_saldo,
         tipoletra: tipol,
         color: colorl == 'unset' ? '' : colorl,
@@ -335,10 +380,11 @@ export class InformesReportesComponent implements OnInit {
       keys_dec: arrdec,
       col_alig: arralig,
       tabla: arrpasa,
-      tabla2: [],
-      concat_tabla2: false,
+      tabla2: tabla2,
+      concat_tabla2: true,
       tipo_reporte: 6,
-      orientacion: '',
+      reporte:0,
+      orientacion: 'landscape',
       moneda: this.simbolo,
       titulo: 'VALORIZACION PROGRAMADA',
       dec_parcial: this.dec_parcial,

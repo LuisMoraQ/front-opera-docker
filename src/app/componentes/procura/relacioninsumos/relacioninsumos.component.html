@@ -129,6 +129,9 @@
         class="fa fa-check"></i>Guardar
         <!-- <span *ngIf="bcambiost1" class="badge ballalert balert-danger" container="body"></span> -->
       </button>
+      <button type="button"  class="btn btn-mini m-l-5 btn-outline-primary" placement="top" ngbTooltip="Generar reporte" container="body" (click)="Imprimir()" >
+        <i class="fa fa-print icono-but"></i>
+      </button>
       <span *ngIf="!solover && estadoreg==0 && existedisgre" class="text-danger m-l-10" style="padding-top: 3px;" placement="left" ngbTooltip="No puede Editar por la existencia de insumos disgregados." container="body"><i class="icofont-ui-block"></i></span>
     </div>
     <div>

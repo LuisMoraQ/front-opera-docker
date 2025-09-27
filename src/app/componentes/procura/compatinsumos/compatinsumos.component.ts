@@ -119,6 +119,8 @@ export class CompatinsumosComponent implements OnInit {
       this.dataSource6=res[0]
       this.DatosDisgre=res[1]
       this.ordenart6();
+      console.log(this.dataSource6)
+      console.log(this.DatosDisgre)
     }
     else{
       this.toaster.error('No se pudo cargar la información.', 'Advertencia', { closeButton: false,positionClass: 'toast-bottom-right',timeOut: 5000 });
@@ -1101,6 +1103,15 @@ export class CompatinsumosComponent implements OnInit {
       'parcial',
       'saldo'
     ];
+    const arradec2 = [
+      null,
+      null,
+      null,
+      this.dec_metrado,
+      this.dec_parcial,
+      this.dec_parcial,
+      2
+    ];
     const arralig2 = [
       'center',
       'left',
@@ -1119,6 +1130,15 @@ export class CompatinsumosComponent implements OnInit {
       'precio',
       'parcial',
       'acumulado'
+    ];
+    const arradec3 = [
+      null,
+      null,
+      null,
+      this.dec_metrado,
+      this.dec_parcial,
+      this.dec_parcial,
+      this.dec_parcial
     ];
     const arralig3 = [
       'left',
@@ -1142,7 +1162,7 @@ export class CompatinsumosComponent implements OnInit {
       'reqsol',
       'variacion'
     ];
-    const arrdec = [
+    const arradec = [
       null,
       null,
       null,
@@ -1151,9 +1171,9 @@ export class CompatinsumosComponent implements OnInit {
       null,
       null,
       null,
-      this.dec_precio,
-      this.dec_precio,
-      null,
+      this.dec_parcial,
+      this.dec_parcial,
+      2
     ];
     const arralig = [
       'center',
@@ -1172,13 +1192,15 @@ export class CompatinsumosComponent implements OnInit {
       datos_proyecto: this.datosproy,
       header: arrayHeader,
       keys_body: arrayKeys,
-      keys_dec: arrdec,
       col_alig: arralig,
       header2: arrayHeader2,
       keys_body2: arrayKeys2,
       header3: arrayHeader3,
       keys_body3: arrayKeys3,
       col_alig2: arralig2,
+      keys_dec: arradec,
+      keys_dec2: arradec2,
+      keys_dec3: arradec3,
       col_alig3: arralig3,
       tabla:this.dataSource6,
       tabla2:JSON.parse(JSON.stringify(this.DatosDisgre)),
@@ -1187,6 +1209,7 @@ export class CompatinsumosComponent implements OnInit {
       moneda: this.simbolo, 
       titulo: 'COMPATIBILIZACION DE INSUMOS',
       dec_parcial: this.dec_parcial,
+      dec_metrado:this.dec_metrado
     };
     const modalRef = this.modalService.open(ReportesComponent, {
       size: 'lg modalgrande',

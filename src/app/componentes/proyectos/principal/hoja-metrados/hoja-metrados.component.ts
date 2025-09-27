@@ -879,7 +879,7 @@ export class HojaMetradosComponent implements OnInit, OnDestroy, AfterViewInit {
             cantidadPartidas++;
             const encontrado = await tabla.find(
               (ele) =>
-                ele.indice == iterator.indice_fila &&
+                ele.indice == iterator.indice &&
                 Number(ele.cantidad) === Number(iterator.mtotal)
             );
 
@@ -1297,6 +1297,8 @@ export class HojaMetradosComponent implements OnInit, OnDestroy, AfterViewInit {
             this.faltantesPresupuesto.push(element.item + '-' + element.descripcion);
           }
         }
+        console.log(tablaPresu)
+        console.log(response[0])
         for (let iterator of response[0]) {
           iterator.seleccionado = false;
           iterator.filaModificada = iterator.filaModificada ? true : false;
@@ -1308,8 +1310,9 @@ export class HojaMetradosComponent implements OnInit, OnDestroy, AfterViewInit {
           iterator.icomost = 1;
           iterator.mostrar = 1;
           let encontrado = await tablaPresu.find(
-            (ele) => ele.indice == iterator.indice_fila
+            (ele) => ele.indice == iterator.indice
           );
+          console.log(encontrado)
           iterator.descripcion2 = null;
           iterator.item2 = null;
           iterator.metrado2 = null;
@@ -1357,6 +1360,8 @@ export class HojaMetradosComponent implements OnInit, OnDestroy, AfterViewInit {
         body = response[0];
       }
     }
+    console.log(body)
+    console.log(vinculado)
     return { header: header, body: body, vinculado: vinculado };
   }
 
@@ -8774,6 +8779,7 @@ export class HojaMetradosComponent implements OnInit, OnDestroy, AfterViewInit {
         item:item,
       };
       const response = await this.metradoService.listarTopMetrados(obj);
+      console.log(response)
       return response;
     } catch (e) {
       SwalService.error();
@@ -10007,7 +10013,7 @@ export class HojaMetradosComponent implements OnInit, OnDestroy, AfterViewInit {
     if (tipo) {
       for (const rowT of tablaExcel) {
         const encontrado = tablaPresu.find(
-          (ele) => ele.indice_fila == rowT.indice
+          (ele) => ele.indice == rowT.indice
         );
 
         if (!encontrado) {
@@ -10018,7 +10024,7 @@ export class HojaMetradosComponent implements OnInit, OnDestroy, AfterViewInit {
         for (const row of tablaExcel) {
           if (row.unidad) {
             const encontrado = await tablaPresu.find(
-              (ele) => ele.indice == row.indice_fila && ele.unidad
+              (ele) => ele.indice == row.indice && ele.unidad
             );
             if (encontrado) {
               const obj = {

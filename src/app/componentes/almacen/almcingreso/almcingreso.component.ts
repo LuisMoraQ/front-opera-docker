@@ -1531,6 +1531,7 @@ export class AlmcingresoComponent implements OnInit {
               nuevoItem.item = null
               contador = 0
               suma += Number(nuevoItem.parcial) || 0
+              nuevoItem.fondo='#F5F4C6'
             } else {
               contador++;
               nuevoItem.item = `IT-${String(contador).padStart(2, '0')}`
@@ -1645,11 +1646,11 @@ export class AlmcingresoComponent implements OnInit {
         col_alig: arralig,
         tabla: tablaCompleta,
         tabla2: obj2,
-        concat_tabla2: false,
+        concat_tabla2: true,
         tipo_reporte: 8,
         orientacion: '',
         moneda: this.simbolo,
-        titulo: 'NOTA DE INGRESO DE MATERIALES N° _____',
+        titulo: rowi? 'NOTA DE INGRESO DE MATERIALES N° '+ this.nroingreso:'NOTAS DE INGRESO DE MATERIALES'
       };
       const modalRef = this.modalService.open(ReportesComponent, {
         size: 'lg modalgrande',

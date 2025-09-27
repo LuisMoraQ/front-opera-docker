@@ -3,6 +3,9 @@ import { ToastrService } from 'ngx-toastr';
 import { SwalService } from 'src/app/servicios/swal.service';
 import { LogisticaService } from 'src/app/servicios/logistica.service';
 import { FormsService } from 'src/app/servicios/forms.service';
+import { PrincipalService } from 'src/app/servicios/principal.service';
+import { ReportesComponent } from '../../proyectos/reportes/reportes.component';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 @Component({
   selector: 'app-relacioninsumos',
@@ -68,6 +71,8 @@ export class RelacioninsumosComponent implements OnInit {
   constructor(
     private _logisticaService:LogisticaService,
     public formService: FormsService,
+    private modalService: NgbModal,
+    public principalService: PrincipalService,
     private toaster: ToastrService,
   ) { }
 
@@ -102,6 +107,7 @@ export class RelacioninsumosComponent implements OnInit {
       if(tablares){
         //para verificar demas tablas
         let res=await this._logisticaService.listarRelinsAdqui({id_proyecto:this.id_proyecto,id_registro:this.id_reg,conrelins:'1'});
+        console.log(res)
         if(res?.length>0){
           this.existedisgre=res[2].length>0?true:false;
           this.tablaagru=res[1]
@@ -963,5 +969,79 @@ export class RelacioninsumosComponent implements OnInit {
       this.actualizarder();
       this.mostrar_carga_todo=false;
     }
+  }
+  datosproy=null
+  async Imprimir() {
+    if (this.datosproy == null) {
+      const detalleProyecto =
+        await this.principalService.recuperarDatosProyecto({
+          id_proyecto: this.id_proyecto,
+        });
+      this.datosproy = detalleProyecto;
+    }
+    const arrayHeader = ['N°','DESCRIPCION','UND','CANTIDAD','PRECIO','PARCIAL'];
+    const arrayKeys = [
+      'num_det',
+      'descripcion',
+      'unidad',
+      'cantidad',
+      'precio',
+      'parcial',
+    ];
+    const arrdec = [
+      null,
+      null,
+      this.dec_metrado,
+      this.dec_parcial,
+      this.dec_parcial,
+      this.dec_parcial,
+    ];
+    const arralig = [
+      'center',
+      'left',
+      'center',
+      'right',
+      'right',
+      'right'
+    ];
+    let aux = JSON.parse(JSON.stringify(this.dataSource3));
+    let arrpasa = [];
+    for (let row of aux) {
+      arrpasa.push({
+        num_det:!row.num_det?'':row.num_det ,
+        descripcion: row.descripcion,
+        unidad: row.unidad,
+        cantidad:this.formService.redondeo(row.cantidad, this.dec_metrado),
+        precio:row.precio,
+        parcial: row.parcial,
+        tipoletra:row.num_det==0?'3': '',
+        color: '',
+        fondo: row.num_det==0?'#F5F4C6':'',
+      });
+    }
+    const datos = {
+      datos_proyecto: this.datosproy,
+      header: arrayHeader,
+      keys_body: arrayKeys,
+      keys_dec: arrdec,
+      col_alig: arralig,
+      tabla: arrpasa,
+      tabla2: [],
+      concat_tabla2: false,
+      tipo_reporte: 0,
+      reporte: 0,
+      orientacion: '',
+      moneda: this.simbolo,
+      titulo: 'RELACION DE INSUMOS',
+      dec_parcial: this.dec_parcial,
+    };
+    const modalRef = this.modalService.open(ReportesComponent, {
+      size: 'lg modalgrande',
+      backdrop: 'static',
+      windowClass: 'pcoded',
+      keyboard: false,
+    });
+    modalRef.componentInstance.datos = datos;
+    const result = await modalRef.result;
   }
 }

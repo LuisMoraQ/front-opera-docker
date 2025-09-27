@@ -1400,6 +1400,7 @@ export class AlmcsalidaComponent implements OnInit {
             nuevoItem.descripcion = !nuevoItem.unidad? nuevoItem.descripcion + ' ' + nuevoItem.nrosalida: nuevoItem.descripcion;
             if (!nuevoItem.unidad || nuevoItem.unidad.trim() === '') {
               nuevoItem.item = null;
+              nuevoItem.fondo='#F5F4C6'
               contador = 0;
               suma += Number(nuevoItem.parcial) || 0; 
             } else {
@@ -1514,12 +1515,12 @@ export class AlmcsalidaComponent implements OnInit {
         keys_dec: keys_dec,
         col_alig: arralig,
         tabla: tablaCompleta,
-        concat_tabla2: false,
+        concat_tabla2: true,
         tabla2: obj2,
         tipo_reporte: 8,
         orientacion: '',
         moneda: this.simbolo,
-        titulo: 'NOTA DE SALIDA DE MATERIALES N° ______',
+        titulo: rowi? 'NOTA DE SALIDA DE MATERIALES N° '+ this.nrosalida:'NOTAS DE SALIDA DE MATERIALES'
       };
       const modalRef = this.modalService.open(ReportesComponent, {
         size: 'lg modalgrande',
