@@ -1100,8 +1100,6 @@ export class ReportesComponent implements OnInit {
       var maxSubHeight=parseInt((altura*reduccion).toString())
       var originalWidth = img.width
       var originalHeight = img.height
-      // console.log(originalWidth)
-      // console.log(originalHeight)
       // var widthtabla=originalWidth/(this.datos.tamanios.wgantt+this.datos.tamanios.wheader)
       var ExtraOriginalWidth = originalWidth % maxSubWidth
       var ExtraOriginalHeight= originalHeight%maxSubHeight
@@ -2135,17 +2133,6 @@ export class ReportesComponent implements OnInit {
       margin:[0,0,0,15]
     }
   }
-  // async CrearWord(){
-  //   let isDesktop = this.isDesktopCondition();
-  //   let canUseIframe = this.canUseIframeCondition();
-  //   this.IframeOr = isDesktop && canUseIframe;
-  //   console.log(this.IframeOr)
-  //   this.descargarWord().then((wordBuffer) => {
-  //     let wordBlob = new Blob([wordBuffer], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
-  //     const url = URL.createObjectURL(wordBlob);
-  //     this.documentopdf = this.sanitizer.bypassSecurityTrustResourceUrl(url);
-  //   });
-  // }
   cargapdf=false
   async crearpdf(){ 
     let isDesktop = this.isDesktopCondition();
@@ -2189,6 +2176,7 @@ export class ReportesComponent implements OnInit {
     var titulo
     var ultimo
     var valornumerico
+    var firmas
     if(this.datos.datos_proyecto.cui && this.datos.datos_proyecto.cod_pais!==227){
       const partes=this.datos.datos_proyecto.cui.split('|')
       this.ubicacion=  this.AgregarLugar(partes[0],0) +  this.AgregarLugar(partes[1],0) + this.AgregarLugar(partes[2],0) + this.AgregarLugar(this.datos.datos_proyecto.direccion,1)
@@ -2201,11 +2189,6 @@ export class ReportesComponent implements OnInit {
       [{text:'UBICACION',style: 'subtitle'},{text:':',style: 'subtitle'},{ text:this.ubicacion ,style:'subtitle'}],
       [{text:'FECHA ELAB.',style: 'subtitle'},{text:':',style: 'subtitle'},{ text: moment(this.datos.datos_proyecto.fecha_elaboracion).format('DD-MM-YYYY'),style:'subtitle'}]
       ]
-    let tabla2=[
-      [{text:'PROYECTO',style: 'subtitle'},{text:':',style: 'subtitle'},{ text: this.datos.datos_proyecto.descripcion,style:'subtitle'}],
-      [{text:'UBICACION',style: 'subtitle'},{text:':',style: 'subtitle'},{ text:this.ubicacion ,style:'subtitle'}],
-      [{text:'FECHA ELAB.',style: 'subtitle'},{text:':',style: 'subtitle'},{ text: moment(this.datos.datos_proyecto.fecha_elaboracion).format('DD-MM-YYYY'),style:'subtitle'}]
-    ]
       var tituloext
      //tablas para costos unitarios que tienen titulos 
       if(this.datos.tipo_reporte===1 && this.datos.titulos && this.datos.titulos.length>0){
@@ -2386,12 +2369,28 @@ export class ReportesComponent implements OnInit {
         titulo=this.CrearTitulo1(this.datos.titulo,tabla1)
         ultimo= await this.CrearEspecificaciones(this.datos.tabla)
         this.hasitematlt=true
+      }else if(this.datos.tipo_reporte===0&&this.datos.titulo=='RELACION DE INSUMOS PROGRAMADOS'){
+        titulo=this.CrearTitulo1(this.datos.titulo,tabla1)
+        const datosCombinados = this.CuerpoPDF4(this.datos.tabla)
+        ultimo=this.alinearTablaMovimiento(datosCombinados,this.datos.keys_body)
+      }else if(this.datos.tipo_reporte===0&&this.datos.titulo=='RELACION DE REQUERIMIENTOS'){
+        titulo=this.CrearTitulo1(this.datos.titulo,tabla1)
+        const datosCombinados = this.CuerpoPDF4(this.datos.tabla)
+        ultimo=this.alinearTablaMovimiento(datosCombinados,this.datos.keys_body)
+      }else if(this.datos.tipo_reporte===0&&this.datos.header2){
+        titulo=this.CrearTitulo1(this.datos.titulo,tabla1)
+        ultimo=this.CrearTablasProcura(this.datos.tabla)
       }else if(this.datos.tipo_reporte===0){
         titulo=this.CrearTitulo1(this.datos.titulo,tabla1)
         const datosCombinados = this.CuerpoPDF2(this.datos.tabla)
         ultimo=this.alinearTablaProcura(datosCombinados,this.datos.keys_body)
       }else if(this.datos.tipo_reporte===8){
-        
+        titulo=this.CrearTitulo3(this.datos.titulo,this.datos.datos_proyecto.descripcion,this.datos.datos_proyecto,this.ubicacion)
+        ultimo= this.alinearTablaMovimiento(this.CuerpoPDF3(this.datos.tabla),this.datos.keys_body)
+        firmas = this.CrearFirmas()
+      }else if(this.datos.tipo_reporte===6){
+         titulo=this.CrearTitulo1(this.datos.titulo,tabla1)
+         ultimo=this.CrearWidthDiario(this.CrearTablasMetradoDiario(this.datos.tabla),this.datos.header.length,this.datos.keys_body)
       }else{
         //RESUMEN DEL METRADO
         titulo=this.CrearTitulo1(this.datos.titulo,tabla1)
@@ -2413,7 +2412,8 @@ export class ReportesComponent implements OnInit {
     content: [
     titulo,
     ultimo,
-    valornumerico
+    valornumerico,
+    firmas
     ],
     styles: {
       allheader: {
@@ -2597,6 +2597,39 @@ export class ReportesComponent implements OnInit {
   ];
   return estructura;
   }
+  CrearTitulo3(titulo,proyecto,datos,ubicacion){
+    const estructura= [
+      {text:titulo,style:'allheader'},
+      {table:{
+        widths:[60,10,'*'],
+        body:[[{text:'PROYECTO',style: 'subtitle'},{text:':',style: 'subtitle'},{ text:proyecto,style:'subtitle'}]]
+      },layout: 'noBorders'
+      },
+      {
+        table: {
+            widths: ['65%','35%'],
+            body: [[{
+              table:{
+                widths:[60,10,'*'],
+                body:[[{text:'UBICACION',style: 'subtitle'},{text:':',style: 'subtitle'},{ text:ubicacion,style:'subtitle'}],
+                [{text:'RESIDENTE',style: 'subtitle'},{text:':',style: 'subtitle'},{ text:'',style:'subtitle'}],
+                [{text:'INSPECTOR',style: 'subtitle'},{text:':',style: 'subtitle'},{ text:'',style:'subtitle'}]]
+              },layout: 'noBorders'
+            },{table:{
+                widths:[80,10,'*'],
+                body:[[{text:'NEA N°',style: 'subtitle'},{text:':',style: 'subtitle'},{ text:'',style:'subtitle'}],
+                [{text:'FECHA INGRESO',style: 'subtitle',margin:[0,0]},{text:':',style: 'subtitle'},{ text:this.datos.fecha_ingreso,style:'subtitle'}],
+                [{text:'REQUERIMIENTO',style: 'subtitle'},{text:':',style: 'subtitle'},{ text:'',style:'subtitle'}],]
+            },layout: 'noBorders'
+          }]]
+        },
+        layout: 'noBorders',
+        style: 'tablaConAlineacion',
+        margin: [0, 0, 0, 10]
+      }
+  ];
+  return estructura;
+  }
   CrearAlineartabla(content,header){
       var widths=this.Widthsmoneda(header)
       return{
@@ -2645,6 +2678,73 @@ export class ReportesComponent implements OnInit {
       margin:[0,0,0,15]
     }
   }
+  CrearTablaCompleta3(array){
+    const resultado:any[]= [];
+    for(let i=0;i<array.length;i++){
+      if(array[i]==='descripcion'){
+        resultado.push('*')
+      }else if((array[i]=='precio'||array[i]=='cantidad'||array[i]=='parcial')&&this.datos.tipo_reporte==8){
+        resultado.push('auto')
+        resultado.push('auto')
+      }else if((array[i]=='precio'||array[i]=='parcial'||array[i]=='reqsol')&&this.datos.tipo_reporte==0){
+        resultado.push('auto')
+        resultado.push('auto')
+      }else{
+        resultado.push('auto')
+      }
+    }
+    return resultado
+  }
+  CreateSimpleWidths(array){
+     const resultado:any[]= [];
+    for(let i=0;i<array.length;i++){
+      if(array[i]==='descripcion'){
+        resultado.push('*')
+      }else{
+        resultado.push('auto')
+      }
+    }
+    return resultado
+  }
+  alinearTablaMovimiento(content,keys){
+    var widths=this.CrearTablaCompleta3(keys)
+    return{
+      table:{
+        widths:widths,
+        headerRows: 1,
+        body: content,
+      },  
+      style: 'tablaConAlineacion',
+      margin:[0,0,0,15]
+    }
+  }
+  CrearFirmas(){
+    return {
+      table: {
+      widths: ['50%', '50%'],
+      body: [
+        [
+          this.Firma('RESIDENTE DE OBRA'),
+          this.Firma('ASISTENTE ADMINISTRATIVO')
+        ],
+        [
+          this.Firma('ALMACENERO DE OBRA'),
+          this.Firma('MAESTRO DE OBRA')
+        ]
+      ]},style: 'tablaConAlineacion',      
+        layout: 'noBorders'
+    }
+  }
+  Firma(texto){
+     return {
+      stack: [
+        { text: '\n\n\n\n\n\n\n\n', margin: [0, 0, 0, 0] },
+        { text: '_________________________', alignment: 'center', margin: [0, 10, 0, 0],color:this.colorgeneral },
+        { text:texto,alignment: 'center', margin: [0, 5, 0, 0],color:this.colorgeneral },
+        { text:'Firma y Sello',alignment: 'center', margin: [0, 5, 0, 0],color:this.colorgeneral }
+      ]
+    };
+  }
   CrearTablaMetrado(content,headerRows,header){
     var widths=this.CrearTablaCompleta(header)
     return{
@@ -2662,6 +2762,18 @@ export class ReportesComponent implements OnInit {
     return{
       table:{
          widths:widths,
+        headerRows: headerRows,
+        body: content,
+      },  
+      style: 'tablaConAlineacion',
+      margin:[0,0,0,15]
+    }
+  }
+  CrearWidthDiario(content,headerRows,keys){
+    var widths=this.CrearWidthsMetradoDiario(keys)
+    return{
+      table:{
+        widths:widths,
         headerRows: headerRows,
         body: content,
       },  
@@ -2760,6 +2872,20 @@ export class ReportesComponent implements OnInit {
       }else if (auxili<i){
         resultado.push(sol)
         resultado.push('auto')
+      }else{
+        resultado.push('auto')
+      }
+    }
+    return resultado;
+  }
+  CrearWidthsMetradoDiario(array: string[]): any[] {
+    const agrega=this.datos.titulo=='METRADO DESAGREGADO'||this.datos.titulo=='VALORIZACION PROGRAMADA'?0:this.datos.tabla[0].montodias.length
+    const resultado: any[] = [];
+    for (let i = 0; i < array.length; i++) {
+      if(array[i]==='montodias'){
+        for (let k = 0; k < agrega; k++) {
+          resultado.push('auto')
+        }
       }else{
         resultado.push('auto')
       }
@@ -2956,17 +3082,6 @@ export class ReportesComponent implements OnInit {
     var padd=(paginado==='A4'|| paginado==='A5'||paginado==='FOLIO'||paginado==='LETTER')? -2:0
     var monocromado = this.formulario1.get('opciones3').value;
     var tableData = []
-    // var tablaaux=[]
-    // for (let i = 0; i < this.datos.header.length; i++) {
-    //   let color = this.colorgeneral
-    //   if(this.datos.header[i]=='PARCIAL'|| this.datos.header[i]=='PRECIO'){
-    //     tablaaux.push({ text: this.datos.header[i], fillColor: '#D6E3F4', alignment: 'center',color:color,colSpan:2,borderColor: ['#acb2b4', '#acb2b4', '#acb2b4', '#acb2b4']})
-    //     tablaaux.push(null)
-    //   }else{
-    //     tablaaux.push({ text: this.datos.header[i], fillColor: '#D6E3F4', alignment: 'center',color:color,borderColor: ['#acb2b4', '#acb2b4', '#acb2b4', '#acb2b4']})
-    //   }
-    // }
-    // tableData.push(tablaaux);
     let tablaaux=this.AgregarSpan2(JSON.parse(JSON.stringify(this.datos.header)))
     tableData.push(tablaaux[0])
     tableData.push(tablaaux[1])
@@ -2997,6 +3112,133 @@ export class ReportesComponent implements OnInit {
         }else{
           let aux=this.esNumero(persona[column])===true&& column!=='item'&&column!=='auxiliar' && column!=='codigo' ? this.formatearNumero(this.formService.redondeo(persona[column],this.datos.keys_dec[i]),2) : persona[column]
           array.push({ text:aux,margin:[padd+espaciosinciales,0,padd,0], alignment: alignment ,  borderColor: ['#acb2b4', '#acb2b4', '#acb2b4', '#acb2b4'] ,fillColor:colorbackground, color : color, bold:bold ,italics:italics});
+        }
+      }
+      tableData.push(array);
+    })
+    return tableData
+  }
+  addFootSimple(array=[]){
+    array=array??[]
+    let newArray = [];
+    for (let i = 0; i < array.length; i++) {
+        let alignment = array[i].alinea??'center';
+        let color = this.colorgeneral 
+        let bold = array[i].tipoletra ==="4"|| array[i].tipoletra==="3"? true:false
+        let italics =array[i].tipoletra ==="4"|| array[i].tipoletra==="2"? true:false
+        let colspan= i>array.length-3? array[i].colSpan*2 :array[i].colSpan
+        var moneda = this.datos.moneda? this.datos.moneda : 'S/'
+        if(i==array.length-1){
+          colspan--
+           newArray.push({ text: moneda,  alignment:'left',border:[true,true,false,true],color:color,bold:bold,italics:italics,colSpan:1,borderColor: ['#acb2b4', '#acb2b4', '', '#acb2b4']})
+           newArray.push({ text: array[i].text,  alignment:alignment,border:[false,true,true,true],color:color,bold:bold,italics:italics,colSpan:colspan,borderColor: ['', '#acb2b4', '#acb2b4', '#acb2b4']})
+        }else{
+           newArray.push({ text: array[i].text,  alignment:alignment,color:color,bold:bold,italics:italics,colSpan:colspan,borderColor: ['#acb2b4', '#acb2b4', '#acb2b4', '#acb2b4']})
+        }
+        if (array[i].colSpan && colspan > 1) {
+          for (let k = 1; k < colspan; k++) {
+            newArray.push(null);
+          }
+      }
+    }
+    return newArray
+  }
+  CrearHeaderSimple(header,bool=false){
+  var encabezado=[]
+    for (let i = 0; i < header.length; i++) {
+      let color =this.colorgeneral
+        if((((header[i]==='CANTIDAD'|| header[i]==='P.U.'||header[i]==='TOTAL')&&this.datos.tipo_reporte==8)||((header[i]==='PRECIO'|| header[i]==='PARCIAL'||header[i]==='MONTO PRO.'||header[i]==='MONTO SOL.'||header[i]=='REQ. PROGRAMADO'||header[i]=='REQ. SOLICITADO')&&this.datos.tipo_reporte==0))&&bool){
+          encabezado.push({ text: header[i], fillColor: '#D6E3F4', alignment: 'center',color:color,colSpan:2,borderColor: ['#acb2b4', '#acb2b4', '#acb2b4', '#acb2b4']});
+          encabezado.push(null)
+        }else{
+          encabezado.push({ text: header[i], fillColor: '#D6E3F4', alignment: 'center',color:color,borderColor: ['#acb2b4', '#acb2b4', '#acb2b4', '#acb2b4']})
+        }
+    }
+    return encabezado
+  }
+  CuerpoPDF3(array){
+    this.exceldatos=array
+    if(this.contador===1){
+      this.excelheader = this.ExcelHeaderRow(JSON.parse(JSON.stringify(this.datos.header)))
+    }
+    var ColumnasSeleccionadas = this.datos.keys_body;
+    var paginado=this.formulario1.get('opciones1').value
+    var padd=(paginado==='A4'|| paginado==='A5'||paginado==='FOLIO'||paginado==='LETTER')? -2:0
+    var monocromado = this.formulario1.get('opciones3').value;
+    var tableData = []
+    let encabezado= this.CrearHeaderSimple(this.datos.header,true)
+    this.contador++
+    tableData.push(encabezado);
+    var colorgeneral=this.colorgeneral
+    var auxiliar = this.datos.col_alig
+    var moneda = this.datos.moneda? this.datos.moneda : 'S/'
+    array.forEach((persona)=>{
+      let array=[]
+      for(let i=0;i<ColumnasSeleccionadas.length;i++){
+        const column =ColumnasSeleccionadas[i];
+        let alignment = persona.alinea? persona.alinea:auxiliar[i];
+        let colorbackground = monocromado==='monocromado'? '': persona.fondo? persona.fondo.substring(0, 7): persona.alinea? '#DEDDE6':''
+        let color = monocromado==='monocromado'? colorgeneral:persona.color? persona.color:colorgeneral 
+        let bold = persona.tipoletra ==="4"|| persona.tipoletra==="3"? true:false
+        let italics =persona.tipoletra ==="4"|| persona.tipoletra==="2"? true:false
+        let espaciosinciales= (/^\s+/).test(persona[column])? persona[column].match(/^\s+/)![0].length:0
+        if(persona[column]!==null &&persona[column]!=='' &&persona[column]!==undefined &&((column==='parcial')|| (column==='cantidad')||(column=='precio'))){
+          if(!persona['unidad']&&column=='precio'){
+            array.push({text:persona[column],color : color,margin:[padd+espaciosinciales,0,0,0], bold:bold ,italics:italics,alignment:'left',fillColor:colorbackground,borderColor: ['#acb2b4', '#acb2b4', '#acb2b4', '#acb2b4'],border:[true,true,true,true],colSpan:2})
+            array.push(null);
+          }else{
+            var numerofor= this.formatearNumero(this.formService.redondeo(persona[column],this.datos.keys_dec[i]),null)
+            array.push({text:moneda,color : color,margin:[padd+espaciosinciales,0,0,0], bold:bold ,italics:italics,alignment:'left',fillColor:colorbackground,borderColor: ['#acb2b4', '#acb2b4', '', '#acb2b4'],border:[true,true,false,true]})
+            array.push({ text:numerofor,alignment: 'right' ,margin:[espaciosinciales,0,padd,0],  borderColor: ['', '#acb2b4', '#acb2b4', '#acb2b4'] ,fillColor:colorbackground, color : color, bold:bold ,italics:italics,border:[false,true,true,true]});
+          }
+        }else if((persona[column]===''||persona[column]===null )&&((column==='parcial')|| (column==='cantidad')||(column=='precio'))){
+          array.push({text:'',color : color,margin:[padd+espaciosinciales,0,0,0], bold:bold ,italics:italics,alignment:'left',fillColor:colorbackground,borderColor: ['#acb2b4', '#acb2b4', '', '#acb2b4'],border:[true,true,false,true]})
+          array.push({ text:'',alignment: alignment ,margin:[espaciosinciales,0,padd,0],  borderColor: ['', '#acb2b4', '#acb2b4', '#acb2b4'] ,fillColor:colorbackground, color : color, bold:bold ,italics:italics,border:[false,true,true,true]});
+        }else{
+          let aux= (column=='idingreso'||column=='idsalida')&& persona[column]==0?'':persona[column]
+          array.push({ text:aux,margin:[padd+espaciosinciales,0,padd,0], alignment: alignment ,  borderColor: ['#acb2b4', '#acb2b4', '#acb2b4', '#acb2b4'] ,fillColor:colorbackground, color : color, bold:bold ,italics:italics});
+        }
+      }
+      tableData.push(array);
+    })
+    let tablafoot= this.addFootSimple(this.datos.tabla2)
+    tableData.push(tablafoot)
+    return tableData
+  }
+  CuerpoPDF4(array){
+    this.exceldatos=array
+    if(this.contador===1){
+      this.excelheader = this.ExcelHeaderRow(JSON.parse(JSON.stringify(this.datos.header)))
+    }
+    var ColumnasSeleccionadas = this.datos.keys_body;
+    var paginado=this.formulario1.get('opciones1').value
+    var padd=(paginado==='A4'|| paginado==='A5'||paginado==='FOLIO'||paginado==='LETTER')? -2:0
+    var monocromado = this.formulario1.get('opciones3').value;
+    var tableData = []
+    let encabezado= this.CrearHeaderSimple(this.datos.header,true)
+    this.contador++
+    tableData.push(encabezado);
+    var colorgeneral=this.colorgeneral
+    var auxiliar = this.datos.col_alig
+    var moneda = this.datos.moneda? this.datos.moneda : 'S/'
+    array.forEach((persona)=>{
+      let array=[]
+      let colorbackground = monocromado==='monocromado'? '': persona.fondo? persona.fondo.substring(0, 7): persona.alinea? '#DEDDE6':''
+      let color = monocromado==='monocromado'? colorgeneral:persona.color? persona.color:colorgeneral 
+      let bold = persona.tipoletra ==="4"|| persona.tipoletra==="3"? true:false
+      let italics =persona.tipoletra ==="4"|| persona.tipoletra==="2"? true:false
+      for(let i=0;i<ColumnasSeleccionadas.length;i++){
+        let alignment = persona.alinea? persona.alinea:auxiliar[i];
+        const column =ColumnasSeleccionadas[i];
+        if(persona[column]!==null &&persona[column]!=='' &&persona[column]!==undefined &&((column==='parcial')||(column=='precio'||column=='reqsol'))){
+          var numerofor= this.formatearNumero(this.formService.redondeo(persona[column],this.datos.keys_dec[i]),null)
+          array.push({text:moneda,color : color,margin:[padd,0,0,0], bold:bold ,italics:italics,alignment:'left',fillColor:colorbackground,borderColor: ['#acb2b4', '#acb2b4', '', '#acb2b4'],border:[true,true,false,true]})
+          array.push({ text:numerofor,alignment: 'right' ,margin:[0,0,padd,0],  borderColor: ['', '#acb2b4', '#acb2b4', '#acb2b4'] ,fillColor:colorbackground, color : color, bold:bold ,italics:italics,border:[false,true,true,true]});
+        }else if((persona[column]===''||persona[column]===null )&&((column==='parcial')||(column=='precio'||column=='reqsol'))){
+          array.push({text:'',color : color,margin:[padd,0,0,0], bold:bold ,italics:italics,alignment:'left',fillColor:colorbackground,borderColor: ['#acb2b4', '#acb2b4', '', '#acb2b4'],border:[true,true,false,true]})
+          array.push({ text:'',alignment: alignment ,margin:[0,0,padd,0],  borderColor: ['', '#acb2b4', '#acb2b4', '#acb2b4'] ,fillColor:colorbackground, color : color, bold:bold ,italics:italics,border:[false,true,true,true]});
+        }else{
+          array.push({ text:persona[column],margin:[padd,0,padd,0], alignment: alignment ,  borderColor: ['#acb2b4', '#acb2b4', '#acb2b4', '#acb2b4'] ,fillColor:colorbackground, color : color, bold:bold ,italics:italics});
         }
       }
       tableData.push(array);
@@ -3198,8 +3440,170 @@ export class ReportesComponent implements OnInit {
   isNumber(value: string): boolean {
     return /^-?\d+(\.\d+)?$/.test(value);
   }
+
+  cargartabla7(idgru:any){
+    let tabla1=[];
+    for(let row of this.datos.tabla){
+      if(row.idgrupo==idgru && row.indice!=null){
+        tabla1.push(row)
+      }
+    }
+    return tabla1
+  }
+  cargartabla8mostrar(idcom:any){
+    let tabla2=[];
+    let totalgru=0;
+    for(let j=0;j<this.datos.tabla.length;j++){
+      if(this.datos.tabla[j].id_comple==idcom){
+        let idgrucom=this.datos.tabla[j].idgrupo;
+        let filagru={id_proyecto:this.id_proyecto,idgrupo:idgrucom,idfila:this.datos.tabla[j].idfila,indrep:0,orden:null,indice:this.datos.tabla[j].indice,id_filadetalle:this.datos.tabla[j].id_filadetalle,
+        num_det:this.datos.tabla[j].num_det,codigo:this.datos.tabla[j].codigo,descripcion:this.datos.tabla[j].descripcion,unidad:this.datos.tabla[j].unidad,cantidad:null,
+        precio:null,parcial:null,operador:null,acumulado:this.datos.tabla[j].reqsol,proceso:'',princi:0,estado:0,ingreso:0,salida:0,fecha_sol:null};
+        tabla2.push(filagru)
+        totalgru=totalgru+Number(this.datos.tabla[j].reqsol);
+        if(this.datos.tabla2.length>0){
+          for(let i=0;i<this.datos.tabla2.length;i++){
+            if(this.datos.tabla2[i].idgrupo==idgrucom){
+              let filaaux=JSON.parse(JSON.stringify(this.datos.tabla2[i]))
+              filaaux.editar=0
+              filaaux.editar2=0
+              tabla2.push(filaaux);
+            }
+          }
+        }
+      }
+    }
+    if(tabla2.length>0){
+      tabla2.sort(function (a, b) {
+        if (Number(a.idgrupo.split('-')[1]) > Number(b.idgrupo.split('-')[1])) {
+          return 1;
+        }
+        if (Number(a.idgrupo.split('-')[1]) < Number(b.idgrupo.split('-')[1])) {
+          return -1;
+        }
+        if (Number(a.orden??0) > Number(b.orden??0)) {
+          return 1;
+        }
+        if (Number(a.orden??0) < Number(b.orden??0)) {
+          return -1;
+        }
+        return 0;
+      });
+    }
+    // this.tab7total=this.formService.redondeo(totalgru,this.dec_parcial)
+    for(let h=0;h<this.datos.tabla.length;h++){
+      if(this.datos.tabla[h].id_comple==idcom && this.datos.tabla[h].complemento==0){
+        let parcial=Number(this.datos.tabla[h].parcial);
+        let varia=((parcial-totalgru)/parcial)*100;
+        this.datos.tabla[h].variacion=this.formService.redondeo(varia,2);
+        this.datos.tabla[h].accion=1
+      }
+    }
+    return tabla2
+  }
+  CrearTablasProcura(array){
+    var tablasfinales = []
+    var color=this.colorgeneral
+    var paginado=this.formulario1.get('opciones1').value
+    var padd=(paginado==='A4'|| paginado==='A5'||paginado==='FOLIO'||paginado==='LETTER')? -2:0
+    let margin =[padd,0,padd,0]
+    var moneda = this.datos.moneda? this.datos.moneda : 'S/'
+    var ColumnasSeleccionadas = this.datos.keys_body;  
+    var ColumnasSeleccionadas2 = this.datos.keys_body2; 
+    var ColumnasSeleccionadas3 = this.datos.keys_body3;  
+    var auxiliar = this.datos.col_alig
+    var auxiliar2 = this.datos.col_alig2
+    var auxiliar3 = this.datos.col_alig3
+    let tabla1= array.filter((item)=>item.indice==null)
+    const widths=this.CrearTablaCompleta3(ColumnasSeleccionadas)
+    const widths2=this.CreateSimpleWidths(ColumnasSeleccionadas2)
+    const widths3=this.CreateSimpleWidths(ColumnasSeleccionadas3)
+    for(let k of tabla1){
+      let tableData=[]
+      let tableData2=[]
+      let tableData3=[]
+      let header1=this.CrearHeaderSimple(this.datos.header,true)
+      tableData.push(header1)
+      let array1=[]
+      for(let m=0;m<ColumnasSeleccionadas.length;m++){
+        const column =ColumnasSeleccionadas[m];
+        let alignment = auxiliar[m];
+        if((column==='parcial')||(column==='reqsol')){
+          var numerofor= this.formatearNumero(this.formService.redondeo(k[column],this.datos.keys_dec[m]),null)
+          array1.push({text:moneda,color : color , bold:true ,alignment:'left',borderColor: ['#acb2b4', '#acb2b4', '', '#acb2b4'],border:[true,true,false,true],margin:margin})
+          array1.push({ text:numerofor,alignment: 'right', borderColor: ['', '#acb2b4', '#acb2b4', '#acb2b4'] , color : color, bold:true ,border:[false,true,true,true],margin:margin});
+        }else{
+          array1.push({ text:k[column], alignment:alignment,color : color, bold:true,borderColor: ['#acb2b4', '#acb2b4', '#acb2b4', '#acb2b4'],margin:margin})
+        }
+      }
+      tableData.push(array1)
+      let header2=this.CrearHeaderSimple(this.datos.header2,false)
+      tableData2.push(header2)
+      // this.tab6total=k.parcial; footer tabla1
+      let subtabla2=this.cargartabla7(k.idgrupo);
+      subtabla2.forEach((persona)=> {
+      let array2=[]
+      for(let n=0;n<ColumnasSeleccionadas2.length;n++){
+          const column =ColumnasSeleccionadas2[n];
+          let alignment = auxiliar2[n];
+          array2.push({ text:persona[column], alignment:alignment,color : color, bold:true,borderColor: ['#acb2b4', '#acb2b4', '#acb2b4', '#acb2b4']})
+        }
+        tableData2.push(array2)
+      });
+      let subtabla3= this.cargartabla8mostrar(k.id_comple)
+      let header3=this.CrearHeaderSimple(this.datos.header3,false)
+      tableData3.push(header3)
+      subtabla3.forEach((persona)=> {
+      let array3=[]
+      for(let z=0;z<ColumnasSeleccionadas3.length;z++){
+          const column =ColumnasSeleccionadas3[z];
+          let alignment = auxiliar3[z];
+          array3.push({text:persona[column], alignment:alignment,color : color, bold:true,borderColor: ['#acb2b4', '#acb2b4', '#acb2b4', '#acb2b4']})
+        }
+        tableData3.push(array3)
+      });
+      let tabla2 = {
+        unbreakable: true,
+        table: {
+          widths: widths2,
+          body: tableData2
+        },
+        style: 'tablaConAlineacion',
+        margin:[0,0,0,20]
+      };
+      let tabla3 = {
+        unbreakable: true,
+        table: {
+            widths: widths3,
+            body: tableData3
+        },
+        style: 'tablaConAlineacion',
+        margin:[0,0,0,20]
+      };
+
+      tablasfinales.push({  
+      unbreakable: true,
+      stack: [{
+        unbreakable: true,
+          table: {
+            widths: widths,
+            body: tableData,
+          },
+          style: 'tablaConAlineacion',
+          margin:[0,0,0,20]
+      },{
+        unbreakable: true,
+        columns: [
+          { width: '50%', stack: [tabla2]},
+          { width: '50%', stack: [tabla3]}
+        ],
+        columnGap: 10 
+      }]});
+    }
+    return tablasfinales;
+  }
   CrearTablas(array) {
-    var datosEnArray1
+    var datosEnArray1=[]
     var tablasfinales = []
     var colorgeneral=this.colorgeneral
     var monocromado = this.formulario1.get('opciones3').value;
@@ -3227,7 +3631,7 @@ export class ReportesComponent implements OnInit {
             }
         }
       }
-      let tableData;  // Declara 'tableData' aquí también si es necesario
+      let tableData; 
       if(this.datos.titulo==='ANALISIS DE COSTOS UNITARIOS'){
         var ratio=array[i].ratio?  array[i].ratio :''
         var unidad_ratio=array[i].und_ratio?array[i].und_ratio :''
@@ -3261,24 +3665,6 @@ export class ReportesComponent implements OnInit {
             ]
             }, style: 'tablaConAlineacion',
         }
-         datosEnArray1 = [
-          // [{ text: 'Partida: ' + array[i].item + '                                 ' + array[i].descripcion, colSpan: this.datos.keys_body.length,fondo:'#F4F9FF' , tipoletra:"3"}],
-          // [{ text: 'Rendimiento   :  ' + array[i].rendimiento +' '+array[i].und_rendi+ '                                Ratio Unitario Productividad : ' + ratio +' '+unidad_ratio , colSpan: (this.datos.keys_body.length-4), borderColor: ['#acb2b4', '#acb2b4', '', '#acb2b4'],border:[true,true,false,true],tipoletra:"3",margin:[0,2,0,0]},
-          // { 
-          //   colSpan:5,
-          //   tipoletra:"3",
-          //   border: [false,true,true,true],
-          //   borderColor: ['', '#acb2b4', '#acb2b4', '#acb2b4'],
-          //   table:{
-          //      widths: ['auto','*'],
-          //      borderColor: ['white', '#acb2b4', '#acb2b4', '#acb2b4'],
-          //      body:[[
-          //        {text: 'Costo unitario por ' + array[i].unidad,alignment:'center', border: [true,true,false,true],borderColor: ['#acb2b4', '#acb2b4', '', '#acb2b4'],fillColor:'#F4F9FF' },
-          //        {text:moneda+total+'',alignment:'right', border: [false,true,true,true],borderColor: ['', '#acb2b4', '#acb2b4', '#acb2b4'],fillColor:'#F4F9FF' },
-          //      ]]
-          //   },
-          //  }]
-        ]
       }else if(this.datos.titulo==='ANALISIS DE COSTOS UNITARIOS DE SUB PARTIDAS DEL PRESUPUESTO'){
         var ratio=array[i].ratio?  array[i].ratio :''
         var unidad_ratio=array[i].und_ratio?array[i].und_ratio :''
@@ -3311,24 +3697,6 @@ export class ReportesComponent implements OnInit {
           ]
           }, style: 'tablaConAlineacion',
         }
-         datosEnArray1 = [
-          // [{ text: 'Codigo: ' + array[i].codigo, colSpan:1,fondo:'#F4F9FF' , tipoletra:"3",borderColor: ['#acb2b4', '#acb2b4', '', '#acb2b4'], border: [true,true,false,true]},{ text:array[i].descripcion, colSpan: this.datos.keys_body.length,fondo:'#F4F9FF' , tipoletra:"3",borderColor: ['', '#acb2b4', '#acb2b4', '#acb2b4'], border: [false,true,true,true]}],
-          // [{ text: 'Rendimiento   :  ' + array[i].rendimiento +' '+array[i].und_rendi+ '                                Ratio Unitario Productividad : ' + ratio +' '+unidad_ratio , colSpan: (this.datos.keys_body.length-4), borderColor: ['#acb2b4', '#acb2b4', '', '#acb2b4'],border:[true,true,false,true],tipoletra:"3",margin:[0,2,0,0]},
-          // { 
-          //   colSpan:5,
-          //   tipoletra:"3",
-          //   border: [false,true,true,true],
-          //   borderColor: ['', '#acb2b4', '#acb2b4', '#acb2b4'],
-          //   table:{
-          //      widths: ['auto','*'],
-          //      borderColor: ['white', '#acb2b4', '#acb2b4', '#acb2b4'],
-          //      body:[[
-          //        {text: 'Costo unitario por ' + array[i].unidad,alignment:'center', border: [true,true,false,true],borderColor: ['#acb2b4', '#acb2b4', '', '#acb2b4'],fillColor:'#F4F9FF' },
-          //        {text:moneda+total+'',alignment:'right', border: [false,true,true,true],borderColor: ['', '#acb2b4', '#acb2b4', '#acb2b4'],fillColor:'#F4F9FF' },
-          //      ]]
-          //   },
-          //  }]
-      ];
       }else{
         encabe={  
           table: {
@@ -3346,25 +3714,6 @@ export class ReportesComponent implements OnInit {
           ]
           }, style: 'tablaConAlineacion',
         }
-        datosEnArray1=[
-          // [{ tipoletra:"3",fondo:'#F4F9FF',fillColor:'#F4F9FF',text:  array[i].item + '           ' + array[i].descripcion , colSpan: (this.datos.keys_body.length),borderColor: ['#acb2b4', '#acb2b4', '#acb2b4', '#acb2b4'] }],
-          // [{ tipoletra:"3",fondo:'#F4F9FF',fillColor:'#F4F9FF',text:this.opcestado==="1"?array[i].auxiliar :array[i].item , colSpan:2,borderColor: ['#acb2b4', '#acb2b4', '', '#acb2b4'], border: [true,true,false,true] },{ tipoletra:"3",fondo:'#F4F9FF',fillColor:'#F4F9FF',text:array[i].descripcion , colSpan: this.datos.keys_body.lengt,borderColor: ['', '#acb2b4', '#acb2b4', '#acb2b4'], border: [false,true,true,true] }],
-          // [{text:' Cantidad Total :          ' + array[i].cantidad+' '+array[i].unidad,colSpan:(this.datos.keys_body.length-3),borderColor: ['#acb2b4', '#acb2b4', '', '#acb2b4'], border: [true,true,false,true],tipoletra:"3",margin:[0,2,0,0]},
-          // { 
-          //   colSpan:4,
-          //   tipoletra:"3",
-          //   border: [false,true,true,true],
-          //   borderColor: ['', '#acb2b4', '#acb2b4', '#acb2b4'],
-          //   table:{
-          //      widths: ['auto','auto'],
-          //      borderColor: ['white', '#acb2b4', '#acb2b4', '#acb2b4'],
-          //      body:[[
-          //        {text: 'COSTO TOTAL: ',alignment:'center', border: [false,false,false,false]},
-          //        {text:moneda+total,alignment:'center', border: [false,false,false,false] },
-          //      ]]
-          //   },
-          //  }],  
-        ];
       }
         var encabezado = this.AgregarSpan(datosEnArray1, monocromado, 0,'',false);
         tableData = [];
@@ -3897,6 +4246,60 @@ export class ReportesComponent implements OnInit {
         datosCombinados= datosCombinados.concat(tabla4)
     }
       return datosCombinados
+  }
+  CrearTablasMetradoDiario(array) {
+    this.exceldatos=array
+    if(this.contador===1){
+      this.excelheader = this.ExcelHeaderRow(JSON.parse(JSON.stringify(this.datos.header)))
+    }
+    var ColumnasSeleccionadas = this.datos.keys_body;
+    var padd=-2
+    var monocromado = this.formulario1.get('opciones3').value;
+    var tableData = []
+    var encabezado= this.AgregarSpanProgramacion(this.datos.header,monocromado,0,'center','#F4F9FF')
+    tableData=tableData.concat(encabezado)
+    var colorgeneral=this.colorgeneral
+    var auxiliar = this.datos.col_alig
+    if(this.datos.titulo=='METRADO DESAGREGADO'||this.datos.titulo=='VALORIZACION PROGRAMADA'){
+     array.forEach((persona)=> {
+        let array1=[]
+        let colorbackground = monocromado==='monocromado'? '': persona.fondo? persona.fondo.substring(0, 7):''
+        let color = monocromado==='monocromado'? colorgeneral:persona.color? persona.color:colorgeneral 
+        let bold = persona.tipoletra ==="4"|| persona.tipoletra==="3"? true:false
+        let italics =persona.tipoletra ==="4"|| persona.tipoletra==="2"? true:false
+        for(let i=0;i<ColumnasSeleccionadas.length;i++){
+          const column = ColumnasSeleccionadas[i]
+          let alignment = persona.alinea? persona.alinea:auxiliar[i];
+          let espaciosinciales= (/^\s+/).test(persona[column])? persona[column].match(/^\s+/)![0].length:0
+          array1.push({ text:persona[column],margin:[padd+espaciosinciales,0,padd,0], alignment: alignment ,  borderColor: ['#acb2b4', '#acb2b4', '#acb2b4', '#acb2b4'] ,fillColor:colorbackground, color : color, bold:bold ,italics:italics});
+        }
+        tableData.push(array1);
+      })
+    }else{
+      const tamanoarray=this.datos.tabla[0].montodias.length
+      array.forEach((persona)=> {
+        let array1=[]
+        let colorbackground = monocromado==='monocromado'? '': persona.fondo? persona.fondo.substring(0, 7):''
+        let color = monocromado==='monocromado'? colorgeneral:persona.color? persona.color:colorgeneral 
+        let bold = persona.tipoletra ==="4"|| persona.tipoletra==="3"? true:false
+        let italics =persona.tipoletra ==="4"|| persona.tipoletra==="2"? true:false
+        for(let i=0;i<ColumnasSeleccionadas.length;i++){
+          const column = ColumnasSeleccionadas[i]
+          let alignment = persona.alinea? persona.alinea:auxiliar[i];
+          let espaciosinciales= (/^\s+/).test(persona[column])? persona[column].match(/^\s+/)![0].length:0
+          if(column=='montodias'){
+            for(let k=0;k<tamanoarray;k++){
+              const dato =persona.montodias[k]
+              array1.push({ text:dato,margin:[padd+espaciosinciales,0,padd,0], alignment: alignment ,  borderColor: ['#acb2b4', '#acb2b4', '#acb2b4', '#acb2b4'] ,fillColor:colorbackground, color : color, bold:bold ,italics:italics});
+            }
+          }else{
+            array1.push({ text:persona[column],margin:[padd+espaciosinciales,0,padd,0], alignment: alignment ,  borderColor: ['#acb2b4', '#acb2b4', '#acb2b4', '#acb2b4'] ,fillColor:colorbackground, color : color, bold:bold ,italics:italics});
+          }
+        }
+        tableData.push(array1);
+      })
+    }
+    return tableData
   }
   AgregarExcelFooter(array){
   array=array??[]

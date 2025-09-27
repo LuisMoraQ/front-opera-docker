@@ -107,6 +107,16 @@
       <button type="button" class="btn btn-info light ripple m-b-10 botton-icono" placement="bottom" ngbTooltip="Bajar Fila" container="body" style="margin-bottom: 5px;" (click)="bajarfila5()">
           <i class="icofont icofont-arrow-down"></i>
       </button>
+       <button type="button" class="btn btn-primary light ripple m-b-10 botton-icono" placement="bottom" ngbTooltip="Imprimir" container="body" style="margin-bottom: 5px;" [ngbPopover]="opcimpr">
+        <i class="icofont icofont-print"></i>
+      </button>
+      <ng-template #opcimpr>
+          <div class="btn-group-vertical">
+              <button type="button" ngbDropdownItem class="btn btn-sm" (click)="Imprimir1()">Insumos Propramados</button>
+              <button type="button" ngbDropdownItem class="btn btn-sm" (click)="Imprimir2()">Relación de requerimientos</button>
+          </div>
+      </ng-template>
+    
   </div>
   <div style="padding-left: 5px;" [style.width.px]="widthm1b2">
     <div class="row mx-0">

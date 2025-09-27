@@ -26,6 +26,7 @@ import {
   arrayicols,
 } from '../../proyectos/principal/hoja-metrados/modal-metrado-excel/metrado';
 import * as math from 'mathjs';
+import { ReportesComponent } from '../../proyectos/reportes/reportes.component';
 
 import Swal from 'sweetalert2';
 import { MatCheckbox } from '@angular/material/checkbox';
@@ -78,6 +79,7 @@ export class MetradosdiariosComponent implements OnInit {
   constructor(
     private toaster: ToastrService,
     public metradoService: MetradoService,
+    private modalService: NgbModal,
     public principalService: PrincipalService,
     public formsService: FormsService,
     private cdRef: ChangeDetectorRef
@@ -145,6 +147,7 @@ export class MetradosdiariosComponent implements OnInit {
     this.titulo1letra = this.aspectos.letraPresupuesto.split('|');
   }
   async ordenarPorFechaInicio(bool = false) {
+    //falta no ordenar y obtenere el mayor
     this.dataSource1 = await this.metradoService.listarRegistroMetrados({
       id_proyecto: this.id_proyecto,
     });
@@ -196,7 +199,15 @@ export class MetradosdiariosComponent implements OnInit {
     if (datos != null) {
       this.id_registro2 = datos.id_registro;
       this.formEstado.get('detalle2').setValue(datos?.detalle);
-      this.formEstado.get('observacion').setValue(datos.observacion=='null'||datos.observacion==null|| !datos.observacion?'':datos.observacion);
+      this.formEstado
+        .get('observacion')
+        .setValue(
+          datos.observacion == 'null' ||
+            datos.observacion == null ||
+            !datos.observacion
+            ? ''
+            : datos.observacion
+        );
       this.modalEstado.show();
     }
   }
@@ -261,7 +272,15 @@ export class MetradosdiariosComponent implements OnInit {
     const inicioPrueba = moment(fechainicpru).format('YYYY-MM-DD');
     return inicioPrueba >= inicio;
   }
-  async almacenar() {
+  CrearFecha(fechaInicio: string, fechaFin: string): string {
+  const inicio = new Date(fechaInicio);
+  const fin = new Date(fechaFin);
+  const diffTime = fin.getTime() - inicio.getTime();
+  const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24)) + 1;
+  const arrayCeros = Array(diffDays).fill("0");
+  return arrayCeros.join("/");
+}
+async almacenar() {
     try {
       if (this.formHojas.invalid) {
         this.formHojas.markAllAsTouched();
@@ -272,12 +291,15 @@ export class MetradosdiariosComponent implements OnInit {
         });
         return;
       } else {
+        const texto= this.CrearFecha(this.formHojas.get('fechaini').value,this.formHojas.get('fechafin').value)
         const datos = {
           id_proyecto: this.id_proyecto,
           id_registro: this.id_registro,
           detalle: this.formHojas.get('detalle').value.toUpperCase(),
           fechaini: this.formHojas.get('fechaini').value,
           fechafin: this.formHojas.get('fechafin').value,
+          version:texto,
+          estadosaldo:texto,
         };
         if (!this.validarFechasFila(datos.fechaini, datos.fechafin)) {
           SwalService.error(
@@ -316,6 +338,7 @@ export class MetradosdiariosComponent implements OnInit {
             closeButton: false,
             positionClass: 'toast-bottom-right',
             timeOut: 4000,
+
           });
           this.id_registro++;
           await this.ordenarPorFechaInicio();
@@ -381,21 +404,23 @@ export class MetradosdiariosComponent implements OnInit {
         id_proyecto: this.id_proyecto,
         id_registro: row.id_registro,
       };
-      const metrado= await this.metradoService.BuscarMetradoDiario(datos)
+      const metrado = await this.metradoService.BuscarMetradoDiario(datos);
       let confirmacion: boolean = false;
-      if(metrado.length>0){
-         const respu=await SwalService.confirmCheck('Esta seguro que desea Reiniciar el Presupuesto?',
-        'Se eliminará todo el Presupuesto importados.');
-        if (respu.isConfirmed) {
-          confirmacion=true
-        }
-      }else{
-        const respu =await SwalService.confirm(
-        'Estas seguro?',
-        'Se eliminarà el registro selecionado'
+      if (metrado.length > 0) {
+        const respu = await SwalService.confirmCheck(
+          'Esta seguro que desea Reiniciar el Presupuesto?',
+          'Se eliminará todo el Presupuesto importados.'
         );
         if (respu.isConfirmed) {
-          confirmacion=true
+          confirmacion = true;
+        }
+      } else {
+        const respu = await SwalService.confirm(
+          'Estas seguro?',
+          'Se eliminarà el registro selecionado'
+        );
+        if (respu.isConfirmed) {
+          confirmacion = true;
         }
       }
       if (confirmacion) {
@@ -555,6 +580,7 @@ export class MetradosdiariosComponent implements OnInit {
     }
     return array;
   }
+
   async changeVista(datos) {
     this.aspectos = JSON.parse(this.colores);
     await this.pintar();
@@ -570,7 +596,8 @@ export class MetradosdiariosComponent implements OnInit {
       datos.fechaini,
       datos.fechafin,
       aspectos[0],
-      aspectos[1]
+      aspectos[1],
+      datos.version
     );
     this.indexTablaExcel = null;
     this.saldometrado = 0;
@@ -581,6 +608,7 @@ export class MetradosdiariosComponent implements OnInit {
       (ele) => ele.bloqueado == false
     );
     this.fechaselecionada = this.diasCalendario[index].fecha;
+    this.estadodia=this.diasCalendario[index].estado;
     await this.listarTitulos();
     this.mostrar_carga_todo = false;
   }
@@ -630,9 +658,281 @@ export class MetradosdiariosComponent implements OnInit {
       datos.fechaini,
       datos.fechafin,
       aspectos[0],
-      aspectos[1]
+      aspectos[1],
+      datos.version
     );
     this.mostrar_carga_todo = false;
+  }
+  AgregarDias(bool=false){
+    const dias: any[] = [];
+    for (let i = 0; i < this.diasCalendario2.length; i++) {
+      let texto= bool? this.diasCalendario2[i].letraDia:this.diasCalendario2[i].dia
+      dias.push({ text: texto, colSpan: 1, rowSpan: 1 });
+    }
+    return dias
+  }
+  datosproy = null;
+  MontosArray(array){
+    if (!array) {
+      return this.diasCalendario2.map(v=>{
+        return ''
+      })
+    }
+    return array.split("/").map(v => {
+      if (v === "null" || v === "0") {
+        return '';
+      }
+      return this.formsService.redondeo(v,2);
+    });
+  }
+  async enviarDataImpresion() {
+    if (this.datosproy == null) {
+      const detalleProyecto =
+        await this.principalService.recuperarDatosProyecto({
+          id_proyecto: this.id_proyecto,
+        });
+      this.datosproy = detalleProyecto;
+    }
+    const arrayHeader = [
+      [{text: 'ITEM', colSpan: 1, rowSpan: 2 },
+      { text: 'DESCRIPCION', colSpan: 1, rowSpan: 2 },
+      { text: 'UND', colSpan: 1, rowSpan: 2 },
+      { text: 'METRADO TOTAL', colSpan: 1, rowSpan: 2 },
+      { text: 'METRADO ANTERIOR', colSpan: 1, rowSpan: 2 },
+      ...this.AgregarDias(true),
+      { text: 'METRADO EJECUTADO', colSpan: 1, rowSpan: 2 },
+      { text: 'METRADO ACUMULADO  ', colSpan: 1, rowSpan: 2 },
+      { text: 'SALDO', colSpan: 1, rowSpan: 2 },
+      ],[
+      ...this.AgregarDias(), 
+      ]
+    ];
+    const arrayKeys = [
+      'item',
+      'descripcion',
+      'unidad',
+      'cantidad',
+      'metradoant',
+      'montodias',
+      'total',
+      'acumulado',
+      'saldo'
+    ];
+    const arrdec = [
+      null,
+      null,
+      null,
+      this.dec_metrado,
+      this.dec_metrado,
+      2,
+      this.dec_metrado,
+      this.dec_metrado,
+      this.dec_metrado,
+    ];
+    const arralig = ['left', 'center', 'center', 'right', 'right', 'right','right','right','right'];
+    let aux = JSON.parse(JSON.stringify(this.tablavistametradodiario));
+    let arrpasa = [];
+    for (let row of aux) {
+      //asignar colores
+      let tipol = '';
+      let colorl = '';
+      let fondol = '';
+      let valor2 = row.item.toString().split('.');
+      if (this.titulo1letra != undefined) {
+        if (row.unidad != '') {
+          colorl = this.titulo1letra[11];
+        } else {
+          let ind = valor2.length >= 12 ? 11 : valor2.length - 1;
+          colorl = this.titulo1letra[ind];
+        }
+      }
+      if (this.titulo1color != undefined) {
+        if (row.unidad != '') {
+          fondol = this.titulo1color[11];
+        } else {
+          let ind = valor2.length >= 12 ? 11 : valor2.length - 1;
+          fondol = this.titulo1color[ind];
+        }
+      }
+      if (this.titulo1 != undefined) {
+        if (row.unidad != '') {
+          tipol = this.titulo1[11];
+        } else {
+          let ind = valor2.length >= 12 ? 11 : valor2.length - 1;
+          tipol = this.titulo1[ind];
+        }
+      }
+      let esp = ' ';
+      let descp = esp.repeat(valor2.length - 1) + row.descripcion;
+      arrpasa.push({
+        item: row.item,
+        descripcion: descp,
+        unidad: row.unidad, 
+        cantidad: this.formsService.redondeo(row.cantidad, this.dec_metrado),
+        metradoant:this.formsService.redondeo(row.metradoant, this.dec_metrado),
+        montodias:this.MontosArray(row.montodias),
+        total: this.formsService.redondeo(row.total, this.dec_metrado),
+        acumulado: this.formsService.redondeo(row.total+row.metradoant, this.dec_metrado),
+        saldo: this.formsService.redondeo(row.cantidad-(row.total+row.metradoant), this.dec_metrado),
+        tipofila: row.tipofila,
+        tipoletra: tipol,
+        color: colorl == 'unset' ? '' : colorl,
+        fondo: fondol == 'none' ? '' : fondol,
+      });
+    }
+    const datos = {
+      datos_proyecto: this.datosproy,
+      header: arrayHeader,
+      keys_body: arrayKeys,
+      keys_dec: arrdec,
+      col_alig: arralig,
+      tabla: arrpasa,
+      tabla2: [],
+      concat_tabla2: false,
+      tipo_reporte: 6,
+      orientacion:'landscape',
+      moneda: this.simbolo, 
+      titulo: 'METRADO DIARIO',
+      dec_parcial: this.dec_metrado,
+    };
+    const modalRef = this.modalService.open(ReportesComponent, {
+      size: 'lg modalgrande',
+      backdrop: 'static',
+      windowClass: 'pcoded',
+      keyboard: false,
+    });
+    modalRef.componentInstance.datos = datos;
+    const result = await modalRef.result;
+  }
+  async enviarDataImpresion2() {
+    if (this.datosproy == null) {
+      const detalleProyecto =
+        await this.principalService.recuperarDatosProyecto({
+          id_proyecto: this.id_proyecto,
+        });
+      this.datosproy = detalleProyecto;
+    }
+    const arrayHeader = [
+      [{text: 'ITEM', colSpan: 1, rowSpan: 2 },
+      { text: 'DESCRIPCION', colSpan: 1, rowSpan: 2 },
+      { text: 'FECHA REGISTRADA', colSpan: 1, rowSpan: 2 },
+      { text: 'GEOMETRIA CALCULADA', colSpan: 6, rowSpan: 1 },
+      { text: 'METRADO PARCIAL', colSpan: 1, rowSpan: 2 },
+      { text: 'METRADO REALIZADO', colSpan: 1, rowSpan: 2 },
+      { text: 'UNIDAD', colSpan: 1, rowSpan: 2 },
+      ],[
+      { text: 'CANT', colSpan: 1, rowSpan: 1 },
+      { text: '#VECES', colSpan: 1, rowSpan: 1 },
+      { text: 'LONGITUD', colSpan: 1, rowSpan: 1 },
+      { text: 'ANCHO', colSpan: 1, rowSpan: 1 },
+      { text: 'ALTURA', colSpan: 1, rowSpan: 1 },
+      { text: 'SUBTOTAL', colSpan: 1, rowSpan: 1 },
+      ]
+    ];
+    const arrayKeys = [
+      'item',
+      'descripcion',
+      'fecha',
+      'cantidad',
+      'n_veces',
+      'largo',
+      'ancho',
+      'altura',
+      'subtotal',
+      'parcial',
+      'total_nuevo',
+      'unidad',
+    ];
+    const arrdec = [
+      null,
+      null,
+      null,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      this.dec_metrado,
+      this.dec_metrado,
+      null,
+    ];
+    const arralig = ['left', 'center', 'center', 'center', 'center', 'center','center','center','center','center','center','center'];
+    let aux = JSON.parse(JSON.stringify(this.tablametradodiario));
+    let arrpasa = [];
+    for (let row of aux) {
+      //asignar colores
+      let tipol = '';
+      let colorl = '';
+      let fondol = '';
+      let valor2 = row.item.toString().split('.');
+      if (this.titulo1letra != undefined) {
+        if (row.unidad != '') {
+          colorl = this.titulo1letra[11];
+        } else {
+          let ind = valor2.length >= 12 ? 11 : valor2.length - 1;
+          colorl = this.titulo1letra[ind];
+        }
+      }
+      if (this.titulo1color != undefined) {
+        if (row.unidad != '') {
+          fondol = this.titulo1color[11];
+        } else {
+          let ind = valor2.length >= 12 ? 11 : valor2.length - 1;
+          fondol = this.titulo1color[ind];
+        }
+      }
+      if (this.titulo1 != undefined) {
+        if (row.unidad != '') {
+          tipol = this.titulo1[11];
+        } else {
+          let ind = valor2.length >= 12 ? 11 : valor2.length - 1;
+          tipol = this.titulo1[ind];
+        }
+      }
+      let esp = ' ';
+      let descp = esp.repeat(valor2.length - 1) + row.descripcion;
+      arrpasa.push({
+        item: row.item,
+        descripcion: descp,
+        fecha: row.fecha, 
+        cantidad:!row.cantidad?'': this.formsService.redondeo(row.cantidad,2),
+        n_veces:!row.n_veces?'':this.formsService.redondeo(row.n_veces, 2),
+        largo:!row.largo?'':this.formsService.redondeo(row.largo, 2),
+        ancho:!row.ancho?'':this.formsService.redondeo(row.ancho, 2),
+        altura:!row.altura?'':this.formsService.redondeo(row.altura, 2),
+        subtotal:!row.subtotal?'':this.formsService.redondeo(row.subtotal, 2),
+        unidad:row.unidad,
+        parcial:!row.parcial?'': this.formsService.redondeo(row.parcial, this.dec_metrado),
+        total_nuevo: !row.total_nuevo||row.total_nuevo=="0"?'':this.formsService.redondeo(row.total_nuevo, this.dec_metrado),
+        tipoletra: tipol,
+        color: colorl == 'unset' ? '' : colorl,
+        fondo: fondol == 'none' ? '' : fondol,
+      });
+    }
+    const datos = {
+      datos_proyecto: this.datosproy,
+      header: arrayHeader,
+      keys_body: arrayKeys,
+      keys_dec: arrdec,
+      col_alig: arralig,
+      tabla: arrpasa,
+      tabla2: [],
+      concat_tabla2: false,
+      tipo_reporte: 6,
+      orientacion:'',
+      moneda: this.simbolo, 
+      titulo: 'METRADO DESAGREGADO',
+      dec_parcial: this.dec_metrado,
+    };
+    const modalRef = this.modalService.open(ReportesComponent, {
+      size: 'lg modalgrande',
+      backdrop: 'static',
+      windowClass: 'pcoded',
+      keyboard: false,
+    });
+    modalRef.componentInstance.datos = datos;
+    const result = await modalRef.result;
   }
   async changeVista3(datos, bool = false) {
     this.datosglo = datos;
@@ -688,20 +988,16 @@ export class MetradosdiariosComponent implements OnInit {
       this.tablametradodiario = filtrados;
     }
   }
-  async MostrarTotales(array, array2) {
+  async MostrarTotales(array) {
     const valores = array.split('/').map(Number);
-    const estados = array2?.split('/').map(Number);
     let suma = 0;
     for (let k = 0; k < this.diasCalendario.length; k++) {
       const value = k == 0 && valores[k] == 0 ? null : valores[k] ?? null;
-      const estado = k == 0 && estados[k] == 0 ? 0 : estados[k] ?? 0;
       suma += isNaN(value) ? 0 : value;
       this.diasCalendario[k].value = value;
-      this.diasCalendario[k].estado = estado;
       if (this.diasCalendario[k].fecha == this.fechaselecionada) {
         this.auxtotal = !value || isNaN(value) ? 0 : value;
         this.valordia = !value || isNaN(value) ? 0 : value;
-        this.estadodia = estado;
       }
     }
     this.metradoacumulado = this.metradoanterior + suma;
@@ -710,12 +1006,10 @@ export class MetradosdiariosComponent implements OnInit {
         (this.metradoacumulado + this.metradoposterior)
       : 0;
   }
-  async generateCalendar(
-    fechaini: string,
-    fechafin: string,
-    jornada: any[],
-    feriados: any[]
-  ) {
+  async generateCalendar(fechaini: string,fechafin: string,jornada: any[],feriados: any[],estados) {
+    let valores = estados.split("/").map(v => {
+      return Number(v);
+    });
     const start = new Date(fechaini);
     start.setDate(start.getDate() + 1);
     const end = new Date(fechafin);
@@ -727,6 +1021,7 @@ export class MetradosdiariosComponent implements OnInit {
     );
     const dias: any[] = [];
     let current = new Date(start);
+    let i = 0;
     while (current <= end) {
       const dayNumber = current.getDay();
       const dayLetters = ['D', 'L', 'M', 'M', 'J', 'V', 'S'];
@@ -743,26 +1038,27 @@ export class MetradosdiariosComponent implements OnInit {
         letraDia: diaLetra,
         bloqueado: noLaborable || esFeriado,
         value: null,
-        estado: null,
+        estado: valores[i] ?? null,
       });
       current = new Date(current.setDate(current.getDate() + 1));
+      i++
     }
     return dias;
   }
-  async listarTitulos2() {
-    const obj = {
-      id_proyecto: this.id_proyecto,
-    };
-    const response = await this.metradoService.listarTitulosDeMetrados(obj);
-    if (response.length) {
-      this.tablaTitResumen = response;
-      this.indiceTitulo = this.tablaTitResumen[0].indice;
-    } else {
-      this.tablaTitResumen = [];
-      this.indiceTitulo = null;
-    }
-    this.verHojaResumenDiario();
-  }
+  // async listarTitulos2() {
+  //   const obj = {
+  //     id_proyecto: this.id_proyecto,
+  //   };
+  //   const response = await this.metradoService.listarTitulosDeMetrados(obj);
+  //   if (response.length) {
+  //     this.tablaTitResumen = response;
+  //     this.indiceTitulo = this.tablaTitResumen[0].indice;
+  //   } else {
+  //     this.tablaTitResumen = [];
+  //     this.indiceTitulo = null;
+  //   }
+  //   this.verHojaResumenDiario();
+  // }
   async listarTitulos() {
     const obj = {
       id_proyecto: this.id_proyecto,
@@ -872,10 +1168,16 @@ export class MetradosdiariosComponent implements OnInit {
         row.mostrar = row.item ? 1 : 0;
         row.tieneSiguiente = row.item && nextRow && !nextRow.item ? 1 : 0;
       }
+      response2.header.header.pop();
+      response2.header.header2.pop();
+      response2.header.header.push('saldo','activo')
+      response2.header.header2.push('saldo','activo')
       this.headerExcel = response2.header;
+      console.log(this.headerExcel)
       this.mostrar_carga_todo = false;
     }, 5);
   }
+  
   mintodoExcel() {
     for (let row of this.tablaExcelAdjunta) {
       if (!row.item) {
@@ -1155,13 +1457,14 @@ export class MetradosdiariosComponent implements OnInit {
       this.metradoposterior = 0;
       this.metradoacumulado = 0;
       this.fechaselecionada = dia.fecha;
+      this.estadodia=dia.estado
       this.CerrarAcordion(this.indexTablaExcel);
       this.filaExcelSel = null;
       this.metradoSeleccionado = null;
       this.IndexMetradoDiario = null;
       this.indexTablaExcel = null;
       this.tablaSistema = [];
-      this.MostrarTotales('', '');
+      this.MostrarTotales('');
     } else {
       return;
     }
@@ -1177,7 +1480,7 @@ export class MetradosdiariosComponent implements OnInit {
     this.activarDiarios = this.formulario1.get('activardiario').value;
   }
   async SelecionarMetradoDiario() {
-    this.mostrar_carga_todo=true
+    this.mostrar_carga_todo = true;
     this.mostrarColrs = false;
     this.buscando2 = true;
     this.metradoSeleccionado = null;
@@ -1242,17 +1545,16 @@ export class MetradosdiariosComponent implements OnInit {
       }
       if (respuesta[2].length) {
         this.MostrarTotales(
-          respuesta[2][0].montodias,
-          respuesta[2][0].estadodias
+          respuesta[2][0].montodias
         );
       } else {
-        this.MostrarTotales('', '');
+        this.MostrarTotales('');
       }
     } else {
       return;
     }
     this.buscando2 = false;
-    this.mostrar_carga_todo=false
+    this.mostrar_carga_todo = false;
   }
   async AbrirAcordion(indice) {
     let ind2 = indice + 1;
@@ -1309,7 +1611,7 @@ export class MetradosdiariosComponent implements OnInit {
   metradoSeleccionado = null;
   buscando2: boolean = false;
   habilitarEditarSistema(celda, rowIndex) {
-    this.mostrarColrs =false
+    this.mostrarColrs = false;
     if (this.bloquearBotones && this.tablaSistema[rowIndex].id_fila == null) {
       return;
     }
@@ -1572,7 +1874,6 @@ export class MetradosdiariosComponent implements OnInit {
     const datos = {
       id_proyecto: this.id_proyecto,
       id_registro: this.id_registroact,
-      indice: this.filaExcelSel.indice,
       estadodias: estadosConcatenados,
     };
     const respuesta = await this.metradoService.CambiarEstado(datos);
@@ -1582,6 +1883,7 @@ export class MetradosdiariosComponent implements OnInit {
         positionClass: 'toast-bottom-right',
         timeOut: 4000,
       });
+      this.dataSource1.find((d: any) => d.id_registro === this.id_registroact)!.version = estadosConcatenados;
       this.estadodia = value;
     } else {
       SwalService.error('Advertencia', respuesta[0].mensaje);
@@ -1628,6 +1930,7 @@ export class MetradosdiariosComponent implements OnInit {
       datos1: JSON.stringify(filteredData),
     };
     await this.metradoService.guardarMetradoDiario(datos);
+    this.dataSource1.find((d: any) => d.id_registro === this.id_registroact)!.version = estadosConcatenados;
   }
   async cambioCheckboxCopiar(valor, index) {
     if (!valor) {

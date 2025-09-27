@@ -9,6 +9,14 @@ import {
 } from '@angular/core';
 import { ToastrService } from 'ngx-toastr';
 import { EncriptadorService } from 'src/app/servicios/encriptador.service';
+import {
+  UntypedFormControl,
+  UntypedFormGroup,
+  Validators,
+  AbstractControl,
+  ValidationErrors,
+  ValidatorFn,
+} from '@angular/forms';
 import { FormsService } from 'src/app/servicios/forms.service';
 import { LogisticaService } from 'src/app/servicios/logistica.service';
 import { ModalBasicComponent } from 'src/app/shared/modal-basic/modal-basic.component';
@@ -75,6 +83,7 @@ export class AlmcingresoComponent implements OnInit {
   //agregar ingreso
   @ViewChild('modalIngreso1') modalIngreso1: ModalBasicComponent;
   @ViewChild('modalVerIng') modalVerIng: ModalBasicComponent;
+  @ViewChild('modalHojas') modalHojas: ModalBasicComponent;
   nroingreso = '';
   fechaingreso = '';
   nroreqsel: any;
@@ -153,7 +162,6 @@ export class AlmcingresoComponent implements OnInit {
     this.fechamax = val1[2] + '-' + val1[1] + '-' + val1[0];
     //listar datos
     await this.listar1();
-    console.log(this.filareg);
   }
   @HostListener('window:resize', ['$event'])
   onResize(event) {
@@ -1450,9 +1458,10 @@ export class AlmcingresoComponent implements OnInit {
   //   console.log(this.dataSource5);
   // }
   async Imprimir(rowi: any) {
-     this.dataSource5 = [];
-    //usar variables temporales, no usar this.nroingreso,this.fechaingreso,this.fechaSal,this.datasource5
-    console.log(this.filareg); //datos de la registro principal tab 1
+    let tablaCompleta;
+    let total;
+    this.dataSource5 = [];
+    let fecha;
     if (rowi) {
       //rowi es la fila seleccionada para imprimir
       let tipofila = rowi.unidad == '' ? 1 : 0;
@@ -1460,6 +1469,7 @@ export class AlmcingresoComponent implements OnInit {
         this.nroingreso = rowi.nroingreso;
         this.fechaingreso = rowi.fecha;
         this.fechaSal = this.fechaingreso;
+        fecha = this.fechaingreso;
         for (let i = 0; i < this.dataSource4.length; i++) {
           if (
             this.dataSource4[i].nroingreso == this.nroingreso &&
@@ -1483,18 +1493,123 @@ export class AlmcingresoComponent implements OnInit {
               indice3: /* indicepri */ null,
               editar: 0,
             };
-            this.dataSource5.push(ejm); //datos de los detalles de la nota de entrada
+            this.dataSource5.push(ejm);
           }
         }
-        this.tott5 = rowi.parcial; //total de la nota de entrada
-        this.mostrar_carga_todo = false;
-        //this.modalVerIng.show();
+        total = rowi.parcial;
+      }
+      tablaCompleta = this.dataSource5.map((item, index) => {
+        let nuevoItem = { ...item };
+        nuevoItem.tipoletra = '';
+        nuevoItem.color = '';
+        nuevoItem.alinea = '';
+        nuevoItem.item = `IT-${String(index + 1).padStart(2, '0')}`;
+        return nuevoItem;
+      });
+    } else {
+      if (this.formHojas.invalid) {
+        this.formHojas.markAllAsTouched();
+        this.toaster.error('Datos incompletos', 'Error', {
+          closeButton: false,
+          positionClass: 'toast-bottom-right',
+          timeOut: 5000,
+        });
+        return;
+      } else {
+        let contador = 0;
+        let suma = 0;
+        tablaCompleta = this.dataSource4.reduce((acum, item) => {
+          const fechaItem = moment(item.solofecha, 'DD/MM/YYYY');
+          if (fechaItem.isBetween(this.formHojas.get('fechaini').value,this.formHojas.get('fechafin').value,undefined,'[]')) {
+            let nuevoItem = { ...item };
+            nuevoItem.tipoletra = !nuevoItem.unidad ? '3' : '';
+            nuevoItem.color = '';
+            nuevoItem.alinea = '';
+            nuevoItem.precio = !nuevoItem.unidad? nuevoItem.solofecha: nuevoItem.precio;
+            nuevoItem.descripcion = !nuevoItem.unidad? nuevoItem.descripcion+' ' +nuevoItem.nroingreso: nuevoItem.descripcion;
+            if (!nuevoItem.unidad || nuevoItem.unidad.trim() === '') {
+              nuevoItem.item = null
+              contador = 0
+              suma += Number(nuevoItem.parcial) || 0
+            } else {
+              contador++;
+              nuevoItem.item = `IT-${String(contador).padStart(2, '0')}`
+            }
+            acum.push(nuevoItem);
+          }
+          return acum;
+        }, [] as any[]);
+        total = suma;
+      }
+      if (tablaCompleta.length < 1) {
+        this.toaster.error(
+          'Selecione correctamente el intervalo de fechas',
+          'Advertencia',
+          {
+            closeButton: false,
+            positionClass: 'toast-bottom-right',
+            timeOut: 4000,
+          }
+        );
+        return;
       }
     }
     try {
       this.mostrar_carga_todo = true;
-      const arralig = ['center', 'left', 'center', 'center', 'right', 'right'];
+      const obj2 = [
+        {
+          text: '',
+          colSpan: 1,
+          tipoletra: '3',
+          color: '',
+          fondo: '',
+          alinea: 'center',
+        },
+        {
+          text: '',
+          colSpan: 1,
+          tipoletra: '3',
+          color: '',
+          fondo: '',
+          alinea: 'center',
+        },
+        {
+          text: '',
+          colSpan: 1,
+          tipoletra: '3',
+          color: '',
+          fondo: '',
+          alinea: 'center',
+        },
+        {
+          text: '',
+          colSpan: 1,
+          tipoletra: '3',
+          color: '',
+          fondo: '',
+          alinea: 'center',
+        },
+        {
+          text: 'TOTAL',
+          colSpan: 1,
+          tipoletra: '3',
+          color: '',
+          fondo: '',
+          alinea: 'center',
+        },
+        { text: this.formService.redondeo(Number(total.toString()),this.dec_precio), colSpan: 2, tipoletra:'3',color:'',fondo:'',alinea:'right' },
+      ];
+      const arralig = [
+        'center',
+        'center',
+        'left',
+        'center',
+        'center',
+        'right',
+        'right',
+      ];
       const keys_body = [
+        'idingreso',
         'item',
         'descripcion',
         'unidad',
@@ -1506,11 +1621,13 @@ export class AlmcingresoComponent implements OnInit {
         null,
         null,
         null,
+        null,
         this.dec_precio,
         this.dec_precio,
         this.dec_precio,
       ];
       const arrayHeader = [
+        'N°',
         'OC/OS',
         'DESCRIPCION DEL BIEN/SERVICIO',
         'UND',
@@ -1518,27 +1635,21 @@ export class AlmcingresoComponent implements OnInit {
         'P.U.',
         'TOTAL',
       ];
-      const tablaCompleta = this.dataSource5.map((item, index) => {
-        let nuevoItem = { ...item };
-        nuevoItem.tipoletra = '';
-        nuevoItem.color = '';
-        nuevoItem.alinea = '';
-        nuevoItem.item = `IT-${String(index + 1).padStart(2, '0')}`;
-        return nuevoItem;
-      });
+
       let datos = {
         datos_proyecto: this.datospro,
-        fecha_ingreso:this.fechaingreso,
+        fecha_ingreso: fecha,
         header: arrayHeader,
         keys_body: keys_body,
         keys_dec: keys_dec,
         col_alig: arralig,
         tabla: tablaCompleta,
+        tabla2: obj2,
         concat_tabla2: false,
         tipo_reporte: 8,
         orientacion: '',
         moneda: this.simbolo,
-        titulo: 'NOTA DE SALIDA DE MATERIALES N° ______',
+        titulo: 'NOTA DE INGRESO DE MATERIALES N° _____',
       };
       const modalRef = this.modalService.open(ReportesComponent, {
         size: 'lg modalgrande',
@@ -1547,12 +1658,29 @@ export class AlmcingresoComponent implements OnInit {
         keyboard: false,
       });
       modalRef.componentInstance.datos = datos;
-      const result = await modalRef.result;
+      this.closeModal();
       this.mostrar_carga_todo = false;
     } catch (e) {
       this.mostrar_carga_todo = false;
       SwalService.error();
       console.log(e);
     }
+  }
+  formHojas = new UntypedFormGroup({
+    fechaini: new UntypedFormControl('', [Validators.required]),
+    fechafin: new UntypedFormControl('', [Validators.required]),
+  });
+  get fechaini(): UntypedFormControl {
+    return this.formHojas.get('fechaini') as UntypedFormControl;
+  }
+  get fechafin(): UntypedFormControl {
+    return this.formHojas.get('fechafin') as UntypedFormControl;
+  }
+  closeModal() {
+    this.modalHojas.hide();
+  }
+  async OpenModal() {
+    this.formHojas.reset();
+    this.modalHojas.show();
   }
 }

@@ -1,10 +1,13 @@
 <div class="row mx-0 contenido-menu-responsive">
   <div class="w-100 m-b-10" style="padding-left: 5px; padding-right: 5px;">
     <div class="row mx-0">
-      <h4 class="modal-title tit-modal1 m-b-2" style="background-color: #448aff; color: white; border-radius: 4px; padding-left: 4px; margin-top: 0px !important;margin-bottom:2px !important;width:calc(100% - 80px)">
+      <h4 class="modal-title tit-modal1 m-b-2" style="background-color: #448aff; color: white; border-radius: 4px; padding-left: 4px; margin-top: 0px !important;margin-bottom:2px !important;width:calc(100% - 160px)">
         &nbsp;&nbsp;
         <b>Grupos de Insumos</b>
       </h4>
+      <button *ngIf="!solover" type="button" class="btn btn-inverse btn-sm m-l-5" style="padding: 4px 8px;" (click)="Imprimir1()"><i
+        class="fa fa-check"></i>Imprimir
+      </button>
       <button *ngIf="!solover" type="button" class="btn btn-success btn-sm m-l-5" style="padding: 4px 8px;" (click)="GuardarDatos()"><i
         class="fa fa-check"></i>Guardar
       </button>
