@@ -1,5 +1,6 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { UntypedFormGroup } from '@angular/forms';
+import * as moment from 'moment';
 import { ToastrService } from 'ngx-toastr';
 import { FormsService } from 'src/app/servicios/forms.service';
 import { MetradoService } from 'src/app/servicios/metrado.service';
@@ -40,6 +41,10 @@ export class RegistroActividadesComponent implements OnInit {
   fechaselecionada = null;
   mostrar_carga_todo = false
   active = 0
+  estadoXPart: any[] = [];
+  filaSeleccionada: any = null
+  tablaMovAlmcSalida: any = [];
+  buscando = false
   @Input() set tabproyecto(value: any) {
     this.prueba = value;
     this.id_proyecto = value.get('id_proyecto').value;
@@ -77,24 +82,32 @@ export class RegistroActividadesComponent implements OnInit {
       this.mostrar_carga_todo = false
     } catch (error) {
       SwalService.error()
+      this.mostrar_carga_todo = false
       console.log('error', error)
     }
   }
 
   async listarPresu(bool = false) {
-    this.tablaRegistroMetrados = await this.metradoService.listarRegistroMetrados({
-      id_proyecto: this.id_proyecto,
-    });
-    console.log('this.tablaRegistroMetrados', this.tablaRegistroMetrados)
-    if (this.tablaRegistroMetrados.length) {
-      this.metradoMes = this.tablaRegistroMetrados[0].id_registro
-      await this.generarCalendario(this.tablaRegistroMetrados[0])
-      await this.generarTablaPresuMetradoXRegistro(this.metradoMes)
-      if (this.titulos.length) {
-        this.indiceTitulo = this.titulos[0].indice
-        await this.filtroTitulo(this.indiceTitulo, this.tablaPresCompleto)
+    try {
+      this.tablaRegistroMetrados = await this.metradoService.listarRegistroMetrados({
+        id_proyecto: this.id_proyecto,
+      });
+      console.log('this.tablaRegistroMetrados', this.tablaRegistroMetrados)
+      if (this.tablaRegistroMetrados.length) {
+        this.metradoMes = this.tablaRegistroMetrados[0].id_registro
+
+        await this.generarCalendario(this.tablaRegistroMetrados[0])
+        await this.generarTablaPresuMetradoXRegistro(this.metradoMes)
+        if (this.titulos.length) {
+          this.indiceTitulo = this.titulos[0].indice
+          await this.filtroTitulo(this.indiceTitulo, this.tablaPresCompleto)
+        }
       }
+    } catch (e) {
+      SwalService.error()
+      console.log(e)
     }
+
   }
 
   async generarTablaPresuMetradoXRegistro(id_registro) {
@@ -102,14 +115,12 @@ export class RegistroActividadesComponent implements OnInit {
       id_proyecto: this.id_proyecto,
       id_registro: id_registro
     }
+    console.log('obj', obj)
     const response = await this.metradoService.listarTotalmetradosPresu(obj)
     console.log('response', response)
     if (response.length) {
       this.tablaPresCompleto = response
-      console.log('this.tablaPresCompleto', this.tablaPresCompleto)
-     
       this.titulos = this.tablaPresCompleto.filter(ele => ele.item.split('.').length == 1)
-       console.log('this.titulos', this.titulos)
     }
   }
 
@@ -154,7 +165,8 @@ export class RegistroActividadesComponent implements OnInit {
   }
 
   async generarCalendario(datos) {
-
+    console.log('this.diasCalendario', this.diasCalendario)
+    console.log('datos', datos)
     const aspectos = await this.principalService.ListarAspectosDiasProy({
       id_proyecto: this.id_proyecto,
     });
@@ -164,10 +176,26 @@ export class RegistroActividadesComponent implements OnInit {
       aspectos[0],
       aspectos[1]
     );
+    console.log('2', this.diasCalendario)
+    const estadoXPart = []
+    for (const element of this.diasCalendario) {
+      estadoXPart.push(null)
+    }
+    this.estadoXPart = estadoXPart
   }
 
-  cambioFechasMetrado() {
-    console.log('metrado', this.metradoMes)
+  async cambioFechasMetrado() {
+    this.mostrar_carga_todo = true
+    this.indiceDia = null
+    this.fechaselecionada = null
+    this.diasCalendario = []
+    this.estadoXPart = []
+    this.tablaMovAlmcSalida = []
+    const met = this.tablaRegistroMetrados.find(ele => ele.id_registro == this.metradoMes)
+    console.log('met', met)
+    await this.generarCalendario(met)
+    await this.generarTablaPresuMetradoXRegistro(this.metradoMes)
+    this.mostrar_carga_todo = false
   }
 
   async generateCalendar(
@@ -215,14 +243,52 @@ export class RegistroActividadesComponent implements OnInit {
     return dias;
   }
 
-  ChangeDia(dia) {
+  async ChangeDia(dia) {
+    console.log('diaaaa', dia)
+    this.buscando = true
     if (!dia.bloqueado) {
       this.fechaselecionada = dia.fecha;
     }
     this.indiceDia = dia.indice
+    // this.estadoXPart = []
+    const obj = {
+      id_proyecto: this.id_proyecto,
+      fecha: moment(this.fechaselecionada).format('YYYY-MM-DD')
+    }
+    const response = await this.metradoService.listadoMovAlmSalidaProyecto(obj)
+    console.log('reponse', response)
+    this.tablaMovAlmcSalida = response
+    this.buscando = false
+  }
+  selPartida(index, row) {
+    this.filaSeleccionada = row
+    if (row.unidad) {
+      let estadoXPart = row.estadodiario ? row.estadodiario : []
+      if (!estadoXPart || !estadoXPart.length || estadoXPart?.length == 1) {
+        for (const element of this.diasCalendario) {
+          estadoXPart.push(null)
+        }
+      }
+      this.estadoXPart = estadoXPart
+    } else {
+      const estadoXPart = []
+      for (const element of this.diasCalendario) {
+        estadoXPart.push(null)
+      }
+      this.estadoXPart = estadoXPart
+    }
   }
 
   onNavChange(data) {
 
+  }
+
+  habilitarEditar(ind, celda) {
+    this.tablaMovAlmcSalida[ind]['editar' + celda] = true
+  }
+
+  caneditarcelda1(value, indice, celda) {
+    if (value)
+    this.tablaMovAlmcSalida[indice][celda] = value
   }
 }
