@@ -322,10 +322,9 @@
         </div>
       </div>
       <div class="col-12" style="height: calc(-320px + 100vh); overflow: auto">
-        <div class="px-0 overflow-auto">
           <ng-container *ngIf="tablaExcelAdjunta.length; else noDataExcel">
             <table class="tabla-general tab-10 table-bordered table-m">
-              <thead class="text-center">
+              <thead class="headsticky text-center">
                 <tr class="tr1-sticky">
                   <th
                     class="th-custom"
@@ -509,8 +508,7 @@
             <div class="alert alert-warning-custom text-center" role="alert">
               Información no asignada al titulo seleccionado.
             </div>
-          </ng-template>
-        </div>
+          </ng-template>  
       </div>
     </div>
     <div
@@ -845,13 +843,10 @@
           </div>
         </div>
       </div>
-      <div
-        class="tabla-limp height-t1"
-        style="height: calc(-320px + 100vh); overflow: auto"
-      >
+      <div class="tabla-limp height-t1" style="height: calc(-320px + 100vh);">
         <table class="table-bordered tab-10 table-m">
-          <thead>
-            <tr class="tr1-sticky celda-excel">
+          <thead class="headsticky">
+            <tr class="celda-excel">
               <th colspan="8" class="text-center font-weight-bolder td-custom">
                 METRADOS DIARIOS
               </th>
@@ -973,7 +968,7 @@
                 </ng-container>
               </td>
             </tr>
-            <tr class="headsticky header-custom">
+            <tr class="header-custom">
               <th appAnchocol [ancho]="30">Nro</th>
               <th appAnchocol [ancho]="30"></th>
               <th appAnchocol [ancho]="150">Descripcion</th>
@@ -1513,8 +1508,9 @@
         </div>
       </div>
     </div>
-    <table class="mini-tabla tab-10" style="overflow: auto; display: list-item">
-      <thead>
+    <div class="tabla-limp height-t1" style="height: calc(-245px + 100vh);" >
+      <table class="tab-10" >
+      <thead class="headsticky">
         <tr>
           <th rowspan="2">Item</th>
           <th rowspan="2">Descripcion</th>
@@ -1529,7 +1525,7 @@
           <th rowspan="2">Saldo</th>
         </tr>
         <tr>
-          <th *ngFor="let dia of diasCalendario2">
+          <th *ngFor="let dia of diasCalendario2" style="min-width:30px;">
             {{ dia.dia }}
           </th>
         </tr>
@@ -1683,6 +1679,7 @@
         </tr>
       </tbody>
     </table>
+    </div>
   </app-card>
 </div>
 <div style="overflow: auto; height: calc(100vh - 165px)" *ngIf="subvista == 4">
@@ -1751,13 +1748,9 @@
         </div>
       </div>
     </div>
-    <div class="row">
-      <div class="col-12">
-        <table
-          class="mini-tabla tab-10"
-          style="overflow: auto; display: list-item"
-        >
-          <thead>
+      <div class="tabla-limp" style="height: calc(-245px + 100vh);">
+        <table class="tab-10">
+          <thead class="headsticky">
             <tr>
               <th rowspan="2" appAnchocol [ancho]="100">Item</th>
               <th rowspan="2" appAnchocol [ancho]="150" [detalle]="true">
@@ -1975,7 +1968,7 @@
           </tbody>
         </table>
       </div>
-    </div>
+
   </app-card>
 </div>
 <app-modal-basic [dialogClass]="'modal-md'" #modalHojas>

@@ -291,7 +291,7 @@
                   <label *ngIf="editable" class="custom-importar mb-0" ngbTooltip="Importar documento excel"
                     container="body">
                     <input type="file" id="archivo" name="fileUpload2" accept=".xls ,.xlsx"
-                      (change)="importarExcel($event)" />
+                      (change)="importarExcel($event)" (click)="VerificarExcel()" />
                     <i class="fa fa-download icono-but"></i>
                   </label>
 

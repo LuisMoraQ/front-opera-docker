@@ -933,6 +933,8 @@ async almacenar() {
         altura:!row.altura?'': this.isNumber(row.altura)?this.formsService.redondeo(row.altura,2):row.altura,
         subtotal:!row.subtotal?'': this.isNumber(row.subtotal)?this.formsService.redondeo(row.subtotal,2):row.subtotal,
         unidad:row.unidad,
+        formula:row.formula,
+        tipofila:row.tipofila,
         parcial:row.parcial??'',
         total_nuevo: !row.total_nuevo||row.total_nuevo=="0"?'':row.total_nuevo,
         tipoletra: tipol,
@@ -1035,7 +1037,7 @@ async almacenar() {
     this.saldometrado = this.filaExcelSel
       ? this.filaExcelSel.mtotal -
         (this.metradoacumulado + this.metradoposterior)
-      : 0;
+      : 0
   }
   async generateCalendar(fechaini: string,fechafin: string,jornada: any[],feriados: any[],estados) {
     let valores = estados.split("/").map(v => {
@@ -1197,8 +1199,11 @@ async almacenar() {
         row.tieneSiguiente = row.item && nextRow && !nextRow.item ? 1 : 0;
       }
       if(response2.header.header){
-        response2.header.header.pop();
-        response2.header.header2.pop();
+        const ultimo=response2.header.header[response2.header.header.length-1]
+        if(ultimo==='formula'){
+          response2.header.header.pop();
+          response2.header.header2.pop();
+        }
         response2.header.header.push('saldo','estado')
         response2.header.header2.push('saldo','estado')
       }
@@ -1238,6 +1243,8 @@ async almacenar() {
     }
   }
   async tablaTipoExcel(response, tablaPresu) {
+    console.log(response)
+    console.log(tablaPresu)
     let header = null;
     let body = [];
     let vinculado = true;
@@ -2073,7 +2080,7 @@ async almacenar() {
         altura: '',
         total: '',
         parcial: '',
-        tipofila: 2,
+        tipofila: '',
         subtotal: '',
         mostrar: 1,
         icomost: 0,

@@ -4882,6 +4882,19 @@ export class ReportesComponent implements OnInit {
       }
     }
   }
+  FindNext(position: number, condition: (item: any) => boolean): number {
+    let addi = 0;
+    const total = this.exceldatos.length - 1;
+    for (let k = position + 1; k < this.exceldatos.length; k++) {
+      const item = this.exceldatos[k];
+      if (condition(item) || k === total) {
+        return addi;
+      } else {
+        addi++;
+      }
+    }
+    return addi;
+  }
   FindNextTitutlo(position){
     let array=[]
     var addi=0
@@ -4896,6 +4909,15 @@ export class ReportesComponent implements OnInit {
         addi++
       }
     }
+  }
+  getExcelColumn(columnNumber){
+    let columnName = "";
+    while (columnNumber > 0) {
+      const remainder = (columnNumber - 1) % 26;
+      columnName = String.fromCharCode(65 + remainder) + columnName;
+      columnNumber = Math.floor((columnNumber - 1) / 26);
+    }
+    return columnName;
   }
   async exportToExcel() {
     const workbook = new ExcelJS.Workbook();
@@ -5219,11 +5241,13 @@ export class ReportesComponent implements OnInit {
       } 
       arrayaux.forEach((detalle,index) => {
         let detalleValues
-        if(this.datos.titulo=='METRADO DIARIO'){
+        if(this.datos.reporte==1&&this.datos.tipo_reporte==6){
           detalleValues = auxiliarclaves.reduce((acc: any[], clave) => {
             if (clave === 'montodias' && Array.isArray(detalle[clave])) {
               // Expandir el array en el lugar exacto donde aparece la clave
               acc.push(...detalle[clave].map((val: any) => this.convertToNumber(val)));
+            }else if(clave === 'metradoant'&&!detalle[clave]&&detalle['unidad']){
+              acc.push(this.convertToNumber('0'));
             } else {
               acc.push(this.convertToNumber(detalle[clave]));
             }
@@ -5231,7 +5255,11 @@ export class ReportesComponent implements OnInit {
           }, []);
         }else{
           detalleValues = auxiliarclaves.map(clave => {
-            return this.convertToNumber(detalle[clave])
+            let value= detalle[clave]
+            if(clave=='metrado_anterior'&&!detalle[clave]&&this.datos.tipo_reporte==6&&detalle['unidad']){
+              value='0'
+            }
+            return this.convertToNumber(value)
           });
         }
         let row= worksheet.addRow(detalleValues);
@@ -5354,6 +5382,86 @@ export class ReportesComponent implements OnInit {
               }
                 if (formula) {
                   worksheet.getCell(`H${row.number}`).value = { formula: `=${formula}` };
+              }
+            }
+          }else if(detalle.unidad&&this.datos.tipo_reporte==6&&this.datos.reporte==1){
+            let formula
+            if(colNumber==detalleValues.length){
+              const excelCol = this.getExcelColumn(detalleValues.length-3)
+              formula = `SUM(F${row.number}:${excelCol}${row.number})`
+              const excelCol2 = this.getExcelColumn(detalleValues.length-2)
+              worksheet.getCell(`${excelCol2}${row.number}`).value = { formula: `=${formula}` };
+              const excelCol3 = this.getExcelColumn(detalleValues.length-1)
+              worksheet.getCell(`${excelCol3}${row.number}`).value = { formula: `=E${row.number}+${excelCol2}${row.number}` };
+              const excelCol4 = this.getExcelColumn(detalleValues.length)
+              worksheet.getCell(`${excelCol4}${row.number}`).value = { formula: `=D${row.number}-${excelCol3}${row.number}` };
+            }
+          }else if(this.datos.tipo_reporte==6&&this.datos.reporte==0&&this.datos.concat_tabla2&&detalle.unidad){
+            if(colNumber==18&&detalle.cantidad){
+              worksheet.getCell(`H${row.number}`).value = { formula: `=E${row.number}*G${row.number}`};
+              worksheet.getCell(`I${row.number}`).value = { formula: `=(${`E${row.number}`}*${`G${row.number}`})/F${row.number}` };
+              worksheet.getCell(`I${row.number}`).numFmt = '0.00%'
+              worksheet.getCell(`K${row.number}`).value = { formula: `=E${row.number}*J${row.number}`};
+              worksheet.getCell(`L${row.number}`).value = { formula: `=(${`E${row.number}`}*${`J${row.number}`})/F${row.number}` };
+              worksheet.getCell(`L${row.number}`).numFmt = '0.00%'
+              worksheet.getCell(`N${row.number}`).value = { formula: `=H${row.number}+K${row.number}`};
+              worksheet.getCell(`O${row.number}`).value = { formula: `=(${`H${row.number}`}+${`K${row.number}`})/F${row.number}` };
+              worksheet.getCell(`O${row.number}`).numFmt = '0.00%'
+              worksheet.getCell(`Q${row.number}`).value = { formula: `=E${row.number}*P${row.number}`};
+              worksheet.getCell(`R${row.number}`).value = { formula: `=(${`E${row.number}`}*${`P${row.number}`})/F${row.number}` };
+              worksheet.getCell(`R${row.number}`).numFmt = '0.00%'
+            }
+          }else if(this.datos.tipo_reporte==6&&this.datos.reporte==0){
+            if(colNumber==12){
+              if(detalle.unidad){
+                let formula
+                const final=this.FindNext(index,item => item.item)
+                if(final>0){
+                  formula = `SUM(J${row.number+1}:J${row.number+final})`
+                }
+                if(formula) {
+                  worksheet.getCell(`K${row.number}`).value = { formula: `=${formula}` };
+                }
+              }else if(detalle.tipofila==2){
+                let formula
+                const final=this.FindNext(index,item => item.tipofila < 3)
+                if(final>0){
+                  formula = `SUM(I${row.number+1}:I${row.number+final})`
+                }else if(final==0){
+                  if(!detalle.formula || detalle.formula === ''||detalle.formula==='B*C*D*E*F'){
+                    formula = `ROUND(PRODUCT(D${row.number}:H${row.number}),2)`
+                  }else {
+                    formula = detalle.formula
+                    .replace(/F/g, `H${row.number}`)
+                    .replace(/E/g, `G${row.number}`)
+                    .replace(/D/g, `F${row.number}`)
+                    .replace(/C/g, `E${row.number}`)
+                    .replace(/B/g, `D${row.number}`)
+                    formula=`ROUND(${formula},2)`;  
+                  }
+                  if(formula) {
+                    worksheet.getCell(`I${row.number}`).value = { formula: `=${formula}` };
+                  }
+                }
+                if(formula){
+                   worksheet.getCell(`J${row.number}`).value = { formula: `=${formula}` };
+                }
+              }else if(detalle.tipofila==3){
+                let formula
+                if(!detalle.formula || detalle.formula === ''||detalle.formula==='B*C*D*E*F'){
+                  formula = `ROUND(PRODUCT(D${row.number}:H${row.number}),2)`
+                }else {
+                  formula = detalle.formula
+                    .replace(/F/g, `H${row.number}`)
+                    .replace(/E/g, `G${row.number}`)
+                    .replace(/D/g, `F${row.number}`)
+                    .replace(/C/g, `E${row.number}`)
+                    .replace(/B/g, `D${row.number}`)
+                  formula=`ROUND(${formula},2)`;  
+                }
+                  if (formula) {
+                    worksheet.getCell(`I${row.number}`).value = { formula: `=${formula}` };
+                }
               }
             }
           }

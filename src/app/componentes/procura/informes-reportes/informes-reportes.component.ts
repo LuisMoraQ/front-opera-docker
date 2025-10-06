@@ -228,7 +228,7 @@ export class InformesReportesComponent implements OnInit {
       'metrado_acumulado',
       'total_acumulado',
       'porcentaje_acumulado',
-      'metradosaldoo',
+      'metrado_saldo',
       'total_saldo',
       'porcentaje_saldo',
     ];
@@ -361,9 +361,9 @@ export class InformesReportesComponent implements OnInit {
           ? ''
           : this.formService.redondeo(row.total_acumulado, this.dec_parcial),
         porcentaje_acumulado: row.porcentaje_acumulado,
-        metradosaldoo: !row.metradosaldoo
+        metrado_saldo: !row.metrado_saldo
           ? ''
-          : this.formService.redondeo(row.metradosaldoo, this.dec_metrado),
+          : this.formService.redondeo(row.metrado_saldo, this.dec_metrado),
         total_saldo: !row.total_saldo
           ? ''
           : this.formService.redondeo(row.total_saldo, this.dec_parcial),

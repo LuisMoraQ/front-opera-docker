@@ -144,7 +144,6 @@ export class DataProyectoComponent implements OnInit {
     if (res.id == '1') {
       let tabs = JSON.parse(res.tabla);
         this.datasourcePri = tabs[0];
-        console.log(this.datasourcePri)
         this.datasourceDeta = tabs[1];
       }
   }

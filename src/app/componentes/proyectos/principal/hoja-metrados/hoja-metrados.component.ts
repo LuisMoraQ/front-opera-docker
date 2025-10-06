@@ -1312,7 +1312,6 @@ export class HojaMetradosComponent implements OnInit, OnDestroy, AfterViewInit {
           let encontrado = await tablaPresu.find(
             (ele) => ele.indice == iterator.indice
           );
-          console.log(encontrado)
           iterator.descripcion2 = null;
           iterator.item2 = null;
           iterator.metrado2 = null;
@@ -10077,13 +10076,14 @@ export class HojaMetradosComponent implements OnInit, OnDestroy, AfterViewInit {
     const response = await this.metradoService.vincularMetradoAPresupuesto(obj);
     return response.id;
   }
+  async VerificarExcel(){
+    console.log('here')
+  }
 
   async importarExcel(evt: any) {
     try {
       this.mostrar_carga_todo = true;
       setTimeout(() => {
-        
-     
       const target: DataTransfer = <DataTransfer>evt.target;
       if (target.files.length !== 1) {
         throw new Error('No se puede agregar multiples documentos');
@@ -10117,6 +10117,7 @@ export class HojaMetradosComponent implements OnInit, OnDestroy, AfterViewInit {
           listaTablas.push(item);
         });
         listaTablas = await this.recuperarTablaExcel(wbExcel, listaTablas);
+        console.log(listaTablas)
         await this.datosParaExcel(nombreArchivo, wbExcel, listaTablas);
         this.mostrar_carga_todo = false;
       };
@@ -10221,7 +10222,9 @@ export class HojaMetradosComponent implements OnInit, OnDestroy, AfterViewInit {
       const index = this.tablaTitResumen.findIndex(ele=> ele.indice == this.titInformSel.indice ) 
       this.tablaTitResumen[index].estado_metrado = result.porcentaje
       const response = await this.listarTablaExcel(this.titInformSel.indice,this.titInformSel.item);
+      console.log(response)
       const response2 = await this.tablaTipoExcel(response, this.tablaTitulo);
+      console.log(response2)
       this.tablaExcelAdjunta = response2.body;
       this.headerExcel = response2.header;
       this.mostrar_carga_todo = false;

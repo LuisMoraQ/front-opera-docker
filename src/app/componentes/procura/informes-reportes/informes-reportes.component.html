@@ -53,14 +53,10 @@
     style="margin-bottom: 5px; padding-left: 0; padding-right: 0"
   >
     <h4 style="margin-bottom: 5px"><b>Resumen de Valorizaciones</b></h4>
-    <div
-      [style.margin-bottom.px]="-paddingscroll2"
-      class="tabla-limp height-t1"
-      id="tableBody"
-    >
+    <div [style.margin-bottom.px]="-paddingscroll2" class="tabla-limp height-t1" id="tableBody">
       <table class="table-bordered tab-10">
         <thead>
-          <tr class="headsticky header-custom">
+          <tr class="header-custom">
             <th appAnchocol [ancho]="10">N°</th>
             <th appAnchocol [ancho]="200">Detalle Hoja de Metrado</th>
             <th appAnchocol [ancho]="100">Fecha Inicio</th>
@@ -234,8 +230,9 @@
         </mat-form-field>
       </div> -->
     </div>
-    <table class="mini-tabla tab-10" style="overflow: auto; display: list-item">
-      <thead>
+    <div class="tabla-limp" style="height: calc(-245px + 100vh);">
+       <table class="tab-10">
+      <thead class="headsticky">
         <tr>
           <th rowspan="3">PARTIDA</th>
           <th rowspan="3">DESCRIPCION</th>
@@ -546,6 +543,7 @@
           </ng-container>
       </tfoot>
     </table>
+    </div>
   </app-card>
 </div>
 <app-modal-basic [dialogClass]="'modal-md'" #modalEstado>
