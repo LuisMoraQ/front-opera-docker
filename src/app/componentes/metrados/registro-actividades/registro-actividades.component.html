@@ -50,19 +50,19 @@
                     <tbody>
                         <tr>
                             <td>
-                                Registro Metradado
+                                Registro Metrado
                             </td>
                             <td *ngFor="let dia of estadoXPart; let i = index" (click)="ChangeDia(diasCalendario[i])"
                                 [ngClass]="{ 'fecha-selected': diasCalendario[i].fecha == fechaselecionada ,
-                                    'bg-danger':!dia && filaSeleccionada?.unidad, 'bg-primary': dia == 1 && filaSeleccionada?.unidad, 'bg-success': dia == 2 && filaSeleccionada?.unidad
+                                    'bg-danger':!dia, 'bg-primary': dia == 1, 'bg-success': dia == 2
                                 }" style="height: 24px">
-                                <ng-container *ngIf="!dia && filaSeleccionada?.unidad">
+                                <ng-container *ngIf="!dia">
                                     <!-- <span class="badge bg-danger pos-badge text-white">F</span> --> F
                                 </ng-container>
-                                <ng-container *ngIf="dia == 1 && filaSeleccionada?.unidad">
+                                <ng-container *ngIf="dia == 1">
                                     <!-- <span class="badge bg-primary pos-badge text-white">R</span> --> R
                                 </ng-container>
-                                <ng-container *ngIf="dia == 2 && filaSeleccionada?.unidad">
+                                <ng-container *ngIf="dia == 2">
                                     <!-- <span class="badge bg-success pos-badge text-white">A</span> --> A
                                 </ng-container>
                             </td>
@@ -87,12 +87,15 @@
 
                         <tr>
                             <td>
-                                Registro Metradado
+                                Recursos utilizados
                             </td>
-                            <td *ngFor="let dia of diasCalendario" [class.bloqueado]="dia.bloqueado"
-                                (click)="ChangeDia(dia)" [ngClass]="{ 'fecha-selected': dia.fecha == fechaselecionada }"
+                            <td *ngFor="let dia of estadoXReg" [class.bloqueado]="dia.bloqueado" container="body"
+                                (click)="ChangeDia(dia)" [ngbTooltip]="dia.estado == 1 ? 'Registrado':''"
+                                [ngClass]="{ 'fecha-selected': dia.fecha == fechaselecionada ,'registrado': dia.estado == 1}"
                                 style="height: 24px">
-                                -
+                                <ng-container *ngIf="dia.estado == 1">
+                                    R
+                                </ng-container>
                             </td>
 
                             <td>
@@ -103,7 +106,7 @@
                 </table>
             </div>
             <div class="col-12 d-flex mt-2 px-0 h-100">
-                <div class="col-6 pl-0">
+                <div class="col-7 pl-0">
                     <div class="d-flex">
                         <mat-form-field appearance="outline" class="mff-reduc my-form-field" [floatLabel]="'always'">
                             <mat-label>Metrado Registrado </mat-label>
@@ -133,29 +136,50 @@
                                 <table class="tabla-general tab-10 table-bordered table-m">
                                     <thead>
                                         <tr class="headsticky" style="height: 22px;">
-                                            <th class="text-center" appAnchocol [ancho]="70">Item</th>
-                                            <th class="text-center" appAnchocol [ancho]="200" [detalle]="true">
+                                            <!-- <th class="text-center" appAnchocol [ancho]="70">Item</th> -->
+                                            <th class="text-center" appAnchocol [ancho]="150" [detalle]="true">
                                                 Descripcion</th>
                                             <th class="text-center" appAnchocol [ancho]="50">Unidad</th>
-                                            <th class="text-center" appAnchocol [ancho]="100">Metrado Total</th>
-                                            <th class="text-center" appAnchocol [ancho]="100">Metrado Ejecutado</th>
-                                            <th class="text-center" appAnchocol [ancho]="100">Saldo Metrado</th>
-                                            <th class="text-center" appAnchocol [ancho]="100">Metrado Diario</th>
+                                            <th class="text-center" appAnchocol [ancho]="90">Metrado Total</th>
+                                            <th class="text-center" appAnchocol [ancho]="90">Metrado Ejecutado</th>
+                                            <th class="text-center" appAnchocol [ancho]="90">Saldo Metrado</th>
+                                            <th class="text-center" appAnchocol [ancho]="90">Metrado Diario</th>
+                                            <th class="text-center" appAnchocol [ancho]="70">Saldos Registrados</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         <tr *ngFor="let row of this.tablaPresupuesto; let i = index"
-                                            (click)="selPartida(i,row)">
+                                            [hidden]="row.mostrar == 0" (click)="selPartida(i,row)">
+                                            <!-- <td class="text-left" appPintarfilapre [tipo]="titulo1"
+                                                [ngClass]="{'row-seleccionado': row == filaSeleccionada}"
+                                                [color]="row.item ? titulo1color : ''" [letra]="titulo1letra"
+                                                [item]="row.item" [separador]="'.'" [partida]="row.unidad != ''">
+                                                {{row.item}}</td> -->
                                             <td class="text-left" appPintarfilapre [tipo]="titulo1"
                                                 [ngClass]="{'row-seleccionado': row == filaSeleccionada}"
                                                 [color]="row.item ? titulo1color : ''" [letra]="titulo1letra"
                                                 [item]="row.item" [separador]="'.'" [partida]="row.unidad != ''">
-                                                {{row.item}}</td>
-                                            <td class="text-left" appPintarfilapre [tipo]="titulo1"
-                                                [ngClass]="{'row-seleccionado': row == filaSeleccionada}"
-                                                [color]="row.item ? titulo1color : ''" [letra]="titulo1letra"
-                                                [item]="row.item" [separador]="'.'" [partida]="row.unidad != ''">
-                                                {{row.descripcion}}</td>
+                                                <!-- {{row.descripcion}} -->
+
+                                                <div class="d-flex">
+                                                    <div [ngClass]="{'recortatext':lineas2,'recortatextlinea':!lineas2}"
+                                                        [style.padding-left.px]="((row.item.toString().split('.').length-1)*5)+(row.unidad!=''?17:0)"
+                                                        ngbTooltip="{{row.descripcion}}" #t="ngbTooltip"
+                                                        container="body">
+                                                        <a *ngIf="row.unidad=='' && row.icomost=='0'"
+                                                            style="padding: 0px 2px;color:#06bb06;cursor: pointer;"
+                                                            (click)="toggleOnpresu(row.item,i)">
+                                                            <i class="icofont icofont-caret-down"></i>
+                                                        </a>
+                                                        <a *ngIf="row.unidad=='' && row.icomost=='1'"
+                                                            style="padding: 0px 2px;color:red;cursor: pointer;"
+                                                            (click)="toggleOffpresu(row.item,i)">
+                                                            <i class="icofont icofont-caret-up"></i>
+                                                        </a><span
+                                                            style="font-weight: 700;">{{row.item}}</span>&nbsp;&nbsp;{{row.descripcion}}
+                                                    </div>
+                                                </div>
+                                            </td>
                                             <td class="text-center" appPintarfilapre [tipo]="titulo1"
                                                 [ngClass]="{'row-seleccionado': row == filaSeleccionada}"
                                                 [color]="row.item ? titulo1color : ''" [letra]="titulo1letra"
@@ -188,6 +212,21 @@
                                                 </ng-container>
 
                                             </td>
+                                            <td class="text-center" appPintarfilapre [tipo]="titulo1"
+                                                [ngClass]="{'row-seleccionado': row == filaSeleccionada}"
+                                                [color]="row.item ? titulo1color : ''" [letra]="titulo1letra"
+                                                [item]="row.item" [separador]="'.'" [partida]="row.unidad != ''">
+
+                                                <i *ngIf="row.registros_saldos?.length" class="fa fa-list "
+                                                    ngbTooltip="Registros completos de partida" container="body"
+                                                    style="cursor: pointer;" (click)="abrirModal(row)"></i>
+
+                                                <i *ngIf="tieneRegistrosParaFecha(row, fechaselecionada)"
+                                                    ngbTooltip="Registros por dia de partida" container="body"
+                                                    class="fa fa-calendar-check-o text-primary"
+                                                    style="cursor: pointer; margin-left: 5px;"
+                                                    (click)="abrirModal2(row, this.fechaselecionada)"></i>
+                                            </td>
                                         </tr>
                                     </tbody>
                                 </table>
@@ -200,7 +239,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-6 pr-0">
+                <div class="col-5 pr-0">
                     <ul ngbNav #nav="ngbNav" [(activeId)]="active" class="custom-tabs nav-tabs"
                         (navChange)="onNavChange($event)">
                         <li [ngbNavItem]="1" [disabled]="active == 0">
@@ -230,41 +269,82 @@
                         <table class="mini-tabla tab-10 w-100" style="overflow: auto; display: list-item">
                             <thead>
                                 <tr>
-                                    <th appAnchocol [ancho]="50">ITEM</th>
+                                    <th appAnchocol [ancho]="30"></th>
                                     <th appAnchocol [ancho]="200" [detalle]="true">DESCRIPCION</th>
                                     <th appAnchocol [ancho]="50">UND</th>
                                     <!-- <th appAnchocol [ancho]="120">INGRESADO</th> -->
-                                    <th appAnchocol [ancho]="120">INGRESADO </th>
-                                    <th appAnchocol [ancho]="120">DISPONIBLE</th>
+                                    <th appAnchocol [ancho]="100">INGRESADO </th>
+                                    <th appAnchocol [ancho]="100">DISPONIBLE</th>
                                     <th appAnchocol [ancho]="100">REGISTRADO</th>
 
                                 </tr>
                             </thead>
                             <tbody>
                                 <ng-container *ngIf="tablaMovAlmcSalida.length; else noTablaSalida">
-                                    <tr *ngFor="let row  of tablaMovAlmcSalida; let i = index">
-                                        <td class="text-left">{{row.item}}</td>
-                                        <td class="text-left">{{row.descripcion }}</td>
-                                        <td>{{row.unidad}}</td>
-                                        <td class="text-right">{{row.cantidad | number: '0.'+ this.dec_metrado + '-' +
-                                            this.dec_metrado}}</td>
-                                        <!-- <td class="text-right">{{row.registrado}}</td> -->
-                                        <td class="text-right">{{row.disponible}}</td>
-                                        <td (click)="habilitarEditar(i,'disponible')">
-                                            <ng-container *ngIf="row.editardisponible; else noeditdisponible">
-                                                <input
-                                                    [textMask]="dec_cant == 4? formService.maskUsAmountDecimal4 : (dec_cant==3? formService.maskUsAmountDecimal3:formService.maskUsAmountDecimal2)"
-                                                    style="height: 20px;text-align: center;" *ngIf="row.editar==1"
-                                                    type="text" class="formcontrol w-100 d-flex" autocomplete="off"
-                                                    value="{{row.disponible}}" appAutoFocus
-                                                    (keyup)="presenter1($event,indice)"
-                                                    (blur)="caneditarcelda1($event.target.value,indice,'disponible')">
-                                            </ng-container>
-                                            <ng-template #noeditdisponible>
-                                                {{row.disponibles}}
-                                            </ng-template>
+                                    <tr *ngFor="let row  of tablaMovAlmcSalida; let i = index"
+                                        [ngClass]="{'highlight': fila4_sel !== null && fila4_sel == i,'font-weight-bolder':row.unidad==''}"
+                                        (click)="fila4_sel = i">
+                                        <ng-container *ngIf="row.mostrar">
+                                            <td class="text-center" style="cursor: pointer;">
+                                                <a *ngIf="row.unidad=='' && row.icomost==0"
+                                                    (click)="toggleOff4(row.nrosalida)"
+                                                    style="color:red; width: 14px; ">
+                                                    <i class="fa fa-sort-up contract" style="position: relative;
+                                                                top: 3px;
+                                                                left: 2px;"></i>
+                                                </a>
+                                                <a *ngIf="row.unidad=='' && row.icomost==1"
+                                                    (click)="toggleOn4(row.nrosalida)"
+                                                    style="color:green; width: 14px;">
+                                                    <i class="fa fa-sort-desc expand" style="position: relative;
+                                                                bottom: 3px;
+                                                                left: 2px;"></i>
+                                                </a>&nbsp;
+                                                {{row.unidad==''?'':row.idsalida}}
+                                            </td>
+                                            <td class="text-left">{{row.descripcion }}</td>
+                                            <td>{{row.unidad}}</td>
+                                            <td class="text-right">{{row.cantidad | number: '0.'+ this.dec_metrado + '-'
+                                                +
+                                                this.dec_metrado}}</td>
+                                            <!-- <td class="text-right">{{row.registrado}}</td> -->
+                                            <td class="text-right">
+                                                <ng-container *ngIf="row.unidad">
+                                                    <!-- {{(row.cantidad - (row.registrado
+                                                    ?row.registrado?.monto_registrado : 0 ))| number: '0.'+
+                                                    this.dec_metrado +
+                                                    '-'
+                                                    +
+                                                    this.dec_metrado}} -->
+                                                    {{disponibleXInsumo(row) | number: '0.'+
+                                                    this.dec_metrado +
+                                                    '-'
+                                                    +
+                                                    this.dec_metrado}}
+                                                </ng-container>
+                                            </td>
+                                            <td (click)="habilitarEditar(i,'registrado')">
+                                                <ng-container *ngIf="row.unidad">
+                                                    <ng-container *ngIf="row.editarregistrado; else noeditregistrado">
 
-                                        </td>
+                                                        <input
+                                                            [textMask]="dec_cant == 4? formsService?.maskUsAmountDecimal4 : (dec_cant==3? formsService?.maskUsAmountDecimal3:formsService.maskUsAmountDecimal2)"
+                                                            style="height: 20px;text-align: center;" type="text"
+                                                            class="formcontrol w-100 d-flex" autocomplete="off"
+                                                            value="{{row.registrado ?row.registrado?.monto_registrado : 0}}"
+                                                            appAutoFocus (keyup)="presenter1($event,i)"
+                                                            (blur)="caneditarcelda1($event.target.value,i,'registrado')">
+                                                    </ng-container>
+                                                    <ng-template #noeditregistrado>
+                                                        {{(row.registrado
+                                                        ?row.registrado?.monto_registrado : 0) | number: '0.'+
+                                                        this.dec_metrado + '-'
+                                                        +
+                                                        this.dec_metrado}}
+                                                    </ng-template>
+                                                </ng-container>
+                                            </td>
+                                        </ng-container>
                                     </tr>
                                 </ng-container>
                                 <ng-template #noTablaSalida>
@@ -290,3 +370,85 @@
 </div>
 
 <app-cargando [bloquearTodo]="true" *ngIf="mostrar_carga_todo"></app-cargando>
+
+<app-modal-basic #modalRegistros [dialogClass]="'modal-lg'">
+    <div class="app-modal-header">
+        <h4 class="modal-title tit-modal1"><b>Registros </b></h4>
+        <button type="button" class="close basic-close" (click)="cerrarModal()">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+    <div class="app-modal-body">
+        <table class="table-bordered tab-10">
+            <thead class="text-center">
+                <tr class="headsticky header-custom">
+                    <th appAnchocol [ancho]="50">Fecha</th>
+                    <th appAnchocol [ancho]="100">Descripcion</th>
+
+                    <th appAnchocol [ancho]="50">Registrado</th>
+                </tr>
+            </thead>
+            <tbody>
+                <ng-container *ngIf="this.filaSeleccionada && this.filaSeleccionada?.registros_saldos">
+                    <tr *ngFor="let row of this.filaSeleccionada.registros_saldos">
+                        <td class="text-center">{{row.fecha}}</td>
+                        <td>{{row.insumo}}</td>
+
+                        <td class="text-right">{{row.monto_registrado}}</td>
+                    </tr>
+                </ng-container>
+
+            </tbody>
+        </table>
+    </div>
+    <div class="app-modal-footer w-100">
+        <div class="row px-3">
+            <button type="button" style="margin-right: 5px;" class="btn btn-sm btn-danger ripple"
+                (click)="cerrarModal()">Cerrar</button>
+        </div>
+    </div>
+
+</app-modal-basic>
+
+<app-modal-basic #modalRegistros2 [dialogClass]="'modal-lg'">
+    <div class="app-modal-header">
+        <h4 class="modal-title tit-modal1"><b>Registros por Dia Seleccionado</b></h4>
+        <button type="button" class="close basic-close" (click)="cerrarModal2()">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+    <div class="app-modal-body">
+        <div class="table-label mb-3 text-center">
+            <label class="h5 font-weight-bold text-primary">Detalle de Registro {{fechaselecionada |
+                date:'dd-MM-yyyy'}}</label>
+        </div>
+        <table class="table-bordered tab-10">
+            <thead class="text-center">
+                <tr class="headsticky header-custom">
+                    <th appAnchocol [ancho]="50">Fecha</th>
+                    <th appAnchocol [ancho]="100">Descripcion</th>
+
+                    <th appAnchocol [ancho]="50">Registrado</th>
+                </tr>
+            </thead>
+            <tbody>
+                <ng-container *ngIf="this.registradoXDia.length">
+                    <tr *ngFor="let row of registradoXDia">
+                        <td class="text-center">{{row.fecha}}</td>
+                        <td>{{row.insumo}}</td>
+
+                        <td class="text-right">{{row.monto_registrado}}</td>
+                    </tr>
+                </ng-container>
+
+            </tbody>
+        </table>
+    </div>
+    <div class="app-modal-footer w-100">
+        <div class="row px-3">
+            <button type="button" style="margin-right: 5px;" class="btn btn-sm btn-danger ripple"
+                (click)="cerrarModal2()">Cerrar</button>
+        </div>
+    </div>
+
+</app-modal-basic>

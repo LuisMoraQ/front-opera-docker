@@ -912,7 +912,7 @@ export class MetradoService {
       formData.append(key, value as string);
     });
     const url = this.enviUrl + '/api/metrados/listadoMovAlmSalidaProyecto';
-   
+
     return this.http.post<any>(url, formData).pipe(
       map(res => {
         if (!res) {
@@ -923,4 +923,81 @@ export class MetradoService {
       catchError(err => throwError(err))
     ).toPromise()
   }
+
+  guardarRegistroSaldo(params = {}): any {
+    let formData: FormData = new FormData();
+    Object.entries(params).forEach(([key, value]) => {
+      formData.append(key, value as string);
+    });
+    const url = this.enviUrl + '/api/metrados/guardarRegistroSaldo';
+    return this.http
+      .post<any>(url, formData)
+      .pipe(
+        map((res) => {
+          if (!res) {
+            throw new Error();
+          }
+          return res;
+        }),
+        catchError((err) => throwError(err))
+      )
+      .toPromise();
+  }
+
+  actualizarRegistroSaldo(params = {}): any {
+    let formData: FormData = new FormData();
+    Object.entries(params).forEach(([key, value]) => {
+      formData.append(key, value as string);
+    });
+    const url = this.enviUrl + '/api/metrados/actualizarRegistroSaldo';
+    return this.http
+      .post<any>(url, formData)
+      .pipe(
+        map((res) => {
+          if (!res) {
+            throw new Error();
+          }
+          return res;
+        }),
+        catchError((err) => throwError(err))
+      )
+      .toPromise();
+  }
+
+  listarRegistroSaldoXProy(params = {}): Promise<any> {
+    let formData: FormData = new FormData();
+    Object.entries(params).forEach(([key, value]) => {
+      formData.append(key, value as string);
+    });
+    const url = this.enviUrl + '/api/metrados/listarRegistroSaldoXProy';
+
+    return this.http.post<any>(url, formData).pipe(
+      map(res => {
+        if (!res) {
+          throw new Error
+        }
+        return res
+      }),
+      catchError(err => throwError(err))
+    ).toPromise()
+  }
+
+  actualizarEstadoRegistro(params = {}): Promise<any> {
+    let formData: FormData = new FormData();
+    Object.entries(params).forEach(([key, value]) => {
+      formData.append(key, value as string);
+    });
+    const url = this.enviUrl + '/api/metrados/actualizarEstadoRegistro';
+
+    return this.http.post<any>(url, formData).pipe(
+      map(res => {
+        if (!res) {
+          throw new Error
+        }
+        return res
+      }),
+      catchError(err => throwError(err))
+    ).toPromise()
+  }
+
 }
