@@ -66,7 +66,7 @@
                 <th appAnchocol [ancho]="70" class="text-center">
                   <button class="btn btn-mini2 btn-success" placement="top" *ngIf="permVinculo" style="z-index: 3"
                     (mouseup)="quitarfoco($event)" ngbTooltip="Vincular todos los titulos" container="body"
-                    (click)="vincular(null)">
+                    (click)="vincular(null)" disabled>
                     <i class="fa fa-exchange icono-but"></i>
                   </button>
                 </th>
@@ -112,12 +112,12 @@
                         container="body" (click)="verHojaMetrado(titulo)">
                         <i class="fa fa-search-plus  icono-but"></i>
                       </button>
-                      <button class="btn btn-mini2 btn-success" placement="top" style="z-index: 3"
+                      <!-- <button class="btn btn-mini2 btn-success" placement="top" style="z-index: 3"
                         *ngIf="titulo.editable" (mouseup)="quitarfoco($event)"
                         ngbTooltip="Vincular metrado titulo a presupuesto" container="body"
                         (click)="vincular(titulo, i)">
                         <i class="fa fa-exchange icono-but"></i>
-                      </button>
+                      </button> -->
                     </div>
                   </td>
                 </tr>
@@ -291,7 +291,7 @@
                   <label *ngIf="editable" class="custom-importar mb-0" ngbTooltip="Importar documento excel"
                     container="body">
                     <input type="file" id="archivo" name="fileUpload2" accept=".xls ,.xlsx"
-                      (change)="importarExcel($event)" />
+                      (change)="importarExcel($event)" (click)="VerificarExcel()" />
                     <i class="fa fa-download icono-but"></i>
                   </label>
 
@@ -773,7 +773,7 @@
                                 </a>
                               </ng-container>
                             </td>
-                            <!-- <td class="td-custom" [ngClass]="{
+                            <td class="td-custom" [ngClass]="{
                           'row-seleccionado': filaExcelSel == row,
                           nivel1: row.nivel == 1,
                           nivel2: row.nivel == 2,
@@ -792,8 +792,8 @@
                           'bg-cantidad-diferente': row.pintar == 2
                         }" [hidden]="!verColumnasPresu">
                             {{row.descripcion2}}
-                          </td> -->
-                            <!-- <td class="td-custom text-right" [ngClass]="{
+                          </td>
+                            <td class="td-custom text-right" [ngClass]="{
                           'row-seleccionado': filaExcelSel == row,
                           nivel1: row.nivel == 1,
                           nivel2: row.nivel == 2,
@@ -802,7 +802,7 @@
                           'bg-cantidad-diferente': row.pintar == 2
                         }" [hidden]="!verColumnasPresu">
                             {{row.metrado2}}
-                          </td> -->
+                          </td>
                             <td *ngFor="let head of this.headerExcel?.header" appPintarfilapre [tipo]="titulo1"
                               [color]="row.item ? titulo1color : ''" [letra]="titulo1letra" [item]="row.item"
                               [separador]="'.'" [partida]="row.unidad != ''" class="td-custom" [style.text-align]="

@@ -42,6 +42,7 @@ export class MetradosdiariosComponent implements OnInit {
   @Input('height') height: number = 100;
   subvista = 1;
   scrollbut = false;
+  scrollbut2 = false;
   simbolo;
   prueba;
   id_proyecto;
@@ -139,6 +140,7 @@ export class MetradosdiariosComponent implements OnInit {
   async ngOnInit() {
     var resto = 210;
     this.height = window.innerHeight - resto;
+    this.scrollbut2=document.body.clientWidth <= 880?true:false;
     this.ordenarPorFechaInicio(true);
   }
   pintar() {
@@ -166,7 +168,6 @@ export class MetradosdiariosComponent implements OnInit {
     element.target.parentElement.blur();
   }
   async cambioVista(ind: any) {
-    this.subvista = ind;
     if (ind == 3) {
       if (this.existecambios) {
         await this.guardarCambios();
@@ -178,7 +179,15 @@ export class MetradosdiariosComponent implements OnInit {
         await this.guardarCambios();
         this.existecambios = false;
       }
-      await this.changeVista(this.datosglo);
+      const prueba= await this.changeVista(this.datosglo);
+      if(!prueba){
+        this.toaster.error('Fechas Creadas NO Laborables', 'Error', {
+          closeButton: false,
+          positionClass: 'toast-bottom-right',
+          timeOut: 5000,
+        });
+        return;
+      }
     } else if (ind == 1) {
       if (this.existecambios) {
         await this.guardarCambios();
@@ -191,6 +200,7 @@ export class MetradosdiariosComponent implements OnInit {
       }
       await this.changeVista3(this.datosglo, true);
     }
+    this.subvista = ind;
   }
   closeModal() {
     this.modalHojas.hide();
@@ -279,6 +289,9 @@ export class MetradosdiariosComponent implements OnInit {
   const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24)) + 1;
   const arrayCeros = Array(diffDays).fill("0");
   return arrayCeros.join("/");
+}
+isNumber(value: string): boolean {
+  return /^-?\d+(\.\d+)?$/.test(value);
 }
 async almacenar() {
     try {
@@ -580,18 +593,23 @@ async almacenar() {
     }
     return array;
   }
-
+  async prochangeVista(datos){
+    const resultado= await this.changeVista(datos)
+    if(!resultado){
+      this.toaster.error('Fechas Creadas NO Laborables', 'Error', {
+        closeButton: false,
+        positionClass: 'toast-bottom-right',
+        timeOut: 5000,
+      });
+      this.tablaExcelAdjunta=
+      this.tablaSistema=[]
+      return;
+    }
+  }
   async changeVista(datos) {
-    this.aspectos = JSON.parse(this.colores);
-    await this.pintar();
-    this.datosglo = datos;
-    this.mostrar_carga_todo = true;
-    this.subvista = 2;
     const aspectos = await this.principalService.ListarAspectosDiasProy({
       id_proyecto: this.id_proyecto,
     });
-    this.id_registroact = datos.id_registro;
-    this.registrotab3 = this.id_registroact;
     this.diasCalendario = await this.generateCalendar(
       datos.fechaini,
       datos.fechafin,
@@ -604,13 +622,24 @@ async almacenar() {
     this.metradoanterior = 0;
     this.metradoposterior = 0;
     this.metradoacumulado = 0;
-    const index = this.diasCalendario.findIndex(
+    const  index = this.diasCalendario.findIndex(
       (ele) => ele.bloqueado == false
     );
-    this.fechaselecionada = this.diasCalendario[index].fecha;
-    this.estadodia=this.diasCalendario[index].estado;
+    if(index!==-1){
+      this.fechaselecionada =this.diasCalendario[index].fecha
+      this.estadodia=this.diasCalendario[index].estado
+    }else{
+      return 0
+    }
+    this.mostrar_carga_todo=true
+    this.aspectos = JSON.parse(this.colores);
+    await this.pintar();
+    this.subvista = 2;
+    this.datosglo = datos;
+    this.id_registroact = datos.id_registro;
+    this.registrotab3 = this.id_registroact;
     await this.listarTitulos();
-    this.mostrar_carga_todo = false;
+    return 1
   }
   getMontos(montoDiasStr: string, filaId?: string): number[] {
     const cantidadDias = this.diasCalendario2?.length || 0;
@@ -661,6 +690,7 @@ async almacenar() {
       aspectos[1],
       datos.version
     );
+    this.datosglo=datos
     this.mostrar_carga_todo = false;
   }
   AgregarDias(bool=false){
@@ -679,7 +709,7 @@ async almacenar() {
       })
     }
     return array.split("/").map(v => {
-      if (v === "null" || v === "0") {
+      if (v=='null'||!v||this.esCero(v)) {
         return '';
       }
       return this.formsService.redondeo(v,2);
@@ -724,12 +754,11 @@ async almacenar() {
       null,
       this.dec_metrado,
       this.dec_metrado,
-      2,
       this.dec_metrado,
       this.dec_metrado,
       this.dec_metrado,
     ];
-    const arralig = ['left', 'center', 'center', 'right', 'right', 'right','right','right','right'];
+    const arralig = ['left', 'left', 'center', 'right', 'right', 'right','right','right'];
     let aux = JSON.parse(JSON.stringify(this.tablavistametradodiario));
     let arrpasa = [];
     for (let row of aux) {
@@ -762,18 +791,18 @@ async almacenar() {
           tipol = this.titulo1[ind];
         }
       }
-      let esp = ' ';
+      let esp = '  ';
       let descp = esp.repeat(valor2.length - 1) + row.descripcion;
       arrpasa.push({
         item: row.item,
         descripcion: descp,
         unidad: row.unidad, 
-        cantidad: this.formsService.redondeo(row.cantidad, this.dec_metrado),
-        metradoant:this.formsService.redondeo(row.metradoant, this.dec_metrado),
+        cantidad: row.unidad?row.cantidad:'',
+        metradoant:row.unidad?row.metradoant:'',
         montodias:this.MontosArray(row.montodias),
-        total: this.formsService.redondeo(row.total, this.dec_metrado),
-        acumulado: this.formsService.redondeo(row.total+row.metradoant, this.dec_metrado),
-        saldo: this.formsService.redondeo(row.cantidad-(row.total+row.metradoant), this.dec_metrado),
+        total: row.unidad?row.total:'',
+        acumulado: row.unidad?row.total+row.metradoant:'',
+        saldo: row.unidad?(row.cantidad-(row.total+row.metradoant)):'',
         tipofila: row.tipofila,
         tipoletra: tipol,
         color: colorl == 'unset' ? '' : colorl,
@@ -790,6 +819,7 @@ async almacenar() {
       tabla2: [],
       concat_tabla2: false,
       tipo_reporte: 6,
+      reporte:1,
       orientacion:'landscape',
       moneda: this.simbolo, 
       titulo: 'METRADO DIARIO',
@@ -857,7 +887,7 @@ async almacenar() {
       this.dec_metrado,
       null,
     ];
-    const arralig = ['left', 'center', 'center', 'center', 'center', 'center','center','center','center','center','center','center'];
+    const arralig = ['left', 'left', 'center', 'center', 'center', 'center','center','center','center','center','center','center'];
     let aux = JSON.parse(JSON.stringify(this.tablametradodiario));
     let arrpasa = [];
     for (let row of aux) {
@@ -867,7 +897,7 @@ async almacenar() {
       let fondol = '';
       let valor2 = row.item.toString().split('.');
       if (this.titulo1letra != undefined) {
-        if (row.unidad != '') {
+        if (row.unidad != ''||row.item=='') {
           colorl = this.titulo1letra[11];
         } else {
           let ind = valor2.length >= 12 ? 11 : valor2.length - 1;
@@ -875,7 +905,7 @@ async almacenar() {
         }
       }
       if (this.titulo1color != undefined) {
-        if (row.unidad != '') {
+        if (row.unidad != ''||row.item=='') {
           fondol = this.titulo1color[11];
         } else {
           let ind = valor2.length >= 12 ? 11 : valor2.length - 1;
@@ -883,7 +913,7 @@ async almacenar() {
         }
       }
       if (this.titulo1 != undefined) {
-        if (row.unidad != '') {
+        if (row.unidad != ''||row.item=='') {
           tipol = this.titulo1[11];
         } else {
           let ind = valor2.length >= 12 ? 11 : valor2.length - 1;
@@ -891,20 +921,22 @@ async almacenar() {
         }
       }
       let esp = ' ';
-      let descp = esp.repeat(valor2.length - 1) + row.descripcion;
+      let descp = row.item?esp.repeat(valor2.length - 1) + row.descripcion: esp.repeat(3)+esp.repeat(row.tipofila) + row.descripcion;
       arrpasa.push({
         item: row.item,
         descripcion: descp,
         fecha: row.fecha, 
-        cantidad:!row.cantidad?'': this.formsService.redondeo(row.cantidad,2),
-        n_veces:!row.n_veces?'':this.formsService.redondeo(row.n_veces, 2),
-        largo:!row.largo?'':this.formsService.redondeo(row.largo, 2),
-        ancho:!row.ancho?'':this.formsService.redondeo(row.ancho, 2),
-        altura:!row.altura?'':this.formsService.redondeo(row.altura, 2),
-        subtotal:!row.subtotal?'':this.formsService.redondeo(row.subtotal, 2),
+        cantidad:!row.cantidad?'': this.isNumber(row.cantidad)?this.formsService.redondeo(row.cantidad,2):row.cantidad,
+        n_veces:!row.n_veces?'': this.isNumber(row.n_veces)?this.formsService.redondeo(row.n_veces,2):row.n_veces,
+        largo:!row.largo?'': this.isNumber(row.largo)?this.formsService.redondeo(row.largo,2):row.largo,
+        ancho:!row.ancho?'': this.isNumber(row.ancho)?this.formsService.redondeo(row.ancho,2):row.ancho,
+        altura:!row.altura?'': this.isNumber(row.altura)?this.formsService.redondeo(row.altura,2):row.altura,
+        subtotal:!row.subtotal?'': this.isNumber(row.subtotal)?this.formsService.redondeo(row.subtotal,2):row.subtotal,
         unidad:row.unidad,
-        parcial:!row.parcial?'': this.formsService.redondeo(row.parcial, this.dec_metrado),
-        total_nuevo: !row.total_nuevo||row.total_nuevo=="0"?'':this.formsService.redondeo(row.total_nuevo, this.dec_metrado),
+        formula:row.formula,
+        tipofila:row.tipofila,
+        parcial:row.parcial??'',
+        total_nuevo: !row.total_nuevo||row.total_nuevo=="0"?'':row.total_nuevo,
         tipoletra: tipol,
         color: colorl == 'unset' ? '' : colorl,
         fondo: fondol == 'none' ? '' : fondol,
@@ -920,7 +952,8 @@ async almacenar() {
       tabla2: [],
       concat_tabla2: false,
       tipo_reporte: 6,
-      orientacion:'',
+      reporte:0,
+      orientacion:'landscape',
       moneda: this.simbolo, 
       titulo: 'METRADO DESAGREGADO',
       dec_parcial: this.dec_metrado,
@@ -1004,7 +1037,7 @@ async almacenar() {
     this.saldometrado = this.filaExcelSel
       ? this.filaExcelSel.mtotal -
         (this.metradoacumulado + this.metradoposterior)
-      : 0;
+      : 0
   }
   async generateCalendar(fechaini: string,fechafin: string,jornada: any[],feriados: any[],estados) {
     let valores = estados.split("/").map(v => {
@@ -1075,11 +1108,7 @@ async almacenar() {
   }
   async seleccionTablaExcel(row, i) {
     let aux = this.indexTablaExcel;
-    if (
-      this.subvista == 2 &&
-      this.existecambios &&
-      this.indexTablaExcel !== i
-    ) {
+    if (this.subvista == 2 &&this.existecambios &&this.indexTablaExcel !== i) {
       await this.guardarCambios();
       this.existecambios = false;
     }
@@ -1137,6 +1166,7 @@ async almacenar() {
   async verHojaMetrado() {
     this.metradoSeleccionado = null;
     this.filaExcelSel = null;
+    this.indexTablaExcel=null
     this.IndexMetradoDiario = null;
     this.mostrar_carga_todo = true;
     setTimeout(async () => {
@@ -1168,12 +1198,17 @@ async almacenar() {
         row.mostrar = row.item ? 1 : 0;
         row.tieneSiguiente = row.item && nextRow && !nextRow.item ? 1 : 0;
       }
-      response2.header.header.pop();
-      response2.header.header2.pop();
-      response2.header.header.push('saldo','activo')
-      response2.header.header2.push('saldo','activo')
+      if(response2.header.header){
+        const ultimo=response2.header.header[response2.header.header.length-1]
+        if(ultimo==='formula'){
+          response2.header.header.pop();
+          response2.header.header2.pop();
+        }
+        response2.header.header.push('saldo','estado')
+        response2.header.header2.push('saldo','estado')
+      }
       this.headerExcel = response2.header;
-      console.log(this.headerExcel)
+      await this.CambiarActivos()
       this.mostrar_carga_todo = false;
     }, 5);
   }
@@ -1208,6 +1243,8 @@ async almacenar() {
     }
   }
   async tablaTipoExcel(response, tablaPresu) {
+    console.log(response)
+    console.log(tablaPresu)
     let header = null;
     let body = [];
     let vinculado = true;
@@ -1465,9 +1502,22 @@ async almacenar() {
       this.indexTablaExcel = null;
       this.tablaSistema = [];
       this.MostrarTotales('');
+      this.CambiarActivos()
     } else {
       return;
     }
+  }
+  async CambiarActivos(){
+    const datos = {
+      id_proyecto: this.id_proyecto,
+      id_registro: this.id_registroact,
+      fecha: moment(this.fechaselecionada).format('YYYY-MM-DD'),
+    };
+    const respuesta=await this.metradoService.FindMetradosDiarios(datos)
+    let indicesSet = new Set(respuesta[0].map(obj => obj.indice));
+    this.tablaExcelAdjunta.forEach((item) => {
+      item.activo = indicesSet.has(item.indice) ? 1 : 0;
+    });
   }
   async seleccionMetradoDiario(row, i) {
     this.metradoSeleccionado = row;
@@ -1544,9 +1594,7 @@ async almacenar() {
         }
       }
       if (respuesta[2].length) {
-        this.MostrarTotales(
-          respuesta[2][0].montodias
-        );
+        this.MostrarTotales(respuesta[2][0].montodias)
       } else {
         this.MostrarTotales('');
       }
@@ -1903,7 +1951,7 @@ async almacenar() {
         dia.value == null || isNaN(dia.value) ? 0 : dia.value
       );
       letrasConcatenadas += isNaN(dia.value) ? '' : dia.value;
-      estadosConcatenados += dia.estado;
+      estadosConcatenados += !dia.estado||isNaN(dia.estado)?0:dia.estado;
       if (index < dias.length - 1) {
         letrasConcatenadas += '/';
         estadosConcatenados += '/';
@@ -1929,7 +1977,9 @@ async almacenar() {
       fecha: moment(this.fechaselecionada).format('YYYY-MM-DD'),
       datos1: JSON.stringify(filteredData),
     };
-    await this.metradoService.guardarMetradoDiario(datos);
+    await this.metradoService.guardarMetradoDiario(datos)
+    this.tablaExcelAdjunta[this.indexTablaExcel].saldo = this.formsService.redondeo(parseFloat(this.tablaExcelAdjunta[this.indexTablaExcel].saldo)+(parseFloat(this.valordia)-parseFloat(this.auxtotal)),5)
+    this.tablaExcelAdjunta[this.indexTablaExcel].activo=1
     this.dataSource1.find((d: any) => d.id_registro === this.id_registroact)!.version = estadosConcatenados;
   }
   async cambioCheckboxCopiar(valor, index) {
@@ -2030,7 +2080,7 @@ async almacenar() {
         altura: '',
         total: '',
         parcial: '',
-        tipofila: 2,
+        tipofila: '',
         subtotal: '',
         mostrar: 1,
         icomost: 0,
@@ -3201,6 +3251,8 @@ async almacenar() {
     if (respu.isConfirmed) {
       this.mostrar_carga = true;
       this.tablaSistema = this.tablainicialdiario;
+      this.auxtotal=this.valordia
+      this.existecambios=false
       this.CompletarTablaSistema();
       this.mostrar_carga = false;
     }
@@ -3281,6 +3333,7 @@ async almacenar() {
   }
   @HostListener('window:resize', ['$event'])
   async onResize() {
+    this.scrollbut2=document.body.clientWidth <= 880?true:false;
     var resto = 210;
     this.height = window.innerHeight - resto;
     if (document.body.clientWidth <= 768) {
@@ -3306,6 +3359,14 @@ async almacenar() {
         }
       }
     }, 0);
+  }
+  leftDivBut(){
+    var face1 = document.getElementById('divbut3');
+    face1.scrollLeft+=15;
+  }
+  rigthDivBut(){
+    var face1 = document.getElementById('divbut3');
+    face1.scrollLeft-=15;
   }
   @ViewChild('box2', { static: false }) box2!: ElementRef;
   vistagrande = true;

@@ -125,7 +125,7 @@ export class PanelprocuraComponent implements OnInit {
       if(datoaccs[0].procura==0){
         this.solover=true;
       }
-    }
+    } 
     //usuario principal puede cambiar a aprobado
     let uidadmin = await this.encriptadorService.recuperarlocalstory('id_admin');
     this.esSecund=id_user!=uidadmin?true:false;
@@ -142,6 +142,7 @@ export class PanelprocuraComponent implements OnInit {
       this.mask_cant='0.'+arrdec[3];
     }
     let res= await this.presuservice.listarTopPresupuesto({id_proyecto:this.id_proyecto});
+    //para obtener el total de presupuesto para realizar las comparaciones para agregar 
     if(res){
       let presu=res[0]
       let sumtot=0;

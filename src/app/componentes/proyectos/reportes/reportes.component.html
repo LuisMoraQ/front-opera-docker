@@ -166,6 +166,18 @@
                   </div>
                 </div>
             </div>
+            <mat-label *ngIf="datos.tipo_reporte==0||datos.tipo_reporte==6">Configuracion decimales</mat-label>
+            <div *ngIf="datos.tipo_reporte==0||datos.tipo_reporte==6 " class="form-group mt-2">
+              <mat-form-field appearance="outline" class="mff-reduc col-12 alto-35 px-0" >
+                <mat-label>Decimales</mat-label>
+                <select matNativeControl formControlName="opcionesdec" (change)="ChangeOption()">
+                  <option value="2">2</option>
+                  <option value="3">3</option>
+                  <option value="4">4</option>
+                  <option value="5">5</option>
+                </select>
+              </mat-form-field>
+            </div>
             <mat-label>Encabezado/Pie de Pagina</mat-label>
             <div class="form-group">
               <div class="flex-container" style=" display: flex; align-items: center; width: 100%;">

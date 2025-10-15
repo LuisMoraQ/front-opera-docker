@@ -265,6 +265,7 @@ export class SaldopresupuestalComponent implements OnInit {
       //tabla2: tablaTotales,
       //concat_tabla2:false,
       tipo_reporte:0,
+      reporte:0,
       orientacion:'landscape',
       moneda:this.simbolo,//condicionar
       titulo:'SALDO PRESUPUESTAL '+this.filareg.detalle,

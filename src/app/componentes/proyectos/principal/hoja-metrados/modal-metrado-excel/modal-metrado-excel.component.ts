@@ -1371,6 +1371,7 @@ export class ModalMetradoExcelComponent implements OnInit {
         const indice_tit = this.titulo.indice;
         const nomarchivo = this.nombreArchivo;
         const plantilla = this.idPlantillaFinal;
+        console.log(this.tablaFinal)
         const datos1 = JSON.stringify(this.tablaFinal);
         const obj = JSON.stringify({
           id_proyecto: id_proyecto,

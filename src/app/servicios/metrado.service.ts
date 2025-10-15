@@ -850,6 +850,25 @@ export class MetradoService {
       )
       .toPromise();
   }
+  FindMetradosDiarios(params = {}): Promise<any> {
+    let formData: FormData = new FormData();
+    Object.entries(params).forEach(([key, value]) => {
+      formData.append(key, value as string);
+    });
+    const url = this.enviUrl + '/api/metrados/FindMetradosDiarios';
+    return this.http
+      .post<any>(url, formData)
+      .pipe(
+        map((res) => {
+          if (!res || res.id == '0') {
+            throw new Error();
+          }
+          return res;
+        }),
+        catchError((err) => throwError(err))
+      )
+      .toPromise();
+  }
   CambiarEstado(params = {}): Promise<any> {
     let formData: FormData = new FormData();
     // Object.entries(params).forEach(([key, value]) => {

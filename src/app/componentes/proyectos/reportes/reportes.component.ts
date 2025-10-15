@@ -149,10 +149,11 @@ export class ReportesComponent implements OnInit {
         this.orientacion_pagina2 = this.datos.titulo==='FORMULA POLINÓMICA' && !this.datos.tabla3? 'landscape':this.datos.orientacion?  this.datos.orientacion: ''
         var nuevo=this.datos.image? 'A0': this.datos.titulo==='CRONOGRAMA VALORIZADO'|| this.datos.titulo==='CRONOGRAMA DE ADQUISICIONES'? 'A3':'A4'
         var aux =this.datos.titulo==='ESPECIFICACIÓN TÉCNICA GENERAL'? '10':'7'
-        this.reportetitulo= this.datos.tipo_reporte===0|| this.datos.tipo_reporte===2||this.datos.tipo_reporte===7? '':1      
+        this.reportetitulo= this.datos.tipo_reporte===2||this.datos.tipo_reporte===7? '':1      
         this.formulario1.get('tamanofuente').setValue(aux)
         this.formulario1.get('opciones1').setValue(nuevo)
-        this.formulario1.get('opciones5').setValue( this.orientacion_pagina2);
+        this.formulario1.get('opciones5').setValue( this.orientacion_pagina2)
+        this.formulario1.get('opcionesdec').setValue( this.datos.dec_parcial)
         this.opciones(this.orientacion_pagina2,this.formulario1.get('opciones2').value)
         if(this.datos.titulo==='PROGRAMACIÓN GANTT'){
           this.crearpdf();
@@ -438,6 +439,7 @@ export class ReportesComponent implements OnInit {
     opciones2:new UntypedFormControl('normal'),
     opciones3:new UntypedFormControl('color'),
     opciones4:new UntypedFormControl('Arial'),
+    opcionesdec:new UntypedFormControl('3'),
     opcionzoom:new UntypedFormControl('2'),
     opciones5:new UntypedFormControl(),
     margensuperior:new UntypedFormControl('',[Validators.required,Validators.min(0),Validators.max(10)]),
@@ -2314,6 +2316,14 @@ export class ReportesComponent implements OnInit {
         ultimo=this.CrearAlineartabla(datosCombinados,header)
         let respr=  await this.NumeroALetras(numerototal)
         valornumerico= {text:'SON ' + respr, style: 'subtitle'}
+      }else if(this.datos.tipo_reporte===8){
+        //MOVIMIENTO ALMACEN
+        titulo=this.CrearTitulo3(this.datos.titulo,this.datos.datos_proyecto.descripcion,this.datos.datos_proyecto,this.ubicacion)
+        ultimo= this.alinearTablaMovimiento(this.CuerpoPDF3(this.datos.tabla),this.datos.keys_body)
+        firmas = this.CrearFirmas()
+      }else if(this.datos.tipo_reporte===6){
+         titulo=this.CrearTitulo1(this.datos.titulo,tabla1)
+         ultimo=this.CrearWidthDiario(this.CrearTablasMetradoDiario(this.datos.tabla),this.datos.header.length,this.datos.keys_body)
       }else if(this.datos.concat_tabla2===true && this.datos.titulo!=='RESUMEN DEL PROYECTO'){
         //COSTO DEL PROYECTO DESAGREGADO,CLASIFICACIÓN COMERCIAL DE INSUMOS DEL PROYECTO
         if(this.reportetitulo===''){
@@ -2369,28 +2379,14 @@ export class ReportesComponent implements OnInit {
         titulo=this.CrearTitulo1(this.datos.titulo,tabla1)
         ultimo= await this.CrearEspecificaciones(this.datos.tabla)
         this.hasitematlt=true
-      }else if(this.datos.tipo_reporte===0&&this.datos.titulo=='RELACION DE INSUMOS PROGRAMADOS'){
-        titulo=this.CrearTitulo1(this.datos.titulo,tabla1)
-        const datosCombinados = this.CuerpoPDF4(this.datos.tabla)
-        ultimo=this.alinearTablaMovimiento(datosCombinados,this.datos.keys_body)
-      }else if(this.datos.tipo_reporte===0&&this.datos.titulo=='RELACION DE REQUERIMIENTOS'){
-        titulo=this.CrearTitulo1(this.datos.titulo,tabla1)
-        const datosCombinados = this.CuerpoPDF4(this.datos.tabla)
-        ultimo=this.alinearTablaMovimiento(datosCombinados,this.datos.keys_body)
-      }else if(this.datos.tipo_reporte===0&&this.datos.header2){
-        titulo=this.CrearTitulo1(this.datos.titulo,tabla1)
-        ultimo=this.CrearTablasProcura(this.datos.tabla)
       }else if(this.datos.tipo_reporte===0){
         titulo=this.CrearTitulo1(this.datos.titulo,tabla1)
-        const datosCombinados = this.CuerpoPDF2(this.datos.tabla)
-        ultimo=this.alinearTablaProcura(datosCombinados,this.datos.keys_body)
-      }else if(this.datos.tipo_reporte===8){
-        titulo=this.CrearTitulo3(this.datos.titulo,this.datos.datos_proyecto.descripcion,this.datos.datos_proyecto,this.ubicacion)
-        ultimo= this.alinearTablaMovimiento(this.CuerpoPDF3(this.datos.tabla),this.datos.keys_body)
-        firmas = this.CrearFirmas()
-      }else if(this.datos.tipo_reporte===6){
-         titulo=this.CrearTitulo1(this.datos.titulo,tabla1)
-         ultimo=this.CrearWidthDiario(this.CrearTablasMetradoDiario(this.datos.tabla),this.datos.header.length,this.datos.keys_body)
+        if(this.datos.header2){
+          ultimo=this.CrearTablasProcura(this.datos.tabla)
+        }else{
+          const datosCombinados =this.CuerpoPDF4(this.datos.tabla)
+          ultimo=this.alinearTablaMovimiento(datosCombinados,this.datos.keys_body)
+        }
       }else{
         //RESUMEN DEL METRADO
         titulo=this.CrearTitulo1(this.datos.titulo,tabla1)
@@ -2666,18 +2662,6 @@ export class ReportesComponent implements OnInit {
       margin:[0,0,0,15]
     }
   }
-  alinearTablaProcura(content,header){
-    var widths=this.CrearTablaCompleta2(header)
-    return{
-      table:{
-        widths:widths,
-        headerRows: 1,
-        body: content,
-      },  
-      style: 'tablaConAlineacion',
-      margin:[0,0,0,15]
-    }
-  }
   CrearTablaCompleta3(array){
     const resultado:any[]= [];
     for(let i=0;i<array.length;i++){
@@ -2700,6 +2684,8 @@ export class ReportesComponent implements OnInit {
     for(let i=0;i<array.length;i++){
       if(array[i]==='descripcion'){
         resultado.push('*')
+      }else if(array[i]=='precio'){
+        resultado.push(35)
       }else{
         resultado.push('auto')
       }
@@ -2707,7 +2693,7 @@ export class ReportesComponent implements OnInit {
     return resultado
   }
   alinearTablaMovimiento(content,keys){
-    var widths=this.CrearTablaCompleta3(keys)
+    var widths=this.datos.reporte==0||this.datos.tipo_reporte==8?this.CrearTablaCompleta3(keys):this.CrearTablaCompleta2(keys)
     return{
       table:{
         widths:widths,
@@ -3072,7 +3058,7 @@ export class ReportesComponent implements OnInit {
     }
     return newArray;
   }
-  CuerpoPDF2(array) {
+  CuerpoPDF4(array){
     this.exceldatos=array
     if(this.contador===1){
       this.excelheader = this.ExcelHeaderRow(JSON.parse(JSON.stringify(this.datos.header)))
@@ -3080,42 +3066,70 @@ export class ReportesComponent implements OnInit {
     var ColumnasSeleccionadas = this.datos.keys_body;
     var paginado=this.formulario1.get('opciones1').value
     var padd=(paginado==='A4'|| paginado==='A5'||paginado==='FOLIO'||paginado==='LETTER')? -2:0
-    var monocromado = this.formulario1.get('opciones3').value;
-    var tableData = []
-    let tablaaux=this.AgregarSpan2(JSON.parse(JSON.stringify(this.datos.header)))
-    tableData.push(tablaaux[0])
-    tableData.push(tablaaux[1])
-    let colorgeneral=this.colorgeneral
+    var monocromado = this.formulario1.get('opciones3').value
+    let decimales =this.formulario1.get('opcionesdec').value
+    var colorgeneral=this.colorgeneral
     var auxiliar = this.datos.col_alig
     var moneda = this.datos.moneda? this.datos.moneda : 'S/'
-    let palabra ='parcial'
-    let palabra2='por'
-    array.forEach((persona)=>{
+    var tableData = []
+    if(this.datos.reporte==0){
+      let encabezado= this.CrearHeaderSimple(this.datos.header,true)
+      tableData.push(encabezado);
+      array.forEach((persona)=>{
       let array=[]
+      let colorbackground = monocromado==='monocromado'? '': persona.fondo? persona.fondo.substring(0, 7): persona.alinea? '#DEDDE6':''
+      let color = monocromado==='monocromado'? colorgeneral:persona.color? persona.color:colorgeneral 
+      let bold = persona.tipoletra ==="4"|| persona.tipoletra==="3"? true:false
+      let italics =persona.tipoletra ==="4"|| persona.tipoletra==="2"? true:false
       for(let i=0;i<ColumnasSeleccionadas.length;i++){
-        const column =ColumnasSeleccionadas[i];
         let alignment = persona.alinea? persona.alinea:auxiliar[i];
-        let colorbackground = monocromado==='monocromado'? '': persona.fondo? persona.fondo.substring(0, 7): persona.alinea? '#DEDDE6':''
-        let color = monocromado==='monocromado'? colorgeneral:persona.color? persona.color:colorgeneral 
-        let bold = persona.tipoletra ==="4"|| persona.tipoletra==="3"? true:false
-        let italics =persona.tipoletra ==="4"|| persona.tipoletra==="2"? true:false
-        let espaciosinciales= (/^\s+/).test(persona[column])? persona[column].match(/^\s+/)![0].length:0
-        if(persona[column]!==null &&persona[column]!=='' &&persona[column]!==undefined &&(column.includes(palabra.toLowerCase())||column==='precio')){
-          var numerofor= this.formatearNumero(this.formService.redondeo(persona[column],this.datos.keys_dec[i]),null)
-          array.push({text:moneda,color : color,margin:[padd+espaciosinciales,0,0,0], bold:bold ,italics:italics,alignment:'left',fillColor:colorbackground,borderColor: ['#acb2b4', '#acb2b4', '', '#acb2b4'],border:[true,true,false,true]})
-          array.push({ text:numerofor,alignment: 'right' ,margin:[espaciosinciales,0,padd,0],  borderColor: ['', '#acb2b4', '#acb2b4', '#acb2b4'] ,fillColor:colorbackground, color : color, bold:bold ,italics:italics,border:[false,true,true,true]});
-        }else if((persona[column]===''||persona[column]===null )&&(column.includes(palabra.toLowerCase())||column==='precio')){
-          array.push({text:'',color : color,margin:[padd+espaciosinciales,0,0,0], bold:bold ,italics:italics,alignment:'left',fillColor:colorbackground,borderColor: ['#acb2b4', '#acb2b4', '', '#acb2b4'],border:[true,true,false,true]})
-          array.push({ text:'',alignment: alignment ,margin:[espaciosinciales,0,padd,0],  borderColor: ['', '#acb2b4', '#acb2b4', '#acb2b4'] ,fillColor:colorbackground, color : color, bold:bold ,italics:italics,border:[false,true,true,true]});
-        }else if(column.includes(palabra2.toLowerCase())){
-          array.push({ text:persona[column]+'%',margin:[padd+espaciosinciales,0,padd,0], alignment: alignment ,  borderColor: ['#acb2b4', '#acb2b4', '#acb2b4', '#acb2b4'] ,fillColor:colorbackground, color : color, bold:bold ,italics:italics});
+        const column =ColumnasSeleccionadas[i];
+        if(persona[column]!==null &&persona[column]!=='' &&persona[column]!==undefined &&((column==='parcial')||(column=='precio'||column=='reqsol'))){
+          var numerofor= this.formatearNumero2(persona[column],decimales)
+          array.push({text:moneda,color : color,margin:[padd,0,0,0], bold:bold ,italics:italics,alignment:'left',fillColor:colorbackground,borderColor: ['#acb2b4', '#acb2b4', '', '#acb2b4'],border:[true,true,false,true]})
+          array.push({ text:numerofor,alignment: 'right' ,margin:[0,0,padd,0],  borderColor: ['', '#acb2b4', '#acb2b4', '#acb2b4'] ,fillColor:colorbackground, color : color, bold:bold ,italics:italics,border:[false,true,true,true]});
+        }else if((persona[column]===''||persona[column]===null )&&((column==='parcial')||(column=='precio'||column=='reqsol'))){
+          array.push({text:'',color : color,margin:[padd,0,0,0], bold:bold ,italics:italics,alignment:'left',fillColor:colorbackground,borderColor: ['#acb2b4', '#acb2b4', '', '#acb2b4'],border:[true,true,false,true]})
+          array.push({ text:'',alignment: alignment ,margin:[0,0,padd,0],  borderColor: ['', '#acb2b4', '#acb2b4', '#acb2b4'] ,fillColor:colorbackground, color : color, bold:bold ,italics:italics,border:[false,true,true,true]});
         }else{
-          let aux=this.esNumero(persona[column])===true&& column!=='item'&&column!=='auxiliar' && column!=='codigo' ? this.formatearNumero(this.formService.redondeo(persona[column],this.datos.keys_dec[i]),2) : persona[column]
-          array.push({ text:aux,margin:[padd+espaciosinciales,0,padd,0], alignment: alignment ,  borderColor: ['#acb2b4', '#acb2b4', '#acb2b4', '#acb2b4'] ,fillColor:colorbackground, color : color, bold:bold ,italics:italics});
+          array.push({ text:persona[column],margin:[padd,0,padd,0], alignment: alignment ,  borderColor: ['#acb2b4', '#acb2b4', '#acb2b4', '#acb2b4'] ,fillColor:colorbackground, color : color, bold:bold ,italics:italics});
         }
       }
       tableData.push(array);
-    })
+      })
+    }else{
+      let tablaaux=this.AgregarSpan2(JSON.parse(JSON.stringify(this.datos.header)))
+      tableData.push(tablaaux[0])
+      tableData.push(tablaaux[1])
+      let palabra ='parcial'
+      let palabra2='por'
+      array.forEach((persona)=>{
+      let array=[]
+      let colorbackground = monocromado==='monocromado'? '': persona.fondo? persona.fondo.substring(0, 7): persona.alinea? '#DEDDE6':''
+      let color = monocromado==='monocromado'? colorgeneral:persona.color? persona.color:colorgeneral 
+      let bold = persona.tipoletra ==="4"|| persona.tipoletra==="3"? true:false
+      let italics =persona.tipoletra ==="4"|| persona.tipoletra==="2"? true:false
+      for(let i=0;i<ColumnasSeleccionadas.length;i++){
+        let alignment = persona.alinea? persona.alinea:auxiliar[i];
+        const column =ColumnasSeleccionadas[i];
+        if(persona[column]!==null &&persona[column]!=='' &&persona[column]!==undefined &&(column.includes(palabra.toLowerCase())||column==='precio')){
+          var numerofor= this.formatearNumero2(persona[column],decimales)
+          array.push({text:moneda,color : color,margin:[padd,0,0,0], bold:bold ,italics:italics,alignment:'left',fillColor:colorbackground,borderColor: ['#acb2b4', '#acb2b4', '', '#acb2b4'],border:[true,true,false,true]})
+          array.push({ text:numerofor,alignment: 'right' ,margin:[padd,0,padd,0],  borderColor: ['', '#acb2b4', '#acb2b4', '#acb2b4'] ,fillColor:colorbackground, color : color, bold:bold ,italics:italics,border:[false,true,true,true]});
+        }else if((persona[column]===''||persona[column]===null )&&(column.includes(palabra.toLowerCase())||column==='precio')){
+          array.push({text:'',color : color,margin:[padd,0,0,0], bold:bold ,italics:italics,alignment:'left',fillColor:colorbackground,borderColor: ['#acb2b4', '#acb2b4', '', '#acb2b4'],border:[true,true,false,true]})
+          array.push({ text:'',alignment: alignment ,margin:[padd,0,padd,0],  borderColor: ['', '#acb2b4', '#acb2b4', '#acb2b4'] ,fillColor:colorbackground, color : color, bold:bold ,italics:italics,border:[false,true,true,true]});
+        }else if(column.includes(palabra2.toLowerCase())){
+          array.push({ text:persona[column]+'%',margin:[padd,0,padd,0], alignment: alignment ,  borderColor: ['#acb2b4', '#acb2b4', '#acb2b4', '#acb2b4'] ,fillColor:colorbackground, color : color, bold:bold ,italics:italics});
+        }else{
+          let aux=(this.esNumero(persona[column])===true&& column!=='item')? this.formatearNumero(persona[column],2) : persona[column]
+          array.push({ text:aux,margin:[padd,0,padd,0], alignment: alignment ,  borderColor: ['#acb2b4', '#acb2b4', '#acb2b4', '#acb2b4'] ,fillColor:colorbackground, color : color, bold:bold ,italics:italics});
+        }
+      }
+      tableData.push(array);
+      })
+    }
+    this.contador++
     return tableData
   }
   addFootSimple(array=[]){
@@ -3187,7 +3201,7 @@ export class ReportesComponent implements OnInit {
             array.push({text:persona[column],color : color,margin:[padd+espaciosinciales,0,0,0], bold:bold ,italics:italics,alignment:'left',fillColor:colorbackground,borderColor: ['#acb2b4', '#acb2b4', '#acb2b4', '#acb2b4'],border:[true,true,true,true],colSpan:2})
             array.push(null);
           }else{
-            var numerofor= this.formatearNumero(this.formService.redondeo(persona[column],this.datos.keys_dec[i]),null)
+            var numerofor= this.formatearNumero2(persona[column],this.datos.keys_dec[i])
             array.push({text:moneda,color : color,margin:[padd+espaciosinciales,0,0,0], bold:bold ,italics:italics,alignment:'left',fillColor:colorbackground,borderColor: ['#acb2b4', '#acb2b4', '', '#acb2b4'],border:[true,true,false,true]})
             array.push({ text:numerofor,alignment: 'right' ,margin:[espaciosinciales,0,padd,0],  borderColor: ['', '#acb2b4', '#acb2b4', '#acb2b4'] ,fillColor:colorbackground, color : color, bold:bold ,italics:italics,border:[false,true,true,true]});
           }
@@ -3202,50 +3216,32 @@ export class ReportesComponent implements OnInit {
       tableData.push(array);
     })
     let tablafoot= this.addFootSimple(this.datos.tabla2)
+    this.exceltabla2=(JSON.parse(JSON.stringify([this.datos.tabla2])))
     tableData.push(tablafoot)
     return tableData
   }
-  CuerpoPDF4(array){
-    this.exceldatos=array
-    if(this.contador===1){
-      this.excelheader = this.ExcelHeaderRow(JSON.parse(JSON.stringify(this.datos.header)))
-    }
-    var ColumnasSeleccionadas = this.datos.keys_body;
-    var paginado=this.formulario1.get('opciones1').value
-    var padd=(paginado==='A4'|| paginado==='A5'||paginado==='FOLIO'||paginado==='LETTER')? -2:0
-    var monocromado = this.formulario1.get('opciones3').value;
-    var tableData = []
-    let encabezado= this.CrearHeaderSimple(this.datos.header,true)
-    this.contador++
-    tableData.push(encabezado);
-    var colorgeneral=this.colorgeneral
-    var auxiliar = this.datos.col_alig
-    var moneda = this.datos.moneda? this.datos.moneda : 'S/'
-    array.forEach((persona)=>{
-      let array=[]
-      let colorbackground = monocromado==='monocromado'? '': persona.fondo? persona.fondo.substring(0, 7): persona.alinea? '#DEDDE6':''
-      let color = monocromado==='monocromado'? colorgeneral:persona.color? persona.color:colorgeneral 
-      let bold = persona.tipoletra ==="4"|| persona.tipoletra==="3"? true:false
-      let italics =persona.tipoletra ==="4"|| persona.tipoletra==="2"? true:false
-      for(let i=0;i<ColumnasSeleccionadas.length;i++){
-        let alignment = persona.alinea? persona.alinea:auxiliar[i];
-        const column =ColumnasSeleccionadas[i];
-        if(persona[column]!==null &&persona[column]!=='' &&persona[column]!==undefined &&((column==='parcial')||(column=='precio'||column=='reqsol'))){
-          var numerofor= this.formatearNumero(this.formService.redondeo(persona[column],this.datos.keys_dec[i]),null)
-          array.push({text:moneda,color : color,margin:[padd,0,0,0], bold:bold ,italics:italics,alignment:'left',fillColor:colorbackground,borderColor: ['#acb2b4', '#acb2b4', '', '#acb2b4'],border:[true,true,false,true]})
-          array.push({ text:numerofor,alignment: 'right' ,margin:[0,0,padd,0],  borderColor: ['', '#acb2b4', '#acb2b4', '#acb2b4'] ,fillColor:colorbackground, color : color, bold:bold ,italics:italics,border:[false,true,true,true]});
-        }else if((persona[column]===''||persona[column]===null )&&((column==='parcial')||(column=='precio'||column=='reqsol'))){
-          array.push({text:'',color : color,margin:[padd,0,0,0], bold:bold ,italics:italics,alignment:'left',fillColor:colorbackground,borderColor: ['#acb2b4', '#acb2b4', '', '#acb2b4'],border:[true,true,false,true]})
-          array.push({ text:'',alignment: alignment ,margin:[0,0,padd,0],  borderColor: ['', '#acb2b4', '#acb2b4', '#acb2b4'] ,fillColor:colorbackground, color : color, bold:bold ,italics:italics,border:[false,true,true,true]});
-        }else{
-          array.push({ text:persona[column],margin:[padd,0,padd,0], alignment: alignment ,  borderColor: ['#acb2b4', '#acb2b4', '#acb2b4', '#acb2b4'] ,fillColor:colorbackground, color : color, bold:bold ,italics:italics});
-        }
-      }
-      tableData.push(array);
-    })
-    return tableData
-  }
+
   formatearNumero(numero: any,decimales){
+    if (typeof numero !== 'string') {
+        return numero;
+    }
+    let numeroFloat = parseFloat(numero);
+    if (isNaN(numeroFloat)) {
+        return numero;
+    }
+    let [parteEntera, parteDecimal] = numero.split('.')
+    parteEntera  = parteEntera.replace(/\B(?=(\d{3})+(?!\d))/g, "'");
+    let ultimaComillaIndex = parteEntera.lastIndexOf("'");
+    if (ultimaComillaIndex !== -1) {
+        let nuevaExpresion = parteEntera.substring(0, ultimaComillaIndex) + "," + parteEntera.substring(ultimaComillaIndex + 1);
+        return `${nuevaExpresion}.${parteDecimal}`
+    }else {
+        let auxiliar= parteDecimal===undefined? numero:`${parteEntera}.${parteDecimal}`
+        return auxiliar
+    }
+  }
+  formatearNumero2(numero2: any,decimales){
+    let numero= this.formService.redondeo(numero2,decimales)
     if (typeof numero !== 'string') {
         return numero;
     }
@@ -3502,6 +3498,7 @@ export class ReportesComponent implements OnInit {
     return tabla2
   }
   CrearTablasProcura(array){
+    this.exceldatos=[]
     var tablasfinales = []
     var color=this.colorgeneral
     var paginado=this.formulario1.get('opciones1').value
@@ -3514,6 +3511,7 @@ export class ReportesComponent implements OnInit {
     var auxiliar = this.datos.col_alig
     var auxiliar2 = this.datos.col_alig2
     var auxiliar3 = this.datos.col_alig3
+    let decimales =this.formulario1.get('opcionesdec').value
     let tabla1= array.filter((item)=>item.indice==null)
     const widths=this.CrearTablaCompleta3(ColumnasSeleccionadas)
     const widths2=this.CreateSimpleWidths(ColumnasSeleccionadas2)
@@ -3529,11 +3527,12 @@ export class ReportesComponent implements OnInit {
         const column =ColumnasSeleccionadas[m];
         let alignment = auxiliar[m];
         if((column==='parcial')||(column==='reqsol')){
-          var numerofor= this.formatearNumero(this.formService.redondeo(k[column],this.datos.keys_dec[m]),null)
+          var numerofor= this.formatearNumero2(k[column],decimales)
           array1.push({text:moneda,color : color , bold:true ,alignment:'left',borderColor: ['#acb2b4', '#acb2b4', '', '#acb2b4'],border:[true,true,false,true],margin:margin})
           array1.push({ text:numerofor,alignment: 'right', borderColor: ['', '#acb2b4', '#acb2b4', '#acb2b4'] , color : color, bold:true ,border:[false,true,true,true],margin:margin});
         }else{
-          array1.push({ text:k[column], alignment:alignment,color : color, bold:true,borderColor: ['#acb2b4', '#acb2b4', '#acb2b4', '#acb2b4'],margin:margin})
+          let texto= column=='variacion'?this.formatearNumero2(k[column],2):column=='estado'&& k[column]==1?'APROBADO':column=='estado'&& k[column]==1?'PENDIENTE': column=='entrega'&&k[column]=='1'? 'Almacen Central':column=='entrega'&&k[column]=='2'?'Almacen de Obra':k[column]
+          array1.push({ text:texto, alignment:alignment,color : color, bold:true,borderColor: ['#acb2b4', '#acb2b4', '#acb2b4', '#acb2b4'],margin:margin})
         }
       }
       tableData.push(array1)
@@ -3546,7 +3545,8 @@ export class ReportesComponent implements OnInit {
       for(let n=0;n<ColumnasSeleccionadas2.length;n++){
           const column =ColumnasSeleccionadas2[n];
           let alignment = auxiliar2[n];
-          array2.push({ text:persona[column], alignment:alignment,color : color, bold:true,borderColor: ['#acb2b4', '#acb2b4', '#acb2b4', '#acb2b4']})
+          let texto= column=='cantidad'? this.formatearNumero2(persona[column],this.datos.dec_metrado):column=='precio'||column=='parcial'? this.formatearNumero2(persona[column],decimales) :persona[column]
+          array2.push({ text:texto, alignment:alignment,color : color, bold:true,borderColor: ['#acb2b4', '#acb2b4', '#acb2b4', '#acb2b4']})
         }
         tableData2.push(array2)
       });
@@ -3554,11 +3554,13 @@ export class ReportesComponent implements OnInit {
       let header3=this.CrearHeaderSimple(this.datos.header3,false)
       tableData3.push(header3)
       subtabla3.forEach((persona)=> {
+      let colorbackground = !persona.unidad? '#F5F4C6':''
       let array3=[]
       for(let z=0;z<ColumnasSeleccionadas3.length;z++){
           const column =ColumnasSeleccionadas3[z];
           let alignment = auxiliar3[z];
-          array3.push({text:persona[column], alignment:alignment,color : color, bold:true,borderColor: ['#acb2b4', '#acb2b4', '#acb2b4', '#acb2b4']})
+          let texto=!persona.unidad && (column=='cantidad'||column=='precio'||column=='parcial')?'':column=='cantidad'? this.formatearNumero2(persona[column],this.datos.dec_metrado):column=='precio'||column=='parcial'||column=='acumulado'? this.formatearNumero2(persona[column],decimales) :persona[column]
+          array3.push({text:texto, alignment:alignment,color : color, bold:true,borderColor: ['#acb2b4', '#acb2b4', '#acb2b4', '#acb2b4'],fillColor:colorbackground,})
         }
         tableData3.push(array3)
       });
@@ -3599,6 +3601,7 @@ export class ReportesComponent implements OnInit {
         ],
         columnGap: 10 
       }]});
+      this.exceldatos.push([[k],subtabla2,subtabla3])
     }
     return tablasfinales;
   }
@@ -3897,6 +3900,72 @@ export class ReportesComponent implements OnInit {
         newArray.push(newRow);
     }
     this.contador++
+    return newArray;
+  }
+  ExcelRowSpan(array){
+    array=array??[]
+    const newArray = [];
+    for (let i = 0; i < array.length; i++) {
+      const newRow = [];
+      let numero=0
+      for (let j = 0; j < array[i].length; j++) {
+        const cell = array[i][j]
+        if(cell!==null){
+          newRow.push({...cell});
+          if (cell.rowSpan && cell.rowSpan > 1) {
+            for (let k = 1; k < cell.rowSpan; k++) {
+              for(let a=0;a<cell.colSpan;a++){
+                array[i+k].splice(a+numero,0, {text:'',colSpan:1});
+              }       
+            }                
+          }
+          numero++
+          if (cell.colSpan && cell.colSpan > 1) {
+            for (let k = 1; k < cell.colSpan; k++) {
+              numero++
+            }
+          }
+        }        
+      }
+      newArray.push(newRow);
+    }
+    return newArray
+  }
+  CrearRowSpan(array=[]) {
+    array=array??[] 
+    const newArray = [];
+    for (let i = 0; i < array.length; i++) {
+        const newRow = [];
+        let numero=0
+        for (let j = 0; j < array[i].length; j++) {
+            const cell = array[i][j]
+            if(cell!==null){ 
+              let color = this.colorgeneral 
+              let colorbackground = '#F4F9FF'
+              let borderColor=cell.borderColor? cell.borderColor : ['#acb2b4', '#acb2b4', '#acb2b4', '#acb2b4']
+              let bold = cell.tipoletra ==="4" || cell.tipoletra==="3"? true:false;
+              let italics =cell.tipoletra ==="4" || cell.tipoletra==="2"? true:false;
+              newRow.push({...cell, alignment: 'center' ,borderColor: borderColor,fillColor:colorbackground, color : color,bold:bold ,italics:italics});
+              if (cell.rowSpan && cell.rowSpan > 1) {
+                for (let k = 1; k < cell.rowSpan; k++) {
+                    for(let a=0;a<cell.colSpan;a++){
+                      array[i+k].splice(a+numero,0, null);
+                    }       
+                }                
+              }
+              numero++
+              if (cell.colSpan && cell.colSpan > 1) {
+                  for (let k = 1; k < cell.colSpan; k++) {
+                      newRow.push(null);
+                      numero++
+                  }
+              }
+            }else{
+              newRow.push(null);
+            }
+        }
+        newArray.push(newRow);
+    }
     return newArray;
   }
   AgregarSpanCalendario(array=[],monocromado,padd,posicion,colorfondo) {
@@ -4249,18 +4318,21 @@ export class ReportesComponent implements OnInit {
   }
   CrearTablasMetradoDiario(array) {
     this.exceldatos=array
-    if(this.contador===1){
+    if(this.contador===1&&this.datos.header.length==2){
       this.excelheader = this.ExcelHeaderRow(JSON.parse(JSON.stringify(this.datos.header)))
+    }else  {
+      this.excelheader=this.ExcelRowSpan(JSON.parse(JSON.stringify(this.datos.header)))
     }
     var ColumnasSeleccionadas = this.datos.keys_body;
     var padd=-2
     var monocromado = this.formulario1.get('opciones3').value;
     var tableData = []
-    var encabezado= this.AgregarSpanProgramacion(this.datos.header,monocromado,0,'center','#F4F9FF')
+    var encabezado=this.datos.header.length==3? this.CrearRowSpan(JSON.parse(JSON.stringify(this.datos.header))):this.AgregarSpanProgramacion(this.datos.header,monocromado,0,'center','#F4F9FF')
     tableData=tableData.concat(encabezado)
     var colorgeneral=this.colorgeneral
     var auxiliar = this.datos.col_alig
-    if(this.datos.titulo=='METRADO DESAGREGADO'||this.datos.titulo=='VALORIZACION PROGRAMADA'){
+    let decimales =this.formulario1.get('opcionesdec').value
+    if(this.datos.reporte==0){
      array.forEach((persona)=> {
         let array1=[]
         let colorbackground = monocromado==='monocromado'? '': persona.fondo? persona.fondo.substring(0, 7):''
@@ -4271,12 +4343,38 @@ export class ReportesComponent implements OnInit {
           const column = ColumnasSeleccionadas[i]
           let alignment = persona.alinea? persona.alinea:auxiliar[i];
           let espaciosinciales= (/^\s+/).test(persona[column])? persona[column].match(/^\s+/)![0].length:0
-          array1.push({ text:persona[column],margin:[padd+espaciosinciales,0,padd,0], alignment: alignment ,  borderColor: ['#acb2b4', '#acb2b4', '#acb2b4', '#acb2b4'] ,fillColor:colorbackground, color : color, bold:bold ,italics:italics});
+          let texto=persona[column]!==''&&( column=='total_nuevo'||column=='parcial'||column=='precio'||column=='total_anterior'||column=='total_actual'||column=='total_acumulado'||column=='total_saldo')?this.formatearNumero2(persona[column],decimales):persona[column]
+          array1.push({ text:texto,margin:[padd+espaciosinciales,0,padd,0], alignment: alignment ,  borderColor: ['#acb2b4', '#acb2b4', '#acb2b4', '#acb2b4'] ,fillColor:colorbackground, color : color, bold:bold ,italics:italics});
         }
         tableData.push(array1);
       })
+      if(this.datos.tabla2){
+        this.exceltabla2=JSON.parse(JSON.stringify(this.datos.tabla2))
+        let footer= JSON.parse(JSON.stringify(this.datos.tabla2))
+        for (let i = 0; i < footer.length; i++) {
+        const newRow = [];
+          for (let j = 0; j < footer[i].length; j++) {
+              const cell = footer[i][j];
+              let alignment=cell.alinea? cell.alinea:''
+              let color = monocromado==='monocromado'? this.colorgeneral:cell.color? cell.color:this.colorgeneral
+              let colorbackground = monocromado==='monocromado'? '': cell.fondo? cell.fondo:''
+              let borderColor= ['#acb2b4', '#acb2b4', '#acb2b4', '#acb2b4']
+              let bold = cell.tipoletra ==="4"|| cell.tipoletra==="3"? true:false;
+              let italics =cell.tipoletra ==="4"|| cell.tipoletra==="2"? true:false;
+              let moneda = this.datos.moneda? this.datos.moneda : 'S/'
+              let colspan=cell.colSpan
+              var numerofor=this.isNumber(cell.text)? this.formatearNumero2(cell.text,decimales):cell.text
+              newRow.push({ text:numerofor ,alignment:alignment,  borderColor: ['#acb2b4', '#acb2b4', '#acb2b4', '#acb2b4'] ,fillColor:colorbackground,colSpan:colspan, color : color, bold:bold ,italics:italics,border:[true,true,true,true]});
+              if(colspan>1){
+                for (let k = 1; k < colspan; k++) {newRow.push(null)}
+              }
+            }
+        tableData.push(newRow);
+        }
+      }
     }else{
       const tamanoarray=this.datos.tabla[0].montodias.length
+      auxiliar.splice(5,0,'center')
       array.forEach((persona)=> {
         let array1=[]
         let colorbackground = monocromado==='monocromado'? '': persona.fondo? persona.fondo.substring(0, 7):''
@@ -4290,10 +4388,11 @@ export class ReportesComponent implements OnInit {
           if(column=='montodias'){
             for(let k=0;k<tamanoarray;k++){
               const dato =persona.montodias[k]
-              array1.push({ text:dato,margin:[padd+espaciosinciales,0,padd,0], alignment: alignment ,  borderColor: ['#acb2b4', '#acb2b4', '#acb2b4', '#acb2b4'] ,fillColor:colorbackground, color : color, bold:bold ,italics:italics});
+              array1.push({ text:dato,margin:[padd,0,padd,0], alignment: alignment ,  borderColor: ['#acb2b4', '#acb2b4', '#acb2b4', '#acb2b4'] ,fillColor:colorbackground, color : color, bold:bold ,italics:italics});
             }
           }else{
-            array1.push({ text:persona[column],margin:[padd+espaciosinciales,0,padd,0], alignment: alignment ,  borderColor: ['#acb2b4', '#acb2b4', '#acb2b4', '#acb2b4'] ,fillColor:colorbackground, color : color, bold:bold ,italics:italics});
+            let texto= persona['unidad']&&(column=='saldo'||column=='acumulado'||column=='total'||column=='metradoant'||column=='cantidad')? this.formatearNumero2(persona[column],decimales):persona[column]
+            array1.push({ text:texto,margin:[padd+espaciosinciales,0,padd,0], alignment: alignment ,  borderColor: ['#acb2b4', '#acb2b4', '#acb2b4', '#acb2b4'] ,fillColor:colorbackground, color : color, bold:bold ,italics:italics});
           }
         }
         tableData.push(array1);
@@ -4662,7 +4761,6 @@ export class ReportesComponent implements OnInit {
   AgregarmonedaFooterIndirectos(array=[],monocromado,padding){
     array=array??[]
     const newArray = [];
-    let total
     for (let i = 1; i < array.length; i++) {
       const newRow = [];
       for (let j = 0; j < array[i].length; j++) {
@@ -4784,6 +4882,19 @@ export class ReportesComponent implements OnInit {
       }
     }
   }
+  FindNext(position: number, condition: (item: any) => boolean): number {
+    let addi = 0;
+    const total = this.exceldatos.length - 1;
+    for (let k = position + 1; k < this.exceldatos.length; k++) {
+      const item = this.exceldatos[k];
+      if (condition(item) || k === total) {
+        return addi;
+      } else {
+        addi++;
+      }
+    }
+    return addi;
+  }
   FindNextTitutlo(position){
     let array=[]
     var addi=0
@@ -4798,6 +4909,15 @@ export class ReportesComponent implements OnInit {
         addi++
       }
     }
+  }
+  getExcelColumn(columnNumber){
+    let columnName = "";
+    while (columnNumber > 0) {
+      const remainder = (columnNumber - 1) % 26;
+      columnName = String.fromCharCode(65 + remainder) + columnName;
+      columnNumber = Math.floor((columnNumber - 1) / 26);
+    }
+    return columnName;
   }
   async exportToExcel() {
     const workbook = new ExcelJS.Workbook();
@@ -4911,68 +5031,68 @@ export class ReportesComponent implements OnInit {
           }else {
             var aux=[[{text: titaxu + '           ' +item.descripcion,colSpan:this.datos.keys_body.length,fondo:'#dfebf8', tipoletra:"3"}, { ...extra }],[{text:' Cantidad Total  :  ' + item.cantidad +' '+ item.unidad+ '                     Ratio Unitario Productividad : ' + ratio +' '+unidad_ratio,colSpan:this.datos.keys_body.length-3},{text:'COSTO TOTAL :  ' + this.datos.moneda+' '+item.precio,colSpan:3}]]
           }
-              aux.forEach(rowData => {
-                let row = worksheet.addRow([]);  
-                rowData.forEach(cellData => {
-                    let cell = row.getCell(row.actualCellCount + 1);
-                    let background =  cellData.fondo? this.hexShortToRGBA(cellData.fondo) : ''
-                    cell.value = cellData.text;
-                    let bold = cellData.tipoletra==='4' || cellData.tipoletra==='3'? true:false
-                    let italic= cellData.tipoletra==='4' || cellData.tipoletra==='2'? true:false
-                    cell.font={bold: bold,italic:italic,size:9 , color: { argb: color }}
-                    cell.border = {
-                        top: {style: 'thin',color: { argb: borde } },
-                        left: {style: 'thin',color: { argb: borde } },
-                        bottom: { style: 'thin',color: { argb: borde } },
-                        right: { style: 'thin',color: { argb: borde } }
-                    }
-                    cell.fill = { type: 'pattern', pattern: 'solid', fgColor:{argb:(background)} };
-                    if (cellData.colSpan > 1) {
-                        // Calcular las coordenadas de las celdas a fusionar
-                        let startCol = Number(cell.col);
-                        let endCol = startCol + cellData.colSpan - 1;
-                        let rowNumber = row.number;
-                        worksheet.mergeCells(rowNumber, startCol, rowNumber, endCol);
-                    }
-                });
+          aux.forEach(rowData => {
+            let row = worksheet.addRow([]);  
+            rowData.forEach(cellData => {
+              let cell = row.getCell(row.actualCellCount + 1);
+              let background =  cellData.fondo? this.hexShortToRGBA(cellData.fondo) : ''
+              cell.value = cellData.text;
+              let bold = cellData.tipoletra==='4' || cellData.tipoletra==='3'? true:false
+              let italic= cellData.tipoletra==='4' || cellData.tipoletra==='2'? true:false
+              cell.font={bold: bold,italic:italic,size:9 , color: { argb: color }}
+              cell.border = {
+                top: {style: 'thin',color: { argb: borde } },
+                left: {style: 'thin',color: { argb: borde } },
+                bottom: { style: 'thin',color: { argb: borde } },
+                right: { style: 'thin',color: { argb: borde } }
+              }
+              cell.fill = { type: 'pattern', pattern: 'solid', fgColor:{argb:(background)} };
+              if (cellData.colSpan > 1) {
+                // Calcular las coordenadas de las celdas a fusionar
+                let startCol = Number(cell.col);
+                let endCol = startCol + cellData.colSpan - 1;
+                let rowNumber = row.number;
+                worksheet.mergeCells(rowNumber, startCol, rowNumber, endCol);
+              }
             });
-            let detalleHeader = worksheet.addRow(this.datos.header)
-            detalleHeader.eachCell((cell) => {
-                cell.border = { top: { style: 'thin',color: { argb: borde } }, left: { style: 'thin',color: { argb: borde } }, bottom: { style: 'thin',color: { argb: borde } }, right: { style: 'thin',color: { argb: borde } } }
-                cell.alignment = { vertical: 'middle', horizontal: 'center' }
-                cell.font = { size:9 , color: { argb: color } }
-            })
-            item.detalle.forEach((detalle, rowIndex) => {
-              let detalleValues = this.datos.keys_body.map(clave => {
-               return this.convertToNumber(detalle[clave])
-              });
-              let row = worksheet.addRow(detalleValues);
-              row.eachCell((cell, colNumber) => {
-                  let alinea =this.datos.col_alig[colNumber-1]?this.datos.col_alig[colNumber-1]:'left'
-                  cell.alignment={vertical:'middle',horizontal:alinea}
-                  let bold = detalle.unidad === null ? true : false;
-                  cell.font = { bold: bold, size: 9, color: { argb: color } };
-                  if (rowIndex === item.detalle.length - 1) {
-                      cell.border = {
-                          top: {},
-                          left: { style: 'thin', color: { argb: borde } },
-                          bottom: { style: 'thin', color: { argb: borde } },
-                          right: { style: 'thin', color: { argb: borde } }
-                      };
-                  } else {
-                      cell.border = {
-                          top: {},
-                          left: { style: 'thin', color: { argb: borde } },
-                          bottom: {},
-                          right: { style: 'thin', color: { argb: borde } }
-                      };
-                  }
-                  cell.numFmt = !this.datos.keys_dec|| this.datos.keys_dec===undefined|| this.datos.keys_dec===null? '0.00': this.datos.keys_dec[colNumber-1]===''|| this.datos.keys_dec[colNumber-1]===null? '':`0.${'0'.repeat(parseInt(this.datos.keys_dec[colNumber-1]))}`
-              });
           });
-            for (let i = 0; i < 3; i++) {
-                worksheet.addRow([]);
-            }
+          let detalleHeader = worksheet.addRow(this.datos.header)
+          detalleHeader.eachCell((cell) => {
+            cell.border = { top: { style: 'thin',color: { argb: borde } }, left: { style: 'thin',color: { argb: borde } }, bottom: { style: 'thin',color: { argb: borde } }, right: { style: 'thin',color: { argb: borde } } }
+            cell.alignment = { vertical: 'middle', horizontal: 'center' }
+            cell.font = { size:9 , color: { argb: color } }
+          })
+          item.detalle.forEach((detalle, rowIndex) => {
+            let detalleValues = this.datos.keys_body.map(clave => {
+                return this.convertToNumber(detalle[clave])
+            });
+            let row = worksheet.addRow(detalleValues);
+            row.eachCell((cell, colNumber) => {
+                let alinea =this.datos.col_alig[colNumber-1]?this.datos.col_alig[colNumber-1]:'left'
+                cell.alignment={vertical:'middle',horizontal:alinea}
+                let bold = detalle.unidad === null ? true : false;
+                cell.font = { bold: bold, size: 9, color: { argb: color } };
+                if (rowIndex === item.detalle.length - 1) {
+                    cell.border = {
+                      top: {},
+                      left: { style: 'thin', color: { argb: borde } },
+                      bottom: { style: 'thin', color: { argb: borde } },
+                      right: { style: 'thin', color: { argb: borde } }
+                    };
+                } else {
+                  cell.border = {
+                    top: {},
+                    left: { style: 'thin', color: { argb: borde } },
+                    bottom: {},
+                    right: { style: 'thin', color: { argb: borde } }
+                  };
+                }
+                cell.numFmt = !this.datos.keys_dec|| this.datos.keys_dec===undefined|| this.datos.keys_dec===null? '0.00': this.datos.keys_dec[colNumber-1]===''|| this.datos.keys_dec[colNumber-1]===null? '':`0.${'0'.repeat(parseInt(this.datos.keys_dec[colNumber-1]))}`
+            });
+          });
+          for (let i = 0; i < 3; i++) {
+            worksheet.addRow([]);
+          }
         }
     })
     }else if(this.datos.tipo_reporte===5 && this.datos.titulo==='GRAFICOS DIAGRAMA CURVA S Y DIAGRAMA GAUSS'){
@@ -5007,13 +5127,6 @@ export class ReportesComponent implements OnInit {
           let row= worksheet.addRow(detalleValues);
           row.eachCell((cell,colNumber) => {
              cell.numFmt =  !this.datos.keys_dec|| this.datos.keys_dec===undefined|| this.datos.keys_dec===null? '0.00': this.datos.keys_dec[colNumber-1]===''|| this.datos.keys_dec[colNumber-1]===null? '':`0.${'0'.repeat(parseInt(this.datos.keys_dec[colNumber-1]))}`
-              // if (this.datos.col_alig[colNumber-1] === 'center') {
-              //     cell.alignment = { vertical: 'middle', horizontal: 'center' };
-              // } else if (this.datos.col_alig[colNumber-1] === 'left') {
-              //     cell.alignment = { vertical: 'middle', horizontal: 'left' };
-              // } else {
-              //     cell.alignment = { vertical: 'middle', horizontal: 'right' };
-              // }
               let alinea =this.datos.col_alig[colNumber-1]?this.datos.col_alig[colNumber-1]:'left'
               cell.alignment={vertical:'middle',horizontal:alinea}
               let nuevocolor= detalle.color? this.hexShortToRGBA(detalle.color) : color
@@ -5056,7 +5169,7 @@ export class ReportesComponent implements OnInit {
           tl: { col: 0, row: formulaRowNumber+10 }, // Coloca la imagen en la fila de la fórmula
           ext: { width: 500, height: 200 }, // Ajusta el tamaño según sea necesario
       });
-    }else if(this.datos.tipo_reporte===0 ||this.datos.tipo_reporte===2||this.datos.tipo_reporte===5 && !this.datos.tabla3 ) {
+    }else if((this.datos.tipo_reporte===0&&(this.datos.reporte==0||this.datos.titulo=='RESUMEN DEL PROYECTO'))||this.datos.tipo_reporte==6||this.datos.tipo_reporte==8||this.datos.tipo_reporte===2||this.datos.tipo_reporte===5 && !this.datos.tabla3 ) {
       if(this.excelheader.length===2|| this.excelheader.length===3){
         const headerauxiliar = [...this.excelheader];
         if(this.opcestado==="1"&&this.datos.keys_body[0]==='auxiliar'&&this.excelheader.length===2){  
@@ -5101,9 +5214,9 @@ export class ReportesComponent implements OnInit {
             cell.fill = { type: 'pattern', pattern: 'solid', fgColor:{argb:this.hexShortToRGBA('#dfebf8')} }
         })
       }
-      const auxiliarclaves = [...this.datos.keys_body];
-      const auxiliaralinea = [...this.datos.col_alig];
-      const auxkeys_dec = this.datos.keys_dec ? [...this.datos.keys_dec] : [];
+      let auxiliarclaves = [...this.datos.keys_body];
+      let auxiliaralinea = [...this.datos.col_alig];
+      let auxkeys_dec = this.datos.keys_dec ? [...this.datos.keys_dec] : [];
       const arrayaux=this.exceldatos
       let colnumberaux=2
       if(this.opcestado==="1"&&this.datos.keys_body[0]==='auxiliar'){  
@@ -5115,10 +5228,40 @@ export class ReportesComponent implements OnInit {
         }
         worksheet.getColumn(1).hidden = true;
       }
+      if (this.datos.titulo === 'METRADO DIARIO' && arrayaux.length > 0) {
+        const extraLength = arrayaux[0].montodias?.length || 0;
+        const extras = Array(extraLength).fill('center');
+        const antes = auxiliaralinea.slice(0, 4);
+        const desdePosicion = auxiliaralinea.slice(4);
+        auxiliaralinea = [...antes, ...extras, ...desdePosicion];
+        const extras2 = Array(extraLength).fill('2');
+        const antes2 = auxkeys_dec.slice(0, 4);
+        const desdePosicion2 = auxkeys_dec.slice(4);
+        auxkeys_dec = [...antes2, ...extras2, ...desdePosicion2];
+      } 
       arrayaux.forEach((detalle,index) => {
-        let detalleValues = auxiliarclaves.map(clave => {
-          return this.convertToNumber(detalle[clave])
-      });
+        let detalleValues
+        if(this.datos.reporte==1&&this.datos.tipo_reporte==6){
+          detalleValues = auxiliarclaves.reduce((acc: any[], clave) => {
+            if (clave === 'montodias' && Array.isArray(detalle[clave])) {
+              // Expandir el array en el lugar exacto donde aparece la clave
+              acc.push(...detalle[clave].map((val: any) => this.convertToNumber(val)));
+            }else if(clave === 'metradoant'&&!detalle[clave]&&detalle['unidad']){
+              acc.push(this.convertToNumber('0'));
+            } else {
+              acc.push(this.convertToNumber(detalle[clave]));
+            }
+            return acc;
+          }, []);
+        }else{
+          detalleValues = auxiliarclaves.map(clave => {
+            let value= detalle[clave]
+            if(clave=='metrado_anterior'&&!detalle[clave]&&this.datos.tipo_reporte==6&&detalle['unidad']){
+              value='0'
+            }
+            return this.convertToNumber(value)
+          });
+        }
         let row= worksheet.addRow(detalleValues);
         row.eachCell((cell,colNumber) => {
            cell.numFmt =  !auxkeys_dec|| auxkeys_dec===undefined|| auxkeys_dec===null? '0.00': auxkeys_dec[colNumber-1]===''|| auxkeys_dec[colNumber-1]===null? '':`0.${'0'.repeat(parseInt(auxkeys_dec[colNumber-1]))}`
@@ -5241,14 +5384,94 @@ export class ReportesComponent implements OnInit {
                   worksheet.getCell(`H${row.number}`).value = { formula: `=${formula}` };
               }
             }
+          }else if(detalle.unidad&&this.datos.tipo_reporte==6&&this.datos.reporte==1){
+            let formula
+            if(colNumber==detalleValues.length){
+              const excelCol = this.getExcelColumn(detalleValues.length-3)
+              formula = `SUM(F${row.number}:${excelCol}${row.number})`
+              const excelCol2 = this.getExcelColumn(detalleValues.length-2)
+              worksheet.getCell(`${excelCol2}${row.number}`).value = { formula: `=${formula}` };
+              const excelCol3 = this.getExcelColumn(detalleValues.length-1)
+              worksheet.getCell(`${excelCol3}${row.number}`).value = { formula: `=E${row.number}+${excelCol2}${row.number}` };
+              const excelCol4 = this.getExcelColumn(detalleValues.length)
+              worksheet.getCell(`${excelCol4}${row.number}`).value = { formula: `=D${row.number}-${excelCol3}${row.number}` };
+            }
+          }else if(this.datos.tipo_reporte==6&&this.datos.reporte==0&&this.datos.concat_tabla2&&detalle.unidad){
+            if(colNumber==18&&detalle.cantidad){
+              worksheet.getCell(`H${row.number}`).value = { formula: `=E${row.number}*G${row.number}`};
+              worksheet.getCell(`I${row.number}`).value = { formula: `=(${`E${row.number}`}*${`G${row.number}`})/F${row.number}` };
+              worksheet.getCell(`I${row.number}`).numFmt = '0.00%'
+              worksheet.getCell(`K${row.number}`).value = { formula: `=E${row.number}*J${row.number}`};
+              worksheet.getCell(`L${row.number}`).value = { formula: `=(${`E${row.number}`}*${`J${row.number}`})/F${row.number}` };
+              worksheet.getCell(`L${row.number}`).numFmt = '0.00%'
+              worksheet.getCell(`N${row.number}`).value = { formula: `=H${row.number}+K${row.number}`};
+              worksheet.getCell(`O${row.number}`).value = { formula: `=(${`H${row.number}`}+${`K${row.number}`})/F${row.number}` };
+              worksheet.getCell(`O${row.number}`).numFmt = '0.00%'
+              worksheet.getCell(`Q${row.number}`).value = { formula: `=E${row.number}*P${row.number}`};
+              worksheet.getCell(`R${row.number}`).value = { formula: `=(${`E${row.number}`}*${`P${row.number}`})/F${row.number}` };
+              worksheet.getCell(`R${row.number}`).numFmt = '0.00%'
+            }
+          }else if(this.datos.tipo_reporte==6&&this.datos.reporte==0){
+            if(colNumber==12){
+              if(detalle.unidad){
+                let formula
+                const final=this.FindNext(index,item => item.item)
+                if(final>0){
+                  formula = `SUM(J${row.number+1}:J${row.number+final})`
+                }
+                if(formula) {
+                  worksheet.getCell(`K${row.number}`).value = { formula: `=${formula}` };
+                }
+              }else if(detalle.tipofila==2){
+                let formula
+                const final=this.FindNext(index,item => item.tipofila < 3)
+                if(final>0){
+                  formula = `SUM(I${row.number+1}:I${row.number+final})`
+                }else if(final==0){
+                  if(!detalle.formula || detalle.formula === ''||detalle.formula==='B*C*D*E*F'){
+                    formula = `ROUND(PRODUCT(D${row.number}:H${row.number}),2)`
+                  }else {
+                    formula = detalle.formula
+                    .replace(/F/g, `H${row.number}`)
+                    .replace(/E/g, `G${row.number}`)
+                    .replace(/D/g, `F${row.number}`)
+                    .replace(/C/g, `E${row.number}`)
+                    .replace(/B/g, `D${row.number}`)
+                    formula=`ROUND(${formula},2)`;  
+                  }
+                  if(formula) {
+                    worksheet.getCell(`I${row.number}`).value = { formula: `=${formula}` };
+                  }
+                }
+                if(formula){
+                   worksheet.getCell(`J${row.number}`).value = { formula: `=${formula}` };
+                }
+              }else if(detalle.tipofila==3){
+                let formula
+                if(!detalle.formula || detalle.formula === ''||detalle.formula==='B*C*D*E*F'){
+                  formula = `ROUND(PRODUCT(D${row.number}:H${row.number}),2)`
+                }else {
+                  formula = detalle.formula
+                    .replace(/F/g, `H${row.number}`)
+                    .replace(/E/g, `G${row.number}`)
+                    .replace(/D/g, `F${row.number}`)
+                    .replace(/C/g, `E${row.number}`)
+                    .replace(/B/g, `D${row.number}`)
+                  formula=`ROUND(${formula},2)`;  
+                }
+                  if (formula) {
+                    worksheet.getCell(`I${row.number}`).value = { formula: `=${formula}` };
+                }
+              }
+            }
           }
         });
       })
-    if(this.datos.concat_tabla2===false){
-      for (let i = 0; i < 3; i++) {
-        worksheet.addRow([]);
+      if(this.datos.concat_tabla2===false){
+        for (let i = 0; i < 3; i++) {
+          worksheet.addRow([]);
+        }
       }
-    }
     let aumento = this.opcestado === "1"&&this.datos.keys_body[0] === 'auxiliar'? 1 : 0
     if(this.exceltabla2){
       // this.datos.keys_dec = this.datos.titulo==='CRONOGRAMA DE ADQUISICIONES'? this.DecimalesAdquisiciones(this.datos.keys_dec) :this.datos.keys_dec
@@ -5279,7 +5502,7 @@ export class ReportesComponent implements OnInit {
                   right: { style: 'thin',color: { argb: borde } }
                 }
               });
-        });
+      });
     }
     if(this.exceltabla3 && this.formulario1.get('agregarcostosindirectos').value===true){
         this.exceltabla3.forEach(rowData => {
@@ -5311,6 +5534,119 @@ export class ReportesComponent implements OnInit {
               });
             });
     }
+    }else if(this.datos.tipo_reporte===0){
+      this.excelheader = this.ExcelHeaderRow(JSON.parse(JSON.stringify(this.datos.header)))
+      let excelheader2 = [...this.ExcelHeaderRow(JSON.parse(JSON.stringify(this.datos.header2))),null,null,...(this.ExcelHeaderRow(JSON.parse(JSON.stringify(this.datos.header3))))]
+      let auxiliaralinea = [...this.datos.col_alig];
+      let auxkeys_dec = this.datos.keys_dec ? [...this.datos.keys_dec] : [];
+      let auxiliaralinea2 = [...this.datos.col_alig2];
+      let auxkeys_dec2 = this.datos.keys_dec3 ? [...this.datos.keys_dec2] : [];
+      let auxiliaralinea3 = [...this.datos.col_alig3];
+      let auxkeys_dec3 = this.datos.keys_dec3 ? [...this.datos.keys_dec3] : [];
+      let currentRow = 1; 
+      for (let k of this.exceldatos) {
+        const arrayaux = k[0];
+        const arrayaux2 = k[1];
+        const arrayaux3 = k[2];
+        let detalleHeader = worksheet.addRow(this.excelheader);
+        detalleHeader.eachCell((cell) => {
+          cell.border = { top: { style: 'thin', color: { argb: borde } }, left: { style: 'thin', color: { argb: borde } }, bottom: { style: 'thin', color: { argb: borde } }, right: { style: 'thin', color: { argb: borde } } }
+          cell.alignment = { vertical: 'middle', horizontal: 'center' }
+          cell.font = { size: 9, color: { argb: color } }
+          cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: this.hexShortToRGBA('#dfebf8') } }
+        });
+        currentRow = detalleHeader.number
+        arrayaux.forEach((detalle) => {
+          let detalleValues = this.datos.keys_body.map(clave => this.convertToNumber(detalle[clave]));
+          let row = worksheet.addRow(detalleValues);
+          currentRow = row.number; 
+          row.eachCell((cell,colNumber) => {
+            cell.numFmt =  !auxkeys_dec|| auxkeys_dec===undefined|| auxkeys_dec===null? '0.00': auxkeys_dec[colNumber-1]===''|| auxkeys_dec[colNumber-1]===null? '':`0.${'0'.repeat(parseInt(auxkeys_dec[colNumber-1]))}`
+            let alinea =auxiliaralinea[colNumber-1]?auxiliaralinea[colNumber-1]:'left' 
+            cell.alignment={vertical:'middle',horizontal:alinea}
+            let nuevocolor= detalle.color? this.hexShortToRGBA(detalle.color) : color
+            let background =  detalle.fondo? this.hexShortToRGBA(detalle.fondo) : ''
+            let bold = detalle.tipoletra==='4' || detalle.tipoletra==='3'||detalle.item? true:false
+            let italic= detalle.tipoletra==='4' || detalle.tipoletra==='2'? true:false 
+            cell.font = { bold: bold,italic:italic,size:9 , color: { argb: nuevocolor } };
+            cell.fill = { type: 'pattern', pattern: 'solid', fgColor:{argb:background} }
+            cell.border = {
+              top: {style: 'thin',color: { argb: borde } },
+              left: {style: 'thin',color: { argb: borde } },
+              bottom: {style:'thin',color: { argb: borde }  },
+              right: { style: 'thin',color: { argb: borde } }
+            }
+          });
+        });
+        worksheet.addRow([])
+        worksheet.addRow([])
+        let detalleHeader2 = worksheet.addRow(excelheader2);
+        detalleHeader2.eachCell((cell,) => {
+          if (cell.value !== null) {
+              cell.border = { top: { style: 'thin', color: { argb: borde } }, left: { style: 'thin', color: { argb: borde } }, bottom: { style: 'thin', color: { argb: borde } }, right: { style: 'thin', color: { argb: borde } } }
+              cell.alignment = { vertical: 'middle', horizontal: 'center' }
+              cell.font = { size: 9, color: { argb: color } }
+              cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: this.hexShortToRGBA('#dfebf8') } }
+          }
+        });
+        currentRow += 3;
+        let startColTabla1 = 1;
+        let startColTabla2 = this.datos.keys_body2.length + 3;
+        let startRow = currentRow + 1;
+        arrayaux2.forEach((detalle, rowIndex) => {
+          let detalleValues = this.datos.keys_body2.map(clave => this.convertToNumber(detalle[clave]));
+          detalleValues.forEach((value, colIndex) => {
+            let cell = worksheet.getCell(startRow + rowIndex, startColTabla1 + colIndex);
+            cell.value = value;
+            cell.numFmt =  !auxkeys_dec2|| auxkeys_dec2===undefined|| auxkeys_dec2===null? '0.00': auxkeys_dec2[colIndex]===''|| auxkeys_dec2[colIndex]===null? '':`0.${'0'.repeat(parseInt(auxkeys_dec2[colIndex]))}`
+            let alinea =auxiliaralinea2[colIndex]?auxiliaralinea2[colIndex]:'left' 
+            cell.alignment={vertical:'middle',horizontal:alinea}
+            let nuevocolor= detalle.color? this.hexShortToRGBA(detalle.color) : color
+            let background =  detalle.fondo? this.hexShortToRGBA(detalle.fondo) : ''
+            let bold = detalle.tipoletra==='4' || detalle.tipoletra==='3'||detalle.item? true:false
+            let italic= detalle.tipoletra==='4' || detalle.tipoletra==='2'? true:false 
+            cell.font = { bold: bold,italic:italic,size:9 , color: { argb: nuevocolor } };
+            cell.fill = { type: 'pattern', pattern: 'solid', fgColor:{argb:background} }
+            cell.border = {
+              top: {style: 'thin',color: { argb: borde } },
+              left: {style: 'thin',color: { argb: borde } },
+              bottom: {style:'thin',color: { argb: borde }  },
+              right: { style: 'thin',color: { argb: borde } }
+            }
+          });
+        });
+
+        arrayaux3.forEach((detalle, rowIndex) => {
+          let detalleValues = this.datos.keys_body3.map(clave => this.convertToNumber(detalle[clave]));
+          detalleValues.forEach((value, colIndex) => {
+            let cell = worksheet.getCell(startRow + rowIndex, startColTabla2 + colIndex);
+            cell.value = value;
+            cell.numFmt =  !auxkeys_dec3|| auxkeys_dec3===undefined|| auxkeys_dec3===null? '0.00': auxkeys_dec3[colIndex]===''|| auxkeys_dec3[colIndex]===null? '':`0.${'0'.repeat(parseInt(auxkeys_dec3[colIndex]))}`
+            let alinea =auxiliaralinea3[colIndex]?auxiliaralinea3[colIndex]:'left' 
+            cell.alignment={vertical:'middle',horizontal:alinea}
+            let nuevocolor= detalle.color? this.hexShortToRGBA(detalle.color) : color
+            let background =  detalle.fondo? this.hexShortToRGBA(detalle.fondo) : ''
+            let bold = detalle.tipoletra==='4' || detalle.tipoletra==='3'||detalle.item? true:false
+            let italic= detalle.tipoletra==='4' || detalle.tipoletra==='2'? true:false 
+            cell.font = { bold: bold,italic:italic,size:9 , color: { argb: nuevocolor } };
+            cell.fill = { type: 'pattern', pattern: 'solid', fgColor:{argb:background} }
+            cell.border = {
+              top: {style: 'thin',color: { argb: borde } },
+              left: {style: 'thin',color: { argb: borde } },
+              bottom: {style:'thin',color: { argb: borde }  },
+              right: { style: 'thin',color: { argb: borde } }
+            }
+          });
+        });
+        currentRow = Math.max(startRow + arrayaux2.length,startRow + arrayaux3.length);
+        worksheet.addRow([]);
+        worksheet.addRow([]);
+        currentRow += 2;
+      }
+
+
+
+
     }else if(this.datos.tipo_reporte===5 && this.datos.titulo==='FORMULA POLINÓMICA' && this.datos.tabla3){
       CrearHeader(this.excelheader)
       this.exceltabla3.forEach((detalle) => {
@@ -5575,7 +5911,7 @@ export class ReportesComponent implements OnInit {
             }
         });
       })
-    }   
+    }
 
     const auxiliarclaves = [...this.datos.keys_body];
     if(this.opcestado==="1"&&this.datos.keys_body[0]==='auxiliar'){  
@@ -6246,6 +6582,4 @@ export class ReportesComponent implements OnInit {
     }
     return doc.body.innerHTML;
   }
-  
-  
 }

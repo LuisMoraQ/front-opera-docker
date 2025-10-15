@@ -879,7 +879,7 @@ export class HojaMetradosComponent implements OnInit, OnDestroy, AfterViewInit {
             cantidadPartidas++;
             const encontrado = await tabla.find(
               (ele) =>
-                ele.indice == iterator.indice_fila &&
+                ele.indice == iterator.indice &&
                 Number(ele.cantidad) === Number(iterator.mtotal)
             );
 
@@ -1297,6 +1297,8 @@ export class HojaMetradosComponent implements OnInit, OnDestroy, AfterViewInit {
             this.faltantesPresupuesto.push(element.item + '-' + element.descripcion);
           }
         }
+        console.log(tablaPresu)
+        console.log(response[0])
         for (let iterator of response[0]) {
           iterator.seleccionado = false;
           iterator.filaModificada = iterator.filaModificada ? true : false;
@@ -1308,7 +1310,7 @@ export class HojaMetradosComponent implements OnInit, OnDestroy, AfterViewInit {
           iterator.icomost = 1;
           iterator.mostrar = 1;
           let encontrado = await tablaPresu.find(
-            (ele) => ele.indice == iterator.indice_fila
+            (ele) => ele.indice == iterator.indice
           );
           iterator.descripcion2 = null;
           iterator.item2 = null;
@@ -1357,6 +1359,8 @@ export class HojaMetradosComponent implements OnInit, OnDestroy, AfterViewInit {
         body = response[0];
       }
     }
+    console.log(body)
+    console.log(vinculado)
     return { header: header, body: body, vinculado: vinculado };
   }
 
@@ -8774,6 +8778,7 @@ export class HojaMetradosComponent implements OnInit, OnDestroy, AfterViewInit {
         item:item,
       };
       const response = await this.metradoService.listarTopMetrados(obj);
+      console.log(response)
       return response;
     } catch (e) {
       SwalService.error();
@@ -10007,7 +10012,7 @@ export class HojaMetradosComponent implements OnInit, OnDestroy, AfterViewInit {
     if (tipo) {
       for (const rowT of tablaExcel) {
         const encontrado = tablaPresu.find(
-          (ele) => ele.indice_fila == rowT.indice
+          (ele) => ele.indice == rowT.indice
         );
 
         if (!encontrado) {
@@ -10018,7 +10023,7 @@ export class HojaMetradosComponent implements OnInit, OnDestroy, AfterViewInit {
         for (const row of tablaExcel) {
           if (row.unidad) {
             const encontrado = await tablaPresu.find(
-              (ele) => ele.indice == row.indice_fila && ele.unidad
+              (ele) => ele.indice == row.indice && ele.unidad
             );
             if (encontrado) {
               const obj = {
@@ -10071,13 +10076,14 @@ export class HojaMetradosComponent implements OnInit, OnDestroy, AfterViewInit {
     const response = await this.metradoService.vincularMetradoAPresupuesto(obj);
     return response.id;
   }
+  async VerificarExcel(){
+    console.log('here')
+  }
 
   async importarExcel(evt: any) {
     try {
       this.mostrar_carga_todo = true;
       setTimeout(() => {
-        
-     
       const target: DataTransfer = <DataTransfer>evt.target;
       if (target.files.length !== 1) {
         throw new Error('No se puede agregar multiples documentos');
@@ -10111,6 +10117,7 @@ export class HojaMetradosComponent implements OnInit, OnDestroy, AfterViewInit {
           listaTablas.push(item);
         });
         listaTablas = await this.recuperarTablaExcel(wbExcel, listaTablas);
+        console.log(listaTablas)
         await this.datosParaExcel(nombreArchivo, wbExcel, listaTablas);
         this.mostrar_carga_todo = false;
       };
@@ -10215,7 +10222,9 @@ export class HojaMetradosComponent implements OnInit, OnDestroy, AfterViewInit {
       const index = this.tablaTitResumen.findIndex(ele=> ele.indice == this.titInformSel.indice ) 
       this.tablaTitResumen[index].estado_metrado = result.porcentaje
       const response = await this.listarTablaExcel(this.titInformSel.indice,this.titInformSel.item);
+      console.log(response)
       const response2 = await this.tablaTipoExcel(response, this.tablaTitulo);
+      console.log(response2)
       this.tablaExcelAdjunta = response2.body;
       this.headerExcel = response2.header;
       this.mostrar_carga_todo = false;
