@@ -146,7 +146,6 @@ export class RegistroActividadesComponent implements OnInit {
     if (response.length) {
       this.tablaPresCompleto = response
       this.titulos = this.tablaPresCompleto.filter(ele => ele.item.split('.').length == 1)
-      console.log('titulos', this.titulos)
       const obj = {
         cantidad: null,
         descripcion: "TODOS",
@@ -188,7 +187,6 @@ export class RegistroActividadesComponent implements OnInit {
     this.tablaMovAlmcSalida = [];
 
 
-    console.log('indice', indice)
     let resultado;
 
     if (indice == null || indice == '') {
@@ -564,7 +562,6 @@ export class RegistroActividadesComponent implements OnInit {
   }
 
   abrirModal2(row, fecha) {
-    console.log('fecha', fecha)
     this.registradoXDia = []
     for (const element of row.registros_saldos) {
       if (moment(element.fecha).format('YYYY-MM-DD') == moment(fecha).format('YYYY-MM-DD')) {
