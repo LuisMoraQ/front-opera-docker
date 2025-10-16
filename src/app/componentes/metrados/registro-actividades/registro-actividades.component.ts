@@ -536,9 +536,17 @@ export class RegistroActividadesComponent implements OnInit {
 
     }
     for (const element of this.estadoXReg) {
-      const existe = this.saldosRegistros.find(ele => ele.fecha == moment(element?.fecha).format('YYYY-MM-DD'))
-      if (existe) {
-        element.estado = 1
+      // const existe = this.saldosRegistros.find(ele => ele.fecha == moment(element?.fecha).format('YYYY-MM-DD'))
+      // if (existe) {
+      //   element.estado = 1
+      // }
+      for (const element of this.estadoXReg) {
+        // Especificar el formato de fecha explícitamente
+        const fechaFormateada = moment(element?.fecha, 'DD-MM-YYYY').format('YYYY-MM-DD')
+        const existe = this.saldosRegistros.find(ele => ele.fecha == fechaFormateada)
+        if (existe) {
+          element.estado = 1
+        }
       }
     }
   }

@@ -89,9 +89,9 @@
                             <td>
                                 Recursos utilizados
                             </td>
-                            <td *ngFor="let dia of estadoXReg" [class.bloqueado]="dia.bloqueado" container="body"
+                            <td *ngFor="let dia of estadoXReg; let i = index" [class.bloqueado]="dia.bloqueado" container="body"
                                 (click)="ChangeDia(dia)" [ngbTooltip]="dia.estado == 1 ? 'Registrado':''"
-                                [ngClass]="{ 'fecha-selected': dia.fecha == fechaselecionada ,'registrado': dia.estado == 1}"
+                                [ngClass]="{ 'registrado': dia.estado == 1, 'fecha-selected': diasCalendario[i]?.fecha == fechaselecionada  }"
                                 style="height: 24px">
                                 <ng-container *ngIf="dia.estado == 1">
                                     R
@@ -217,7 +217,7 @@
                                                 [color]="row.item ? titulo1color : ''" [letra]="titulo1letra"
                                                 [item]="row.item" [separador]="'.'" [partida]="row.unidad != ''">
 
-                                                <i *ngIf="row.registros_saldos?.length" class="fa fa-list "
+                                                <!-- <i *ngIf="row.registros_saldos?.length" class="fa fa-list "
                                                     ngbTooltip="Registros completos de partida" container="body"
                                                     style="cursor: pointer;" (click)="abrirModal(row)"></i>
 
@@ -225,7 +225,21 @@
                                                     ngbTooltip="Registros por dia de partida" container="body"
                                                     class="fa fa-calendar-check-o text-primary"
                                                     style="cursor: pointer; margin-left: 5px;"
-                                                    (click)="abrirModal2(row, this.fechaselecionada)"></i>
+                                                    (click)="abrirModal2(row, this.fechaselecionada)"></i> -->
+
+                                                <button class="btn btn-mini2 btn-secondary" placement="top"
+                                                    *ngIf="row.registros_saldos?.length"
+                                                    ngbTooltip="Registros completos de partida" container="body"
+                                                    (click)="abrirModal(row)" (mouseup)="quitarfoco($event);">
+                                                    <i class="fa fa-list icono-but"></i>
+                                                </button>
+                                                <button class="btn btn-mini2 btn-info" placement="top"
+                                                    *ngIf="tieneRegistrosParaFecha(row, fechaselecionada)"
+                                                    ngbTooltip="Registros por dia de partida" container="body"
+                                                    (click)="abrirModal2(row, this.fechaselecionada)"
+                                                    (mouseup)="quitarfoco($event);">
+                                                    <i class="fa fa-calendar-check-o icono-but"></i>
+                                                </button>
                                             </td>
                                         </tr>
                                     </tbody>
