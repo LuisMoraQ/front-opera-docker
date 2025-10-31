@@ -1137,7 +1137,7 @@ export class AlmcsalidaComponent implements OnInit {
     this.dataSource5[ind].editar = 1;
   }
   caneditarcelda1(eve: any, ind: any) {
-    var valor = Number(eve);
+    var valor = Number(eve.toString().replace(/\,/g, ''));
     var actual = Number(this.dataSource5[ind].cantidad);
     var pactual = Number(this.dataSource5[ind].parcial);
     var aprecio = Number(this.dataSource5[ind].precio);

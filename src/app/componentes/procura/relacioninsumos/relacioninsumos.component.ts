@@ -227,7 +227,7 @@ export class RelacioninsumosComponent implements OnInit {
     this.dataSource2[ind].editar1=1;
   }
   caneditarcelda1(eve:any,ind:any){
-    var valor=Number(eve);
+    var valor=Number(eve.toString().replace(/\,/g, ''));
     var actual=Number(this.dataSource2[ind].metradosol)
     var aprecio=Number(this.dataSource2[ind].precio);
     var ametrado=Number(this.dataSource2[ind].metrado);
