@@ -7,6 +7,7 @@ import { MetradoService } from 'src/app/servicios/metrado.service';
 import { PrincipalService } from 'src/app/servicios/principal.service';
 import { SwalService } from 'src/app/servicios/swal.service';
 import { ModalBasicComponent } from 'src/app/shared/modal-basic/modal-basic.component';
+import { ChangeDetectorRef } from '@angular/core';
 
 @Component({
   selector: 'app-registro-actividades',
@@ -34,6 +35,8 @@ export class RegistroActividadesComponent implements OnInit {
   prueba: any;
   metradoMes = null
   indiceTitulo = null
+  metradoMes2 = null
+  indiceTitulo2 = null
   diasCalendario = []
   titulo1: any = '';
   titulo1color: any = '';
@@ -59,6 +62,15 @@ export class RegistroActividadesComponent implements OnInit {
   saldosRegistros = [];
   estadoXReg: any[] = [];
   registradoXDia = []
+  formatos = ['SEMANA', 'DIA']
+  formato = 'DIA'
+  tablaProgramacion = []
+  calendarioProgra = []
+  aspectosdias: any;
+  verRutaCritica = false
+  fechas: any;
+  calendarioBase = []
+  calendarioSemana = [[], []];
   @Input() set tabproyecto(value: any) {
     this.prueba = value;
     this.id_proyecto = value.get('id_proyecto').value;
@@ -96,11 +108,49 @@ export class RegistroActividadesComponent implements OnInit {
   constructor(private toaster: ToastrService,
     public principalService: PrincipalService,
     public formsService: FormsService,
-    public metradoService: MetradoService) { }
+    public metradoService: MetradoService,
+    private cdr: ChangeDetectorRef) { }
+
+  private nombresDiasMap: { [key: string]: number } = {
+    'domingo': 0,
+    'lunes': 1,
+    'martes': 2,
+    'miercoles': 3,
+    'miércoles': 3,
+    'jueves': 4,
+    'viernes': 5,
+    'sabado': 6,
+    'sábado': 6
+  };
   quitarfoco(element: any) {
     element.target.blur();
     element.target.parentElement.blur();
   }
+
+  getDiasVisibles() {
+    if (!this.calendarioProgra[1]) return [];
+    return this.calendarioProgra[1].filter(dia => dia.mostrar === 1);
+  }
+
+  getAbarcoVisibles(row: any) {
+    if (!row.abarca || !this.calendarioProgra[1]) return [];
+
+    const result = [];
+    for (let i = 0; i < this.calendarioProgra[1].length; i++) {
+      if (this.calendarioProgra[1][i].mostrar === 1) {
+        result.push({
+          abarca: row.abarca[i],
+          cantidad: row.cantidades ? row.cantidades[i] : null,
+          parcial: row.parciales ? row.parciales[i] : null,
+          originalIndex: i,
+          metradodiario: row.metradodiario ? row.metradodiario[i] : null,
+          realizado: row.realizado ? row.realizado[i] : null
+        });
+      }
+    }
+    return result;
+  }
+
 
   async ngOnInit() {
     try {
@@ -121,7 +171,7 @@ export class RegistroActividadesComponent implements OnInit {
       });
       if (this.tablaRegistroMetrados.length) {
         this.metradoMes = this.tablaRegistroMetrados[0].id_registro
-
+        this.metradoMes2 = 0
         await this.generarCalendario(this.tablaRegistroMetrados[0])
         await this.generarTablaPresuMetradoXRegistro(this.metradoMes)
         // if (this.titulos.length) {
@@ -129,6 +179,7 @@ export class RegistroActividadesComponent implements OnInit {
         //   await this.filtroTitulo(this.indiceTitulo, this.tablaPresCompleto)
         // }
         this.indiceTitulo = ''
+        this.indiceTitulo2 = ''
       }
     } catch (e) {
       SwalService.error()
@@ -172,17 +223,7 @@ export class RegistroActividadesComponent implements OnInit {
   }
 
   async filtroTitulo(indice, tablaCompleta) {
-    // this.fila4_sel = null
-    // this.tablaMovAlmcSalida = []
-    // const tituloSel = this.titulos.find(ele => ele.indice == indice)
-    // const filtrados = tablaCompleta.filter(ele => ele.item.startsWith(`${tituloSel.item}.`))
-    // filtrados.unshift(tituloSel)
-    // for (const ele of filtrados) {
-    //   ele.icomost = 1;
-    //   ele.mostrar = 1
-    // }
 
-    // this.tablaPresupuesto = filtrados
     this.fila4_sel = null;
     this.tablaMovAlmcSalida = [];
 
@@ -213,6 +254,7 @@ export class RegistroActividadesComponent implements OnInit {
   }
 
   async cambioVista(ind: any) {
+    this.mostrar_carga_todo = true
     this.subvista = ind;
     if (ind == 3) {
       // if (this.existecambios) {
@@ -221,6 +263,8 @@ export class RegistroActividadesComponent implements OnInit {
       // }
       // await this.changeVista2(this.datosglo);
     } else if (ind == 2) {
+      this.subvista = ind
+      await this.listarProgra()
       // if (this.existecambios) {
       //   await this.guardarCambios();
       //   this.existecambios = false;
@@ -238,12 +282,14 @@ export class RegistroActividadesComponent implements OnInit {
       // }
       // await this.changeVista3(this.datosglo);
     }
+    this.mostrar_carga_todo = false
   }
 
   async generarCalendario(datos) {
     const aspectos = await this.principalService.ListarAspectosDiasProy({
       id_proyecto: this.id_proyecto,
     });
+    this.aspectosdias = aspectos[0];
     this.diasCalendario = await this.generateCalendar(
       datos.fechaini,
       datos.fechafin,
@@ -621,6 +667,7 @@ export class RegistroActividadesComponent implements OnInit {
       else { break; }
     }
   }
+
   toggleOffpresu(itemsel, indice) {
     this.tablaPresupuesto[indice].icomost = 0;
     let ind2 = indice + 1;
@@ -640,5 +687,1338 @@ export class RegistroActividadesComponent implements OnInit {
       }
       else { break; }
     }
+  }
+
+  async listarProgra() {
+    this.calendarioProgra = []
+    const obj = { id_proyecto: this.id_proyecto }
+    const res = await this.principalService.listarProgramacionProyecto(obj)
+    this.tablaProgramacion = res[0]
+    const horario = {
+      horaIngreso: this.aspectosdias[0]?.horaIngreso ? this.aspectosdias[0]?.horaIngreso.split('|') : ['', '', '', '', '', '', ''],
+      horaSalida: this.aspectosdias[0]?.horaSalida ? this.aspectosdias[0]?.horaSalida?.split('|') : ['', '', '', '', '', '', ''],
+      descansoIng: this.aspectosdias[0]?.descansoIng ? this.aspectosdias[0]?.descansoIng.split('|') : ['', '', '', '', '', '', ''],
+      descansoSal: this.aspectosdias[0]?.descansoSal ? this.aspectosdias[0]?.descansoSal.split('|') : ['', '', '', '', '', '', ''],
+    };
+    const diasNoLab = this.aspectosdias[0]?.nolabo1 ? this.aspectosdias[0]?.nolabo1.split('|') : []
+    const nuevoHorario = await this.analizarHorario(horario, diasNoLab)
+    const horasxDia = await this.calcularHorasPorDia(nuevoHorario)
+    let fechaMin = null
+    let fechaMax = null
+    let calendario = []
+    if (!this.tablaProgramacion || this.tablaProgramacion.length === 0) {
+      fechaMin = null
+      fechaMax = null
+    }
+
+    const resultado = this.tablaRegistroMetrados.reduce((acumulador, registro) => {
+      // Convertir strings a Date sin problema de zona horaria
+      const fechaIni = new Date(registro.fechaini + 'T05:00:00'); // Compensar GMT-5
+      const fechaFin = new Date(registro.fechafin + 'T05:00:00');
+
+      return {
+        minFechaini: fechaIni < acumulador.minFechaini ? fechaIni : acumulador.minFechaini,
+        maxFechafin: fechaFin > acumulador.maxFechafin ? fechaFin : acumulador.maxFechafin
+      };
+    }, {
+      minFechaini: new Date(this.tablaRegistroMetrados[0]?.fechaini + 'T05:00:00') || null,
+      maxFechafin: new Date(this.tablaRegistroMetrados[0]?.fechafin + 'T05:00:00') || null
+    });
+
+    this.fechas = resultado
+    calendario = await this.generarCalendarioPorFormato(resultado.minFechaini, resultado.maxFechafin);
+    const diasPorMes = await this.obtenerDiasPorMes(calendario);
+    await this.crearArraysAbarca(calendario, this.tablaProgramacion, horasxDia);
+    this.calendarioProgra.push(diasPorMes)
+    this.calendarioProgra.push(calendario)
+    this.calendarioBase = JSON.parse(JSON.stringify(this.calendarioProgra))
+    const resp = await this.acumuladosRegistrosXFechas(this.metradoMes2, this.fechas.minFechaini, this.fechas.maxFechafin)
+    let i = 0
+    for (const element of this.tablaProgramacion) {
+      element.realizado = JSON.parse(resp[i].array_valores)
+      const a = JSON.parse(resp[i].metradodiario)
+      if (this.metradoMes2 == '0' || this.metradoMes2 == 0) {
+        if (this.formato == 'DIA') {
+          const b = await this.asignarMetradosACalendario(this.calendarioProgra[1], a)
+          element.metradodiario = b
+        }
+      } else {
+
+
+      }
+      i++
+    }
+  }
+
+  async crearArraysAbarca(calendario, tablaProgramacion, horasPorDia) {
+    const tabla1 = JSON.stringify(tablaProgramacion);
+    const body = JSON.stringify({
+      datos: tabla1,
+    });
+    const response = await this.principalService.generarRutaCr(body);
+
+    tablaProgramacion.forEach(partida => {
+      let totalHorasXPart = 0
+      partida.abarca = calendario.map(diaCalendario => {
+        const fechaCalendario = new Date(diaCalendario.fecha);
+        fechaCalendario.setHours(0, 0, 0, 0);
+
+        const fechaIni = new Date(partida.fechaini);
+        const fechaFin = new Date(partida.fechafin);
+
+        fechaIni.setHours(0, 0, 0, 0);
+        fechaFin.setHours(0, 0, 0, 0);
+
+        const fecha = new Date(fechaCalendario);
+        const nombreDia = fecha.toLocaleDateString('es-ES', { weekday: 'long' });
+        const esValido = fechaCalendario >= fechaIni && fechaCalendario <= fechaFin ? nombreDia : null
+        if (esValido && partida.unidad) {
+          totalHorasXPart += horasPorDia[nombreDia]
+        }
+
+        // Si la fecha del calendario está dentro del rango, devolver 1, sino 0
+        return esValido;
+      });
+      partida.costeXHora = totalHorasXPart > 0 ? partida.metrado / totalHorasXPart : 0
+    });
+
+    let index = 0
+    tablaProgramacion.forEach(partida => {
+      if (partida.unidad) {
+        partida.cantidades = partida.abarca.map(ele => {
+          const costo = ele !== null ? partida.costeXHora * horasPorDia[ele] : null
+          return costo
+        })
+        partida.parciales = partida.cantidades.map(ele => {
+          const parcial = ele !== null ? ele * partida.precio : null
+          return parcial
+        })
+        partida.rutaCritica = response[index].custom_class == 'bar-milestone' ? 1 : 0
+        index++
+      } else {
+        partida.rutaCritica = null
+      }
+    })
+  }
+
+  // generarCalendarioPorFormato(fechaInicio: Date, fechaFin: Date): any[] {
+
+  //   const calendario = [];
+  //   const fechaActual = new Date(fechaInicio);
+  //   const encontrarIdRegistrosEnRango = (fechaIni: Date, fechaFin: Date): number[] => {
+  //     const registrosEnRango = this.tablaRegistroMetrados.filter(reg => {
+  //       const fechaIniReg = new Date(reg.fechaini);
+  //       const fechaFinReg = new Date(reg.fechafin);
+  //       fechaIniReg.setHours(0, 0, 0, 0);
+  //       fechaFinReg.setHours(23, 59, 59, 999);
+
+  //       // Verificar si hay superposición de rangos
+  //       return fechaIni <= fechaFinReg && fechaFin >= fechaIniReg;
+  //     });
+
+  //     return registrosEnRango.map(reg => reg.id_registro);
+  //   };
+
+  //   switch (this.formato) {
+  //     case 'DIA':
+  //       // Calendario por día (igual al original)
+  //       while (fechaActual <= fechaFin) {
+  //         const idRegistro = encontrarIdRegistro(fechaActual);
+  //         const obj = {
+  //           fecha: new Date(fechaActual),
+  //           mostrar: 1,
+  //           id_registro: idRegistro
+  //         }
+  //         calendario.push(obj);
+  //         fechaActual.setDate(fechaActual.getDate() + 1);
+  //       }
+  //       break;
+
+  //     case 'SEMANA':
+  //       const inicioSemanaNumero = this.getDiaSemanaNumero(this.aspectosdias[0].inicioSemana);
+  //       // Calendario por semana con inicio personalizado
+  //       while (fechaActual <= fechaFin) {
+  //         // Encontrar el día de inicio de la semana según configuración
+  //         const inicioSemanaDate = new Date(fechaActual);
+  //         const diaActual = inicioSemanaDate.getDay(); // 0=Domingo, 1=Lunes, 2=Martes, etc.
+
+  //         // Calcular diferencia para llegar al día de inicio configurado
+  //         let diff = inicioSemanaNumero - diaActual;
+  //         if (diff > 0) {
+  //           diff -= 7; // Ir a la semana anterior
+  //         }
+
+  //         inicioSemanaDate.setDate(inicioSemanaDate.getDate() + diff);
+  //         inicioSemanaDate.setHours(0, 0, 0, 0);
+
+  //         // Calcular fin de semana (6 días después del inicio)
+  //         const finSemanaDate = new Date(inicioSemanaDate);
+  //         finSemanaDate.setDate(inicioSemanaDate.getDate() + 6);
+  //         finSemanaDate.setHours(23, 59, 59, 999);
+
+  //         // Verificar que la semana esté dentro del rango
+  //         if (inicioSemanaDate <= fechaFin && finSemanaDate >= fechaInicio) {
+
+  //           // Agregar solo si no existe ya en el calendario
+  //           const existe = calendario.some(semana =>
+  //             semana.fechainicio.getTime() === inicioSemanaDate.getTime()
+  //           );
+
+  //           if (!existe) {
+  //             const idRegistro = encontrarIdRegistro(inicioSemanaDate);
+  //             const semanaObj = {
+  //               fechainicio: new Date(inicioSemanaDate),
+  //               fechafin: new Date(finSemanaDate),
+  //               abreviatura: this.generarAbreviaturaSemana(inicioSemanaDate, finSemanaDate),
+  //               cantdias: 7,
+  //               mostrar: 1,
+  //               id_registro: idRegistro,
+  //               // Propiedades adicionales para compatibilidad
+  //               fecha: inicioSemanaDate.toISOString().split('T')[0],
+  //               mes: this.getMesNombre(inicioSemanaDate.getMonth()),
+  //               anio: inicioSemanaDate.getFullYear(),
+  //               // Para el template
+  //               dia: this.formatearRangoSemana(inicioSemanaDate, finSemanaDate)
+  //             };
+
+  //             calendario.push(semanaObj);
+  //           }
+  //         }
+
+  //         fechaActual.setDate(fechaActual.getDate() + 7);
+  //       }
+  //       break;
+
+
+  //     case 'MES':
+  //       // Calendario por mes (primer día de cada mes)
+  //       const tempFechaMes = new Date(fechaInicio);
+  //       tempFechaMes.setDate(1);
+
+  //       while (tempFechaMes <= fechaFin) {
+  //         const primerDiaMes = new Date(tempFechaMes.getFullYear(), tempFechaMes.getMonth(), 1);
+  //         if (primerDiaMes >= fechaInicio && primerDiaMes <= fechaFin) {
+  //           const idRegistro = encontrarIdRegistro(primerDiaMes);
+
+  //           const mesObj = {
+  //             fecha: new Date(primerDiaMes),
+  //             mostrar: 1,
+  //             id_registro: idRegistro,  // Nueva propiedad
+  //             mes: this.getMesNombre(primerDiaMes.getMonth()),
+  //             anio: primerDiaMes.getFullYear()
+  //           };
+
+  //           calendario.push(mesObj);
+  //         }
+
+  //         tempFechaMes.setMonth(tempFechaMes.getMonth() + 1);
+  //       }
+  //       break;
+  //   }
+  //   return calendario;
+  // }
+
+
+
+  // Generar abreviatura para la semana (ej: "M25-J31/ENE")
+  generarCalendarioPorFormato(fechaInicio: Date, fechaFin: Date): any[] {
+    const calendario = [];
+
+    // Función para normalizar fechas considerando la zona horaria
+    const normalizarFecha = (fecha: Date): Date => {
+      // Usar toISOString y tomar solo la parte de la fecha para evitar problemas de zona horaria
+      const isoString = fecha.toISOString().split('T')[0];
+      return new Date(isoString + 'T00:00:00.000Z');
+    };
+
+    // Función para debug
+    const debugRegistro = (fecha: Date, registroEncontrado: any) => {
+      const fechaStr = fecha.toISOString().split('T')[0];
+    };
+
+    // Función para encontrar id_registro para un día específico
+    const encontrarIdRegistroParaDia = (fecha: Date): number | null => {
+      const fechaNormalizada = normalizarFecha(fecha);
+
+      const registro = this.tablaRegistroMetrados.find(reg => {
+        const fechaIniReg = normalizarFecha(new Date(reg.fechaini));
+        const fechaFinReg = normalizarFecha(new Date(reg.fechafin));
+
+        // Debug para fechas problemáticas
+        if (fechaNormalizada.toISOString().split('T')[0] === '2024-11-30' ||
+          fechaNormalizada.toISOString().split('T')[0] === '2024-12-31') {
+
+          if (this.tablaRegistroMetrados[1]) {
+            const reg2Ini = normalizarFecha(new Date(this.tablaRegistroMetrados[1].fechaini));
+            const reg2Fin = normalizarFecha(new Date(this.tablaRegistroMetrados[1].fechafin));
+
+          }
+        }
+
+        return fechaNormalizada >= fechaIniReg && fechaNormalizada <= fechaFinReg;
+      });
+
+      // Debug
+      if (fechaNormalizada.toISOString().split('T')[0] === '2024-11-30' ||
+        fechaNormalizada.toISOString().split('T')[0] === '2024-12-31') {
+        debugRegistro(fechaNormalizada, registro);
+      }
+
+      return registro ? registro.id_registro : null;
+    };
+
+    // Para el caso DIA
+    if (this.formato === 'DIA') {
+      const fechaActual = new Date(fechaInicio);
+
+      while (fechaActual <= fechaFin) {
+        const idRegistro = encontrarIdRegistroParaDia(fechaActual);
+        const obj = {
+          fecha: new Date(fechaActual),
+          mostrar: 1,
+          id_registro: idRegistro
+        }
+        calendario.push(obj);
+        fechaActual.setDate(fechaActual.getDate() + 1);
+      }
+    }
+
+    // ... el resto de los casos (SEMANA y MES) se mantienen igual
+
+    return calendario;
+  }
+
+
+  generarAbreviaturaSemana(fechaInicio: Date, fechaFin: Date): string {
+    const diasAbreviados = ['D', 'L', 'M', 'X', 'J', 'V', 'S'];
+    const mesesAbreviados = ['ENE', 'FEB', 'MAR', 'ABR', 'MAY', 'JUN', 'JUL', 'AGO', 'SEP', 'OCT', 'NOV', 'DIC'];
+
+    const diaInicio = fechaInicio.getDate();
+    const diaFin = fechaFin.getDate();
+    const mesInicio = fechaInicio.getMonth();
+    const mesFin = fechaFin.getMonth();
+
+    const diaInicioAbr = diasAbreviados[fechaInicio.getDay()];
+    const diaFinAbr = diasAbreviados[fechaFin.getDay()];
+
+    if (mesInicio === mesFin) {
+      return `${diaInicioAbr}${diaInicio}-${diaFinAbr}${diaFin}/${mesesAbreviados[mesInicio]}`;
+    } else {
+      return `${diaInicioAbr}${diaInicio}/${mesesAbreviados[mesInicio]}-${diaFinAbr}${diaFin}/${mesesAbreviados[mesFin]}`;
+    }
+  }
+
+  // Formatear rango de semana para display
+  formatearRangoSemana(fechaInicio: Date, fechaFin: Date): string {
+    const diaInicio = fechaInicio.getDate();
+    const diaFin = fechaFin.getDate();
+    const mesInicio = fechaInicio.getMonth() + 1;
+    const mesFin = fechaFin.getMonth() + 1;
+
+    if (mesInicio === mesFin) {
+      return `S${diaInicio}-${diaFin}/${mesInicio}`;
+    } else {
+      return `S${diaInicio}/${mesInicio}-${diaFin}/${mesFin}`;
+    }
+  }
+
+  // Obtener nombre del mes
+  getMesNombre(mes: number): string {
+    const meses = [
+      'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+      'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+    ];
+    return meses[mes];
+  }
+
+  // Método para obtener el número del día de la semana (0-6)
+  getDiaSemanaNumero(nombreDia: string): number {
+    const dias = {
+      'domingo': 0,
+      'lunes': 1,
+      'martes': 2,
+      'miercoles': 3,
+      'jueves': 4,
+      'viernes': 5,
+      'sabado': 6
+    };
+    return dias[nombreDia.toLowerCase()] || 1; // Default: Lunes
+  }
+
+
+  async cambiarFormato() {
+    this.mostrar_carga_todo = true
+    let fi = null
+    let ff = null
+    if (this.formato == 'SEMANA') {
+      if (this.metradoMes2 !== '0' && this.metradoMes2 !== 0) {
+        const fila = this.tablaRegistroMetrados.find(ele => ele.id_registro == this.metradoMes2);
+        fi = fila.fechaini
+        ff = fila.fechafin
+      } else {
+        fi = this.fechas.minFechaini
+        ff = this.fechas.maxFechafin
+      }
+
+      const dia = await this.obtenerNumeroDiaSemana(this.aspectosdias[0].inicioSemana)
+      const calendario = await this.generarCalendarioSemana(fi, ff, dia, this.calendarioBase[1])
+      const header = this.generarMesesConColspan(calendario)
+      this.calendarioSemana = [header, calendario]
+      for (const element of this.tablaProgramacion) {
+        if (element.unidad) {
+          let arrayCantidades = []
+          let arrayParciales = []
+          for (const row of calendario) {
+            let cantidadSemana = null
+            let parcialesSemana = null
+            for (let i = row.indexInicio; i <= row.indexFinal; i++) {
+              const cant = element.cantidades[i] !== null ? element.cantidades[i] : null;
+              const parc = element.parciales[i] !== null ? element.parciales[i] : null;
+              if (cant !== null) {
+                cantidadSemana = cantidadSemana + cant
+              }
+              if (parc !== null) {
+                parcialesSemana = parcialesSemana + parc
+              }
+
+            }
+            arrayCantidades.push(cantidadSemana)
+            arrayParciales.push(parcialesSemana)
+          }
+          element.cantidadesSemana = arrayCantidades
+          element.parcialesSemana = arrayParciales
+        } else {
+          let arrayCantidades = []
+          let arrayParciales = []
+          for (const row of calendario) {
+            arrayCantidades.push(null)
+            arrayParciales.push(null)
+          }
+          element.cantidadesSemana = arrayCantidades
+          element.parcialesSemana = arrayParciales
+        }
+      }
+    } else if (this.formato == 'DIA') {
+      await this.filtrarRegistroCalendario()
+    }
+    this.mostrar_carga_todo = false
+
+  }
+
+  obtenerNumeroDiaSemana(nombreDia: string): number {
+    const nombreNormalizado = nombreDia.toLowerCase().trim();
+    const numero = this.nombresDiasMap[nombreNormalizado];
+
+    if (numero === undefined) {
+      throw new Error(`Nombre de día no válido: ${nombreDia}. Use: domingo, lunes, martes, miércoles, jueves, viernes, sábado`);
+    }
+
+    return numero;
+  }
+
+  generarMesesConColspan(semanas: any[]): any[] {
+    if (!semanas || semanas.length === 0) return [];
+
+    const mesesMap = new Map<string, {
+      mes: string,
+      anio: number,
+      colspan: number,
+      semanas: number
+    }>();
+
+    // Procesar cada semana
+    semanas.forEach(semana => {
+      const mesesEnSemana = new Set<string>();
+
+      // Identificar qué meses participan en esta semana
+      semana.dias.forEach(dia => {
+        const fecha = new Date(dia.fecha);
+        const mesKey = this.obtenerKeyMes(fecha);
+        mesesEnSemana.add(mesKey);
+      });
+
+      // Distribuir la semana (colspan 2) entre los meses participantes
+      const colspanPorMes = 2 / mesesEnSemana.size;
+
+      mesesEnSemana.forEach(mesKey => {
+        const [nombreMes, anioStr] = mesKey.split('-');
+        const anio = parseInt(anioStr);
+
+        if (!mesesMap.has(mesKey)) {
+          mesesMap.set(mesKey, {
+            mes: nombreMes,
+            anio: anio,
+            colspan: colspanPorMes,
+            semanas: 1 / mesesEnSemana.size
+          });
+        } else {
+          const mesExistente = mesesMap.get(mesKey)!;
+          mesExistente.colspan += colspanPorMes;
+          mesExistente.semanas += 1 / mesesEnSemana.size;
+        }
+      });
+    });
+
+    // Redondear el colspan a números enteros (ya que cada semana son 2)
+    const mesesArray = Array.from(mesesMap.values());
+
+    mesesArray.forEach(mes => {
+      // Redondear al entero más cercano (ya que cada semana son 2 de colspan)
+      mes.colspan = Math.round(mes.colspan);
+    });
+
+    return mesesArray.sort((a, b) => {
+      const fechaA = new Date(a.anio, this.obtenerNumeroMes(a.mes), 1);
+      const fechaB = new Date(b.anio, this.obtenerNumeroMes(b.mes), 1);
+      return fechaA.getTime() - fechaB.getTime();
+    });
+  }
+
+  private obtenerKeyMes(fecha: Date): string {
+    const nombreMes = fecha.toLocaleString('es-ES', { month: 'long' }).toUpperCase();
+    const anio = fecha.getFullYear();
+    return `${nombreMes}-${anio}`;
+  }
+
+  private obtenerNumeroMes(nombreMes: string): number {
+    const meses = [
+      'ENERO', 'FEBRERO', 'MARZO', 'ABRIL', 'MAYO', 'JUNIO',
+      'JULIO', 'AGOSTO', 'SEPTIEMBRE', 'OCTUBRE', 'NOVIEMBRE', 'DICIEMBRE'
+    ];
+    return meses.indexOf(nombreMes);
+  }
+
+  //////////////////////////////////////////////////////////////////////////////////////////////
+  generarCalendarioSemana(
+    fechaInicio: string | Date,
+    fechaFin: string | Date,
+    inicioSemana: number | string,
+    arrayCompleto: any[] // Tu array completo de 92 días
+  ): any {
+    // Convertir strings a Date y normalizar
+    const inicio = this.parsearFecha(fechaInicio);
+    const fin = this.parsearFecha(fechaFin);
+
+    // Convertir inicioSemana a número si es string
+    const inicioSemanaNum = typeof inicioSemana === 'string'
+      ? this.obtenerNumeroDiaSemana(inicioSemana)
+      : inicioSemana;
+
+    inicio.setHours(0, 0, 0, 0);
+    fin.setHours(0, 0, 0, 0);
+
+    const calendario: any = [];
+    let semanaActual: any = {
+      dias: [],
+      cantDias: 0,
+      mostrar: 1,
+      abrev_Nombre: '',
+      indexInicio: -1,
+      indexFinal: -1
+    };
+
+    const fechaActual = new Date(inicio);
+    const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0);
+
+    // Buscar el índice de la fecha de inicio en el array completo
+    let indexEnCompleto = this.buscarIndiceEnArrayCompleto(fechaActual, arrayCompleto);
+
+    if (indexEnCompleto === -1) {
+      console.warn('Fecha de inicio no encontrada en array completo');
+      return calendario;
+    }
+
+    let primeraIteracion = true;
+
+    while (fechaActual <= fin && indexEnCompleto < arrayCompleto.length) {
+      const diaCompleto = arrayCompleto[indexEnCompleto];
+
+      // Verificar que la fecha coincide
+      const fechaCompleto = new Date(diaCompleto.fecha);
+      fechaCompleto.setHours(0, 0, 0, 0);
+
+      if (fechaCompleto.getTime() !== fechaActual.getTime()) {
+        console.warn(`Discrepancia de fechas en índice ${indexEnCompleto}`);
+        break;
+      }
+
+      const dia = {
+        fecha: new Date(fechaActual),
+        indexEnCompleto: indexEnCompleto,
+        datosOriginales: diaCompleto // Opcional: incluir los datos originales
+      };
+
+      semanaActual.dias.push(dia);
+      semanaActual.cantDias++;
+
+      // Establecer índices de inicio y fin en el array completo
+      if (primeraIteracion) {
+        semanaActual.indexInicio = indexEnCompleto;
+        primeraIteracion = false;
+      }
+      semanaActual.indexFinal = indexEnCompleto;
+
+      // Si completamos una semana o llegamos al fin, procesar y agregar al calendario
+      if (fechaActual.getDay() === (inicioSemanaNum + 6) % 7 || fechaActual.getTime() === fin.getTime()) {
+        semanaActual.abrev_Nombre = this.generarAbreviaturaSemana2(semanaActual.dias);
+        calendario.push(semanaActual);
+
+        // Reiniciar para la siguiente semana
+        indexEnCompleto++;
+        semanaActual = {
+          dias: [],
+          cantDias: 0,
+          mostrar: 1,
+          abrev_Nombre: '',
+          indexInicio: indexEnCompleto,
+          indexFinal: indexEnCompleto
+        };
+        primeraIteracion = true;
+      } else {
+        indexEnCompleto++;
+      }
+
+      // Avanzar al siguiente día
+      fechaActual.setDate(fechaActual.getDate() + 1);
+
+      if (fechaActual > fin || indexEnCompleto >= arrayCompleto.length) {
+        break;
+      }
+    }
+
+    // Si queda una semana parcial al final, procesarla
+    if (semanaActual.dias.length > 0) {
+      semanaActual.abrev_Nombre = this.generarAbreviaturaSemana2(semanaActual.dias);
+      calendario.push(semanaActual);
+    }
+
+    return calendario;
+  }
+
+
+  private buscarIndiceEnArrayCompleto(fecha: Date, arrayCompleto: any[]): number {
+    const fechaBuscada = fecha.getTime();
+
+    for (let i = 0; i < arrayCompleto.length; i++) {
+      const diaCompleto = arrayCompleto[i];
+      if (diaCompleto.fecha) {
+        const fechaCompleto = new Date(diaCompleto.fecha);
+        fechaCompleto.setHours(0, 0, 0, 0);
+
+        if (fechaCompleto.getTime() === fechaBuscada) {
+          return i;
+        }
+      }
+    }
+
+    return -1; // No encontrado
+  }
+  private generarAbreviaturaSemana2(dias: any[]): string {
+    if (dias.length === 0) return '';
+
+    const primerDia = dias[0].fecha;
+    const ultimoDia = dias[dias.length - 1].fecha;
+
+    const abrevPrimer = this.obtenerAbreviaturaDia(primerDia);
+    const abrevUltimo = this.obtenerAbreviaturaDia(ultimoDia);
+
+    const diaPrimer = primerDia.getDate();
+    const diaUltimo = ultimoDia.getDate();
+
+    return `${abrevPrimer}-${diaPrimer} => ${abrevUltimo}-${diaUltimo}`;
+  }
+
+  private obtenerAbreviaturaDia(fecha: Date): string {
+    const diasAbreviaturas = ['DO', 'LU', 'MA', 'MI', 'JU', 'VI', 'SA'];
+    return diasAbreviaturas[fecha.getDay()];
+  }
+
+  private parsearFecha(fecha: string | Date): Date {
+    if (fecha instanceof Date) {
+      return new Date(fecha.getTime());
+    }
+
+    const fechaStr = fecha.toString().trim();
+
+    // Detectar formato automáticamente
+    const formatos = [
+      // YYYY-MM-DD
+      {
+        regex: /^(\d{4})-(\d{2})-(\d{2})$/, handler: (match: RegExpMatchArray) =>
+          new Date(parseInt(match[1]), parseInt(match[2]) - 1, parseInt(match[3]))
+      },
+
+      // YYYY/MM/DD
+      {
+        regex: /^(\d{4})\/(\d{2})\/(\d{2})$/, handler: (match: RegExpMatchArray) =>
+          new Date(parseInt(match[1]), parseInt(match[2]) - 1, parseInt(match[3]))
+      },
+
+      // DD-MM-YYYY
+      {
+        regex: /^(\d{2})-(\d{2})-(\d{4})$/, handler: (match: RegExpMatchArray) =>
+          new Date(parseInt(match[3]), parseInt(match[2]) - 1, parseInt(match[1]))
+      },
+
+      // DD/MM/YYYY
+      {
+        regex: /^(\d{2})\/(\d{2})\/(\d{4})$/, handler: (match: RegExpMatchArray) =>
+          new Date(parseInt(match[3]), parseInt(match[2]) - 1, parseInt(match[1]))
+      }
+    ];
+
+    for (const formato of formatos) {
+      const match = fechaStr.match(formato.regex);
+      if (match) {
+        const fechaResult = formato.handler(match);
+        if (!isNaN(fechaResult.getTime())) {
+          return fechaResult;
+        }
+      }
+    }
+
+    // Fallback al constructor Date
+    const fechaParsed = new Date(fechaStr);
+    if (isNaN(fechaParsed.getTime())) {
+      throw new Error(`Formato de fecha no válido: ${fecha}`);
+    }
+
+    return fechaParsed;
+  }
+
+
+
+  /////////////////////////////////////////////////////////////////////////////////////////////
+
+  acumularCantidadesPorSemanaEficiente(cantidades: any[], semanas: any[], calendarioDias: any[], elemento: any): number[] {
+    const resultado: number[] = new Array(semanas.length).fill(0);
+
+    const fechaActividad = new Date(elemento.fechaini);
+    // Encontrar en qué semana cae la actividad
+    const indexSemanaActividad = semanas.findIndex(semana => {
+      const inicio = new Date(semana.fechainicio);
+      const fin = new Date(semana.fechafin);
+      return fechaActividad >= inicio && fechaActividad <= fin;
+    });
+
+    if (indexSemanaActividad !== -1) {
+      // Encontrar el índice en el calendario diario para esta fecha
+      const indexDiaCalendario = calendarioDias.findIndex(dia => {
+        const fechaDia = new Date(dia.fecha);
+        return fechaDia.toDateString() === fechaActividad.toDateString();
+      });
+
+
+      if (indexDiaCalendario !== -1 && cantidades[indexDiaCalendario] !== null) {
+        resultado[indexSemanaActividad] = Number(cantidades[indexDiaCalendario]) || 0;
+      }
+    }
+
+    return resultado;
+  }
+
+  acumularParcialesPorSemanaCorregido(parciales: any[], semanas: any[], calendarioDias: any[], elemento: any): number[] {
+    const resultado: number[] = new Array(semanas.length).fill(0);
+
+    const fechaActividad = new Date(elemento.fechaini);
+
+    // Encontrar en qué semana cae la actividad
+    const indexSemanaActividad = semanas.findIndex(semana => {
+      const inicio = new Date(semana.fechainicio);
+      const fin = new Date(semana.fechafin);
+      return fechaActividad >= inicio && fechaActividad <= fin;
+    });
+
+    if (indexSemanaActividad !== -1) {
+      // Encontrar el índice en el calendario diario para esta fecha
+      const indexDiaCalendario = calendarioDias.findIndex(dia => {
+        const fechaDia = new Date(dia.fecha);
+        return fechaDia.toDateString() === fechaActividad.toDateString();
+      });
+
+      if (indexDiaCalendario !== -1 && parciales[indexDiaCalendario] !== null) {
+        resultado[indexSemanaActividad] = Number(parciales[indexDiaCalendario]) || 0;
+      }
+    }
+
+    return resultado;
+  }
+
+  // acumularCantidadesPorSemana(cantidades: any[], semanas: any[]): number[] {
+  //   const resultado: number[] = [];
+
+  //   semanas.forEach((semana, indexSemana) => {
+  //     let acumulado = 0;
+
+  //     // Recorrer todos los días de esta semana
+  //     if (semana.dias && Array.isArray(semana.dias)) {
+  //       semana.dias.forEach((dia: any) => {
+  //         const indexDia = this.obtenerIndiceDiaEnCalendario(dia.fecha);
+  //         if (indexDia !== -1 && cantidades[indexDia] !== null && cantidades[indexDia] !== undefined) {
+  //           acumulado += Number(cantidades[indexDia]) || 0;
+  //         }
+  //       });
+  //     }
+
+  //     resultado.push(acumulado);
+  //   });
+
+  //   return resultado;
+  // }
+
+  // acumularParcialesPorSemana(parciales: any[], semanas: any[]): number[] {
+  //   const resultado: number[] = [];
+
+  //   semanas.forEach((semana, indexSemana) => {
+  //     let acumulado = 0;
+
+  //     if (semana.dias && Array.isArray(semana.dias)) {
+  //       semana.dias.forEach((dia: any) => {
+  //         const indexDia = this.obtenerIndiceDiaEnCalendario(dia.fecha);
+  //         if (indexDia !== -1 && parciales[indexDia] !== null && parciales[indexDia] !== undefined) {
+  //           acumulado += Number(parciales[indexDia]) || 0;
+  //         }
+  //       });
+  //     }
+
+  //     resultado.push(acumulado);
+  //   });
+
+  //   return resultado;
+  // }
+
+  // Obtener el índice de un día en el calendario original
+  obtenerIndiceDiaEnCalendario(fecha: Date): number {
+    if (!this.calendarioProgra[1]) return -1;
+
+    const fechaBuscada = new Date(fecha).toISOString().split('T')[0];
+
+    for (let i = 0; i < this.calendarioProgra[1].length; i++) {
+      const diaCalendario = this.calendarioProgra[1][i];
+      const fechaCalendario = new Date(diaCalendario.fecha).toISOString().split('T')[0];
+
+      if (fechaCalendario === fechaBuscada) {
+        return i;
+      }
+    }
+
+    return -1;
+  }
+
+  obtenerDiasPorMes(calendario) {
+    const meses = [
+      'ENERO', 'FEBRERO', 'MARZO', 'ABRIL', 'MAYO', 'JUNIO',
+      'JULIO', 'AGOSTO', 'SEPTIEMBRE', 'OCTUBRE', 'NOVIEMBRE', 'DICIEMBRE'
+    ];
+
+    const resultado = {};
+
+    calendario.forEach(fecha => {
+      // Solo contar si mostrar == 1
+      if (fecha.mostrar !== 1) {
+        return; // Saltar esta iteración
+      }
+
+      const mes = fecha.fecha.getMonth(); // 0-11
+      const anio = fecha.fecha.getFullYear();
+      const clave = `${anio}-${mes}`;
+
+      if (!resultado[clave]) {
+        resultado[clave] = {
+          mes: meses[mes],
+          anio: anio,
+          cantdias: 0
+        };
+      }
+
+      resultado[clave].cantdias++;
+    });
+
+    return Object.values(resultado);
+  }
+
+  transform(dia, formato: string = 'corto'): string {
+    if (!dia) return '';
+    const diaSemana = dia.fecha.toLocaleDateString('es-ES', {
+      weekday: formato === 'largo' ? 'long' : 'short'
+    });
+    const diaNumero = dia.fecha.getDate();
+
+    // Para que quede "Lun-1" en lugar de "lun-1"
+    const diaCapitalizado = diaSemana.charAt(0).toUpperCase() + diaSemana.slice(1);
+
+    return `${diaCapitalizado}-${diaNumero}`;
+  }
+
+  async calcularHorasPorDia(horario: any) {
+    const dias = ['lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado', 'domingo'];
+    const horasPorDia: Record<string, number> = {};
+
+    for (let i = 0; i < 7; i++) {
+      const ingreso = horario.horaIngreso[i];
+      const salida = horario.horaSalida[i];
+      const descansoInicio = horario.descansoIng[i];
+      const descansoFin = horario.descansoSal[i];
+
+      // Si no hay horario, el día no se trabaja (0 horas)
+      if (!ingreso || !salida) {
+        horasPorDia[dias[i]] = 0;
+        continue;
+      }
+
+      // Calcular horas de la mañana (horaIngreso -> horaSalida)
+      const horasManana = await this.calcularDiferenciaHoras(ingreso, salida);
+
+      // Calcular horas de la tarde (descansoIng -> descansoSal) si existen
+      let horasTarde = 0;
+      if (descansoInicio && descansoFin) {
+        horasTarde = await this.calcularDiferenciaHoras(descansoInicio, descansoFin);
+      }
+
+      horasPorDia[dias[i]] = horasManana + horasTarde;
+    }
+
+    return horasPorDia;
+  }
+
+  async calcularDiferenciaHoras(horaInicio: string, horaFin: string) {
+    const [hIni, mIni] = horaInicio.split(':').map(Number);
+    const [hFin, mFin] = horaFin.split(':').map(Number);
+
+    const diferencia = (hFin * 60 + mFin) - (hIni * 60 + mIni);
+    return diferencia / 60; // Convertir minutos a horas (ej. 4.5 horas)
+  }
+
+  analizarHorario(horario, DiasNoLab) {
+    const dias = ['LUNES', 'MARTES', 'MIERCOLES', 'JUEVES', 'VIERNES', 'SÁBADO', 'DOMINGO'];
+    // Modificar horario.horaIngreso
+    for (let i = 0; i < horario.horaIngreso.length; i++) {
+      if (i < 6) {
+        if (horario.horaIngreso[i] == '') {
+          horario.horaIngreso[i] = '07:30';
+        }
+      }
+      if (DiasNoLab.includes(dias[i])) {
+        horario.horaIngreso[i] = '';
+      }
+    }
+
+    // Modificar horario.horaSalida
+    for (let j = 0; j < horario.horaSalida.length; j++) {
+      if (j < 5) {
+        if (horario.horaSalida[j] == '') {
+          horario.horaSalida[j] = '12:00';
+        }
+      } else if (j == 5) {
+        if (horario.horaSalida[j] == '') {
+          horario.horaSalida[j] = '13:00';
+        }
+      }
+      if (DiasNoLab.includes(dias[j])) {
+        horario.horaSalida[j] = '';
+      }
+    }
+
+    // Modificar horario.descansoIng
+    for (let k = 0; k < horario.descansoIng.length; k++) {
+      if (k < 5) {
+        if (horario.descansoIng[k] == '') {
+          horario.descansoIng[k] = '14:00';
+        }
+      }
+      if (DiasNoLab.includes(dias[k])) {
+        horario.descansoIng[k] = '';
+      }
+    }
+
+    // Modificar horario.descansoSal
+    for (let l = 0; l < horario.descansoSal.length; l++) {
+      if (l < 5) {
+        if (horario.descansoSal[l] == '') {
+          horario.descansoSal[l] = '18:00';
+        }
+      }
+      if (DiasNoLab.includes(dias[l])) {
+        horario.descansoSal[l] = '';
+      }
+    }
+
+    return horario;
+  }
+
+  async filtrarRegistroCalendario() {
+    // this.mostrar_carga_todo = true;
+    let fila = null
+    if (this.metradoMes2 !== '0' && this.metradoMes2 !== 0) {
+      fila = this.tablaRegistroMetrados.find(ele => ele.id_registro == this.metradoMes2);
+      if (fila) {
+        // Parsear fechas del filtro
+        const fechaIniFiltro = this.parsearFechaLocal(fila.fechaini);
+        const fechaFinFiltro = this.parsearFechaLocal(fila.fechafin);
+        await this.aplicarFiltroCalendarioBase(fechaIniFiltro, fechaFinFiltro);
+
+        // Generar calendario SEMANA solo dentro del rango filtrado
+        if (this.formato == 'DIA') {
+          // this.calendarioProgra[1] = await this.generarCalendarioPorFormato(fechaIniFiltro, fechaFinFiltro);
+          const diasPorMes = await this.obtenerDiasPorMes(this.calendarioProgra[1]);
+          
+          // Recalcular acumulados
+          this.calendarioProgra[0] = diasPorMes
+        } else {
+
+        }
+        // Recalcular acumulados
+        await this.crearCantidadSemanaParaElementos();
+      }
+    } else {
+
+      if (this.formato == 'DIA') {
+        this.calendarioProgra[1] = await this.generarCalendarioPorFormato(
+          this.fechas.minFechaini,
+          this.fechas.maxFechafin
+        );
+        this.calendarioProgra[1].forEach(element => {
+          element.mostrar = 1
+        });
+        const diasPorMes = await this.obtenerDiasPorMes(this.calendarioProgra[1]);
+        // Recalcular acumulados
+        this.calendarioProgra[0] = diasPorMes
+      } else {
+        this.cambiarFormato()
+      }
+      await this.crearCantidadSemanaParaElementos();
+    }
+    const resp = await this.acumuladosRegistrosXFechas(this.metradoMes2, fila !== null ? fila.fechaini : this.fechas.minFechaini, fila !== null ? fila.fechafin : this.fechas.maxFechafin)
+    let i = 0
+    for (const element of this.tablaProgramacion) {
+      element.realizado = JSON.parse(resp[i].array_valores)
+      const a = JSON.parse(resp[i].metradodiario)
+
+
+      if (this.formato == 'DIA') {
+        const b = await this.asignarMetradosACalendario(this.calendarioProgra[1], a)
+        // console.log('b', b)
+        // console.log('item', element.item)
+        // let array = []
+        // if (this.metradoMes2 == 0 || this.metradoMes2 == '0') {
+        //   array = b
+        // } else {
+        //   array = b.filter(ele => ele.fecha == this.metradoMes2)
+        // }
+        element.metradodiario = b
+      }
+
+      i++
+    }
+ 
+    this.mostrar_carga_todo = false;
+  }
+
+
+  asignarMetradosACalendario(calendario: any[], metradosPorRegistro: any[]): any[] {
+    return calendario.map(item => {
+      // Buscar los metrados correspondientes al id_registro del item del calendario
+      const registroMetrados = metradosPorRegistro.find(reg => reg.id_registro === item.id_registro);
+
+      if (!registroMetrados) {
+        return {
+          ...item,
+          metrado_dia: null
+        };
+      }
+
+      const arrayMetrados = registroMetrados.metrados;
+
+      // Para formato DIA: obtener el metrado específico del día
+      if (this.formato === 'DIA' && item.fecha) {
+        const diaDelMes = item.fecha.getDate() - 1; // Posición en el array (0-based)
+        let metradoDelDia = diaDelMes < arrayMetrados.length ? arrayMetrados[diaDelMes] : null;
+        if (metradoDelDia === 0 || metradoDelDia === '0' || metradoDelDia === null || metradoDelDia === undefined || metradoDelDia === '') {
+          metradoDelDia = null;
+        }
+
+        // Si es string, intentar convertirlo a número y verificar si es 0
+        if (typeof metradoDelDia === 'string') {
+          const metradoNumerico = parseFloat(metradoDelDia);
+          if (metradoNumerico === 0 || isNaN(metradoNumerico)) {
+            metradoDelDia = null;
+          }
+        }
+
+        return {
+          ...item,
+          metrado_dia: metradoDelDia
+        };
+      }
+
+      // Para otros formatos, retornar el item sin cambios o con el array completo
+      return {
+        ...item,
+        metrado_dia: null,
+        metrados_array: arrayMetrados // Opcional: incluir el array completo
+      };
+    });
+  }
+
+  private parsearFechaLocal(fechaString: string | Date): Date {
+    if (fechaString instanceof Date) {
+      return new Date(fechaString.getFullYear(), fechaString.getMonth(), fechaString.getDate());
+    }
+
+    // Eliminar cualquier parte de tiempo y trabajar solo con fecha
+    const fechaStr = fechaString.split('T')[0];
+    const [year, month, day] = fechaStr.split('-').map(Number);
+
+    return new Date(year, month - 1, day);
+  }
+
+  normalizarFecha(fecha: Date): Date {
+    return new Date(fecha.getFullYear(), fecha.getMonth(), fecha.getDate());
+  }
+
+  aplicarFiltroCalendarioBase(fechaIniFiltro: Date, fechaFinFiltro: Date) {
+    const calendarioDias = this.calendarioProgra[1];
+
+    // Normalizar fechas del filtro
+    const fechaIniNormalizada = this.normalizarFecha(fechaIniFiltro);
+    const fechaFinNormalizada = this.normalizarFecha(fechaFinFiltro);
+
+    this.calendarioProgra[1].forEach(dia => {
+      const fechaDiaNormalizada = this.normalizarFecha(new Date(dia.fecha));
+
+      // Mostrar solo los días dentro del rango del filtro
+      dia.mostrar = (fechaDiaNormalizada >= fechaIniNormalizada && fechaDiaNormalizada <= fechaFinNormalizada) ? 1 : 0;
+    });    
+  }
+
+  restaurarCalendarioBaseCompleto() {
+    const calendarioDias = this.calendarioBase[1];
+    calendarioDias.forEach(dia => {
+      dia.mostrar = 1;
+    });
+  }
+
+  async crearCantidadSemanaParaElementos() {
+    const calendarioDiasBase = this.calendarioBase[1]; // Array completo de días
+    const semanas = this.calendarioProgra[1]; // Semanas ya generadas con el filtro aplicado
+
+    // Obtener solo los días visibles después del filtro
+    const diasVisibles = calendarioDiasBase.filter(dia => dia.mostrar === 1);
+
+
+    this.tablaProgramacion.forEach((elemento, indexElemento) => {
+      if (elemento.cantidades && elemento.cantidades.length > 0) {
+        elemento.cantidadSemana = this.acumularCantidadesSoloDiasVisibles(
+          elemento.cantidades,
+          semanas,
+          calendarioDiasBase,
+          diasVisibles,
+          elemento
+        );
+        elemento.parcialSemana = this.acumularParcialesSoloDiasVisibles(
+          elemento.parciales,
+          semanas,
+          calendarioDiasBase,
+          diasVisibles,
+          elemento
+        );
+
+        // Debug para elementos con valores
+
+      } else {
+        elemento.cantidadSemana = new Array(semanas.length).fill(0);
+        elemento.parcialSemana = new Array(semanas.length).fill(0);
+      }
+    });
+
+  }
+
+  acumularParcialesSoloDiasVisibles(
+    parciales: any[],
+    semanas: any[],
+    calendarioDiasBase: any[],
+    diasVisibles: any[],
+    elemento: any
+  ): number[] {
+    const resultado: number[] = new Array(semanas.length).fill(0);
+
+    semanas.forEach((semana, indexSemana) => {
+      let acumulado = 0;
+
+      const fechaInicioSemana = new Date(semana.fechainicio);
+      const fechaFinSemana = new Date(semana.fechafin);
+
+      // Recorrer solo los días VISIBLES que pertenecen a esta semana
+      diasVisibles.forEach(diaVisible => {
+        const fechaDia = new Date(diaVisible.fecha);
+
+        if (fechaDia >= fechaInicioSemana && fechaDia <= fechaFinSemana) {
+          const indexDiaBase = this.obtenerIndiceDiaEnCalendarioBase(
+            fechaDia,
+            calendarioDiasBase
+          );
+
+          if (indexDiaBase !== -1 &&
+            parciales[indexDiaBase] !== null &&
+            parciales[indexDiaBase] !== undefined) {
+
+            acumulado += Number(parciales[indexDiaBase]) || 0;
+          }
+        }
+      });
+
+      resultado[indexSemana] = acumulado;
+    });
+
+    return resultado;
+  }
+
+  acumularCantidadesSoloDiasVisibles(
+    cantidades: any[],
+    semanas: any[],
+    calendarioDiasBase: any[],
+    diasVisibles: any[],
+    elemento: any
+  ): number[] {
+    const resultado: number[] = new Array(semanas.length).fill(0);
+
+    semanas.forEach((semana, indexSemana) => {
+      let acumulado = 0;
+
+      const fechaInicioSemana = new Date(semana.fechainicio);
+      const fechaFinSemana = new Date(semana.fechafin);
+
+      // Recorrer solo los días VISIBLES que pertenecen a esta semana
+      diasVisibles.forEach(diaVisible => {
+        const fechaDia = new Date(diaVisible.fecha);
+
+        // Verificar si el día visible está dentro de esta semana
+        if (fechaDia >= fechaInicioSemana && fechaDia <= fechaFinSemana) {
+          // Encontrar el índice correspondiente en el calendario base
+          const indexDiaBase = this.obtenerIndiceDiaEnCalendarioBase(
+            fechaDia,
+            calendarioDiasBase
+          );
+
+          if (indexDiaBase !== -1 &&
+            cantidades[indexDiaBase] !== null &&
+            cantidades[indexDiaBase] !== undefined) {
+
+            const valor = Number(cantidades[indexDiaBase]) || 0;
+            acumulado += valor;
+
+
+          }
+        }
+      });
+
+      resultado[indexSemana] = acumulado;
+    });
+
+    return resultado;
+  }
+
+  obtenerIndiceDiaEnCalendarioBase(fecha: Date, calendarioDiasBase: any[]): number {
+    const fechaBuscada = fecha.toISOString().split('T')[0];
+
+    for (let i = 0; i < calendarioDiasBase.length; i++) {
+      const diaBase = calendarioDiasBase[i];
+      const fechaDiaBase = new Date(diaBase.fecha).toISOString().split('T')[0];
+
+      if (fechaDiaBase === fechaBuscada) {
+        return i;
+      }
+    }
+
+    return -1;
+  }
+
+  // Parsear fecha string YYYY-MM-DD directamente
+  parsearFechaString(fechaStr: string): number {
+    const partes = fechaStr.split('-');
+    const año = parseInt(partes[0], 10);
+    const mes = parseInt(partes[1], 10); // Mes 1-12
+    const dia = parseInt(partes[2], 10);
+    return año * 10000 + mes * 100 + dia;
+  }
+
+  // Para las fechas del calendario (que son Date objects)
+  fechaANumero(fecha: Date): number {
+    const año = fecha.getFullYear();
+    const mes = fecha.getMonth() + 1; // getMonth() devuelve 0-11
+    const dia = fecha.getDate();
+    return año * 10000 + mes * 100 + dia;
+  }
+
+
+  actualizarEstructuraMeses() {
+    if (!this.calendarioProgra[1]) return;
+    const meses = [
+      'ENERO', 'FEBRERO', 'MARZO', 'ABRIL', 'MAYO', 'JUNIO',
+      'JULIO', 'AGOSTO', 'SEPTIEMBRE', 'OCTUBRE', 'NOVIEMBRE', 'DICIEMBRE'
+    ];
+
+    const mesesAgrupados = {};
+
+    // Contar solo los días visibles por mes
+    this.calendarioProgra[1].forEach(fechaObj => {
+      if (fechaObj.mostrar === 1) {
+        const fecha = new Date(fechaObj.fecha);
+        const mes = fecha.getMonth();
+        const anio = fecha.getFullYear();
+        const clave = `${anio}-${mes}`;
+
+        if (!mesesAgrupados[clave]) {
+          mesesAgrupados[clave] = {
+            mes: meses[mes],
+            anio: anio,
+            cantdias: 0
+          };
+        }
+
+        mesesAgrupados[clave].cantdias++;
+      }
+    });
+
+    // Actualizar calendarioProgra[0] con los meses que tienen días visibles
+    this.calendarioProgra[0] = Object.values(mesesAgrupados);
+  }
+
+  filtroTitulo2(indiceTitulo, tablaProgramacion) {
+    this.mostrar_carga_todo = true
+    setTimeout(() => {
+      if (indiceTitulo) {
+        const titulo = this.titulos.find(ele => ele.indice == indiceTitulo)
+        tablaProgramacion = tablaProgramacion.forEach(ele => {
+          if (ele.item.startsWith(`${titulo.item}.`) || ele.item == titulo.item) {
+            ele.mostrar = 1
+          } else {
+            ele.mostrar = 0
+          }
+        }
+
+        );
+
+      } else {
+        this.tablaProgramacion.forEach(ele => {
+          ele.mostrar = 1
+        })
+      }
+      this.mostrar_carga_todo = false
+    }, 0);
+
+  }
+
+
+  async acumuladosRegistrosXFechas(id_registro, fechaini, fechafin) {
+    const obj = {
+      id_proyecto: this.id_proyecto,
+      id_registro: id_registro,
+      fechaini: moment(fechaini).format('YYYY-MM-DD'),
+      fechafin: moment(fechafin).format('YYYY-MM-DD')
+    }
+    const response = await this.metradoService.acumuladosRegistrosXFechas(obj)
+    return response
   }
 }

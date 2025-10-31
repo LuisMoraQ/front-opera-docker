@@ -29,26 +29,27 @@ export class AddproybiplanComponent implements OnInit {
     { id: 1, nombre: 'APROBADO' },
     { id: 2, nombre: 'EVALUACIÓN' }
   ]
-  paises=[]
-  monedas=[]
-  OtroPais:boolean=false
+  paises = []
+  monedas = []
+  OtroPais: boolean = false
   provincias = []
   distritos = []
-  tvista=1;
+  tvista = 1;
 
-  datacomp=[];
+  datacomp = [];
   buscando: boolean = false;
   //dataSource = [];
   fila_sel: any;
   formBuscar = new UntypedFormGroup({
     codigo: new UntypedFormControl('', [Validators.required]),
   })
-  
+
   editar: boolean = false;
   mostrar_carga_todo: boolean = false;
   idUsuario: any = null;
   //idGrupoSeleccionado: any = null;
-  dataproy:any;
+  dataproy: any;
+  valorEliminar = null
   get codigo(): UntypedFormControl { return this.formBuscar.get('codigo') as UntypedFormControl }
 
   formProyecto = new UntypedFormGroup({
@@ -69,7 +70,7 @@ export class AddproybiplanComponent implements OnInit {
     fecha_elaboracion: new UntypedFormControl('', [Validators.required]),
     plazo: new UntypedFormControl('', [Validators.required]),
     fecha_inicio: new UntypedFormControl('', [Validators.required]),
-    fecha_culmina: new UntypedFormControl('',[Validators.required]),
+    fecha_culmina: new UntypedFormControl('', [Validators.required]),
   })
 
   get descripcion(): UntypedFormControl { return this.formProyecto.get('descripcion') as UntypedFormControl }
@@ -103,8 +104,8 @@ export class AddproybiplanComponent implements OnInit {
 
   async ngOnInit() {
     try {
-      this.tvista=0;
-      this.mostrar_carga_todo=true;
+      this.tvista = 0;
+      this.mostrar_carga_todo = true;
       this.paises = await this.configuracionService.listarPaises();
       this.monedas = await this.configuracionService.listarMonedas();
       var resto = 550;
@@ -140,13 +141,13 @@ export class AddproybiplanComponent implements OnInit {
       //     this.datacomp[m].mostrar=arrmenuproy[m]==1?1:0;
       //   }
       // }
-      this.mostrar_carga_todo=false;
+      this.mostrar_carga_todo = false;
     } catch (e) {
       console.log(e);
       //SwalService.error()
     }
   }
-async CambiarPais(id) {
+  async CambiarPais(id) {
     if (id === '227') {
       this.OtroPais = false;
     } else {
@@ -155,8 +156,8 @@ async CambiarPais(id) {
   }
   @HostListener('window:resize', ['$event'])
   onResize(event) {
-    var resto = 550 ;
-      this.height = window.innerHeight - resto;
+    var resto = 550;
+    this.height = window.innerHeight - resto;
   }
   quitarfoco(element: any) {
     element.target.blur();
@@ -172,41 +173,41 @@ async CambiarPais(id) {
   closeModal(result: any = null) {
     this.modal.close()
   }
-  
-  cambioselt1(row){
-    if(row.visual==0){
-      row.visual=1;
+
+  cambioselt1(row) {
+    if (row.visual == 0) {
+      row.visual = 1;
     }
-    else{
-      row.visual=0;
-    }
-  }
-  cambioselt2(row){
-    if(row.permite==0){
-      row.permite=1;
-    }
-    else{
-      row.permite=0;
+    else {
+      row.visual = 0;
     }
   }
-  async Duplicaproy(){
-    try{
-      if(!this.dataproy){
-        this.toaster.error('Buscar los datos del proyecto que antes de Importar.', 'Advertencia', { closeButton: false,positionClass: 'toast-bottom-right',timeOut: 5000 })
+  cambioselt2(row) {
+    if (row.permite == 0) {
+      row.permite = 1;
+    }
+    else {
+      row.permite = 0;
+    }
+  }
+  async Duplicaproy() {
+    try {
+      if (!this.dataproy) {
+        this.toaster.error('Buscar los datos del proyecto que antes de Importar.', 'Advertencia', { closeButton: false, positionClass: 'toast-bottom-right', timeOut: 5000 })
         return
       }
       if (this.formProyecto.invalid) {
         this.formProyecto.markAllAsTouched()
-        this.toaster.error('Datos incompletos o erroneos', 'Advertencia', { closeButton: false,positionClass: 'toast-bottom-right',timeOut: 5000 })
+        this.toaster.error('Datos incompletos o erroneos', 'Advertencia', { closeButton: false, positionClass: 'toast-bottom-right', timeOut: 5000 })
         return
       }
-      let arrpermite=[];
-      let dupli=0;
-      let valido=true;
-      let edpresu=false;
-      let edotro=false;
-      let edform=false;
-      let edindir=false;
+      let arrpermite = [];
+      let dupli = 0;
+      let valido = true;
+      let edpresu = false;
+      let edotro = false;
+      let edform = false;
+      let edindir = false;
       // for(let ele of this.datacomp){
       //   arrpermite.push(ele.permite);
       //   if(ele.permite==1){
@@ -225,56 +226,56 @@ async CambiarPais(id) {
       //     edindir=true;
       //   }
       // }
-      
+
       // valido=edotro && edpresu?true:!edotro?true:false;
       // if(edotro){
       //   if(valido){
       //     let valform=edform?(edindir?true:false):true;
       //     if(valform){
-            const sw = await SwalService.confirm('Advertencia', 'Esta seguro que desea duplicar?. El proceso puede tardar.')
-            if (sw.isConfirmed) {
-              this.mostrar_carga_todo = true;
-              let descpasa=this.descripcion.value.toString().toUpperCase().trim().replace(/\s+/g, ' ')//quitar saltos y espacios, solo mayuscula
-              //pasar datos recuperado del proyecto
-              const body = JSON.stringify({
-                'id_proyecto': this.dataproy.id_proyecto,
-                'id_usuario': this.dataproy.id_usuario,
-                'userfinal': this.idUsuario,
-                //'admitidos': arrpermite.join('|'),
-                //'asignaund': this.asignaund,
-                'cui':this.cod_pais.value===227? '':this.otrodepartamento.value+'|'+ this.otraprovincia.value+'|'+ this.otrodistrito.value,
-                'descripcion': descpasa,
-                'id_clasificacion': this.id_clasificacion.value,
-                'modalidad': this.modalidad.value,
-                'id_grupo': this.id_grupo.value,
-                'moneda': this.moneda.value,
-                'estado': this.estado.value,
-                'cod_pais': this.cod_pais.value,//null
-                'id_localidad': this.distrito.value,//null
-                'direccion': this.direccion.value==""?null:this.direccion.value,
-                'fecha_elaboracion': this.dataproy.fecha_elaboracion ? moment(this.dataproy.fecha_elaboracion).format('YYYY-MM-DD') : null,
-                'plazo': this.dataproy.plazo??null,
-                'fecha_inicio': this.dataproy.fecha_inicio ? moment(this.dataproy.fecha_inicio).format('YYYY-MM-DD') : null,
-                'fecha_culmina': this.dataproy.fecha_culmina ? moment(this.dataproy.fecha_culmina).format('YYYY-MM-DD') : null,
-                'fuente': 1,
-                //'desplaza': false,
-                //'difidas': 0,
-                'id_principal':null,//asignar id que corresponde
-              });
-              console.time('timetemp')
-              let resp = await this.principalService.AgregarProyBiplan(body);
-              console.timeEnd('timetemp')
-              this.mostrar_carga_todo = false;
-              if (resp.id == "1") {
-                if(resp.observacion){
-                  let prueba=JSON.parse(resp.observacion);
-                  let datos='';
-                  for(let rowp of prueba){
-                    let valos=rowp.split('|');
-                    datos+='<tr><td>'+valos[0]+'</td><td>'+valos[1]+'</td><td>'+valos[2]+'</td></tr>'//mostrar con decimales
-                  }
-                  SwalService.showTable2('Se importo con Observaciones','0',
-                  `<style>
+      const sw = await SwalService.confirm('Advertencia', 'Esta seguro que desea duplicar?. El proceso puede tardar.')
+      if (sw.isConfirmed) {
+        this.mostrar_carga_todo = true;
+        let descpasa = this.descripcion.value.toString().toUpperCase().trim().replace(/\s+/g, ' ')//quitar saltos y espacios, solo mayuscula
+        //pasar datos recuperado del proyecto
+        const body = JSON.stringify({
+          'id_proyecto': this.dataproy.id_proyecto,
+          'id_usuario': this.dataproy.id_usuario,
+          'userfinal': this.idUsuario,
+          //'admitidos': arrpermite.join('|'),
+          //'asignaund': this.asignaund,
+          'cui': this.cod_pais.value === 227 ? '' : this.otrodepartamento.value + '|' + this.otraprovincia.value + '|' + this.otrodistrito.value,
+          'descripcion': descpasa,
+          'id_clasificacion': this.id_clasificacion.value,
+          'modalidad': this.modalidad.value,
+          'id_grupo': this.id_grupo.value,
+          'moneda': this.moneda.value,
+          'estado': this.estado.value,
+          'cod_pais': this.cod_pais.value,//null
+          'id_localidad': this.distrito.value,//null
+          'direccion': this.direccion.value == "" ? null : this.direccion.value,
+          'fecha_elaboracion': this.dataproy.fecha_elaboracion ? moment(this.dataproy.fecha_elaboracion).format('YYYY-MM-DD') : null,
+          'plazo': this.dataproy.plazo ?? null,
+          'fecha_inicio': this.dataproy.fecha_inicio ? moment(this.dataproy.fecha_inicio).format('YYYY-MM-DD') : null,
+          'fecha_culmina': this.dataproy.fecha_culmina ? moment(this.dataproy.fecha_culmina).format('YYYY-MM-DD') : null,
+          'fuente': 1,
+          //'desplaza': false,
+          //'difidas': 0,
+          'id_principal': null,//asignar id que corresponde
+        });
+        console.time('timetemp')
+        let resp = await this.principalService.AgregarProyBiplan(body);
+        console.timeEnd('timetemp')
+        this.mostrar_carga_todo = false;
+        if (resp.id == "1") {
+          if (resp.observacion) {
+            let prueba = JSON.parse(resp.observacion);
+            let datos = '';
+            for (let rowp of prueba) {
+              let valos = rowp.split('|');
+              datos += '<tr><td>' + valos[0] + '</td><td>' + valos[1] + '</td><td>' + valos[2] + '</td></tr>'//mostrar con decimales
+            }
+            SwalService.showTable2('Se importo con Observaciones', '0',
+              `<style>
                     .tablaswall {
                       border-collapse: collapse;
                       width:570px;
@@ -298,20 +299,21 @@ async CambiarPais(id) {
                       <th style="width:200px">METRADO PRESUPUESTO</th>
                       <th>METRADO</th>
                     </tr>`+
-                    datos
-                    +`</table></div>`
-                  )
-                  this.modal.close('listar')
-                }
-                else{
-                  SwalService.success('Correcto', resp.mensaje)
-                  this.modal.close('listar')
-                }
-              }
-              else {
-                SwalService.error('Advertencia', resp.mensaje)
-              }
-            }
+              datos
+              + `</table></div>`
+            )
+            this.modal.close('listar')
+          }
+          else {
+            await this.eliminarCodigoComp()
+            SwalService.success('Correcto', resp.mensaje)
+            this.modal.close('listar')
+          }
+        }
+        else {
+          SwalService.error('Advertencia', resp.mensaje)
+        }
+      }
       //     }
       //     else{
       //       this.toaster.error('Para procesar Fórmula Polinómica debe seleccionar tambien Costos Indirectos.', 'Advertencia', {closeButton: false,positionClass: 'toast-bottom-right',timeOut: 5000 })
@@ -325,17 +327,17 @@ async CambiarPais(id) {
       //   this.toaster.error('Seleccione alguna Opcion para duplicar.', 'Advertencia', {closeButton: false,positionClass: 'toast-bottom-right',timeOut: 5000 })
       // }
     }
-    catch(e){
-      this.mostrar_carga_todo=false;
-      this.toaster.error('Ocurrio una excepción al momento de realizar la operación.', 'Advertencia', {closeButton: false,positionClass: 'toast-bottom-right',timeOut: 5000})
+    catch (e) {
+      this.mostrar_carga_todo = false;
+      this.toaster.error('Ocurrio una excepción al momento de realizar la operación.', 'Advertencia', { closeButton: false, positionClass: 'toast-bottom-right', timeOut: 5000 })
       console.log(e)
     }
   }
   //datos proyecto
-  async Siguiente(){
+  async Siguiente() {
     if (this.formProyecto.invalid) {
       this.formProyecto.markAllAsTouched()
-      this.toaster.error('Datos incompletos', 'Advertencia', { closeButton: false,positionClass: 'toast-bottom-right',timeOut: 5000 })
+      this.toaster.error('Datos incompletos', 'Advertencia', { closeButton: false, positionClass: 'toast-bottom-right', timeOut: 5000 })
       return
     } else {
       // let fechaa = moment(this.fecha_iniproy);
@@ -368,12 +370,12 @@ async CambiarPais(id) {
       //   }
       // }
       // else{
-        this.tvista=1;
+      this.tvista = 1;
       // }
     }
   }
-  Regresar(){
-    this.tvista=0;
+  Regresar() {
+    this.tvista = 0;
   }
   async listarProvincias(idDepartamento: number) {
     this.provincias = []
@@ -410,51 +412,68 @@ async CambiarPais(id) {
   //     event.target.blur();
   //   }
   // }
-  async BuscarProy(){
+  async BuscarProy() {
     // buscar en otro proy
-    if(!this.codigo.value){
+    if (!this.codigo.value) {
       this.toaster.error('Ingresar el codigo del Proyecto para buscar.', 'Advertencia', { closeButton: false, positionClass: 'toast-bottom-right', timeOut: 5000 })
       return;
     }
-    this.mostrar_carga_todo=true;
-    let codigost=this.codigo.value.toString();
-    let val1=codigost.split('|')[0]
-    let val2=codigost.split('|')[1]
-    const detalleProyecto = await this.principalService.BuscarProyBiplan({id_proyecto: val1,id_usuario:val2})
-    this.mostrar_carga_todo=false;
-    if(detalleProyecto.id=="1"){
-      this.toaster.success(detalleProyecto.mensaje, 'Advertencia', { closeButton: false, positionClass: 'toast-bottom-right', timeOut: 5000 })
-      if(detalleProyecto.observacion){
-        let datarecu=JSON.parse(detalleProyecto.observacion)
-        this.dataproy=datarecu[0]
-        console.log(this.dataproy)
-        this.descripcion.setValue(datarecu[0].descripcion)
-        this.id_clasificacion.setValue(datarecu[0].id_clasificacion)
-        this.modalidad.setValue(datarecu[0].modalidad)
-        this.moneda.setValue(datarecu[0].moneda)
-        this.estado.setValue(datarecu[0].estado)
-        this.cod_pais.setValue(datarecu[0].cod_pais)
-        this.direccion.setValue(datarecu[0].direccion)
-        this.departamento.setValue(datarecu[0].id_deptact??'')
-        if(datarecu[0].id_deptact){
-          let id_prov=datarecu[0].id_deptact+'-'+datarecu[0].id_provact;
-          let id_dist=datarecu[0].id_deptact+'-'+datarecu[0].id_provact+'-'+datarecu[0].id_distact;
-          if(datarecu[0].id_provact){
-            await this.listarProvincias(datarecu[0].id_deptact);
-            this.provincia.setValue(id_prov)
-            await this.listarDistritos(id_prov);
-            this.distrito.setValue(id_dist)
+    this.mostrar_carga_todo = true;
+    const obj = {
+      codigo: this.codigo.value
+    }
+    console.log('obj', obj)
+    const res = await this.principalService.dataCodigoCompart(obj)
+    console.log('res', res)
+    if (res[0]) {
+      this.valorEliminar = res[0]
+      let val1 = res[0].id_proyecto
+      let val2 = res[0].id_usuario
+      const detalleProyecto = await this.principalService.BuscarProyBiplan({ id_proyecto: val1, id_usuario: val2 })
+      this.mostrar_carga_todo = false;
+      if (detalleProyecto.id == "1") {
+        this.toaster.success(detalleProyecto.mensaje, 'Advertencia', { closeButton: false, positionClass: 'toast-bottom-right', timeOut: 5000 })
+        if (detalleProyecto.observacion) {
+          let datarecu = JSON.parse(detalleProyecto.observacion)
+          this.dataproy = datarecu[0]
+          console.log(this.dataproy)
+          this.descripcion.setValue(datarecu[0].descripcion)
+          this.id_clasificacion.setValue(datarecu[0].id_clasificacion)
+          this.modalidad.setValue(datarecu[0].modalidad)
+          this.moneda.setValue(datarecu[0].moneda)
+          this.estado.setValue(datarecu[0].estado)
+          this.cod_pais.setValue(datarecu[0].cod_pais)
+          this.direccion.setValue(datarecu[0].direccion)
+          this.departamento.setValue(datarecu[0].id_deptact ?? '')
+          if (datarecu[0].id_deptact) {
+            let id_prov = datarecu[0].id_deptact + '-' + datarecu[0].id_provact;
+            let id_dist = datarecu[0].id_deptact + '-' + datarecu[0].id_provact + '-' + datarecu[0].id_distact;
+            if (datarecu[0].id_provact) {
+              await this.listarProvincias(datarecu[0].id_deptact);
+              this.provincia.setValue(id_prov)
+              await this.listarDistritos(id_prov);
+              this.distrito.setValue(id_dist)
+            }
           }
+          this.fecha_elaboracion.setValue(datarecu[0].fecha_elaboracion ? moment(datarecu[0].fecha_elaboracion).format('YYYY-MM-DD') : '')
+          this.plazo.setValue(datarecu[0].plazo)
+          this.fecha_inicio.setValue(datarecu[0].fecha_inicio ? moment(datarecu[0].fecha_inicio).format('YYYY-MM-DD') : '')
+          this.fecha_culmina.setValue(datarecu[0].fecha_culmina ? moment(datarecu[0].fecha_culmina).format('YYYY-MM-DD') : '')
         }
-        this.fecha_elaboracion.setValue(datarecu[0].fecha_elaboracion?moment(datarecu[0].fecha_elaboracion).format('YYYY-MM-DD'):'')
-        this.plazo.setValue(datarecu[0].plazo)
-        this.fecha_inicio.setValue(datarecu[0].fecha_inicio?moment(datarecu[0].fecha_inicio).format('YYYY-MM-DD'):'')
-        this.fecha_culmina.setValue(datarecu[0].fecha_culmina?moment(datarecu[0].fecha_culmina).format('YYYY-MM-DD'):'')
+      }
+      else {
+        this.dataproy = null;
+        this.toaster.error(detalleProyecto.mensaje, 'Advertencia', { closeButton: false, positionClass: 'toast-bottom-right', timeOut: 5000 })
       }
     }
-    else{
-      this.dataproy=null;
-      this.toaster.error(detalleProyecto.mensaje, 'Advertencia', { closeButton: false, positionClass: 'toast-bottom-right', timeOut: 5000 })
+
+  }
+
+  async eliminarCodigoComp() {
+    const obj = {
+      id_proyecto: this.valorEliminar?.id_proyecto,
+      id_usuario: this.valorEliminar?.id_usuario
     }
+    const res = await this.principalService.eliminarCodigoComp(obj)
   }
 }

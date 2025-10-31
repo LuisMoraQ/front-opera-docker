@@ -66,6 +66,7 @@ export class DetalleProyectoComponent implements OnInit {
     this.bloqesp=true;
     this.recuperarDetalle();
     this.recuperarDatosProyecto();
+    console.log('this.proyectoSeleccionado', this.proyectoSeleccionado)
   }
 
   @Input() set active(value: any) {

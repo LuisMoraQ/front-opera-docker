@@ -5,8 +5,7 @@
             <i class="fa fa-list"></i> VINCULO DE INSUMOS CON PARTIDAS
         </button>
         <button class="btn btn-sm btn-outline-secondary btn-menu-top" type="button" (mouseup)="quitarfoco($event)"
-            style="padding: 4px 8px" [ngClass]="{ active: subvista === 2 }" (click)="cambioVista(2)"
-            [disabled]="!datosglo">
+            style="padding: 4px 8px" [ngClass]="{ active: subvista === 2 }" (click)="cambioVista(2)">
             <i class="fa fa-list"></i> RECURSOS UTILIZADOS PROGRAMADO
         </button>
         <button class="btn btn-sm btn-outline-secondary btn-menu-top" type="button" (mouseup)="quitarfoco($event)"
@@ -89,8 +88,9 @@
                             <td>
                                 Recursos utilizados
                             </td>
-                            <td *ngFor="let dia of estadoXReg; let i = index" [class.bloqueado]="dia.bloqueado" container="body"
-                                (click)="ChangeDia(dia)" [ngbTooltip]="dia.estado == 1 ? 'Registrado':''"
+                            <td *ngFor="let dia of estadoXReg; let i = index" [class.bloqueado]="dia.bloqueado"
+                                container="body" (click)="ChangeDia(dia)"
+                                [ngbTooltip]="dia.estado == 1 ? 'Registrado':''"
                                 [ngClass]="{ 'registrado': dia.estado == 1, 'fecha-selected': diasCalendario[i]?.fecha == fechaselecionada  }"
                                 style="height: 24px">
                                 <ng-container *ngIf="dia.estado == 1">
@@ -129,6 +129,8 @@
                                 </option>
                             </select>
                         </mat-form-field>
+
+
                     </div>
                     <div class="col-12 px-0">
                         <div class="px-0 overflow-auto h-tab-pres">
@@ -136,7 +138,7 @@
                                 <table class="tabla-general tab-10 table-bordered table-m">
                                     <thead>
                                         <tr class="headsticky" style="height: 22px;">
-                                            <!-- <th class="text-center" appAnchocol [ancho]="70">Item</th> -->
+                                            <th class="text-center" appAnchocol [ancho]="40"></th>
                                             <th class="text-center" appAnchocol [ancho]="150" [detalle]="true">
                                                 Descripcion</th>
                                             <th class="text-center" appAnchocol [ancho]="50">Unidad</th>
@@ -150,11 +152,11 @@
                                     <tbody>
                                         <tr *ngFor="let row of this.tablaPresupuesto; let i = index"
                                             [hidden]="row.mostrar == 0" (click)="selPartida(i,row)">
-                                            <!-- <td class="text-left" appPintarfilapre [tipo]="titulo1"
+                                            <td class="text-center" appPintarfilapre [tipo]="titulo1"
                                                 [ngClass]="{'row-seleccionado': row == filaSeleccionada}"
                                                 [color]="row.item ? titulo1color : ''" [letra]="titulo1letra"
                                                 [item]="row.item" [separador]="'.'" [partida]="row.unidad != ''">
-                                                {{row.item}}</td> -->
+                                                {{i+1}}</td>
                                             <td class="text-left" appPintarfilapre [tipo]="titulo1"
                                                 [ngClass]="{'row-seleccionado': row == filaSeleccionada}"
                                                 [color]="row.item ? titulo1color : ''" [letra]="titulo1letra"
@@ -378,6 +380,324 @@
                         </table>
                     </div>
                 </div>
+            </div>
+        </ng-container>
+        <ng-container *ngIf="subvista == 2">
+            <div class="d-flex">
+                <mat-form-field appearance="outline" class="mff-reduc my-form-field" [floatLabel]="'always'">
+                    <mat-label>Metrado Registrado </mat-label>
+                    <select matNativeControl [(ngModel)]="metradoMes2" (change)="filtrarRegistroCalendario()">
+                        <option value="0">Completo</option>
+                        <option *ngFor="let registro of tablaRegistroMetrados" [value]="registro.id_registro">
+                            {{registro.detalle}} ( {{registro.fechaini | date:'dd/MM/yy'}} - {{registro.fechafin
+                            |
+                            date:'dd/MM/yy'}})
+                        </option>
+                    </select>
+                </mat-form-field>
+                <mat-form-field class="mff-reduc my-form-field col-8 wrapper-custom pl-0 ml-2" appearance="outline"
+                    style="display: contents">
+                    <mat-label>Titulo</mat-label>
+                    <select matNativeControl [(ngModel)]="indiceTitulo2"
+                        (change)="filtroTitulo2(indiceTitulo2, this.tablaProgramacion)">
+                        <option *ngFor="let titulo of titulos" value="{{ titulo.indice }}">
+                            {{ titulo?.item }}&nbsp;&#8702;&nbsp;{{ titulo?.descripcion }}
+                        </option>
+                    </select>
+                </mat-form-field>
+                <mat-form-field class="mff-reduc my-form-field col-8 wrapper-custom pl-0 ml-2" appearance="outline"
+                    style="display: contents">
+                    <mat-label>Formato</mat-label>
+                    <select matNativeControl [(ngModel)]="formato" (change)="cambiarFormato()">
+                        <option *ngFor="let titulo of formatos" value="{{ titulo }}">
+                            {{ titulo }}
+                        </option>
+                    </select>
+                </mat-form-field>
+
+                <button class="btn btn-mini btn-group-mini btn-outline-primary ml-3"
+                    style="position: absolute !important; right: 25px !important;" container="body"
+                    [ngbTooltip]="verRutaCritica ? 'Ver ruta critica programado' : 'Ocultar ruta critica programado'"
+                    type="button" (mouseup)="quitarfoco($event)" (click)="verRutaCritica = !verRutaCritica">
+                    <i class="fa icono-but" [ngClass]="{
+                      'fa-check-square-o': !verRutaCritica,
+                      'fa-ban': verRutaCritica
+                    }" aria-hidden="true"></i>
+                </button>
+            </div>
+
+
+            <div class="table-container">
+                <table class="tabla-general tab-10 table-bordered table-m">
+                    <colgroup>
+                        <col style="width: 40px">
+                        <col style="width: 350px">
+                        <col style="width: 50px">
+                        <col style="width: 70px">
+                        <col style="width: 90px">
+                        <col style="width: 90px">
+                        <col style="width: 90px">
+                        <ng-container *ngIf="formato == 'DIA'">
+                            <col *ngFor="let dia of getDiasVisibles()" style="width: 70px">
+                            <col *ngFor="let dia of getDiasVisibles()" style="width: 70px">
+                        </ng-container>
+                        <ng-container *ngIf="formato == 'SEMANA'">
+                            <col *ngFor="let dia of calendarioSemana[1]" style="width: 70px">
+                            <col *ngFor="let dia of calendarioSemana[1]" style="width: 70px">
+                        </ng-container>
+                    </colgroup>
+
+                    <thead class="headsticky">
+                        <tr style="height: 22px;">
+                            <th [rowSpan]="3" class="text-center" style="min-width: 40px; max-width: 40px; width: 40px">
+                            </th>
+                            <th [rowSpan]="3" class="text-center"
+                                style="min-width: 350px; max-width: 350px; width: 350px">
+                                Descripcion
+                            </th>
+                            <th [rowSpan]="3" class="text-center" style="min-width: 50px; max-width: 50px; width: 50px">
+                                Unidad</th>
+                            <th [rowSpan]="3" class="text-center" style="min-width: 70px; max-width: 70px; width: 70px">
+                                Comparacion</th>
+                            <th [rowSpan]="3" class="text-center" style="min-width: 90px; max-width: 90px; width: 90px">
+                                Metrado Ejecutado</th>
+                            <th [rowSpan]="3" class="text-center" style="min-width: 90px; max-width: 90px; width: 90px">
+                                PU</th>
+                            <th [rowSpan]="3" class="text-center" style="min-width: 90px; max-width: 90px; width: 90px">
+                                Dias Habiles</th>
+                            <ng-container *ngIf="formato == 'DIA'">
+                                <th [colSpan]=" dia.cantdias * 2" class="text-center" style="min-width: 50px"
+                                    *ngFor="let dia of calendarioProgra[0]">
+                                    {{dia.mes}} - {{dia.anio}}
+                                </th>
+                            </ng-container>
+                            <ng-container *ngIf="formato == 'SEMANA'">
+                                <th [colSpan]="semana.colspan" class="text-center" style="min-width: 50px"
+                                    *ngFor="let semana of calendarioSemana[0]">
+                                    {{semana.mes}} - {{semana.anio}}
+                                </th>
+                            </ng-container>
+                        </tr>
+                        <ng-container *ngIf="formato == 'DIA'">
+                            <tr style="height: 22px;">
+                                <th class="text-center" colspan="2" style="min-width: 140px"
+                                    *ngFor="let dia of getDiasVisibles()">
+                                    {{transform(dia)}}
+                                </th>
+                            </tr>
+                            <tr style="height: 22px;">
+                                <ng-container *ngFor="let dia of getDiasVisibles()">
+                                    <th class="text-center" style="min-width: 70px">Cantidad</th>
+                                    <th class="text-center" style="min-width: 70px">Parcial</th>
+                                </ng-container>
+                            </tr>
+                        </ng-container>
+
+                        <ng-container *ngIf="formato == 'SEMANA'">
+                            <tr style="height: 22px;">
+                                <th class="text-center" colspan="2" style="min-width: 140px"
+                                    *ngFor="let dia of calendarioSemana[1]">
+                                    {{dia.abrev_Nombre}}
+                                </th>
+                            </tr>
+                            <tr style="height: 22px;">
+                                <ng-container *ngFor="let dia of calendarioSemana[1]">
+                                    <th class="text-center" style="min-width: 70px">Cantidad</th>
+                                    <th class="text-center" style="min-width: 70px">Parcial</th>
+                                </ng-container>
+                            </tr>
+                        </ng-container>
+                    </thead>
+
+                    <tbody>
+                        <ng-container *ngFor="let row of this.tablaProgramacion;trackBy: trackByItem; let i = index">
+                            <tr *ngIf="!row.unidad" [ngClass]="{'row-seleccionado': row == filaSeleccionada}"
+                                [hidden]="row.mostrar == 0">
+                                <td class="text-center " style="min-width: 40px; max-width: 40px; width: 40px"
+                                    appPintarfilapre [tipo]="titulo1" [color]="row.item ? titulo1color : ''"
+                                    [letra]="titulo1letra" [item]="row.item" [separador]="'.'"
+                                    [partida]="row.unidad != ''">{{i+1}}</td>
+                                <td class="" style="min-width: 350px; max-width: 350px; width: 350px" appPintarfilapre
+                                    [tipo]="titulo1" [color]="row.item ? titulo1color : ''" [letra]="titulo1letra"
+                                    [item]="row.item" [separador]="'.'" [partida]="row.unidad != ''">
+                                    <div class="d-flex">
+                                        <div [ngClass]="{'recortatext':lineas2,'recortatextlinea':!lineas2}"
+                                            [style.padding-left.px]="((row.item.toString().split('.').length-1)*5)"
+                                            ngbTooltip="{{row.descripcion}}" container="body">
+                                            <a *ngIf="row.icomost=='0'"
+                                                style="padding: 0px 2px;color:#06bb06;cursor: pointer;"
+                                                (click)="toggleOnpresu(row.item,i)">
+                                                <i class="icofont icofont-caret-down"></i>
+                                            </a>
+                                            <a *ngIf="row.icomost=='1'"
+                                                style="padding: 0px 2px;color:red;cursor: pointer;"
+                                                (click)="toggleOffpresu(row.item,i)">
+                                                <i class="icofont icofont-caret-up"></i>
+                                            </a>
+                                            <span
+                                                style="font-weight: 700;">{{row.item}}</span>&nbsp;&nbsp;{{row.descripcion}}
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="text-center " style="min-width: 50px; max-width: 50px; width: 50px"
+                                    appPintarfilapre [tipo]="titulo1" [color]="row.item ? titulo1color : ''"
+                                    [letra]="titulo1letra" [item]="row.item" [separador]="'.'"
+                                    [partida]="row.unidad != ''">{{row.unidad}}</td>
+                                <td class="text-center " style="min-width: 70px; max-width: 70px; width: 70px"
+                                    appPintarfilapre [tipo]="titulo1" [color]="row.item ? titulo1color : ''"
+                                    [letra]="titulo1letra" [item]="row.item" [separador]="'.'"
+                                    [partida]="row.unidad != ''"></td>
+                                <td class="text-right " style="min-width: 90px; max-width: 90px; width: 90px"
+                                    appPintarfilapre [tipo]="titulo1" [color]="row.item ? titulo1color : ''"
+                                    [letra]="titulo1letra" [item]="row.item" [separador]="'.'"
+                                    [partida]="row.unidad != ''">{{row.metrado}}
+                                </td>
+                                <td class="text-right " style="min-width: 90px; max-width: 90px; width: 90px"
+                                    appPintarfilapre [tipo]="titulo1" [color]="row.item ? titulo1color : ''"
+                                    [letra]="titulo1letra" [item]="row.item" [separador]="'.'"
+                                    [partida]="row.unidad != ''">{{row.precio}}</td>
+                                <td class="text-center " style="min-width: 90px; max-width: 90px; width: 90px"
+                                    appPintarfilapre [tipo]="titulo1" [color]="row.item ? titulo1color : ''"
+                                    [letra]="titulo1letra" [item]="row.item" [separador]="'.'"
+                                    [partida]="row.unidad != ''">{{row.duracion}}
+                                </td>
+                                <ng-container *ngIf="formato == 'DIA'">
+                                    <ng-container *ngFor="let diaData of getAbarcoVisibles(row)">
+                                        <td [ngClass]="{'nopartida': diaData.abarca }"></td>
+                                        <td [ngClass]="{'nopartida': diaData.abarca }"></td>
+                                    </ng-container>
+                                </ng-container>
+                                <ng-container *ngIf="formato == 'SEMANA'">
+                                    <ng-container *ngFor="let semanaData of row.cantidadesSemana">
+                                        <td [ngClass]="{'nopartida': row.unidad }"></td>
+                                        <td [ngClass]="{'nopartida': row.unidad }"></td>
+                                    </ng-container>
+                                </ng-container>
+                            </tr>
+
+                            <ng-container *ngIf="row.unidad">
+                                <tr [ngClass]="{'row-seleccionado': row == filaSeleccionada}"
+                                    [hidden]="row.mostrar == 0">
+                                    <td class="text-center " rowspan="2"
+                                        style="min-width: 40px; max-width: 40px; width: 40px" appPintarfilapre
+                                        [tipo]="titulo1" [color]="row.item ? titulo1color : ''" [letra]="titulo1letra"
+                                        [item]="row.item" [separador]="'.'" [partida]="row.unidad != ''">{{i+1}}</td>
+                                    <td class="" style="min-width: 350px; max-width: 350px; width: 350px" rowspan="2"
+                                        appPintarfilapre [tipo]="titulo1" [color]="row.item ? titulo1color : ''"
+                                        [letra]="titulo1letra" [item]="row.item" [separador]="'.'"
+                                        [partida]="row.unidad != ''">
+                                        <div class="d-flex">
+                                            <div [ngClass]="{'recortatext':lineas2,'recortatextlinea':!lineas2}"
+                                                [style.padding-left.px]="((row.item.toString().split('.').length-1)*5)+17"
+                                                ngbTooltip="{{row.descripcion}}" container="body">
+                                                <span
+                                                    style="font-weight: 700;">{{row.item}}</span>&nbsp;&nbsp;{{row.descripcion}}
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="text-center " style="min-width: 50px; max-width: 50px; width: 50px"
+                                        rowspan="2" appPintarfilapre [tipo]="titulo1"
+                                        [color]="row.item ? titulo1color : ''" [letra]="titulo1letra" [item]="row.item"
+                                        [separador]="'.'" [partida]="row.unidad != ''">{{row.unidad}}</td>
+                                    <td class="text-center  ft-8" style="min-width: 70px; max-width: 70px; width: 70px"
+                                        appPintarfilapre [tipo]="titulo1" [color]="row.item ? titulo1color : ''"
+                                        [letra]="titulo1letra" [item]="row.item" [separador]="'.'"
+                                        [partida]="row.unidad != ''">
+                                        PROGRAMADO
+                                    </td>
+                                    <td class="text-right " style="min-width: 90px; max-width: 90px; width: 90px"
+                                        appPintarfilapre [tipo]="titulo1" [color]="row.item ? titulo1color : ''"
+                                        [letra]="titulo1letra" [item]="row.item" [separador]="'.'"
+                                        [partida]="row.unidad != ''">{{row.metrado}}
+                                    </td>
+                                    <td class="text-right " style="min-width: 90px; max-width: 90px; width: 90px"
+                                        appPintarfilapre [tipo]="titulo1" [color]="row.item ? titulo1color : ''"
+                                        [letra]="titulo1letra" [item]="row.item" [separador]="'.'"
+                                        [partida]="row.unidad != ''">{{row.precio}}
+                                    </td>
+                                    <td class="text-center " style="min-width: 90px; max-width: 90px; width: 90px"
+                                        appPintarfilapre [tipo]="titulo1" [color]="row.item ? titulo1color : ''"
+                                        [letra]="titulo1letra" [item]="row.item" [separador]="'.'"
+                                        [partida]="row.unidad != ''">
+                                        {{row.duracion}}</td>
+                                    <ng-container *ngIf="formato == 'DIA'">
+                                        <ng-container *ngFor="let diaData of getAbarcoVisibles(row)">
+                                            <td [ngClass]="{'partida': diaData.abarca, 'rutaCritica': row.rutaCritica ==1 && verRutaCritica && diaData.abarca}"
+                                                class="text-right">{{diaData.cantidad |
+                                                number: '0.'+ this.dec_metrado + '-' + this.dec_metrado}}</td>
+                                            <td [ngClass]="{'partida': diaData.abarca, 'rutaCritica': row.rutaCritica ==1 && verRutaCritica && diaData.abarca}"
+                                                class="text-right">{{diaData.parcial |
+                                                number: '0.'+ this.dec_parcial + '-' + this.dec_parcial}}</td>
+                                        </ng-container>
+                                    </ng-container>
+                                    <ng-container *ngIf="formato == 'SEMANA'">
+                                        <ng-container *ngFor="let semanaData of row.cantidadesSemana; let ind = index">
+                                            <td [ngClass]="{'partida': semanaData}" class="text-right">
+                                                <!-- <ng-container *ngIf="semanaData>0"> -->
+                                                {{semanaData |
+                                                number: '0.'+ this.dec_metrado + '-' + this.dec_metrado}}
+                                                <!-- </ng-container> -->
+                                            </td>
+                                            <td [ngClass]="{'partida': semanaData}" class="text-right">
+                                                <!-- <ng-container *ngIf="row.parcialesSemana[ind]>0"> -->
+                                                {{row.parcialesSemana[ind] |
+                                                number: '0.'+ this.dec_parcial + '-' + this.dec_parcial}}
+                                                <!-- </ng-container> -->
+                                            </td>
+                                        </ng-container>
+                                    </ng-container>
+                                </tr>
+
+                                <tr [ngClass]="{'row-seleccionado': row == filaSeleccionada}"
+                                    [hidden]="row.mostrar == 0">
+
+                                    <td class="text-center  ft-8" style="min-width: 70px; max-width: 70px; width: 70px"
+                                        appPintarfilapre [tipo]="titulo1" [color]="row.item ? titulo1color : ''"
+                                        [letra]="titulo1letra" [item]="row.item" [separador]="'.'"
+                                        [partida]="row.unidad != ''">
+                                        REALIZADO
+                                    </td>
+                                    <td class="text-right " style="min-width: 90px; max-width: 90px; width: 90px"
+                                        appPintarfilapre [tipo]="titulo1" [color]="row.item ? titulo1color : ''"
+                                        [letra]="titulo1letra" [item]="row.item" [separador]="'.'"
+                                        [partida]="row.unidad != ''">-</td>
+                                    <td class="text-right " style="min-width: 90px; max-width: 90px; width: 90px"
+                                        appPintarfilapre [tipo]="titulo1" [color]="row.item ? titulo1color : ''"
+                                        [letra]="titulo1letra" [item]="row.item" [separador]="'.'"
+                                        [partida]="row.unidad != ''">-</td>
+                                    <td class="text-center " style="min-width: 90px; max-width: 90px; width: 90px"
+                                        appPintarfilapre [tipo]="titulo1" [color]="row.item ? titulo1color : ''"
+                                        [letra]="titulo1letra" [item]="row.item" [separador]="'.'"
+                                        [partida]="row.unidad != ''">-</td>
+                                    <ng-container *ngIf="formato == 'DIA'">
+                                        <ng-container *ngFor="let diaData of row.metradodiario; let index=index">
+                                            <td [ngClass]="{'partida2': diaData.metrado_dia }">
+                                                {{diaData.metrado_dia}}
+                                            </td>
+                                            <td [ngClass]="{'partida2': row.realizado[index] }">
+                                                {{row.realizado[index]}} 
+                                            </td>
+
+                                        </ng-container>
+                                        <!-- <ng-container *ngFor="let diaData of row.realizado; let index=index">
+                                            <td [ngClass]="{'partida': diaData > 0 }">
+                                                {{diaData}} - {{index}}
+                                            </td>
+
+                                        </ng-container> -->
+                                    </ng-container>
+                                    <ng-container *ngIf="formato == 'SEMANA'">
+                                        <ng-container *ngFor="let diaData of row.metradodiario; let index = index">
+                                            <td class="text-right" [ngClass]="{'partida': diaData }">
+                                            </td>
+                                            <td class="text-right" [ngClass]="{'partida': diaData }"></td>
+                                        </ng-container>
+                                    </ng-container>
+                                </tr>
+                            </ng-container>
+                        </ng-container>
+                    </tbody>
+                </table>
             </div>
         </ng-container>
     </div>

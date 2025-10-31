@@ -18,7 +18,7 @@ export class PrincipalService {
     this.enviUrl = environment.apiUrl;
   }
 
-  ListarProyectos(id_usuario,fuente=1): any {
+  ListarProyectos(id_usuario, fuente = 1): any {
     let body: HttpParams = new HttpParams();
     body = body.append('id_usuario', id_usuario);
     body = body.append('fuente', fuente);
@@ -1070,7 +1070,7 @@ export class PrincipalService {
       catchError(err => throwError(err))
     ).toPromise()
   }
-  GuardarItemsAlt(body :any): any {//JSON(id_proyecto,estadoitem,datos1)
+  GuardarItemsAlt(body: any): any {//JSON(id_proyecto,estadoitem,datos1)
     const url = this.enviUrl + '/api/proyectos/guardarItemsAlt';
     return this.http.post<any>(url, body, { headers: this.httpHeaders }).pipe(
       map(res => {
@@ -1146,7 +1146,7 @@ export class PrincipalService {
       catchError(err => throwError(err))
     ).toPromise()
   }
-  AgregarProyBiplan(body :any): any {//JSON(id_proyecto,estadoitem,datos1)
+  AgregarProyBiplan(body: any): any {//JSON(id_proyecto,estadoitem,datos1)
     const url = this.enviUrl + '/api/proyectos/addProyBiplan';
     return this.http.post<any>(url, body, { headers: this.httpHeaders }).pipe(
       map(res => {
@@ -1228,6 +1228,57 @@ export class PrincipalService {
       formData.append(key, value as string);
     });
     const url = this.enviUrl + '/api/proyectos/eliminarProyectoLinks';
+    return this.http.post<any>(url, formData).pipe(
+      map(res => {
+        if (!res) {
+          throw new Error
+        }
+        return res
+      }),
+      catchError(err => throwError(err))
+    ).toPromise()
+  }
+
+  dataCodigoCompart(params = {}): any {
+    let formData: FormData = new FormData();
+    Object.entries(params).forEach(([key, value]) => {
+      formData.append(key, value as string);
+    });
+    const url = this.enviUrl + '/api/proyectos/dataCodigoCompart';
+    return this.http.post<any>(url, formData).pipe(
+      map(res => {
+        if (!res) {
+          throw new Error
+        }
+        return res
+      }),
+      catchError(err => throwError(err))
+    ).toPromise()
+  }
+
+  eliminarCodigoComp(params = {}): any {
+    let formData: FormData = new FormData();
+    Object.entries(params).forEach(([key, value]) => {
+      formData.append(key, value as string);
+    });
+    const url = this.enviUrl + '/api/proyectos/eliminarCodigoComp';
+    return this.http.post<any>(url, formData).pipe(
+      map(res => {
+        if (!res) {
+          throw new Error
+        }
+        return res
+      }),
+      catchError(err => throwError(err))
+    ).toPromise()
+  }
+
+  acumuladosRegistrosXFechas(params = {}): any {
+    let formData: FormData = new FormData();
+    Object.entries(params).forEach(([key, value]) => {
+      formData.append(key, value as string);
+    });
+    const url = this.enviUrl + '/api/proyectos/acumuladosRegistrosXFechas';
     return this.http.post<any>(url, formData).pipe(
       map(res => {
         if (!res) {
