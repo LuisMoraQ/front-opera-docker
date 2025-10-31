@@ -311,8 +311,10 @@ export class CompatinsumosComponent implements OnInit {
     //validar que no exista en t8 antes de agregar
     if(indgrupo==-1){//no existe entonces se puede agregar directo
       let ejm={id_proyecto:this.id_proyecto,id_registro:this.id_reg,idgrupo:idgru,idfila:this.dataSource7[ind].idfila,indrep:0,orden:this.UltOrden(),indice:this.dataSource7[ind].indice,id_filadetalle:this.dataSource7[ind].id_filadetalle,
-        num_det:this.dataSource7[ind].num_det,codigo:this.dataSource7[ind].codigo,descripcion:this.dataSource7[ind].descripcion,unidad:this.dataSource7[ind].unidad,cantidad:this.dataSource7[ind].cantidad,
-        precio:this.dataSource7[ind].precio,parcial:this.dataSource7[ind].parcial,operador:this.dataSource7[ind].operador,acumulado:this.dataSource7[ind].parcial,proceso:'',princi:1,estado:0,ingreso:0,salida:0,fecha_sol:null,mostrar:1,icomost:1,editar:0,editar2:0};
+        num_det:this.dataSource7[ind].num_det,codigo:this.dataSource7[ind].codigo,descripcion:this.dataSource7[ind].descripcion,unidad:this.dataSource7[ind].unidad,
+        cantidad:this.dataSource7[ind].operador=='%'?1:this.dataSource7[ind].cantidad,
+        precio:this.dataSource7[ind].operador=='%'?this.dataSource7[ind].parcial:this.dataSource7[ind].precio,parcial:this.dataSource7[ind].parcial,
+        operador:this.dataSource7[ind].operador,acumulado:this.dataSource7[ind].parcial,proceso:'',princi:1,estado:0,ingreso:0,salida:0,fecha_sol:null,mostrar:1,icomost:1,editar:0,editar2:0};
       this.dataSource8.push(ejm);
       this.bcambiost8=true;
       //agregar tambien a data
@@ -611,7 +613,7 @@ export class CompatinsumosComponent implements OnInit {
     let totcant=0;
     let totparc=0;
     for(let row of this.dataSource8aux){
-      totcant=totcant+Number(row.cantidad.toString());
+      totcant=totcant+(row.cantidad?Number(row.cantidad.toString()):0);
       totparc=totparc+Number(row.parcial.toString());
     }
     this.canttotal8aux=this.formService.redondeo(totcant,this.dec_parcial)
@@ -634,15 +636,9 @@ export class CompatinsumosComponent implements OnInit {
       let indgrupo=-1;
       let idgraux='';
       let idfilagru='';
-      let inddetfin=-1;
       let nrorep=0;
       for(let j=0;j<this.dataSource8.length;j++){
         if(idgraux!='' && idfilagru!=''){
-          if(this.dataSource8[j].princi==1)
-          {
-            inddetfin=j;
-            break;
-          }
           nrorep=nrorep+1;
         }
         if(this.dataSource8[j].idgrupo==idgru && this.dataSource8[j].idfila==idfila && this.dataSource8[j].princi==1)
@@ -718,6 +714,11 @@ export class CompatinsumosComponent implements OnInit {
         this.dataSource8[indgrupo].acumulado=this.formService.redondeo(suma,this.dec_parcial);
         //modificar en datosdisgre tambien
         this.bcambiost8=true;
+        for(let rowds of this.DatosDisgre){
+          if(rowds.idgrupo==this.dataSource8[indgrupo].idgrupo && rowds.idfila==this.dataSource8[indgrupo].idfila && rowds.princi==1){
+            rowds.acumulado=this.formService.redondeo(suma,this.dec_parcial);//agrupacion suma tabla8
+          }
+        }
         //las desviaciones y requerimiento solicitado
         let reqsoli=Number(this.dataSource6[this.fila6_sel].reqsol);
         this.dataSource6[this.fila6_sel].reqsol=this.formService.redondeo(reqsoli+sumdif,this.dec_parcial);
@@ -900,7 +901,7 @@ export class CompatinsumosComponent implements OnInit {
     this.dataSource8[ind].editar=1;
   }
   caneditarcelda1(eve:any,ind:any){
-    var valor=Number(eve);
+    var valor=Number(eve.toString().replace(/\,/g, ''));
     var actual=Number(this.dataSource8[ind].cantidad)
     var aprecio=Number(this.dataSource8[ind].precio);
     var pactual=Number(this.dataSource8[ind].parcial)
@@ -995,7 +996,7 @@ export class CompatinsumosComponent implements OnInit {
     this.dataSource8[ind].editar2=1;
   }
   caneditarcelda2(eve:any,ind:any){
-    var valor=Number(eve);
+    var valor=Number(eve.toString().replace(/\,/g, ''));
     var actual=Number(this.dataSource8[ind].precio)
     var acantidad=Number(this.dataSource8[ind].cantidad);
     var pactual=Number(this.dataSource8[ind].parcial)
