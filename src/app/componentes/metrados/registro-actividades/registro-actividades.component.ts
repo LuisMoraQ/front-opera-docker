@@ -47,6 +47,7 @@ export class RegistroActividadesComponent implements OnInit {
   active = 0
   estadoXPart: any[] = [];
   filaSeleccionada: any = null
+  filaSeleccionada2: any = null
   tablaMovAlmcSalida: any = [];
   buscando = false
   fila4_sel = null
@@ -62,7 +63,7 @@ export class RegistroActividadesComponent implements OnInit {
   saldosRegistros = [];
   estadoXReg: any[] = [];
   registradoXDia = []
-  formatos = ['SEMANA', 'DIA']
+  formatos = ['DIA', 'SEMANA', 'MES']
   formato = 'DIA'
   tablaProgramacion = []
   calendarioProgra = []
@@ -71,6 +72,7 @@ export class RegistroActividadesComponent implements OnInit {
   fechas: any;
   calendarioBase = []
   calendarioSemana = [[], []];
+  calendarioMes = [[], []];
   @Input() set tabproyecto(value: any) {
     this.prueba = value;
     this.id_proyecto = value.get('id_proyecto').value;
@@ -149,6 +151,10 @@ export class RegistroActividadesComponent implements OnInit {
       }
     }
     return result;
+  }
+
+  seleccionarFila(fila: any) {
+    this.filaSeleccionada2 = fila;
   }
 
 
@@ -256,6 +262,8 @@ export class RegistroActividadesComponent implements OnInit {
   async cambioVista(ind: any) {
     this.mostrar_carga_todo = true
     this.subvista = ind;
+    this.filaSeleccionada2 = null
+    this.filaSeleccionada = null
     if (ind == 3) {
       // if (this.existecambios) {
       //   await this.guardarCambios();
@@ -1048,61 +1056,407 @@ export class RegistroActividadesComponent implements OnInit {
 
   async cambiarFormato() {
     this.mostrar_carga_todo = true
-    let fi = null
-    let ff = null
-    if (this.formato == 'SEMANA') {
-      if (this.metradoMes2 !== '0' && this.metradoMes2 !== 0) {
-        const fila = this.tablaRegistroMetrados.find(ele => ele.id_registro == this.metradoMes2);
-        fi = fila.fechaini
-        ff = fila.fechafin
-      } else {
-        fi = this.fechas.minFechaini
-        ff = this.fechas.maxFechafin
-      }
-
-      const dia = await this.obtenerNumeroDiaSemana(this.aspectosdias[0].inicioSemana)
-      const calendario = await this.generarCalendarioSemana(fi, ff, dia, this.calendarioBase[1])
-      const header = this.generarMesesConColspan(calendario)
-      this.calendarioSemana = [header, calendario]
-      for (const element of this.tablaProgramacion) {
-        if (element.unidad) {
-          let arrayCantidades = []
-          let arrayParciales = []
-          for (const row of calendario) {
-            let cantidadSemana = null
-            let parcialesSemana = null
-            for (let i = row.indexInicio; i <= row.indexFinal; i++) {
-              const cant = element.cantidades[i] !== null ? element.cantidades[i] : null;
-              const parc = element.parciales[i] !== null ? element.parciales[i] : null;
-              if (cant !== null) {
-                cantidadSemana = cantidadSemana + cant
-              }
-              if (parc !== null) {
-                parcialesSemana = parcialesSemana + parc
-              }
-
-            }
-            arrayCantidades.push(cantidadSemana)
-            arrayParciales.push(parcialesSemana)
-          }
-          element.cantidadesSemana = arrayCantidades
-          element.parcialesSemana = arrayParciales
+    setTimeout(async () => {
+      let fi = null
+      let ff = null
+      if (this.formato == 'SEMANA') {
+        if (this.metradoMes2 !== '0' && this.metradoMes2 !== 0) {
+          const fila = this.tablaRegistroMetrados.find(ele => ele.id_registro == this.metradoMes2);
+          fi = fila.fechaini
+          ff = fila.fechafin
         } else {
-          let arrayCantidades = []
-          let arrayParciales = []
-          for (const row of calendario) {
-            arrayCantidades.push(null)
-            arrayParciales.push(null)
+          fi = this.fechas.minFechaini
+          ff = this.fechas.maxFechafin
+        }
+
+        const dia = await this.obtenerNumeroDiaSemana(this.aspectosdias[0].inicioSemana)
+        const calendario = await this.generarCalendarioSemana(fi, ff, dia, this.calendarioBase[1])
+        const header = this.generarMesesConColspan(calendario)
+        this.calendarioSemana = [header, calendario]
+        for (const element of this.tablaProgramacion) {
+          if (element.unidad) {
+            let arrayCantidades = []
+            let arrayParciales = []
+            for (const row of calendario) {
+              let cantidadSemana = null
+              let parcialesSemana = null
+              for (let i = row.indexInicio; i <= row.indexFinal; i++) {
+                const cant = element.cantidades[i] !== null ? element.cantidades[i] : null;
+                const parc = element.parciales[i] !== null ? element.parciales[i] : null;
+                if (cant !== null) {
+                  cantidadSemana = cantidadSemana + cant
+                }
+                if (parc !== null) {
+                  parcialesSemana = parcialesSemana + parc
+                }
+
+              }
+              arrayCantidades.push(cantidadSemana)
+              arrayParciales.push(parcialesSemana)
+            }
+            element.cantidadesSemana = arrayCantidades
+            element.parcialesSemana = arrayParciales
+          } else {
+            let arrayCantidades = []
+            let arrayParciales = []
+            for (const row of calendario) {
+              arrayCantidades.push(null)
+              arrayParciales.push(null)
+            }
+            element.cantidadesSemana = arrayCantidades
+            element.parcialesSemana = arrayParciales
           }
-          element.cantidadesSemana = arrayCantidades
-          element.parcialesSemana = arrayParciales
+        }
+        await this.calcularAcumuladosPorSemana()
+      } else if (this.formato == 'DIA') {
+        await this.filtrarRegistroCalendario()
+      } else if (this.formato == 'MES') {
+        const fechaInicio = new Date(this.fechas.minFechaini);
+        const fechaFin = new Date(this.fechas.maxFechafin);
+
+        // Normalizar fechas
+        fechaInicio.setHours(0, 0, 0, 0);
+        fechaFin.setHours(0, 0, 0, 0);
+
+        const mesesMap = new Map();
+        const añosMap = new Map();
+        const fechaActual = new Date(fechaInicio);
+
+        while (fechaActual <= fechaFin) {
+          const mes = fechaActual.getMonth();
+          const anio = fechaActual.getFullYear();
+          const dia = fechaActual.getDate();
+          const claveMes = `${anio}-${mes}`;
+
+          // Procesar meses
+          if (!mesesMap.has(claveMes)) {
+            const primerDiaMes = new Date(anio, mes, 1);
+            const ultimoDiaMes = new Date(anio, mes + 1, 0);
+            const rangoCompleto = fechaInicio <= primerDiaMes && fechaFin >= ultimoDiaMes;
+
+            mesesMap.set(claveMes, {
+              mes: this.obtenerNombreMes(mes),
+              cantdias: 0,
+              anio: anio,
+              mesNumero: mes + 1,
+              diaInicio: dia,
+              diaFin: dia,
+              fechaInicio: new Date(fechaActual),
+              fechaFin: new Date(fechaActual),
+              rangoCompleto: rangoCompleto
+            });
+          } else {
+            const mesData = mesesMap.get(claveMes);
+            mesData.diaFin = dia;
+            mesData.fechaFin = new Date(fechaActual);
+          }
+
+          mesesMap.get(claveMes).cantdias++;
+
+          // Procesar años
+          if (!añosMap.has(anio)) {
+            añosMap.set(anio, {
+              anio: anio,
+              cantMeses: 0,
+              colspan: 0
+            });
+          }
+
+          fechaActual.setDate(fechaActual.getDate() + 1);
+        }
+
+        // Calcular cantMeses y colspan para cada año
+        añosMap.forEach((añoData, anio) => {
+          // Contar meses únicos para este año
+          const mesesDelAño = Array.from(mesesMap.keys()).filter(clave => {
+            const [añoClave] = clave.split('-');
+            return parseInt(añoClave) === anio;
+          });
+
+          añoData.cantMeses = mesesDelAño.length;
+          añoData.colspan = añoData.cantMeses * 2; // Cada mes tiene 2 columnas
+        });
+
+        const resultadoMeses = Array.from(mesesMap.values());
+        const resultadoAños = Array.from(añosMap.values());
+
+        // Ordenar por año y mes
+        resultadoMeses.sort((a, b) => {
+          if (a.anio !== b.anio) return a.anio - b.anio;
+          return a.mesNumero - b.mesNumero;
+        });
+
+        // Ordenar años
+        resultadoAños.sort((a, b) => a.anio - b.anio);
+        this.calendarioMes = [resultadoAños, resultadoMeses]
+
+
+
+        await this.calcularAcumuladosPorFila();
+
+        // Primero, crear un mapa de fechas para acceso rápido
+      }
+      console.log('tablaprogra', this.tablaProgramacion)
+
+      this.mostrar_carga_todo = false
+    }, 0);
+
+
+  }
+
+  calcularAcumuladosPorSemana() {
+    this.tablaProgramacion.forEach((fila, indexFila) => {
+      const semanaMetrado: (number | null)[] = [];
+      const semanaRealizado: (number | null)[] = [];
+
+      const metradoDiarioFila = fila.metradodiario || [];
+      const realizadoFila = fila.realizado || [];
+
+      const semanasFila = this.calendarioSemana[1] || [];
+      semanasFila.forEach((semana, indexSemana) => {
+        let acumuladoMetrado = 0;
+        let acumuladoRealizado = 0;
+
+        let tieneMetrado = false;
+        let tieneRealizado = false;
+        let diasConDatosMetrado = 0;
+        let diasConDatosRealizado = 0;
+
+        // Recorrer todos los días de la semana
+        semana.dias.forEach((diaSemana) => {
+          const indexDia = diaSemana.indexEnCompleto;
+
+          // Sumar metrado diario
+          if (metradoDiarioFila[indexDia] !== null &&
+            metradoDiarioFila[indexDia] !== undefined) {
+
+            const metradoDia = metradoDiarioFila[indexDia].metrado_dia;
+            const metradoNum = this.convertirANumero(metradoDia);
+
+            if (metradoNum !== null) {
+              acumuladoMetrado += metradoNum;
+              tieneMetrado = true;
+              diasConDatosMetrado++;
+            }
+          }
+
+          // Sumar realizado
+          if (realizadoFila[indexDia] !== null &&
+            realizadoFila[indexDia] !== undefined) {
+
+            const realizadoNum = this.convertirANumero(realizadoFila[indexDia]);
+
+            if (realizadoNum !== null) {
+              acumuladoRealizado += realizadoNum;
+              tieneRealizado = true;
+              diasConDatosRealizado++;
+            }
+          }
+        });
+
+        // Determinar valores finales para la semana
+        semanaMetrado.push(tieneMetrado ? acumuladoMetrado : (diasConDatosMetrado > 0 ? 0 : null));
+        semanaRealizado.push(tieneRealizado ? acumuladoRealizado : (diasConDatosRealizado > 0 ? 0 : null));
+      });
+
+      // Asignar los acumulados semanales a la fila
+      fila.semanaMetrado = semanaMetrado;
+      fila.semanaRealizado = semanaRealizado;
+
+     
+    });
+  }
+
+  calcularAcumuladosPorFila() {
+    this.tablaProgramacion.forEach((fila, indexFila) => {
+      const mesesParciales: (number | null)[] = [];
+      const mesesCantidades: (number | null)[] = [];
+      const mesesRealizado: (number | null)[] = [];
+      const mesesMetradoDiario: (number | null)[] = [];
+
+      const cantidadesFila = fila.cantidades || [];
+      const parcialesFila = fila.parciales || [];
+      const realizadoFila = fila.realizado || [];
+      const metradoDiarioFila = fila.metradodiario || [];
+
+      const mesesFila = this.calendarioMes[indexFila] || this.calendarioMes[1] || [];
+      const diasFila = this.calendarioBase[indexFila] || this.calendarioBase[1] || [];
+
+      mesesFila.forEach((mes, indexMes) => {
+        let acumuladoParciales = 0;
+        let acumuladoCantidades = 0;
+        let acumuladoRealizado = 0;
+        let acumuladoMetradoDiario = 0;
+
+        let tieneParciales = false;
+        let tieneCantidades = false;
+        let tieneRealizado = false;
+        let tieneMetradoDiario = false;
+        let diasConDatosMetrado = 0;
+
+        // Recorrer todos los días y verificar si pertenecen a este mes
+        diasFila.forEach((dia, indexDia) => {
+          if (dia && dia.fecha) {
+            const fechaDia = new Date(dia.fecha);
+
+            // Verificar si este día pertenece al mes actual
+            if (fechaDia.getFullYear() === mes.anio &&
+              fechaDia.getMonth() + 1 === mes.mesNumero &&
+              fechaDia.getDate() >= mes.diaInicio &&
+              fechaDia.getDate() <= mes.diaFin) {
+
+              // Sumar cantidades
+              if (cantidadesFila[indexDia] !== null && cantidadesFila[indexDia] !== undefined) {
+                acumuladoCantidades += Number(cantidadesFila[indexDia]);
+                tieneCantidades = true;
+              }
+
+              // Sumar parciales
+              if (parcialesFila[indexDia] !== null && parcialesFila[indexDia] !== undefined) {
+                acumuladoParciales += Number(parcialesFila[indexDia]);
+                tieneParciales = true;
+              }
+
+              // Sumar realizado
+              if (realizadoFila[indexDia] !== null && realizadoFila[indexDia] !== undefined) {
+                acumuladoRealizado += Number(realizadoFila[indexDia]);
+                tieneRealizado = true;
+              }
+
+              // Sumar metrado diario (objeto con propiedad metrado_dia)
+              if (metradoDiarioFila[indexDia] !== null &&
+                metradoDiarioFila[indexDia] !== undefined) {
+
+                const metradoDia = metradoDiarioFila[indexDia].metrado_dia;
+                if (metradoDia !== null && metradoDia !== undefined) {
+                  // Convertir a número antes de sumar
+                  const metradoNumero = Number(metradoDia);
+                  if (!isNaN(metradoNumero)) {
+                    acumuladoMetradoDiario += metradoNumero;
+                    tieneMetradoDiario = true;
+                    diasConDatosMetrado++;
+                  }
+                }
+              }
+            }
+          }
+        });
+
+        mesesCantidades.push(tieneCantidades ? acumuladoCantidades : null);
+        mesesParciales.push(tieneParciales ? acumuladoParciales : null);
+        mesesRealizado.push(tieneRealizado ? acumuladoRealizado : null);
+
+        // Para metradoDiario: null si no hay datos, 0 si hay datos pero suma 0, valor si hay datos
+        if (tieneMetradoDiario) {
+          mesesMetradoDiario.push(acumuladoMetradoDiario);
+        } else {
+          mesesMetradoDiario.push(diasConDatosMetrado > 0 ? 0 : null);
+        }
+      });
+
+      // Asignar todos los acumulados a la fila
+      fila.mesesParciales = mesesParciales;
+      fila.mesesCantidades = mesesCantidades;
+      fila.mesesRealizado = mesesRealizado;
+      fila.mesesMetradoDiario = mesesMetradoDiario;
+
+     
+    });
+  }
+
+  convertirANumero(valor: any): number | null {
+    if (valor === null || valor === undefined) {
+      return null;
+    }
+
+    if (typeof valor === 'number') {
+      return isNaN(valor) ? null : valor;
+    }
+
+    if (typeof valor === 'string') {
+      const numero = Number(valor);
+      return isNaN(numero) ? null : numero;
+    }
+
+    return null;
+  }
+
+  // Métodos auxiliares para obtener los índices correctos
+  obtenerIndiceInicioMes(mes: any, indexFila: number): number {
+    // Buscar en calendarioBase[1] el primer día que coincide con el inicio del mes
+    const diasFila = this.calendarioBase[indexFila] || this.calendarioBase[1] || [];
+
+    for (let i = 0; i < diasFila.length; i++) {
+      const dia = diasFila[i];
+      if (dia && dia.fecha) {
+        const fechaDia = new Date(dia.fecha);
+        if (fechaDia.getDate() === mes.diaInicio &&
+          fechaDia.getMonth() + 1 === mes.mesNumero &&
+          fechaDia.getFullYear() === mes.anio) {
+          return i;
         }
       }
-    } else if (this.formato == 'DIA') {
-      await this.filtrarRegistroCalendario()
     }
-    this.mostrar_carga_todo = false
+    return 0;
+  }
 
+  obtenerIndiceFinMes(mes: any, indexFila: number): number {
+    // Buscar en calendarioBase[1] el último día que coincide con el fin del mes
+    const diasFila = this.calendarioBase[indexFila] || this.calendarioBase[1] || [];
+
+    for (let i = diasFila.length - 1; i >= 0; i--) {
+      const dia = diasFila[i];
+      if (dia && dia.fecha) {
+        const fechaDia = new Date(dia.fecha);
+        if (fechaDia.getDate() === mes.diaFin &&
+          fechaDia.getMonth() + 1 === mes.mesNumero &&
+          fechaDia.getFullYear() === mes.anio) {
+          return i;
+        }
+      }
+    }
+    return diasFila.length - 1;
+  }
+
+  esNumeroValido(valor: any): boolean {
+    return typeof valor === 'number' && !isNaN(valor) && isFinite(valor);
+  }
+
+  determinarValor(acumulado: number, diasConDatos: number): number | null {
+    return acumulado > 0 ? acumulado : (diasConDatos > 0 ? 0 : null);
+  }
+
+  contarDiasPorMes(calendario: any[]): any[] {
+    const mesesMap = new Map();
+
+    calendario.forEach(dia => {
+      const clave = `${dia.anio}-${dia.mes}`;
+      if (!mesesMap.has(clave)) {
+        mesesMap.set(clave, {
+          mes: dia.nombreMes,
+          anio: dia.anio,
+          mesNumero: dia.mes,
+          cantdias: 0
+        });
+      }
+      mesesMap.get(clave).cantdias++;
+    });
+
+    return Array.from(mesesMap.values());
+  }
+
+  // Funciones auxiliares
+  obtenerNombreDia(dia: number): string {
+    const dias = ['DOMINGO', 'LUNES', 'MARTES', 'MIÉRCOLES', 'JUEVES', 'VIERNES', 'SÁBADO'];
+    return dias[dia];
+  }
+
+  obtenerNombreMes(mes: number): string {
+    const meses = [
+      'ENERO', 'FEBRERO', 'MARZO', 'ABRIL', 'MAYO', 'JUNIO',
+      'JULIO', 'AGOSTO', 'SEPTIEMBRE', 'OCTUBRE', 'NOVIEMBRE', 'DICIEMBRE'
+    ];
+    return meses[mes];
   }
 
   obtenerNumeroDiaSemana(nombreDia: string): number {
@@ -1296,7 +1650,6 @@ export class RegistroActividadesComponent implements OnInit {
     return calendario;
   }
 
-
   private buscarIndiceEnArrayCompleto(fecha: Date, arrayCompleto: any[]): number {
     const fechaBuscada = fecha.getTime();
 
@@ -1314,6 +1667,7 @@ export class RegistroActividadesComponent implements OnInit {
 
     return -1; // No encontrado
   }
+
   private generarAbreviaturaSemana2(dias: any[]): string {
     if (dias.length === 0) return '';
 
@@ -1386,7 +1740,6 @@ export class RegistroActividadesComponent implements OnInit {
 
     return fechaParsed;
   }
-
 
 
   /////////////////////////////////////////////////////////////////////////////////////////////
@@ -1648,71 +2001,82 @@ export class RegistroActividadesComponent implements OnInit {
   }
 
   async filtrarRegistroCalendario() {
-    // this.mostrar_carga_todo = true;
-    let fila = null
-    if (this.metradoMes2 !== '0' && this.metradoMes2 !== 0) {
-      fila = this.tablaRegistroMetrados.find(ele => ele.id_registro == this.metradoMes2);
-      if (fila) {
-        // Parsear fechas del filtro
-        const fechaIniFiltro = this.parsearFechaLocal(fila.fechaini);
-        const fechaFinFiltro = this.parsearFechaLocal(fila.fechafin);
-        await this.aplicarFiltroCalendarioBase(fechaIniFiltro, fechaFinFiltro);
+    this.mostrar_carga_todo = true;
+    setTimeout(async () => {
+      if (this.metradoMes2 == 0 || this.metradoMes2 == '0') {
+        this.formatos = ['DIA', 'SEMANA', 'MES']
+      } else {
+        this.formatos = ['DIA', 'SEMANA']
+        this.formato = 'DIA'
+      }
 
-        // Generar calendario SEMANA solo dentro del rango filtrado
+
+      let fila = null
+      this.filaSeleccionada2 = null
+      if (this.metradoMes2 !== '0' && this.metradoMes2 !== 0) {
+        fila = this.tablaRegistroMetrados.find(ele => ele.id_registro == this.metradoMes2);
+        if (fila) {
+          // Parsear fechas del filtro
+          const fechaIniFiltro = this.parsearFechaLocal(fila.fechaini);
+          const fechaFinFiltro = this.parsearFechaLocal(fila.fechafin);
+          await this.aplicarFiltroCalendarioBase(fechaIniFiltro, fechaFinFiltro);
+
+          // Generar calendario SEMANA solo dentro del rango filtrado
+          if (this.formato == 'DIA') {
+            // this.calendarioProgra[1] = await this.generarCalendarioPorFormato(fechaIniFiltro, fechaFinFiltro);
+            const diasPorMes = await this.obtenerDiasPorMes(this.calendarioProgra[1]);
+
+            // Recalcular acumulados
+            this.calendarioProgra[0] = diasPorMes
+          } else {
+
+          }
+          // Recalcular acumulados
+          await this.crearCantidadSemanaParaElementos();
+        }
+      } else {
+
         if (this.formato == 'DIA') {
-          // this.calendarioProgra[1] = await this.generarCalendarioPorFormato(fechaIniFiltro, fechaFinFiltro);
+          this.calendarioProgra[1] = await this.generarCalendarioPorFormato(
+            this.fechas.minFechaini,
+            this.fechas.maxFechafin
+          );
+          this.calendarioProgra[1].forEach(element => {
+            element.mostrar = 1
+          });
           const diasPorMes = await this.obtenerDiasPorMes(this.calendarioProgra[1]);
-          
           // Recalcular acumulados
           this.calendarioProgra[0] = diasPorMes
         } else {
-
+          this.cambiarFormato()
         }
-        // Recalcular acumulados
         await this.crearCantidadSemanaParaElementos();
       }
-    } else {
-
-      if (this.formato == 'DIA') {
-        this.calendarioProgra[1] = await this.generarCalendarioPorFormato(
-          this.fechas.minFechaini,
-          this.fechas.maxFechafin
-        );
-        this.calendarioProgra[1].forEach(element => {
-          element.mostrar = 1
-        });
-        const diasPorMes = await this.obtenerDiasPorMes(this.calendarioProgra[1]);
-        // Recalcular acumulados
-        this.calendarioProgra[0] = diasPorMes
-      } else {
-        this.cambiarFormato()
-      }
-      await this.crearCantidadSemanaParaElementos();
-    }
-    const resp = await this.acumuladosRegistrosXFechas(this.metradoMes2, fila !== null ? fila.fechaini : this.fechas.minFechaini, fila !== null ? fila.fechafin : this.fechas.maxFechafin)
-    let i = 0
-    for (const element of this.tablaProgramacion) {
-      element.realizado = JSON.parse(resp[i].array_valores)
-      const a = JSON.parse(resp[i].metradodiario)
+      const resp = await this.acumuladosRegistrosXFechas(this.metradoMes2, fila !== null ? fila.fechaini : this.fechas.minFechaini, fila !== null ? fila.fechafin : this.fechas.maxFechafin)
+      let i = 0
+      for (const element of this.tablaProgramacion) {
+        element.realizado = JSON.parse(resp[i].array_valores)
+        const a = JSON.parse(resp[i].metradodiario)
 
 
-      if (this.formato == 'DIA') {
-        const b = await this.asignarMetradosACalendario(this.calendarioProgra[1], a)
-        // console.log('b', b)
-        // console.log('item', element.item)
-        // let array = []
-        // if (this.metradoMes2 == 0 || this.metradoMes2 == '0') {
-        //   array = b
-        // } else {
-        //   array = b.filter(ele => ele.fecha == this.metradoMes2)
-        // }
-        element.metradodiario = b
+        if (this.formato == 'DIA') {
+          const b = await this.asignarMetradosACalendario(this.calendarioProgra[1], a)
+          // console.log('b', b)
+          // console.log('item', element.item)
+          // let array = []
+          // if (this.metradoMes2 == 0 || this.metradoMes2 == '0') {
+          //   array = b
+          // } else {
+          //   array = b.filter(ele => ele.fecha == this.metradoMes2)
+          // }
+          element.metradodiario = b
+        }
+
+        i++
       }
 
-      i++
-    }
- 
-    this.mostrar_carga_todo = false;
+      this.mostrar_carga_todo = false;
+    }, 0);
   }
 
 
@@ -1789,7 +2153,7 @@ export class RegistroActividadesComponent implements OnInit {
 
       // Mostrar solo los días dentro del rango del filtro
       dia.mostrar = (fechaDiaNormalizada >= fechaIniNormalizada && fechaDiaNormalizada <= fechaFinNormalizada) ? 1 : 0;
-    });    
+    });
   }
 
   restaurarCalendarioBaseCompleto() {

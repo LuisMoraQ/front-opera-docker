@@ -445,6 +445,10 @@
                             <col *ngFor="let dia of calendarioSemana[1]" style="width: 70px">
                             <col *ngFor="let dia of calendarioSemana[1]" style="width: 70px">
                         </ng-container>
+                        <ng-container *ngIf="formato == 'MES'">
+                            <col *ngFor="let dia of calendarioSemana[1]" style="width: 70px">
+                            <col *ngFor="let dia of calendarioSemana[1]" style="width: 70px">
+                        </ng-container>
                     </colgroup>
 
                     <thead class="headsticky">
@@ -477,6 +481,12 @@
                                     {{semana.mes}} - {{semana.anio}}
                                 </th>
                             </ng-container>
+                            <ng-container *ngIf="formato == 'MES'">
+                                <th [colSpan]="mes.colspan" class="text-center" style="min-width: 50px"
+                                    *ngFor="let mes of calendarioMes[0]">
+                                    {{mes.anio}}
+                                </th>
+                            </ng-container>
                         </tr>
                         <ng-container *ngIf="formato == 'DIA'">
                             <tr style="height: 22px;">
@@ -507,12 +517,26 @@
                                 </ng-container>
                             </tr>
                         </ng-container>
+                        <ng-container *ngIf="formato == 'MES'">
+                            <tr style="height: 22px;">
+                                <th class="text-center" colspan="2" style="min-width: 140px"
+                                    *ngFor="let mes of calendarioMes[1]">
+                                    {{mes.mes}}
+                                </th>
+                            </tr>
+                            <tr style="height: 22px;">
+                                <ng-container *ngFor="let mes of calendarioMes[1]">
+                                    <th class="text-center" style="min-width: 70px">Cantidad</th>
+                                    <th class="text-center" style="min-width: 70px">Parcial</th>
+                                </ng-container>
+                            </tr>
+                        </ng-container>
                     </thead>
 
                     <tbody>
                         <ng-container *ngFor="let row of this.tablaProgramacion;trackBy: trackByItem; let i = index">
-                            <tr *ngIf="!row.unidad" [ngClass]="{'row-seleccionado': row == filaSeleccionada}"
-                                [hidden]="row.mostrar == 0">
+                            <tr *ngIf="!row.unidad" [ngClass]="{'row-seleccionado': i == filaSeleccionada2}"
+                                [hidden]="row.mostrar == 0" (click)="seleccionarFila(i)">
                                 <td class="text-center " style="min-width: 40px; max-width: 40px; width: 40px"
                                     appPintarfilapre [tipo]="titulo1" [color]="row.item ? titulo1color : ''"
                                     [letra]="titulo1letra" [item]="row.item" [separador]="'.'"
@@ -573,11 +597,17 @@
                                         <td [ngClass]="{'nopartida': row.unidad }"></td>
                                     </ng-container>
                                 </ng-container>
+                                <ng-container *ngIf="formato == 'MES'">
+                                    <ng-container *ngFor="let mes of calendarioMes[1]">
+                                        <td [ngClass]="{'nopartida': row.unidad }"></td>
+                                        <td [ngClass]="{'nopartida': row.unidad }"></td>
+                                    </ng-container>
+                                </ng-container>
                             </tr>
 
                             <ng-container *ngIf="row.unidad">
-                                <tr [ngClass]="{'row-seleccionado': row == filaSeleccionada}"
-                                    [hidden]="row.mostrar == 0">
+                                <tr [ngClass]="{'row-seleccionado': i == filaSeleccionada2}" [hidden]="row.mostrar == 0"
+                                    (click)="seleccionarFila(i)">
                                     <td class="text-center " rowspan="2"
                                         style="min-width: 40px; max-width: 40px; width: 40px" appPintarfilapre
                                         [tipo]="titulo1" [color]="row.item ? titulo1color : ''" [letra]="titulo1letra"
@@ -646,10 +676,26 @@
                                             </td>
                                         </ng-container>
                                     </ng-container>
+                                    <ng-container *ngIf="formato == 'MES'">
+                                        <ng-container *ngFor="let semanaData of row.mesesCantidades; let ind = index">
+                                            <td [ngClass]="{'partida': semanaData}" class="text-right">
+                                                <!-- <ng-container *ngIf="semanaData>0"> -->
+                                                {{semanaData |
+                                                number: '0.'+ this.dec_metrado + '-' + this.dec_metrado}}
+                                                <!-- </ng-container> -->
+                                            </td>
+                                            <td [ngClass]="{'partida': row.mesesParciales[ind]}" class="text-right">
+                                                <!-- <ng-container *ngIf="row.parcialesSemana[ind]>0"> -->
+                                                {{row.mesesParciales[ind] |
+                                                number: '0.'+ this.dec_parcial + '-' + this.dec_parcial}}
+                                                <!-- </ng-container> -->
+                                            </td>
+                                        </ng-container>
+                                    </ng-container>
                                 </tr>
 
-                                <tr [ngClass]="{'row-seleccionado': row == filaSeleccionada}"
-                                    [hidden]="row.mostrar == 0">
+                                <tr [ngClass]="{'row-seleccionado': i == filaSeleccionada2}" [hidden]="row.mostrar == 0"
+                                    (click)="seleccionarFila(i)">
 
                                     <td class="text-center  ft-8" style="min-width: 70px; max-width: 70px; width: 70px"
                                         appPintarfilapre [tipo]="titulo1" [color]="row.item ? titulo1color : ''"
@@ -672,25 +718,39 @@
                                     <ng-container *ngIf="formato == 'DIA'">
                                         <ng-container *ngFor="let diaData of row.metradodiario; let index=index">
                                             <td [ngClass]="{'partida2': diaData.metrado_dia }">
-                                                {{diaData.metrado_dia}}
+                                                {{diaData.metrado_dia |
+                                                number: '0.'+ this.dec_metrado + '-' + this.dec_metrado}}
                                             </td>
                                             <td [ngClass]="{'partida2': row.realizado[index] }">
-                                                {{row.realizado[index]}} 
+                                                {{row.realizado[index] |
+                                                number: '0.'+ this.dec_parcial + '-' + this.dec_parcial}}
                                             </td>
 
                                         </ng-container>
-                                        <!-- <ng-container *ngFor="let diaData of row.realizado; let index=index">
-                                            <td [ngClass]="{'partida': diaData > 0 }">
-                                                {{diaData}} - {{index}}
-                                            </td>
-
-                                        </ng-container> -->
                                     </ng-container>
                                     <ng-container *ngIf="formato == 'SEMANA'">
-                                        <ng-container *ngFor="let diaData of row.metradodiario; let index = index">
-                                            <td class="text-right" [ngClass]="{'partida': diaData }">
+                                        <ng-container *ngFor="let semanaData of row.semanaMetrado; let index = index">
+                                            <td class="text-right" [ngClass]="{'partida2': semanaData }">
+                                                {{semanaData |
+                                                number: '0.'+ this.dec_metrado + '-' + this.dec_metrado}}
                                             </td>
-                                            <td class="text-right" [ngClass]="{'partida': diaData }"></td>
+                                            <td class="text-right"
+                                                [ngClass]="{'partida2': row.semanaRealizado[index] }">
+                                                {{row.semanaRealizado[index] |
+                                                number: '0.'+ this.dec_metrado + '-' + this.dec_metrado}}
+                                            </td>
+                                        </ng-container>
+                                    </ng-container>
+                                    <ng-container *ngIf="formato == 'MES'">
+                                        <ng-container *ngFor="let mes of row.mesesMetradoDiario; let index = index">
+                                            <td class="text-right" [ngClass]="{'partida2': mes }">
+                                                {{mes |
+                                                number: '0.'+ this.dec_metrado + '-' + this.dec_metrado}}
+                                            </td>
+                                            <td class="text-right" [ngClass]="{'partida2': row.mesesRealizado[index] }">
+                                                {{row.mesesRealizado[index] |
+                                                number: '0.'+ this.dec_parcial + '-' + this.dec_parcial}}
+                                            </td>
                                         </ng-container>
                                     </ng-container>
                                 </tr>
