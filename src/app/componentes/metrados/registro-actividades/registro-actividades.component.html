@@ -89,7 +89,7 @@
                                 Recursos utilizados
                             </td>
                             <td *ngFor="let dia of estadoXReg; let i = index" [class.bloqueado]="dia.bloqueado"
-                                container="body" (click)="ChangeDia(dia)"
+                                container="body" (click)="ChangeDia(diasCalendario[i])"
                                 [ngbTooltip]="dia.estado == 1 ? 'Registrado':''"
                                 [ngClass]="{ 'registrado': dia.estado == 1, 'fecha-selected': diasCalendario[i]?.fecha == fechaselecionada  }"
                                 style="height: 24px">
@@ -209,8 +209,9 @@
                                                 [ngClass]="{'row-seleccionado': row == filaSeleccionada}"
                                                 [color]="row.item ? titulo1color : ''" [letra]="titulo1letra"
                                                 [item]="row.item" [separador]="'.'" [partida]="row.unidad != ''">
-                                                <ng-container *ngIf="indiceDia !==null && row.metradodiario?.length">
-                                                    {{row.metradodiario[indiceDia]}}
+                                                <ng-container *ngIf="indiceDia !==null && row.metradodiario?.length && row.metradodiario[indiceDia] > 0">
+                                                    {{row.metradodiario[indiceDia] | number: '0.'+ this.dec_metrado + '-' +
+                                                this.dec_metrado}}
                                                 </ng-container>
 
                                             </td>

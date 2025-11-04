@@ -5,10 +5,10 @@
 export const environment = {
   production: false,
   key: 'sipa@gmail.com',
-  // apiUrl:'http://localhost:26289' //ip local
+  apiUrl:'http://localhost:26289' //ip local
   // apiUrl:'http://localhost/BackPresu' //local
   // apiUrl: 'http://3.131.42.21:5000' //ip server
-  apiUrl:'http://192.168.18.116/BackBiopera' //ip oficina
+  // apiUrl:'http://192.168.18.116/BackBiopera' //ip oficina
 }
 /*
  * For easier debugging in development mode, you can import the following file

@@ -251,13 +251,10 @@ export class RegistroActividadesComponent implements OnInit {
       ele.icomost = 1;
       ele.mostrar = 1;
     }
-
+    // console.log('resultado', resultado)
     this.tablaPresupuesto = resultado;
   }
 
-  verHojaMetrado() {
-    console.log('')
-  }
 
   async cambioVista(ind: any) {
     this.mostrar_carga_todo = true
@@ -334,6 +331,25 @@ export class RegistroActividadesComponent implements OnInit {
     const met = this.tablaRegistroMetrados.find(ele => ele.id_registro == this.metradoMes)
     await this.generarCalendario(met)
     await this.generarTablaPresuMetradoXRegistro(this.metradoMes)
+    const obj2 = {
+      id_proyecto: this.id_proyecto,
+      id_registro: this.metradoMes
+    }
+    const resp2 = await this.metradoService.metradosDiariosXPartida(obj2)
+    for (const element of this.tablaPresupuesto) {
+      const encontrado = resp2.find(ele => ele.indice == element.indice)
+      if (encontrado?.montodias?.length) {
+        element.metradodiario = encontrado.montodias.split('/').map(item => {
+          if (item === 'null' || item === 'NULL') {
+            return null;
+          }
+          const num = Number(item);
+          return isNaN(num) ? null : num;
+        });
+      } else {
+        element.metradodiario = this.diasCalendario.map(ele => { return null })
+      }
+    }
     this.mostrar_carga_todo = false
   }
 
@@ -407,6 +423,9 @@ export class RegistroActividadesComponent implements OnInit {
     if (this.fechaselecionada && this.filaSeleccionada) {
       await this.actualizarTablaAlmacen()
     }
+
+
+
     this.buscando = false
   }
 
@@ -421,21 +440,7 @@ export class RegistroActividadesComponent implements OnInit {
 
   async selPartida(index, row) {
     this.filaSeleccionada = row
-    // if (row.unidad) {
-    //   let estadoXPart = row.metradodiario ? row.metradodiario : []
-    //   if (!estadoXPart || !estadoXPart.length || estadoXPart?.length == 1) {
-    //     for (const element of this.diasCalendario) {
-    //       estadoXPart.push(null)
-    //     }
-    //   }
-    //   this.estadoXPart = estadoXPart
-    // } else {
-    //   const estadoXPart = []
-    //   for (const element of this.diasCalendario) {
-    //     estadoXPart.push(null)
-    //   }
-    //   this.estadoXPart = estadoXPart
-    // }
+    
     if (this.fechaselecionada && this.filaSeleccionada) {
       await this.actualizarTablaAlmacen()
     }
@@ -1263,7 +1268,7 @@ export class RegistroActividadesComponent implements OnInit {
       fila.semanaMetrado = semanaMetrado;
       fila.semanaRealizado = semanaRealizado;
 
-     
+
     });
   }
 
@@ -1360,7 +1365,7 @@ export class RegistroActividadesComponent implements OnInit {
       fila.mesesRealizado = mesesRealizado;
       fila.mesesMetradoDiario = mesesMetradoDiario;
 
-     
+
     });
   }
 
@@ -1381,75 +1386,7 @@ export class RegistroActividadesComponent implements OnInit {
     return null;
   }
 
-  // Métodos auxiliares para obtener los índices correctos
-  obtenerIndiceInicioMes(mes: any, indexFila: number): number {
-    // Buscar en calendarioBase[1] el primer día que coincide con el inicio del mes
-    const diasFila = this.calendarioBase[indexFila] || this.calendarioBase[1] || [];
 
-    for (let i = 0; i < diasFila.length; i++) {
-      const dia = diasFila[i];
-      if (dia && dia.fecha) {
-        const fechaDia = new Date(dia.fecha);
-        if (fechaDia.getDate() === mes.diaInicio &&
-          fechaDia.getMonth() + 1 === mes.mesNumero &&
-          fechaDia.getFullYear() === mes.anio) {
-          return i;
-        }
-      }
-    }
-    return 0;
-  }
-
-  obtenerIndiceFinMes(mes: any, indexFila: number): number {
-    // Buscar en calendarioBase[1] el último día que coincide con el fin del mes
-    const diasFila = this.calendarioBase[indexFila] || this.calendarioBase[1] || [];
-
-    for (let i = diasFila.length - 1; i >= 0; i--) {
-      const dia = diasFila[i];
-      if (dia && dia.fecha) {
-        const fechaDia = new Date(dia.fecha);
-        if (fechaDia.getDate() === mes.diaFin &&
-          fechaDia.getMonth() + 1 === mes.mesNumero &&
-          fechaDia.getFullYear() === mes.anio) {
-          return i;
-        }
-      }
-    }
-    return diasFila.length - 1;
-  }
-
-  esNumeroValido(valor: any): boolean {
-    return typeof valor === 'number' && !isNaN(valor) && isFinite(valor);
-  }
-
-  determinarValor(acumulado: number, diasConDatos: number): number | null {
-    return acumulado > 0 ? acumulado : (diasConDatos > 0 ? 0 : null);
-  }
-
-  contarDiasPorMes(calendario: any[]): any[] {
-    const mesesMap = new Map();
-
-    calendario.forEach(dia => {
-      const clave = `${dia.anio}-${dia.mes}`;
-      if (!mesesMap.has(clave)) {
-        mesesMap.set(clave, {
-          mes: dia.nombreMes,
-          anio: dia.anio,
-          mesNumero: dia.mes,
-          cantdias: 0
-        });
-      }
-      mesesMap.get(clave).cantdias++;
-    });
-
-    return Array.from(mesesMap.values());
-  }
-
-  // Funciones auxiliares
-  obtenerNombreDia(dia: number): string {
-    const dias = ['DOMINGO', 'LUNES', 'MARTES', 'MIÉRCOLES', 'JUEVES', 'VIERNES', 'SÁBADO'];
-    return dias[dia];
-  }
 
   obtenerNombreMes(mes: number): string {
     const meses = [
@@ -1742,61 +1679,6 @@ export class RegistroActividadesComponent implements OnInit {
   }
 
 
-  /////////////////////////////////////////////////////////////////////////////////////////////
-
-  acumularCantidadesPorSemanaEficiente(cantidades: any[], semanas: any[], calendarioDias: any[], elemento: any): number[] {
-    const resultado: number[] = new Array(semanas.length).fill(0);
-
-    const fechaActividad = new Date(elemento.fechaini);
-    // Encontrar en qué semana cae la actividad
-    const indexSemanaActividad = semanas.findIndex(semana => {
-      const inicio = new Date(semana.fechainicio);
-      const fin = new Date(semana.fechafin);
-      return fechaActividad >= inicio && fechaActividad <= fin;
-    });
-
-    if (indexSemanaActividad !== -1) {
-      // Encontrar el índice en el calendario diario para esta fecha
-      const indexDiaCalendario = calendarioDias.findIndex(dia => {
-        const fechaDia = new Date(dia.fecha);
-        return fechaDia.toDateString() === fechaActividad.toDateString();
-      });
-
-
-      if (indexDiaCalendario !== -1 && cantidades[indexDiaCalendario] !== null) {
-        resultado[indexSemanaActividad] = Number(cantidades[indexDiaCalendario]) || 0;
-      }
-    }
-
-    return resultado;
-  }
-
-  acumularParcialesPorSemanaCorregido(parciales: any[], semanas: any[], calendarioDias: any[], elemento: any): number[] {
-    const resultado: number[] = new Array(semanas.length).fill(0);
-
-    const fechaActividad = new Date(elemento.fechaini);
-
-    // Encontrar en qué semana cae la actividad
-    const indexSemanaActividad = semanas.findIndex(semana => {
-      const inicio = new Date(semana.fechainicio);
-      const fin = new Date(semana.fechafin);
-      return fechaActividad >= inicio && fechaActividad <= fin;
-    });
-
-    if (indexSemanaActividad !== -1) {
-      // Encontrar el índice en el calendario diario para esta fecha
-      const indexDiaCalendario = calendarioDias.findIndex(dia => {
-        const fechaDia = new Date(dia.fecha);
-        return fechaDia.toDateString() === fechaActividad.toDateString();
-      });
-
-      if (indexDiaCalendario !== -1 && parciales[indexDiaCalendario] !== null) {
-        resultado[indexSemanaActividad] = Number(parciales[indexDiaCalendario]) || 0;
-      }
-    }
-
-    return resultado;
-  }
 
   // acumularCantidadesPorSemana(cantidades: any[], semanas: any[]): number[] {
   //   const resultado: number[] = [];
@@ -2156,12 +2038,6 @@ export class RegistroActividadesComponent implements OnInit {
     });
   }
 
-  restaurarCalendarioBaseCompleto() {
-    const calendarioDias = this.calendarioBase[1];
-    calendarioDias.forEach(dia => {
-      dia.mostrar = 1;
-    });
-  }
 
   async crearCantidadSemanaParaElementos() {
     const calendarioDiasBase = this.calendarioBase[1]; // Array completo de días
@@ -2298,56 +2174,7 @@ export class RegistroActividadesComponent implements OnInit {
     return -1;
   }
 
-  // Parsear fecha string YYYY-MM-DD directamente
-  parsearFechaString(fechaStr: string): number {
-    const partes = fechaStr.split('-');
-    const año = parseInt(partes[0], 10);
-    const mes = parseInt(partes[1], 10); // Mes 1-12
-    const dia = parseInt(partes[2], 10);
-    return año * 10000 + mes * 100 + dia;
-  }
 
-  // Para las fechas del calendario (que son Date objects)
-  fechaANumero(fecha: Date): number {
-    const año = fecha.getFullYear();
-    const mes = fecha.getMonth() + 1; // getMonth() devuelve 0-11
-    const dia = fecha.getDate();
-    return año * 10000 + mes * 100 + dia;
-  }
-
-
-  actualizarEstructuraMeses() {
-    if (!this.calendarioProgra[1]) return;
-    const meses = [
-      'ENERO', 'FEBRERO', 'MARZO', 'ABRIL', 'MAYO', 'JUNIO',
-      'JULIO', 'AGOSTO', 'SEPTIEMBRE', 'OCTUBRE', 'NOVIEMBRE', 'DICIEMBRE'
-    ];
-
-    const mesesAgrupados = {};
-
-    // Contar solo los días visibles por mes
-    this.calendarioProgra[1].forEach(fechaObj => {
-      if (fechaObj.mostrar === 1) {
-        const fecha = new Date(fechaObj.fecha);
-        const mes = fecha.getMonth();
-        const anio = fecha.getFullYear();
-        const clave = `${anio}-${mes}`;
-
-        if (!mesesAgrupados[clave]) {
-          mesesAgrupados[clave] = {
-            mes: meses[mes],
-            anio: anio,
-            cantdias: 0
-          };
-        }
-
-        mesesAgrupados[clave].cantdias++;
-      }
-    });
-
-    // Actualizar calendarioProgra[0] con los meses que tienen días visibles
-    this.calendarioProgra[0] = Object.values(mesesAgrupados);
-  }
 
   filtroTitulo2(indiceTitulo, tablaProgramacion) {
     this.mostrar_carga_todo = true
