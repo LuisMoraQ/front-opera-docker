@@ -17,6 +17,7 @@ export class ModalHitoComponent implements OnInit {
   @Input() idProyecto = null
   @Input() idUsuario = null
   @Input() dataPrincipal = []
+  @Input() version = null
   formHito = new UntypedFormGroup({
     fechaInicio: new UntypedFormControl('', [Validators.required]),
     duracion: new UntypedFormControl(0,),
@@ -146,7 +147,8 @@ export class ModalHitoComponent implements OnInit {
           indice_refer: this.uidReferencia,
           referencias: this.ubicacionFinal.value !== 1 ? (this.partidaSeleccionada.idgantt).toString() : '',
           referenciados: this.ubicacionFinal.value !== 1 ? JSON.stringify([[this.partidaSeleccionada.uid, '', '']]) : '',
-          indiceIndexar: this.indiceIndexar
+          indiceIndexar: this.indiceIndexar,
+          version: this.version
         }
         // const objectGuardar = {
         //   id_proyecto: this.idProyecto,

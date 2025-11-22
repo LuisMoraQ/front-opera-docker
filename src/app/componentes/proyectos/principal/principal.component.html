@@ -76,8 +76,7 @@
                           </td>
                           <td class="text-left" appAnchocol [ancho]="280" [detalle]="true">
                             <div class="recortatext" ngbTooltip="{{row.descripcion}}" #t="ngbTooltip" container="body"
-                              triggers="click:blur" (mouseout)="t.close()"
-                               [ngClass]="{
+                              triggers="click:blur" (mouseout)="t.close()" [ngClass]="{
                                 'ml-3':row.id_principal
                               }">
                               {{row.descripcion}}
@@ -106,8 +105,9 @@
                               [ngStyle]="{'color': row.estado == 1 ? 'red' : 'none'}"></i>
                           </td>
                           <td appAnchocol [ancho]="160">
-                            <button *ngIf="!row.id_principal&&row.nro==''" type="button" ngbTooltip="Agregar SubProyecto"
-                              class="btn btn-mini btn-success"  (click)="openModalProyecto(row,true,true)" placement="top"
+                            <button *ngIf="!row.id_principal&&row.nro==''" type="button"
+                              ngbTooltip="Agregar SubProyecto" class="btn btn-mini btn-success"
+                              (click)="openModalProyecto(row,true,true)" placement="top"
                               (mouseup)="quitarfoco($event);">
                               <i class="fa fa-plus icono-but"></i>
                             </button>
@@ -119,8 +119,9 @@
                               ngbTooltip="Compartir" (click)="CompartirProy(row)" style="margin-right: 2px;">
                               <i class="fa fa-send icono-but"></i>
                             </button>
-                            <button *ngIf="row.nro=='' && !esSecund&&(!row.totalsub||row.id_principal)" class="btn btn-mini btn-danger" placement="top"
-                              ngbTooltip="Eliminar" (click)="eliminarProyecto(row)">
+                            <button *ngIf="row.nro=='' && !esSecund&&(!row.totalsub||row.id_principal)"
+                              class="btn btn-mini btn-danger" placement="top" ngbTooltip="Eliminar"
+                              (click)="eliminarProyecto(row)">
                               <i class="fa fa-remove icono-but"></i>
                             </button>
                             <button *ngIf="row.nro=='' && !esSecund" class="btn btn-mini btn-info" placement="top"
@@ -538,14 +539,15 @@
                                   [ngClass]="{'fa-arrow-left': !ocultarMenu, 'fa-arrow-right': ocultarMenu}"></i></button>
                             </div>
                             <ng-container *ngIf="tab.get('menu_proyecto_seleccionado').value == 0">
-                              <app-aspectos-generales [tabproyecto]="tab" (tabChange)="onTabChange($event)" ></app-aspectos-generales>
+                              <app-aspectos-generales [tabproyecto]="tab"
+                                (tabChange)="onTabChange($event)"></app-aspectos-generales>
                             </ng-container>
                             <ng-container *ngIf="tab.get('menu_proyecto_seleccionado').value == 1">
                               <app-data-proyecto [tabproyecto]="tab"></app-data-proyecto>
                             </ng-container>
                             <ng-container *ngIf="tab.get('menu_proyecto_seleccionado').value == 2">
                               <!-- <app-presdirecto [tabproyecto]="tab"></app-presdirecto> -->
-                               <app-registro-actividades [tabproyecto]="tab"></app-registro-actividades>
+                              <app-registro-actividades [tabproyecto]="tab"></app-registro-actividades>
                             </ng-container>
                             <ng-container *ngIf="tab.get('menu_proyecto_seleccionado').value == 3">
                               <app-metradosdiarios [tabproyecto]="tab"></app-metradosdiarios>
@@ -565,19 +567,21 @@
                                 [tabproyecto]="tab"></app-formula-polinomica>
                             </ng-container>
                             <ng-container *ngIf="tab.get('menu_proyecto_seleccionado').value == 8">
-                              <app-tiempos-programacion [tabproyecto]="tab"></app-tiempos-programacion>
+                              <app-panel-recursos-humanos [idProyecto]="tab.get('id_proyecto').value"
+                                [tabproyecto]="tab" [ocultarMenu]="ocultarMenu"
+                                [nombreProyecto]="tab.get('nombre_proyecto').value"></app-panel-recursos-humanos>
                             </ng-container>
                             <ng-container *ngIf="tab.get('menu_proyecto_seleccionado').value == 9">
-                              <app-programacion-obra [idProyecto]="tab.get('id_proyecto').value" [tabproyecto]="tab"
+                              <!-- <app-panel-recursos-humanos [idProyecto]="tab.get('id_proyecto').value" [tabproyecto]="tab"
                                 [ocultarMenu]="ocultarMenu"
-                                [nombreProyecto]="tab.get('nombre_proyecto').value"></app-programacion-obra>
+                                [nombreProyecto]="tab.get('nombre_proyecto').value"></app-panel-recursos-humanos> -->
                             </ng-container>
                             <!-- <ng-container *ngIf="tab.get('menu_proyecto_seleccionado').value == 10">
                               <app-especificaciones-tecnicas [idProyecto]="tab.get('id_proyecto').value"
                                 [tabproyecto]="tab">
                               </app-especificaciones-tecnicas>
                             </ng-container> -->
-                              <ng-container *ngIf="tab.get('menu_proyecto_seleccionado').value ==10">
+                            <ng-container *ngIf="tab.get('menu_proyecto_seleccionado').value ==10">
                               <app-informes-reportes [tabproyecto]="tab"></app-informes-reportes>
                             </ng-container>
                           </app-card>

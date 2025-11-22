@@ -30,6 +30,7 @@ var js2xmlparser = require('js2xmlparser');
 moment.locale('es');
 
 import { Chart } from 'chart.js';
+import { RecursosHumanosService } from 'src/app/servicios/recursoshumanos.service';
 const enum Status {
   OFF = 0,
   RESIZE = 1,
@@ -218,6 +219,7 @@ export class ProgramacionObraComponent implements OnInit, OnDestroy {
   totalPorcMat: string = '';
   existetemp: boolean = false;
   tablaGrafico: any[] = [];
+  versionEditable: boolean = false
   @Input() set ocultarMenu(value: any) {
     this.menuOculto = value;
     if (this.view_mode) {
@@ -328,7 +330,7 @@ export class ProgramacionObraComponent implements OnInit, OnDestroy {
     this.decima = value.get('decimal').value;
     this.solover = value.get('solover').value;
     const datosrec = aspectosGen.get('datos_recuperado') as UntypedFormGroup;
-    this.simbolo=datosrec.value.simbolo
+    this.simbolo = datosrec.value.simbolo
   }
   columnasEstatica = false;
   columnasEstatica2 = false;
@@ -389,6 +391,14 @@ export class ProgramacionObraComponent implements OnInit, OnDestroy {
   wReferencia = 111;
   itemAuxActivo = false
   arrItemsAux = []
+
+  versions = []
+  version = null
+  @ViewChild("modalAgregarVersion") modalAgregarVersion: ModalBasicComponent;
+  formVersion = new UntypedFormGroup({
+    descripcion: new UntypedFormControl('', [Validators.required])
+  })
+  get descripcion(): UntypedFormControl { return this.formVersion.get('descripcion') as UntypedFormControl }
   constructor(
     private toaster: ToastrService,
     public formsService: FormsService,
@@ -396,7 +406,8 @@ export class ProgramacionObraComponent implements OnInit, OnDestroy {
     private presuservice: PresupuestosService,
     private _EncriptadorService: EncriptadorService,
     private principalService: PrincipalService,
-    private encriptadorService: EncriptadorService
+    private encriptadorService: EncriptadorService,
+    private recursosHumanosService: RecursosHumanosService
   ) {
     if (typeof Worker !== 'undefined') {
       //temporales
@@ -410,6 +421,8 @@ export class ProgramacionObraComponent implements OnInit, OnDestroy {
   async ngOnInit() {
     try {
       this.mostrar_carga_todo = true;
+
+      await this.listarVersiones()
       let decimales = this.decima;
       if (decimales?.toString().includes('|')) {
         let arrdec = decimales.split('|');
@@ -426,10 +439,8 @@ export class ProgramacionObraComponent implements OnInit, OnDestroy {
       this.onResize();
       this.pintar();
       await this.permisosUsuario();
-      console.log(this.submitModal)
       await this.iniciarProyecto();
       this.hTablasDinamico();
-      console.log(this.dataPrincipal)
       this.tablaDetalle.valueChanges.subscribe(
         async (data) => await this.referenciaActualModal()
       );
@@ -749,7 +760,7 @@ export class ProgramacionObraComponent implements OnInit, OnDestroy {
   async guardarTemporal(dataPrincipal, prograNoActua, hitosEliminados) {
     try {
       this.bloqtemp = true;
-     
+
       const datos = {
         dataPrincipal: dataPrincipal,
         prograNoActua: prograNoActua,
@@ -770,7 +781,7 @@ export class ProgramacionObraComponent implements OnInit, OnDestroy {
       };
       const response =
         await this.principalService.guardarCambiosTemporalesProgramacion(obj);
-        this.existetemp = true;
+      this.existetemp = true;
       this.bloqtemp = false;
       this.stop();
     } catch (e) {
@@ -812,7 +823,7 @@ export class ProgramacionObraComponent implements OnInit, OnDestroy {
     const response = await this.principalService.fechaDespuesDuracion(objeto);
     this.FFRestriccion = response.fecha;
     // this.moneda = this.dataProyecto.moneda.toString() == '0' ? 'S/' : '$';
-    this.moneda =this.simbolo?this.simbolo:'S/'
+    this.moneda = this.simbolo ? this.simbolo : 'S/'
   }
 
   async formatoHito(hito) {
@@ -919,7 +930,7 @@ export class ProgramacionObraComponent implements OnInit, OnDestroy {
       this.noEnlazar ||
       this.displayBasic ||
       this.displayBasic2 ||
-      this.solover
+      this.solover || !this.versionEditable
     ) {
       return;
     }
@@ -997,7 +1008,7 @@ export class ProgramacionObraComponent implements OnInit, OnDestroy {
         this.dataPrincipal[index].descripcion = descripcion
           .trim()
           .toUpperCase();
-        if (this.dataPrincipal[index].uid) {
+        if (this.dataPrincipal[index].uid !== null) {
           this.dataPrincipal[index].filaEditada = true;
           if (!this.desacGrafico.includes(index)) {
             this.desacGrafico.push(index);
@@ -2445,7 +2456,6 @@ export class ProgramacionObraComponent implements OnInit, OnDestroy {
           windowClass: 'pcoded',
           keyboard: false, //no cerrar el modal con ESC
         });
-        console.log(prograSinHitos)
         modalRef.componentInstance.titulo1 = this.titulo1;
         modalRef.componentInstance.titulo1color = this.titulo1color;
         modalRef.componentInstance.titulo1letra = this.titulo1letra;
@@ -2501,6 +2511,7 @@ export class ProgramacionObraComponent implements OnInit, OnDestroy {
     modalRef.componentInstance.idProyecto = this.idProyecto;
     modalRef.componentInstance.idUsuario = this.id_usuario;
     modalRef.componentInstance.dataPrincipal = this.dataPrincipal;
+    modalRef.componentInstance.version = this.version;
     const result = await modalRef.result;
     if (result) {
       this.mostrar_carga_todo = true;
@@ -3290,6 +3301,7 @@ export class ProgramacionObraComponent implements OnInit, OnDestroy {
         const inputProyecto = {
           id_proyecto: this.idProyecto,
           id_usuario: this.id_usuario,
+          version: this.version
         };
         const response = await this.principalService.restaurarPrograma(
           inputProyecto
@@ -4495,7 +4507,8 @@ export class ProgramacionObraComponent implements OnInit, OnDestroy {
 
   async listarProgramacion(inicio = false) {
     const temporal = await this.listarTemporalProgramacion();
-    const input = { id_proyecto: this.idProyecto };
+    const input = { id_proyecto: this.idProyecto, version: this.version };
+
     const response = await this.principalService.listarProgramacionProyecto(
       input
     );
@@ -4566,7 +4579,6 @@ export class ProgramacionObraComponent implements OnInit, OnDestroy {
           arrayProgRecuperados,
           false
         );
-        console.log(this.dataPrincipal)
         this.dataPrincipal.map((ele) => (arrayUIDsOrdenados[ele.uid] = ele));
         this.uidsOrdenados = arrayUIDsOrdenados;
         if (arrayHitos.length) {
@@ -5421,7 +5433,7 @@ export class ProgramacionObraComponent implements OnInit, OnDestroy {
           } else {
             this.actualizarTemp()
             this.mostrar_carga_todo = false;
-            SwalService.error('Advertencia',response?response.mensaje:'Hubo un problema al realizar el proceso.');
+            SwalService.error('Advertencia', response ? response.mensaje : 'Hubo un problema al realizar el proceso.');
           }
         } else {
           this.mostrar_carga_todo = false;
@@ -5554,20 +5566,23 @@ export class ProgramacionObraComponent implements OnInit, OnDestroy {
           referenciados: iterator.referenciados,
           indice_refer: iterator.indice_ref_hito,
           uid: iterator.uid,
+          version: this.version
         };
-        if (obj.uid) {
+        if (obj.uid !== null) {
           hitosModificados.push(obj);
         } else {
           hitosNuevos.push(obj);
         }
       }
     }
+
     const tabla1 = JSON.stringify(hitosNuevos);
     const tabla2 = JSON.stringify(hitosModificados);
     const tabla3 = JSON.stringify(hitosEliminados);
     const body = JSON.stringify({
       id_proyecto: this.idProyecto,
       id_usuario: this.id_usuario,
+      version: this.version,
       datos1: tabla1,
       datos2: tabla2,
       datos3: tabla3,
@@ -7674,5 +7689,118 @@ export class ProgramacionObraComponent implements OnInit, OnDestroy {
         }
       );
     }
+  }
+
+  async listarVersiones() {
+    this.versions = []
+    const obj = {
+      id_proyecto: this.idProyecto
+    }
+    const res = await this.recursosHumanosService.listarVersionProgramacion(obj)
+    this.versions.push({ descripcion: 'Base (No Editable)', id_version: 0, id_proyecto: this.idProyecto })
+    this.versions = this.versions.concat(res)
+    if (this.versions.length > 0) {
+      this.version = this.versions[this.versions.length - 1].id_version
+      if (!this.version || this.version && Number(this.version) !== this.versions[this.versions.length - 1].id_version) {
+        this.versionEditable = false
+      } else {
+        this.versionEditable = true
+      }
+    } else {
+      this.versionEditable = false
+      this.version = 0
+    }
+  }
+  async cambioVersion() {
+    this.mostrar_carga_todo = true
+    if (!this.version || this.version && Number(this.version) !== this.versions[this.versions.length - 1].id_version) {
+      this.versionEditable = false
+    } else {
+      this.versionEditable = true
+    }
+    await this.iniciarProyecto();
+    this.mostrar_carga_todo = false
+  }
+
+  async guardarVersion() {
+    try {
+      const sw = await SwalService.confirm('Estas seguro?', 'Se bloqueara la edicion de la ultima version y se creara una version editable')
+      if (sw.isConfirmed) {
+        this.mostrar_carga_todo = true;
+        const obj = {
+          descripcion: this.descripcion.value,
+          id_proyecto: this.idProyecto
+        }
+        const res = await this.recursosHumanosService.guardarVersionProgramacion(obj)
+        if (res.length) {
+          this.version = null
+          this.versions = []
+          await this.listarVersiones()
+          this.cerrarModalVersion()
+          await this.iniciarProyecto();
+          this.mostrar_carga_todo = false;
+          this.toaster.success(
+            'Se agrego correctamente',
+            'Correcto',
+            {
+              closeButton: false,
+              positionClass: 'toast-bottom-right',
+              timeOut: 4000,
+            }
+          );
+        }
+      }
+    } catch (error) {
+      this.mostrar_carga_todo = false;
+      console.log(error)
+      SwalService.error()
+    }
+  }
+
+  async eliminarVersion() {
+    try {
+      const sw = await SwalService.confirm('Estas seguro?', 'Se eliminara todo los registros relacionados a la version seleccionada')
+      if (sw.isConfirmed) {
+        this.mostrar_carga_todo = true;
+
+        const obj = {
+          id_proyecto: this.idProyecto,
+          id_version: this.version
+        }
+        const res = await this.recursosHumanosService.eliminarVersionProgramacion(obj)
+        this.versions = []
+        this.version = null
+        this.versions.push({ descripcion: 'Base (No Editable)', id_version: 0, id_proyecto: this.idProyecto })
+        this.versions = this.versions.concat(res)
+        this.version = this.versions[this.versions.length - 1].id_version
+        await this.iniciarProyecto();
+        if (!this.version || this.version && Number(this.version) !== this.versions[this.versions.length - 1].id_version) {
+          this.versionEditable = false
+        } else {
+          this.versionEditable = true
+        }
+        this.mostrar_carga_todo = false;
+        this.toaster.success('Se elimino correctamente', 'Éxito', {
+          closeButton: false,
+          positionClass: 'toast-bottom-right',
+          timeOut: 5000,
+        });
+      }
+    } catch (error) {
+      this.mostrar_carga_todo = false;
+      console.log(error)
+      SwalService.error()
+    }
+
+  }
+
+  async modalAgregarVer() {
+    this.formVersion.reset()
+    this.modalAgregarVersion.show()
+
+  }
+
+  cerrarModalVersion() {
+    this.modalAgregarVersion.hide()
   }
 }

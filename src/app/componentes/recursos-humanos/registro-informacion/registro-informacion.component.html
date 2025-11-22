@@ -1,0 +1,56 @@
+<ul ngbNav #nav="ngbNav" [(activeId)]="activetab" class="custom-tabs nav-tabs" (navChange)="onNavChange($event)">
+    <li [ngbNavItem]="1">
+        <a ngbNavLink>CONTRATACION PERSONAL</a>
+        <ng-template ngbNavContent>
+        </ng-template>
+    </li>
+    <li [ngbNavItem]="2">
+        <a ngbNavLink>REGISTRO DE USUARIO</a>
+        <ng-template ngbNavContent>
+        </ng-template>
+    </li>
+    <li [ngbNavItem]="3">
+        <a ngbNavLink>ORGANIGRAMA DE PERSONAL</a>
+        <ng-template ngbNavContent>
+        </ng-template>
+    </li>
+    <li [ngbNavItem]="4">
+        <a ngbNavLink>CONFIGURACION PLANILLA</a>
+        <ng-template ngbNavContent>
+        </ng-template>
+    </li>
+</ul>
+<div [ngbNavOutlet]="nav" class="mt-2"></div>
+
+<ng-container *ngIf="activetab == 1">
+    <div class="row p-t-5">
+        <div class="col-sm-4">
+            <input type="text" (keyup)="applyFilter($event)" class="form-control form-control-primary"
+                placeholder="Buscar" #input>
+        </div>
+        <!-- <button class="btn btn-primary btn-icon ripple light" (click)="modalfiltro()"  ><i class="icofont icofont-eye-alt"></i></button> -->
+        <div class="content">
+            <button type="button" class="btn btn-success light ripple m-b-10 m-l-10" (click)="AagregarConvo()"
+                (mouseup)="quitarfoco($event);">
+                <i class="fa fa-plus"></i>Agregar Convocatoria
+            </button>
+        </div>
+    </div>
+    <div>
+        <table class="table-bordered tab-10">
+            <thead class="text-center">
+
+                <tr>
+                    <th appAnchocol [ancho]="130">Nro</th>
+                    <th appAnchocol [ancho]="80">Fecha</th>
+                    <th appAnchocol [ancho]="100">Modalidad Contrata</th>
+                    <th appAnchocol [ancho]="170">Area</th>
+                    <th appAnchocol [ancho]="200">Descripcion</th>
+                    <th appAnchocol [ancho]="80">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
+</ng-container>

@@ -70,6 +70,7 @@ import { AddproybiplanComponent } from './addproybiplan/addproybiplan.component'
 import { ProcuraModule } from '../procura/procura.module';
 import { MetradosModule } from '../metrados/metrados.module';
 import { AlmacenModule } from '../almacen/almacen.module';
+import { RecursosHumanosModule } from '../recursos-humanos/recursos-humanos.module';
 
 @NgModule({
   declarations: [
@@ -156,7 +157,8 @@ import { AlmacenModule } from '../almacen/almacen.module';
     }),
     MatSlideToggleModule,
     // IfcViewerModule,
-    ChartModule
+    ChartModule,
+    RecursosHumanosModule
   ],
   exports: [ClasificacionComponent],
 })
