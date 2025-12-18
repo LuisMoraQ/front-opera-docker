@@ -14,6 +14,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { SharedModule } from '../../shared/shared.module';
 import { MatInputModule } from '@angular/material/input';
+import { ConvocatoriasComponent } from './convocatorias/convocatorias.component';
 
 @NgModule({
   declarations: [
@@ -24,6 +25,7 @@ import { MatInputModule } from '@angular/material/input';
     PlanesComponent,
     PortadaComponent,
     VentajasComponent,
+    ConvocatoriasComponent,
   ],
   imports: [
     InicioRoutingModule,

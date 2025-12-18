@@ -1,16 +1,17 @@
 <ul ngbNav #nav="ngbNav" [(activeId)]="activetab" class="custom-tabs nav-tabs" (navChange)="onNavChange($event)">
     <li [ngbNavItem]="1">
-        <a ngbNavLink>CONTRATACION PERSONAL</a>
+        <a ngbNavLink>ORGANIGRAMA DE PERSONAL</a>
         <ng-template ngbNavContent>
         </ng-template>
     </li>
     <li [ngbNavItem]="2">
-        <a ngbNavLink>REGISTRO DE USUARIO</a>
+        <a ngbNavLink>REGISTRO DE PERSONAL</a>
         <ng-template ngbNavContent>
         </ng-template>
     </li>
     <li [ngbNavItem]="3">
-        <a ngbNavLink>ORGANIGRAMA DE PERSONAL</a>
+        <a ngbNavLink>CONTRATACION PERSONAL</a>
+
         <ng-template ngbNavContent>
         </ng-template>
     </li>
@@ -23,34 +24,1360 @@
 <div [ngbNavOutlet]="nav" class="mt-2"></div>
 
 <ng-container *ngIf="activetab == 1">
+    <div class="row h-contenedor">
+        <div class="col-6 overflow-auto">
+            <div class="col-12 px-0">
+                <button type="button" class="btn btn-success btn-sm light ripple m-b-10" (click)="abrirModalArea()"
+                    (mouseup)="quitarfoco($event);">
+                    <i class="fa fa-plus"></i>Area
+                </button>
+            </div>
+            <div class="col-12 px-0">
+                <table class="table-bordered tab-10">
+                    <thead class="text-center">
+                        <tr>
+                            <th appAnchocol [ancho]="30" rowspan="2">Nro</th>
+                            <th appAnchocol [ancho]="130" rowspan="2">Area/Cargo</th>
+                            <th appAnchocol [ancho]="80" colspan="2">Abreviatura</th>
+                            <th appAnchocol [ancho]="200" colspan="5">Categoria Evaluacion</th>
+                            <th appAnchocol [ancho]="40" rowspan="2">Habilitado</th>
+                            <th appAnchocol [ancho]="80" rowspan="2"></th>
+                        </tr>
+                        <tr>
+                            <th appAnchocol [ancho]="40">Area</th>
+                            <th appAnchocol [ancho]="40">Cargo</th>
+                            <th appAnchocol [ancho]="40">Tipo I</th>
+                            <th appAnchocol [ancho]="40">Tipo II</th>
+                            <th appAnchocol [ancho]="40">Tipo III</th>
+                            <th appAnchocol [ancho]="40">Tipo IV</th>
+                            <th appAnchocol [ancho]="40">Tipo V</th>
+                        </tr>
+                    </thead>
+
+                    <tbody class="text-center">
+                        <ng-container *ngIf="tablaCargos.length; else nodataArea">
+                            <tr *ngFor="let row of this.tablaCargos; let i = index" (click)="seleccionFila(i)"
+                                [ngClass]="{'font-weight-bolder': !row.id_cargo, 'highlight': i == this.filSel}">
+                                <td appAnchocol [ancho]="30">{{row.item}}</td>
+                                <td appAnchocol [ancho]="130">{{row.descripcion}}</td>
+                                <td appAnchocol [ancho]="40">{{row.area_abreviatura}}</td>
+                                <td appAnchocol [ancho]="40">{{row.abreviatura}}</td>
+
+                                <!-- Categoría T1 - Checkbox -->
+                                <td appAnchocol [ancho]="40">
+                                    <input type="checkbox" *ngIf="row.id_cargo"
+                                        [checked]="row.categoria_t1 === '1' || row.categoria_t1 === 1 || row.categoria_t1 === true"
+                                        (change)="actualizarCategoria(row, 'categoria_t1', $event.target.checked,i)"
+                                        [disabled]="!row.habilitado ">
+                                </td>
+
+                                <!-- Categoría T2 - Checkbox -->
+                                <td appAnchocol [ancho]="40">
+                                    <input type="checkbox" *ngIf="row.id_cargo"
+                                        [checked]="row.categoria_t2 === '1' || row.categoria_t2 === 1 || row.categoria_t2 === true"
+                                        (change)="actualizarCategoria(row, 'categoria_t2', $event.target.checked,i)"
+                                        [disabled]="!row.habilitado ">
+                                </td>
+
+                                <!-- Categoría T3 - Checkbox -->
+                                <td appAnchocol [ancho]="40">
+                                    <input type="checkbox" *ngIf="row.id_cargo"
+                                        [checked]="row.categoria_t3 === '1' || row.categoria_t3 === 1 || row.categoria_t3 === true"
+                                        (change)="actualizarCategoria(row, 'categoria_t3', $event.target.checked,i)"
+                                        [disabled]="!row.habilitado ">
+                                </td>
+
+                                <!-- Categoría T4 - Checkbox -->
+                                <td appAnchocol [ancho]="40">
+                                    <input type="checkbox" *ngIf="row.id_cargo"
+                                        [checked]="row.categoria_t4 === '1' || row.categoria_t4 === 1 || row.categoria_t4 === true"
+                                        (change)="actualizarCategoria(row, 'categoria_t4', $event.target.checked,i)"
+                                        [disabled]="!row.habilitado ">
+                                </td>
+
+                                <!-- Categoría T5 - Checkbox -->
+                                <td appAnchocol [ancho]="40">
+                                    <input type="checkbox" *ngIf="row.id_cargo"
+                                        [checked]="row.categoria_t5 === '1' || row.categoria_t5 === 1 || row.categoria_t5 === true"
+                                        (change)="actualizarCategoria(row, 'categoria_t5', $event.target.checked,i)"
+                                        [disabled]="!row.habilitado ">
+                                </td>
+
+                                <!-- Habilitado - Slider Switch -->
+                                <td appAnchocol [ancho]="40">
+                                    <div class="custom-control custom-switch" *ngIf="row.id_cargo">
+
+                                        <input type="checkbox" class="custom-control-input" id="customSwitch-{{ i }}"
+                                            [checked]="row.habilitado"
+                                            (change)="cambioHabilitado(row,i,  $event.target.checked)" />
+                                        <label class="custom-control-label" for="customSwitch-{{ i }}"></label>
+                                    </div>
+                                </td>
+
+                                <td appAnchocol [ancho]="80">
+                                    <ng-container *ngIf="row.id_cargo">
+                                        <button class="btn btn-mini btn-outline-secondary" placement="top" type="button"
+                                            ngbTooltip="editar Cargo" container="body" *ngIf="row.estado !== 2"
+                                            (click)="abrirModalCargo(row,i)" (mouseup)="quitarfoco($event);">
+                                            <i class="fa fa-pencil icono-but"></i>
+                                        </button>
+                                        <button class="btn btn-mini btn-outline-danger" placement="top" type="button"
+                                            ngbTooltip="Eliminar Cargo" container="body" *ngIf="row.estado !== 2"
+                                            (click)="eliminarCargo(row,i)" (mouseup)="quitarfoco($event);">
+                                            <i class="fa fa-remove icono-but"></i>
+                                        </button>
+
+                                    </ng-container>
+                                    <ng-container *ngIf="!row.id_cargo">
+                                        <div class="d-flex">
+                                            <button class="btn btn-mini btn-success" placement="top" type="button"
+                                                ngbTooltip="Agregar Cargo" container="body" *ngIf="row.estado !== 2"
+                                                (click)="abrirModalCargo()" (mouseup)="quitarfoco($event);">
+                                                <i class="fa fa-plus icono-but"></i>
+                                            </button>
+                                            <button class="btn btn-mini btn-outline-secondary" placement="top"
+                                                type="button" ngbTooltip="Editar Area" container="body"
+                                                *ngIf="row.estado !== 2" (click)="abrirModalArea(row,i)"
+                                                (mouseup)="quitarfoco($event);">
+                                                <i class="fa fa-pencil icono-but"></i>
+                                            </button>
+
+                                            <button class="btn btn-mini btn-outline-danger" placement="top"
+                                                type="button" ngbTooltip="Eliminar Area" container="body"
+                                                *ngIf="row.estado !== 2" (click)="eliminarArea(row,i)"
+                                                (mouseup)="quitarfoco($event);">
+                                                <i class="fa fa-times icono-but"></i>
+                                            </button>
+                                        </div>
+                                    </ng-container>
+                                </td>
+                            </tr>
+                        </ng-container>
+                        <ng-template #nodataArea>
+                            <tr>
+                                <td class="mat-cell text-center" colspan="11">
+                                    <label>No se encontraron resultados</label>
+                                </td>
+                            </tr>
+                        </ng-template>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="col-6  h-100">
+            <div class="row">
+
+                <div class="col-12 text-right px-0 d-flex justify-content-between">
+                    <!-- <h4><u>FICHA TECNICA</u></h4> -->
+                    <div *ngIf="!bloquear" class="btn-group" style="margin-bottom: 3px;">
+                        <button type="button" class="btn btn-mini btn-group-mini btn-outline-primary" placement="top"
+                            ngbTooltip="Agregar Imagen Local" container="body" (click)="AddImagen()"
+                            (mouseup)="quitarfoco($event);" [disabled]="buscaficha">
+                            <i class="icofont icofont-image icono-but"></i>
+                        </button>
+                        <button type="button" class="btn btn-mini btn-group-mini btn-outline-primary" placement="top"
+                            ngbTooltip="Agregar Imagen de Link" container="body" (click)="openImgDrive()"
+                            (mouseup)="quitarfoco($event);" [disabled]="buscaficha">
+                            <i class="fa fa-file-image-o icono-but"></i>
+                        </button>
+                    </div>
+                    <input type="file" id="imgUpload" name="imgUpload" accept="image/*" />
+
+                    <h2 *ngIf="!bloquear" class="text-primary text-decoration-underline">
+                        {{tablaCargos[this.filSel]?.descripcion}}</h2>
+                    <button class="btn btn-sm btn-success" type="button" (click)="guardarFichaTecnica()"
+                        container="body" *ngIf="!bloquear" [disabled]="buscaficha" ngbTooltip="Guardar Ficha Tecnica">
+                        <i class="fa fa-save"></i>Guardar</button>
+                </div>
+                <div class="col-12 mt-1 px-0  contendor-fichatecnica mt-2"
+                    [ngClass]="{'contendor-fichatecnica-sinimg': !dataarchver.length, 'contendor-fichatecnica': dataarchver.length}">
+                    <!-- <div *ngIf="buscaficha" class="preloader3 loader-block cargasobre">
+                            <div class="circ1"></div>
+                            <div class="circ2"></div>
+                            <div class="circ3"></div>
+                            <div class="circ4"></div>
+                        </div> -->
+                    <app-tinymce [(ngModel)]='basicContent' #tinymce='tinymce' *ngIf="!bloquear" [disabled]="buscaficha"
+                        [options]='{branding:false}' id="tinyficha">
+                    </app-tinymce>
+                    <div class="w-100 h-100 " *ngIf="bloquear">
+                        <app-tinymce [(ngModel)]='basicContent'
+                            [options]='{branding:false ,readonly:true ,statusbar:false,toolbar: false}'>
+                        </app-tinymce>
+                    </div>
+                </div>
+                <!-- </ng-container> -->
+            </div>
+        </div>
+    </div>
+
+</ng-container>
+<ng-container *ngIf="activetab == 2">
+    <div class="row h-contenedor">
+        <div class="col-12 px-0 d-flex">
+            <div class="col-7 overflow-auto">
+                <div class="col-12 px-0">
+                    <button class="btn btn-success btn-sm light ripple m-b-10 d-flex" placement="top" type="button"
+                        ngbTooltip="Agregar Usuario" container="body" (click)="abrirModal2()"
+                        (mouseup)="quitarfoco($event);">
+                        <i class="fa fa-plus icono-but"></i> PERSONAL
+                    </button>
+                </div>
+                <table class="table-bordered tab-10">
+                    <thead class="text-center">
+                        <tr style="height: 22px;">
+                            <th colspan="8">PERSONAL REGISTRADO</th>
+                        </tr>
+                        <tr style="height: 22px;">
+                            <th appAnchocol [ancho]="200">NOMBRES</th>
+                            <th appAnchocol [ancho]="50">DNI</th>
+                            <th appAnchocol [ancho]="50">TELEFONO</th>
+                            <th appAnchocol [ancho]="80">CORREO</th>
+
+                            <th appAnchocol [ancho]="70">ASIGNACION</th>
+                            <th appAnchocol [ancho]="70">CULMINACION</th>
+                            <th appAnchocol [ancho]="50">ESTADO</th>
+                            <th appAnchocol [ancho]="80"></th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-center">
+                        <ng-container *ngIf="tablaUsuarios.length; else noUsuarios">
+                            <tr *ngFor="let row of tablaUsuarios; let i=index" (click)="listarAsignacionesUsuario(i)"
+                                [ngClass]="{'highlight': filUsuario == i}">
+                                <!-- <ng-container *ngIf="row.id_usuario; else filaTitulo"> -->
+                                <td appAnchocol [ancho]="200" class="text-left pl-2">{{row.apellidos}} {{row.nombres}}
+                                </td>
+                                <td appAnchocol [ancho]="50">{{row.dni}}</td>
+                                <td appAnchocol [ancho]="50">{{row.telefono}}</td>
+                                <td appAnchocol [ancho]="80">{{row.correo}}</td>
+                                <!-- <td appAnchocol [ancho]="70">{{row.area}}</td>
+                        <td appAnchocol [ancho]="70">{{row.cargo}}</td> -->
+                                <td appAnchocol [ancho]="70">{{row.fecha_asignacion | date :'dd-MM-YYYY'}}</td>
+                                <td appAnchocol [ancho]="70">{{row.fecha_culminacion | date :'dd-MM-YYYY'}}</td>
+                                <td appAnchocol [ancho]="50">
+
+                                    <div class="badge-custom text-center d-flex justify-content-center"
+                                        style="width: 50px;justify-self: center;"
+                                        [ngClass]="{'bg-danger': !row.estado, 'bg-success':row.estado}">
+                                        <span class="w-100" *ngIf="row.estado">ACTIVO</span>
+                                        <span class="w-100" class *ngIf="!row.estado">INACTIVO</span>
+                                    </div>
+
+                                </td>
+                                <td appAnchocol [ancho]="40" class="text-center">
+                                    <div class="d-flex justify-content-center">
+                                        <button class="btn btn-mini btn-outline-secondary" placement="top" type="button"
+                                            ngbTooltip="Editar Usuario" container="body" (click)="editarUsuario(row,i)"
+                                            (mouseup)="quitarfoco($event);">
+                                            <i class="fa fa-pencil icono-but"></i>
+                                        </button>
+                                        <button class="btn btn-mini btn-outline-danger" placement="top" type="button"
+                                            ngbTooltip="Eliminar Usuario" container="body"
+                                            (click)="eliminarUsuario(row,i)" (mouseup)="quitarfoco($event);">
+                                            <i class="fa fa-remove icono-but"></i>
+                                        </button>
+                                        <!-- <button class="btn btn-mini btn-info" placement="top" type="button"
+                                            ngbTooltip="Ver asignaciones cargos" container="body"
+                                            (click)="listarAsignacionesUsuario(i)" (mouseup)="quitarfoco($event);">
+                                            <i class="fa fa-search icono-but"></i>
+                                        </button> -->
+                                    </div>
+
+                                </td>
+                                <!-- </ng-container> -->
+                                <!-- <ng-template #filaTitulo>
+                            <td [ancho]="200"
+                                [ngClass]="{' text-left pl-3':row.id_cargo, 'text-center':!row.id_cargo }">
+                                {{row.descripcion}}
+                            </td>
+                            <td colspan="8"></td>
+                            <td [ancho]="40">
+
+                                <ng-container *ngIf="row.id_cargo">
+                                    <button class="btn btn-mini btn-success" placement="top" ngbTooltip="Agregar Cargo"
+                                        container="body" *ngIf="row.estado !== 2" (click)="abrirModal2()"
+                                        (mouseup)="quitarfoco($event);">
+                                        <i class="fa fa-plus icono-but"></i>
+                                    </button>
+                                </ng-container>
+                            </td>
+                        </ng-template> -->
+
+                            </tr>
+                        </ng-container>
+                        <ng-template #noUsuarios>
+                            <tr>
+                                <td class="mat-cell text-center" colspan="8">
+                                    <label>No se encontraron Usuarios</label>
+                                </td>
+                            </tr>
+                        </ng-template>
+                    </tbody>
+                </table>
+            </div>
+            <div class="col-5 overflow-auto">
+                <div class="card">
+                    <div class="card-header">
+                        <h5> Asignaciones de cargo</h5>
+                    </div>
+                    <div class="card-body " *ngIf="filUsuario !== null">
+                        <button class="btn btn-success btn-sm light ripple d-flex" placement="top" type="button"
+                            ngbTooltip="Asignar nuevo cargo" container="body" (click)="abrirModalAsignacion()"
+                            *ngIf="tablaUsuarios[filUsuario].estado" (mouseup)="quitarfoco($event);">
+                            <i class="fa fa-plus icono-but"></i> Asignación
+                        </button>
+                        <div class="col-12 px-0 overflow-auto">
+                            <table class="table-bordered tab-10">
+                                <thead class="text-center">
+
+                                    <tr style="height: 22px;">
+                                        <th appAnchocol [ancho]="150">Cargo</th>
+                                        <th appAnchocol [ancho]="150">Area</th>
+                                        <th appAnchocol [ancho]="80">Inicio</th>
+                                        <th appAnchocol [ancho]="80">Culmina</th>
+                                        <th appAnchocol [ancho]="70">ESTADO</th>
+                                        <th appAnchocol [ancho]="40"></th>
+                                    </tr>
+                                </thead>
+                                <tbody class="text-center">
+                                    <ng-container *ngIf="tablaAsignaciones.length; else noAsignaciones">
+                                        <tr *ngFor="let row of tablaAsignaciones; let i=index"
+                                            (click)="filAsignacion=i">
+                                            <td>{{row.descripcion_area}}</td>
+                                            <td>{{row.descripcion_cargo}}</td>
+                                            <td class="text-center">{{row.fecha_inicio | date:'dd-MM-yyyy'}}</td>
+                                            <td class="text-center">{{row.fecha_fin | date:'dd-MM-yyyy'}}</td>
+                                            <td class="text-center">
+                                                <div class="badge-custom text-center d-flex justify-content-center"
+                                                    style="width: 50px;justify-self: center;"
+                                                    [ngClass]="{'bg-danger': !row.estado, 'bg-success':row.estado}">
+                                                    <span class="w-100" *ngIf="row.estado">ACTIVO</span>
+                                                    <span class="w-100" class *ngIf="!row.estado">INACTIVO</span>
+                                                </div>
+                                            </td>
+                                            <td class="text-center">
+                                                <div class="d-flex justify-content-center"
+                                                    *ngIf="tablaUsuarios[filUsuario].estado">
+                                                    <button class="btn btn-mini btn-outline-secondary" placement="top"
+                                                        type="button" ngbTooltip="Editar asignacion" container="body"
+                                                        (click)="abrirModalAsignacion(row,i)"
+                                                        (mouseup)="quitarfoco($event);">
+                                                        <i class="fa fa-pencil icono-but"></i>
+                                                    </button>
+                                                    <button class="btn btn-mini btn-outline-danger" placement="top"
+                                                        type="button" ngbTooltip="Eliminar Asignacion" container="body"
+                                                        (click)="eliminarAsignacion(row,i)"
+                                                        (mouseup)="quitarfoco($event);">
+                                                        <i class="fa fa-remove icono-but"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </ng-container>
+                                    <ng-template #noAsignaciones>
+                                        <tr>
+                                            <td class="mat-cell text-center" colspan="6">
+                                                <label>No se encontraron Asignaciones</label>
+                                            </td>
+                                        </tr>
+                                    </ng-template>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <app-cargando [bloquearTodo]="false" *ngIf="mostrar_carga"></app-cargando>
+            </div>
+        </div>
+    </div>
+</ng-container>
+<ng-container *ngIf="activetab == 3">
+
+    <div class="h-convocatorias overflow-auto">
+        <div class="row px-0">
+            <div class="col-6">
+                <div class="content col-12 d-flex justify-content-end ">
+                    <button type="button" class="btn btn-success btn-sm light ripple m-b-10"
+                        (click)="openModalConvocatoria()" type="button" (mouseup)="quitarfoco($event);">
+                        <i class="fa fa-plus"></i>Convocatoria
+                    </button>
+                </div>
+                <div class="col-12 px-0 overflow-auto">
+                    <table class="table-bordered tab-10 mt-1">
+                        <thead class="text-center">
+                            <tr style="height: 22px;">
+                                <th colspan="8">CONVOCATORIAS</th>
+                            </tr>
+                            <tr style="height: 22px;">
+                                <th appAnchocol [ancho]="130">Nro</th>
+                                <th appAnchocol [ancho]="80">Fecha</th>
+                                <th appAnchocol [ancho]="100">Modalidad Contrata</th>
+                                <!-- <th appAnchocol [ancho]="170">Area</th>
+                    <th appAnchocol [ancho]="170">Cargo(s)</th> -->
+                                <th appAnchocol [ancho]="200">Descripcion</th>
+                                <th appAnchocol [ancho]="100">Estado</th>
+                                <th appAnchocol [ancho]="80">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <ng-container *ngIf="tablaConvocatorias.length; else nodataConv">
+                                <tr *ngFor="let row of this.tablaConvocatorias; let i = index"
+                                    (click)="selFilConvocatoria(i)" [ngClass]="{'highlight':filConv == i}">
+                                    <td>{{row.nro_convocatoria }}</td>
+                                    <td class="text-center">{{row.fecha | date:'dd-MM-yyyy'}}</td>
+                                    <td class="text-center">{{row.modalidad}}</td>
+                                    <!-- <td class="text-center">{{row.area_descripcion}}</td>
+                        <td class="text-center">
+                            <div class="d-flex flex-wrap gap-1 justify-content-center">
+                                <span *ngFor="let cargo of splitearText(row.cargo_descripcion)"
+                                    class="badge rounded-pill bg-secondary text-truncate text-white" style="max-width: 100px;
+    font-size: 0.55rem;
+    padding-top: 5px;">
+                                    {{ cargo }}
+                                </span>
+                                <span *ngIf="!row.cargo_descripcion || splitearText(row.cargo_descripcion).length === 0"
+                                    class="badge rounded-pill bg-warning text-muted text-dark" style="max-width: 100px;
+    font-size: 0.55rem;
+    padding-top: 5px;">
+                                    Sin cargos
+                                </span>
+                            </div>
+                        </td> -->
+                                    <td>{{row.descripcion}}</td>
+                                    <td>
+                                        <div class="badge-custom text-center d-flex justify-content-center text-white"
+                                            style="width: auto;justify-self: center;"
+                                            [ngClass]="{'bg-secondary '  : row.estado == 1, 'bg-success':row.estado==2, 'bg-info' : row.estado == 0}">
+                                            <span class="w-100">
+                                                <ng-container *ngIf="row.estado == 1"> NO PUBLICADO</ng-container>
+                                                <ng-container *ngIf="row.estado == 2">PUBLICADO</ng-container>
+                                                <ng-container *ngIf="row.estado == 0">CERRADO</ng-container>
+                                            </span>
+
+                                        </div>
+
+                                    </td>
+                                    <td>
+                                        <div class="d-flex justify-content-center">
+                                            <button class="btn btn-mini btn-outline-secondary" placement="top"
+                                                type="button" ngbTooltip="Actualizar Convocatoria" container="body"
+                                                (click)="openModalConvocatoria(row)" (mouseup)="quitarfoco($event);">
+                                                <i class="fa fa-edit icono-but"></i>
+                                            </button>
+                                            <button class="btn btn-mini btn-outline-danger" placement="top"
+                                                type="button" ngbTooltip="Eliminar Convocatoria" container="body"
+                                                (click)="eliminarConvocatoria(row,i)" (mouseup)="quitarfoco($event);">
+                                                <i class="fa fa-remove icono-but"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </ng-container>
+                            <ng-template #nodataConv>
+                                <tr>
+                                    <td class="mat-cell text-center" colspan="8">
+                                        <label>No se encontraron resultados</label>
+                                    </td>
+                                </tr>
+                            </ng-template>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="col-6">
+                <div class="card-header">
+                    <h5> CARGOS REQUERIDOS</h5>
+                </div>
+                <div class="card-body px-0">
+                    <div class="content col-12 d-flex justify-content-end pr-0">
+                        <button type="button" class="btn btn-success btn-sm light ripple m-b-10"
+                            (click)="openModalDetalleConvocatoria()" type="button" (mouseup)="quitarfoco($event);">
+                            <i class="fa fa-plus"></i>Cargo
+                        </button>
+                    </div>
+                    <div class="col-12 px-0 overflow-auto">
+                        <table class="table-bordered tab-10 mt-1">
+                            <thead class="text-center">
+
+                                <tr style="height: 22px;">
+                                    <th appAnchocol [ancho]="100">Area</th>
+                                    <th appAnchocol [ancho]="100">Cargo</th>
+                                    <th appAnchocol [ancho]="30">Vacantes</th>
+                                    <th appAnchocol [ancho]="200">Requerimiento</th>
+                                    <th appAnchocol [ancho]="80">Remuneracion</th>
+                                    <th appAnchocol [ancho]="80">Ciudad</th>
+                                    <th appAnchocol [ancho]="80">Link Documento</th>
+                                    <th appAnchocol [ancho]="80">Estado</th>
+                                    <th appAnchocol [ancho]="80"></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <ng-container *ngIf="detalleConvocatoria.length; else nodataDetalle">
+                                    <tr *ngFor="let row of this.detalleConvocatoria; let i = index"
+                                        (click)="filDetalle=i" [ngClass]="{'highlight':filDetalle == i}">
+                                        <td>{{row.area_descripcion }}</td>
+                                        <td>{{row.cargo_descripcion }}</td>
+                                        <td class="text-center">{{row.vacantes}}</td>
+                                        <td>{{row.requerimiento }}</td>
+                                        <td class="text-right">
+                                            <ng-container *ngIf="row.remuneracion">
+                                                <div class="w-100 d-flex justify-content-between">
+                                                    <div style="opacity: 0.6;">S/.</div>
+                                                    <div> {{row.remuneracion}}</div>
+                                                </div>
+                                            </ng-container>
+                                        </td>
+                                        <td>{{row.ciudad }}</td>
+                                        <td>{{row.link_documento }}</td>
+                                        <td>
+                                            <div class="badge-custom text-center d-flex justify-content-center"
+                                                style="width: 50px;justify-self: center;"
+                                                [ngClass]="{'bg-danger': !row.estado, 'bg-success':row.estado}">
+                                                <span class="w-100" *ngIf="row.estado">ACTIVO</span>
+                                                <span class="w-100" class *ngIf="!row.estado">INACTIVO</span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="d-flex justify-content-center">
+                                                <button class="btn btn-mini btn-outline-secondary" placement="top"
+                                                    type="button" ngbTooltip="Actualizar requerimientos cargo"
+                                                    container="body" (click)="openModalDetalleConvocatoria(row)"
+                                                    (mouseup)="quitarfoco($event);">
+                                                    <i class="fa fa-edit icono-but"></i>
+                                                </button>
+                                                <button class="btn btn-mini btn-outline-danger" placement="top"
+                                                    type="button" ngbTooltip="Eliminar cargo" container="body"
+                                                    (click)="eliminarDetalleConvocatoria(row,i)"
+                                                    (mouseup)="quitarfoco($event);">
+                                                    <i class="fa fa-remove icono-but"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </ng-container>
+                                <ng-template #nodataDetalle>
+                                    <tr>
+                                        <td class="mat-cell text-center" colspan="12">
+                                            <label *ngIf="!buscando">No se encontraron resultados</label>
+                                            <div *ngIf="buscando" class="preloader3 loader-block">
+                                                <div class="circ1"></div>
+                                                <div class="circ2"></div>
+                                                <div class="circ3"></div>
+                                                <div class="circ4"></div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </ng-template>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
     <div class="row p-t-5">
-        <div class="col-sm-4">
-            <input type="text" (keyup)="applyFilter($event)" class="form-control form-control-primary"
-                placeholder="Buscar" #input>
+        <div class="col-4">
+            <!-- <input type="text" (keyup)="applyFilter($event)" class="form-control form-control-primary"
+                placeholder="Buscar" #input> -->
         </div>
         <!-- <button class="btn btn-primary btn-icon ripple light" (click)="modalfiltro()"  ><i class="icofont icofont-eye-alt"></i></button> -->
-        <div class="content">
-            <button type="button" class="btn btn-success light ripple m-b-10 m-l-10" (click)="AagregarConvo()"
-                (mouseup)="quitarfoco($event);">
-                <i class="fa fa-plus"></i>Agregar Convocatoria
+        <div class="content col-8 d-flex justify-content-end ">
+            <button type="button" class="btn btn-success btn-sm light ripple m-b-10" (click)="openModalPostulante()"
+                type="button" *ngIf="filConv !== null" (mouseup)="quitarfoco($event);">
+                <i class="fa fa-plus"></i>Postulante
             </button>
         </div>
     </div>
-    <div>
+    <div class="h-postulantes overflow-auto">
         <table class="table-bordered tab-10">
             <thead class="text-center">
+                <tr style="height: 22px;">
+                    <th colspan="12">
+                        <div class="d-flex justify-content-center">
+                            <div>
+                                POSTULANTES
+                            </div>
+                            <ng-container *ngIf="this.filConv !== null">
 
-                <tr>
-                    <th appAnchocol [ancho]="130">Nro</th>
+                                <div class="badge-custom bg-primary text-center d-flex justify-content-center" style="width: auto;
+    margin-left: 4px;">
+                                    <span class="w-100">{{tablaConvocatorias[this.filConv].descripcion}}</span>
+                                </div>
+
+                            </ng-container>
+                        </div>
+
+                    </th>
+                </tr>
+                <tr style="height: 22px;">
+                    <th appAnchocol [ancho]="130">Postulante</th>
                     <th appAnchocol [ancho]="80">Fecha</th>
-                    <th appAnchocol [ancho]="100">Modalidad Contrata</th>
+                    <th appAnchocol [ancho]="130">Evaluador</th>
                     <th appAnchocol [ancho]="170">Area</th>
-                    <th appAnchocol [ancho]="200">Descripcion</th>
+                    <th appAnchocol [ancho]="170">Cargo</th>
+                    <th appAnchocol [ancho]="80">CV</th>
+                    <th appAnchocol [ancho]="80">Entrevista</th>
+                    <th appAnchocol [ancho]="80">Telefono</th>
+                    <th appAnchocol [ancho]="100">Correo</th>
+                    <th appAnchocol [ancho]="70">Progreso</th>
+                    <th appAnchocol [ancho]="70">Calidad</th>
                     <th appAnchocol [ancho]="80">Acciones</th>
                 </tr>
             </thead>
             <tbody>
+                <ng-container *ngIf="tablaPostulantes.length; else nodataPost">
+                    <tr *ngFor="let row of this.tablaPostulantes; let i = index" (click)="filPostulante = i"
+                        [ngClass]="{'highlight':filConv == i}">
+                        <td>{{row.apellidos}} {{row.nombres}}</td>
+                        <td class="text-center">{{row.fecha | date:'dd-MM-yyyy'}}</td>
+                        <td class="text-center">{{row.evaluador}}</td>
+                        <td class="text-center">{{row.area_descripcion}}</td>
+                        <td class="text-center">{{(row.cargo_descripcion) }}</td>
+                        <td class="text-center">
+
+                            <div class="badge-custom text-center d-flex justify-content-center"
+                                style="width: 50px;justify-self: center;"
+                                [ngClass]="{'bg-danger': row.cv == 'RECHAZADO', 'bg-success':row.cv=='APROBADO'}">
+                                <span class="w-100">{{row.cv}}</span>
+                            </div>
+                        </td>
+                        <td class="text-center">
+                            <div class="badge-custom text-center d-flex justify-content-center"
+                                style="width: 70px;justify-self: center;"
+                                [ngClass]="{'bg-danger': row.entrevista == 'RECHAZADO', 'bg-success':row.entrevista=='APROBADO', 'bd-secondary':row.entrevista == 'PROGRAMADO'}">
+                                <span class="w-100">{{row.entrevista}}</span>
+                            </div>
+                        </td>
+                        <td>{{row.telefono}}</td>
+                        <td>{{row.correo}}</td>
+                        <td class="text-center">
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="progress" style="height: 15px; width: 80px;">
+                                    <div class="progress-bar" role="progressbar" [style.width.%]="row.progreso"
+                                        [ngClass]="{
+                     'bg-danger': row.progreso < 30,
+                     'bg-warning': row.progreso >= 30 && row.progreso < 70,
+                     'bg-success': row.progreso >= 70
+                 }">
+                                    </div>
+                                </div>
+                                <span class="small fw-bold">{{row.progreso}}%</span>
+                            </div>
+                        </td>
+                        <td class="text-center">
+                            <div class="d-flex align-items-center gap-1">
+                                <ng-container *ngFor="let star of [1,2,3,4,5]; let i = index">
+                                    <mat-icon class="material-icons-outlined" style="font-size: 18px;"
+                                        [class.text-warning]="i < row.calidad" [class.text-muted]="i >= row.calidad">
+                                        {{ i < row.calidad ? 'star' : 'star_border' }} </mat-icon>
+                                </ng-container>
+                                <!-- <span class="ms-1 small">{{row.calidad}}/5</span> -->
+                            </div>
+                        </td>
+                        <td>
+                            <div class="d-flex justify-content-center">
+                                <button class="btn btn-mini btn-outline-secondary" placement="top" type="button"
+                                    ngbTooltip="Actualizar Postulante" container="body"
+                                    (click)="openModalPostulante(row)" (mouseup)="quitarfoco($event);">
+                                    <i class="fa fa-edit icono-but"></i>
+                                </button>
+                                <button class="btn btn-mini btn-outline-danger" placement="top" type="button"
+                                    ngbTooltip="Eliminar Postulante" container="body"
+                                    (click)="eliminarPostulanteConvocatoria(row,i)" (mouseup)="quitarfoco($event);">
+                                    <i class="fa fa-remove icono-but"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                </ng-container>
+                <ng-template #nodataPost>
+                    <tr>
+                        <td class="mat-cell text-center" colspan="12">
+                            <label *ngIf="!buscando">No se encontraron resultados</label>
+                            <div *ngIf="buscando" class="preloader3 loader-block">
+                                <div class="circ1"></div>
+                                <div class="circ2"></div>
+                                <div class="circ3"></div>
+                                <div class="circ4"></div>
+                            </div>
+                        </td>
+                    </tr>
+                </ng-template>
             </tbody>
         </table>
     </div>
+
 </ng-container>
+<ng-container *ngIf="activetab == 4">
+
+    <div class="row p-t-5">
+        <div class="col-4">
+            <mat-form-field appearance="outline" class="mff-reduc col-12 mt-3">
+                <mat-label>Area</mat-label>
+                <mat-select [(ngModel)]="areaSelecHorarios">
+                    <mat-option *ngFor="let area of areas" [value]="area.id_area">
+                        {{area.descripcion}}
+                    </mat-option>
+
+                </mat-select>
+            </mat-form-field>
+        </div>
+
+
+    </div>
+    <div class="h-contenedor-horarios d-flex">
+        <div class="col-8  overflow-auto ">
+            <div class="card-header">
+                <h5> TABLA DE HORARIOS</h5>
+            </div>
+            <div class="d-flex justify-content-between mt-1">
+                <!-- Select de inicio de semana -->
+                <mat-form-field appearance="outline" class="mff-reduc">
+                    <mat-label>Inicio Semana</mat-label>
+                    <mat-select [(ngModel)]="inicioSemana" (selectionChange)="actualizarHorario()">
+                        <mat-option *ngFor="let dia of dias" [value]="dia">
+                            {{dia}}
+                        </mat-option>
+                    </mat-select>
+                </mat-form-field>
+
+                <!-- Checkboxes de días no laborables -->
+                <div class="dias-no-laborables-container border rounded">
+                    <label class="form-label mb-2 small text-muted">Días No Laborables</label>
+                    <div class="d-flex flex-wrap gap-2">
+                        <mat-checkbox *ngFor="let dia of dias; let i = index" [(ngModel)]="diasNoLaborablesArray[i]"
+                            (change)="changeNoLaborable()" class="dia-checkbox mr-3">
+                            {{getAbreviatura(dia)}}
+                        </mat-checkbox>
+                    </div>
+                </div>
+            </div>
+
+            <table class="table-bordered tab-10 mt-1" id="tablaHorariosUnica">
+                <thead class="text-center">
+                    <tr style="height: 22px;">
+                        <th colspan="8">HORARIO</th>
+                    </tr>
+                    <tr style="height: 22px;">
+                        <th appAnchocol [ancho]="130"></th>
+                        <th appAnchocol [ancho]="100" *ngFor="let dia of dias; let i = index">
+                            {{dia}}
+                        </th>
+
+                    </tr>
+                </thead>
+                <tbody>
+                    <ng-container *ngIf="tablaHorario.length">
+                        <tr *ngFor="let dia of tablaHorario; let i = index" class="h-35">
+
+                            <td *ngFor="let horario of dia; let j = index" class="text-center"
+                                [ngClass]="{'bg-secondary text-white': i == 2}">
+
+
+                                <ng-container *ngIf="i!==2 && j >0; else noEditable">
+
+                                    <ng-container *ngIf="!diasNoLaborablesArray[j - 1]">
+                                        <div class="time-input-container" (click)="showTimePicker($event, i, j)">
+                                            <input matInput type="time" [(ngModel)]="tablaHorario[i][j]"
+                                                (input)="finalizarEdicion()">
+                                        </div>
+                                    </ng-container>
+                                </ng-container>
+                                <ng-template #noEditable>
+                                    {{horario}}
+                                </ng-template>
+
+                            </td>
+
+                        </tr>
+                    </ng-container>
+                    <tr>
+                        <td colspan="7" class="text-right bg-secondary text-white">HORAS DESCANSO</td>
+                        <td class="text-center">{{cantHorasDescanso}} hora(s)</td>
+                    </tr>
+                    <tr>
+                        <td colspan="7" class="text-right bg-secondary text-white">HORAS LABORADAS</td>
+                        <td class="text-center">{{cantHorasSemana}} hora(s)</td>
+                    </tr>
+
+                </tbody>
+            </table>
+            <div class="card-header mt-1">
+                <h5> REGISTRO DE DÍAS NO LABORADOS, DÍAS FERIADOS Y OTROS</h5>
+            </div>
+            <div class="col-12 px-0 justify-content-end  mt-2">
+                <button type="button" class="btn btn-success btn-sm light ripple m-b-10" (click)="abrirModalFeriado()"
+                    type="button" (mouseup)="quitarfoco($event);">
+                    <i class="fa fa-plus"></i>Feriado
+                </button>
+            </div>
+            <table class="table-bordered tab-10 ">
+                <thead class="text-center">
+
+                    <tr style="height: 22px;">
+                        <th appAnchocol [ancho]="30"></th>
+                        <th appAnchocol [ancho]="80">Fecha</th>
+                        <th appAnchocol [ancho]="130">Descripcion</th>
+                        <th appAnchocol [ancho]="80">Activo(Area)</th>
+                        <th appAnchocol [ancho]="80"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <ng-container *ngIf="tablaFeriados.length; else nodataFeriados">
+                        <tr *ngFor="let row of tablaFeriados; let i = index" (click)="filFeriado=i"
+                            [ngClass]="{'highlight':filFeriado == i }">
+                            <td class="text-center">{{i+1}}</td>
+                            <td class="text-center">{{row.fecha | date:'dd-MM-yyyy'}}</td>
+                            <td>{{row.descripcion}}</td>
+                            <td class="text-center">
+                                <div class="custom-control custom-switch">
+                                    <input type="checkbox" class="custom-control-input" id="customSwitch-{{ i }}"
+                                        (change)="sliderFeriado(row, i, $event)" [checked]="row.activo" />
+                                    <label class="custom-control-label" for="customSwitch-{{ i }}"></label>
+                                </div>
+                            </td>
+                            <td class="text-center">
+                                <button class="btn btn-mini btn-outline-secondary" placement="top" type="button"
+                                    ngbTooltip="editar Feriado" container="body" (click)="abrirModalFeriado(row)"
+                                    (mouseup)="quitarfoco($event);">
+                                    <i class="fa fa-pencil icono-but"></i>
+                                </button>
+                                <button class="btn btn-mini btn-outline-danger" placement="top" type="button"
+                                    ngbTooltip="Eliminar Cargo" container="body" *ngIf="row.estado !== 2"
+                                    (click)="eliminarFeriado(row,i)" (mouseup)="quitarfoco($event);">
+                                    <i class="fa fa-remove icono-but"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    </ng-container>
+                    <ng-template #nodataFeriados>
+                        <tr>
+                            <td class="mat-cell text-center" colspan="12">
+                                <label *ngIf="!buscando">No se encontraron resultados</label>
+                                <div *ngIf="buscando" class="preloader3 loader-block">
+                                    <div class="circ1"></div>
+                                    <div class="circ2"></div>
+                                    <div class="circ3"></div>
+                                    <div class="circ4"></div>
+                                </div>
+                            </td>
+                        </tr>
+                    </ng-template>
+                </tbody>
+            </table>
+        </div>
+        <div class="col-4  overflow-auto ">
+            <div class="card-header mt-1">
+                <h5> PORCENTAJE DE DESCUENTOS POR TIPOS ASISTENCIA</h5>
+            </div>
+            <table class="table-bordered tab-10 ">
+                <thead class="text-center">
+                    <tr style="height: 22px;">
+                        <th appAnchocol [ancho]="30">Codigo</th>
+                        <th appAnchocol [ancho]="80">Tipo</th>
+                        <th appAnchocol [ancho]="130">
+                            <div class="d-flex justify-content-center">
+                                <div> Porcentaje Descuento (dia)</div>
+                                <div><i class="fa fa-pencil ml-2" [ngbTooltip]="'editable'"></i></div>
+                            </div>
+
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let row of tiposAsistencia; let i = index" style="height: 29.5px;">
+                        <td class="text-center">{{row.codigo}}</td>
+                        <td class="text-center">{{row.tipo}}</td>
+                        <td class="text-center">
+                            <!-- <mat-form-field appearance="outline" class="mff-reduc col-12"> -->
+
+                            <input matInput type="number" class="mayuscula w-100" autocomplete="off" maxlength="255"
+                                (input)="actualizarHorario()" [(ngModel)]="tiposAsistencia[i].porcentaje" [max]="100"
+                                [min]="0">
+                            <!-- </mat-form-field> -->
+                        </td>
+
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</ng-container>
+
+<app-modal-basic #modalCargo [dialogClass]="'modal-sm'">
+    <div class="app-modal-header">
+        <h4 class="modal-title tit-modal1"><b>Datos </b></h4>
+        <button type="button" class="close basic-close" (click)="cerrarModal()">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+    <div class="app-modal-body">
+        <form [formGroup]="formCargo">
+            <div class="row ">
+                <mat-form-field appearance="outline" class="mff-reduc col-sm-12 col-12">
+                    <mat-label>Nombre Cargo</mat-label>
+                    <input matInput type="text" class="mayuscula" autocomplete="off" maxlength="255"
+                        formControlName="descripcion" [maxLength]="150">
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" class="mff-reduc col-sm-12 col-12">
+                    <mat-label>Abreviatura Cargo</mat-label>
+                    <input matInput type="text" class="mayuscula" autocomplete="off" maxlength="15"
+                        formControlName="abreviatura" [maxLength]="15">
+                </mat-form-field>
+            </div>
+        </form>
+    </div>
+    <div class="app-modal-footer w-100">
+        <div class="row px-3">
+            <button type="button" style="margin-right: 5px;" class="btn btn-sm btn-success ripple"
+                (click)="!id_cargo.value ? agregarCargo():actualizarCargo()">
+                <ng-container *ngIf="!id_cargo.value">Guardar</ng-container>
+                <ng-container *ngIf="id_cargo.value">Actualizar</ng-container>
+            </button>
+            <button type="button" style="margin-right: 5px;" class="btn btn-sm btn-danger ripple"
+                (click)="cerrarModal()">Cerrar</button>
+        </div>
+    </div>
+</app-modal-basic>
+
+<app-modal-basic #modalAsignacion [dialogClass]="'modal-sm'">
+    <div class="app-modal-header">
+        <h4 class="modal-title tit-modal1"><b>Datos Asignacion </b></h4>
+        <button type="button" class="close basic-close" (click)="cerrarModalAsignacion()">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+    <div class="app-modal-body">
+        <form [formGroup]="formAsignacion">
+            <div class="row ">
+                <mat-form-field appearance="outline" class="mff-reduc col-12 alto-35 ">
+                    <mat-label>Area</mat-label>
+                    <select matNativeControl formControlName="id_area"
+                        (change)="cambioSelectAreaAsignacion($event.target.value)">
+                        <option *ngFor="let area of areas" [value]="area.id_area">
+                            {{area.descripcion}}
+                        </option>
+                    </select>
+                </mat-form-field>
+                <mat-form-field appearance="outline" class="mff-reduc col-12 alto-35 mt-3">
+                    <mat-label>Cargo</mat-label>
+                    <select matNativeControl formControlName="id_cargo">
+                        <option *ngFor="let cargo of cargosFiltrados" [value]="cargo.id_cargo">
+                            {{cargo.descripcion}}
+                        </option>
+                    </select>
+                </mat-form-field>
+                <mat-form-field appearance="outline" class="mff-reduc  col-12 mt-3">
+                    <mat-label>Fecha Inicio</mat-label>
+                    <input matInput type="date" formControlName="fecha_inicio">
+                </mat-form-field>
+                <mat-form-field appearance="outline" class="mff-reduc  col-12 ">
+                    <mat-label>Fecha Termina</mat-label>
+                    <input matInput type="date" formControlName="fecha_fin">
+                </mat-form-field>
+            </div>
+        </form>
+    </div>
+    <div class="app-modal-footer w-100">
+        <div class="row px-3">
+            <button type="button" style="margin-right: 5px;" class="btn btn-sm btn-success ripple"
+                (click)="!id_asignacion.value ? agregarAsignacion():actualizarAsignacion()">
+                <ng-container *ngIf="!id_asignacion.value">Guardar</ng-container>
+                <ng-container *ngIf="id_asignacion.value">Actualizar</ng-container>
+            </button>
+            <button type="button" style="margin-right: 5px;" class="btn btn-sm btn-danger ripple"
+                (click)="cerrarModalAsignacion()">Cerrar</button>
+        </div>
+    </div>
+</app-modal-basic>
+
+<app-modal-basic #modalUsuario [dialogClass]="'modal-md'">
+    <div class="app-modal-header">
+        <h4 class="modal-title tit-modal1"><b>Datos Usuario</b></h4>
+        <button type="button" class="close basic-close" (click)="cerrarModal2()">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+    <div class="app-modal-body">
+        <form [formGroup]="formUsuario">
+            <div class="row ">
+
+                <mat-form-field appearance="outline" class="mff-reduc  col-12">
+                    <mat-label>Nombres</mat-label>
+                    <input matInput type="text" class="mayuscula" autocomplete="off" maxlength="255"
+                        formControlName="nombres" [maxLength]="150">
+                </mat-form-field>
+                <mat-form-field appearance="outline" class="mff-reduc col-12">
+                    <mat-label>Apellidos</mat-label>
+                    <input matInput type="text" class="mayuscula" autocomplete="off" maxlength="255"
+                        formControlName="apellidos" [maxLength]="150">
+                </mat-form-field>
+                <mat-form-field appearance="outline" class="mff-reduc col-sm-6 col-12">
+                    <mat-label>DNI</mat-label>
+                    <input matInput type="text" class="mayuscula" autocomplete="off" maxlength="18"
+                        formControlName="dni" [maxLength]="18">
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" class="mff-reduc col-sm-6 col-12">
+                    <mat-label>Teléfono</mat-label>
+                    <input matInput type="text" class="mayuscula" autocomplete="off" maxlength="15"
+                        formControlName="telefono" [maxLength]="15">
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" class="mff-reduc col-12">
+                    <mat-label>Correo</mat-label>
+                    <input matInput type="text" class="mayuscula" autocomplete="off" maxlength="100"
+                        formControlName="correo" [maxLength]="100">
+                </mat-form-field>
+                <mat-form-field appearance="outline" class="mff-reduc col-sm-6 col-12">
+                    <mat-label>Fecha Asignación</mat-label>
+                    <input matInput type="date" formControlName="fecha_asignacion">
+                </mat-form-field>
+                <mat-form-field appearance="outline" class="mff-reduc col-sm-6 col-12">
+                    <mat-label>Fecha Culminación</mat-label>
+                    <input matInput type="date" formControlName="fecha_culminacion">
+                </mat-form-field>
+                <ng-container *ngIf="tablaUsuarios[this.filUsuario]?.id_usuario">
+                    <div class="col-12">
+                        <label>Activo :</label>
+                        <div class="switch switch-primary d-inline m-r-10" style="margin-left: 10px;">
+                            <input type="checkbox" id="switch-1" formControlName="estado">
+                            <label for="switch-1" class="cr"></label>
+                        </div>
+                    </div>
+                </ng-container>
+            </div>
+        </form>
+    </div>
+    <div class="app-modal-footer w-100">
+        <div class="row px-3">
+            <button type="button" style="margin-right: 5px;" class="btn btn-sm btn-success ripple"
+                (click)="tablaUsuarios[this.filUsuario]?.id_usuario ? actualizarUsuario():agregarUsuario()">
+                <ng-container *ngIf="tablaUsuarios[this.filUsuario]?.id_usuario">Actualizar</ng-container>
+                <ng-container *ngIf="!tablaUsuarios[this.filUsuario]?.id_usuario">Guardar</ng-container>
+            </button>
+            <button type="button" style="margin-right: 5px;" class="btn btn-sm btn-danger ripple"
+                (click)="cerrarModal2()">Cerrar</button>
+        </div>
+    </div>
+</app-modal-basic>
+
+<app-modal-basic #modalConvocatoria [dialogClass]="'modal-sm'">
+    <div class="app-modal-header">
+        <h4 class="modal-title tit-modal1"><b>Datos Convocatoria </b></h4>
+        <button type="button" class="close basic-close" (click)="cerrarModalConvocatoria()">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+    <div class="app-modal-body">
+        <form [formGroup]="formConvocatoria">
+            <div class="row ">
+                <mat-form-field appearance="outline" class="mff-reduc col-sm-12 col-12">
+                    <mat-label>Numero</mat-label>
+                    <input matInput type="text" class="mayuscula" autocomplete="off" maxlength="255"
+                        formControlName="nro_convocatoria" [maxLength]="150">
+                </mat-form-field>
+                <mat-form-field appearance="outline" class="mff-reduc col-sm-12 col-12">
+                    <mat-label>Fecha </mat-label>
+                    <input matInput type="date" formControlName="fecha">
+                </mat-form-field>
+                <mat-form-field appearance="outline" class="mff-reduc col-sm-12 col-12">
+                    <mat-label>Modalidad</mat-label>
+                    <input matInput type="text" class="mayuscula" autocomplete="off" maxlength="255"
+                        formControlName="modalidad" [maxLength]="255">
+                </mat-form-field>
+
+
+                <mat-form-field appearance="outline" class="mff-reduc col-sm-12 col-12 ">
+                    <mat-label>Descripcion</mat-label>
+                    <input matInput type="text" class="mayuscula" autocomplete="off" maxlength="255"
+                        formControlName="descripcion" [maxLength]="255">
+                </mat-form-field>
+                <div class="col-12" *ngIf="id_convocatoria.value">
+
+                    <mat-form-field appearance="outline" class="mff-reduc col-sm-12 col-12 ">
+                        <mat-label>Descripcion</mat-label>
+                        <mat-select formControlName="estado">
+                            <mat-option value="1">NO PUBLICADO</mat-option>
+                            <mat-option value="2">PUBLICADO</mat-option>
+                            <mat-option value="0">CERRADO</mat-option>
+                        </mat-select>
+                    </mat-form-field>
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="app-modal-footer w-100">
+        <div class="row px-3">
+            <button type="button" style="margin-right: 5px;" class="btn btn-sm btn-success ripple"
+                (click)="id_convocatoria.value ? actualizarConvocatoria(): agregarConvocatoria()">
+                <ng-container *ngIf="id_convocatoria.value">Actualizar</ng-container>
+                <ng-container *ngIf="!id_convocatoria.value">Guardar</ng-container>
+            </button>
+            <button type="button" style="margin-right: 5px;" class="btn btn-sm btn-danger ripple"
+                (click)="cerrarModalConvocatoria()">Cerrar</button>
+        </div>
+    </div>
+</app-modal-basic>
+
+<app-modal-basic #modalDetalleConvocatoria [dialogClass]="'modal-sm'">
+    <div class="app-modal-header">
+        <h4 class="modal-title tit-modal1"><b>Datos cargo requerido </b></h4>
+        <button type="button" class="close basic-close" (click)="cerrarModalDetalleConvocatoria()">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+    <div class="app-modal-body">
+        <form [formGroup]="formDetalleConvocatoria">
+            <div class="row ">
+                <mat-form-field appearance="outline" class="mff-reduc col-12 alto-35 ">
+                    <mat-label>Area</mat-label>
+                    <select matNativeControl formControlName="id_area"
+                        (change)="cambioSelectAreaDetalle($event.target.value)">
+                        <option *ngFor="let area of areas" [value]="area.id_area">
+                            {{area.descripcion}}
+                        </option>
+                    </select>
+                </mat-form-field>
+                <mat-form-field appearance="outline" class="mff-reduc col-12 alto-35 mt-3">
+                    <mat-label>Cargo</mat-label>
+                    <select matNativeControl formControlName="id_cargo">
+                        <option *ngFor="let cargo of cargosFiltrados" [value]="cargo.id_cargo">
+                            {{cargo.descripcion}}
+                        </option>
+                    </select>
+                </mat-form-field>
+                <mat-form-field appearance="outline" class="mff-reduc col-sm-12 col-12 mt-3">
+                    <mat-label>Vacantes</mat-label>
+                    <input matInput type="number" class="mayuscula" autocomplete="off" maxlength="10"
+                        formControlName="vacantes" [min]="0">
+                </mat-form-field>
+                <mat-form-field appearance="outline" class="mff-reduc col-sm-12 col-12">
+                    <mat-label>Requerimiento</mat-label>
+                    <input matInput type="text" class="mayuscula" autocomplete="off" maxlength="255"
+                        formControlName="requerimiento" [maxLength]="255">
+                </mat-form-field>
+                <mat-form-field appearance="outline" class="mff-reduc col-sm-12 col-12">
+                    <mat-label>Remuneracion</mat-label>
+                    <input matInput type="number" class="mayuscula" autocomplete="off" formControlName="remuneracion">
+                </mat-form-field>
+                <mat-form-field appearance="outline" class="mff-reduc col-sm-12 col-12">
+                    <mat-label>Link url (documento bases)</mat-label>
+                    <input matInput type="number" class="mayuscula" autocomplete="off" formControlName="link_documento">
+                </mat-form-field>
+                <mat-form-field appearance="outline" class="mff-reduc col-sm-12 col-12">
+                    <mat-label>Ciudad</mat-label>
+                    <input matInput type="text" class="mayuscula" autocomplete="off" formControlName="ciudad">
+                </mat-form-field>
+                <div class="col-12" *ngIf="id_detalle.value">
+                    <label>Activo :</label>
+                    <div class="switch switch-primary d-inline m-r-10" style="margin-left: 10px;">
+                        <input type="checkbox" id="switch-1" formControlName="estado">
+                        <label for="switch-1" class="cr"></label>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="app-modal-footer w-100">
+        <div class="row px-3">
+            <button type="button" style="margin-right: 5px;" class="btn btn-sm btn-success ripple"
+                (click)="id_detalle.value ? actualizarDetalleConvocatoria(): guardarDetalleConvocatoria()">
+                <ng-container *ngIf="id_detalle.value">Actualizar</ng-container>
+                <ng-container *ngIf="!id_detalle.value">Guardar</ng-container>
+            </button>
+            <button type="button" style="margin-right: 5px;" class="btn btn-sm btn-danger ripple"
+                (click)="cerrarModalDetalleConvocatoria()">Cerrar</button>
+        </div>
+    </div>
+</app-modal-basic>
+
+<app-modal-basic #modalArea [dialogClass]="'modal-sm'">
+    <div class="app-modal-header">
+        <h4 class="modal-title tit-modal1"><b>Datos Area</b></h4>
+        <button type="button" class="close basic-close" (click)="cerrarModalArea()">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+    <div class="app-modal-body">
+        <form [formGroup]="formArea">
+            <div class="row ">
+                <mat-form-field appearance="outline" class="mff-reduc col-sm-12 col-12">
+                    <mat-label>Nombre Area</mat-label>
+                    <input matInput type="text" class="mayuscula" autocomplete="off" maxlength="255"
+                        formControlName="descripcion" [maxLength]="150">
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" class="mff-reduc col-sm-12 col-12">
+                    <mat-label>Abreviatura </mat-label>
+                    <input matInput type="text" class="mayuscula" autocomplete="off" maxlength="15"
+                        formControlName="abreviatura" [maxLength]="15">
+                </mat-form-field>
+            </div>
+        </form>
+    </div>
+    <div class="app-modal-footer w-100">
+        <div class="row px-3">
+            <button type="button" style="margin-right: 5px;" class="btn btn-sm btn-success ripple"
+                (click)="!id_area.value ? agregarArea():actualizarArea()">
+                <ng-container *ngIf="!id_area.value">Guardar</ng-container>
+                <ng-container *ngIf="id_area.value">Actualizar</ng-container>
+            </button>
+            <button type="button" style="margin-right: 5px;" class="btn btn-sm btn-danger ripple"
+                (click)="cerrarModalArea()">Cerrar</button>
+        </div>
+    </div>
+</app-modal-basic>
+
+<app-modal-basic #modalPostulante [dialogClass]="'modal-md'">
+    <div class="app-modal-header">
+        <h4 class="modal-title tit-modal1"><b>Datos Postulante</b></h4>
+        <button type="button" class="close basic-close" (click)="cerrarModalPostulante()">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+    <div class="app-modal-body">
+        <form [formGroup]="formPostulante">
+            <div class="row ">
+
+                <mat-form-field appearance="outline" class="mff-reduc  col-12">
+                    <mat-label>Nombres</mat-label>
+                    <input matInput type="text" class="mayuscula" autocomplete="off" maxlength="255"
+                        formControlName="nombres" [maxLength]="150">
+                </mat-form-field>
+                <mat-form-field appearance="outline" class="mff-reduc col-12">
+                    <mat-label>Apellidos</mat-label>
+                    <input matInput type="text" class="mayuscula" autocomplete="off" maxlength="255"
+                        formControlName="apellidos" [maxLength]="150">
+                </mat-form-field>
+                <mat-form-field appearance="outline" class="mff-reduc col-sm-6 col-12">
+                    <mat-label>Fecha</mat-label>
+                    <input matInput type="date" formControlName="fecha">
+                </mat-form-field>
+                <mat-form-field appearance="outline" class="mff-reduc col-sm-6 col-12">
+                    <mat-label>Evaluador</mat-label>
+                    <input matInput type="text" class="mayuscula" autocomplete="off" maxlength="255"
+                        formControlName="evaluador" [maxLength]="150">
+                </mat-form-field>
+             
+                <mat-form-field appearance="outline" class="mff-reduc  col-12 alto-35">
+                    <mat-label>Cargo</mat-label>
+                    <select matNativeControl formControlName="id_cargo">
+                        <option *ngFor="let cargo of cargosFiltrados" [value]="cargo.id">
+                            {{cargo.descripcion}}
+                        </option>
+                    </select>
+                </mat-form-field>
+                <!-- <ng-select [appendTo]="'body'" [dropdownPosition]="'auto'" [items]="cargos" class="custom"
+                     [multiple]="true" formControlName="cargos">
+                </ng-select> -->
+                <mat-form-field appearance="outline" class="mff-reduc col-sm-6 col-12 mt-3">
+                    <mat-label>CV</mat-label>
+                    <mat-select formControlName="cv">
+                        <mat-option value="APROBADO">Aprobado</mat-option>
+                        <mat-option value="RECHAZADO">Rechazado</mat-option>
+                    </mat-select>
+                </mat-form-field>
+                <mat-form-field appearance="outline" class="mff-reduc col-sm-6 col-12 mt-3">
+                    <mat-label>Entrevista</mat-label>
+                    <mat-select formControlName="entrevista">
+                        <mat-option value="PROGRAMADO">Programado</mat-option>
+                        <mat-option value="RECHAZADO">Rechazado</mat-option>
+                        <mat-option value="APROBADO">Aprobado</mat-option>
+                    </mat-select>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" class="mff-reduc col-sm-6 col-12">
+                    <mat-label>Teléfono</mat-label>
+                    <input matInput type="text" class="mayuscula" autocomplete="off" maxlength="15"
+                        formControlName="telefono" [maxLength]="15">
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" class="mff-reduc col-sm-6 col-12">
+                    <mat-label>Correo</mat-label>
+                    <input matInput type="text" class="mayuscula" autocomplete="off" maxlength="100"
+                        formControlName="correo" [maxLength]="100">
+                </mat-form-field>
+
+                <div class="col-sm-6 col-12">
+                    <div class="label-container mb-2">
+                        <span class="mat-form-field-label">Progreso</span>
+                    </div>
+                    <div class="d-flex align-items-center gap-3">
+                        <mat-slider thumbLabel [displayWith]="formatLabel" formControlName="progreso" tickInterval="5"
+                            class="flex-grow-1" step="5" min="0" max="100">
+                        </mat-slider>
+                        <div class="percentage-value" style="min-width: 45px; font-weight: 500;">
+                            {{formPostulante.get('progreso')?.value || 0}}%
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-12">
+                    <div class="label-container mb-2">
+                        <span class="mat-form-field-label">Calidad</span>
+                    </div>
+                    <div class="rating-container">
+                        <mat-icon *ngFor="let star of [1,2,3,4,5]; let i = index" (click)="setRating(i+1)"
+                            [class.filled]="i < currentRating" class="star-icon">
+                            {{ i < currentRating ? 'star' : 'star_border' }} </mat-icon>
+                                <span class="rating-value">{{currentRating}}/5</span>
+                    </div>
+
+                    <!-- Campo oculto para el FormControl -->
+                    <input type="hidden" [formControl]="formPostulante.get('calidad')">
+                </div>
+
+            </div>
+        </form>
+    </div>
+    <div class="app-modal-footer w-100">
+        <div class="row px-3">
+            <button type="button" style="margin-right: 5px;" class="btn btn-sm btn-success ripple"
+                (click)="id_postulante.value ? actualizarPostulante():agregarPostulanteConvocatoria()">
+                <ng-container *ngIf="id_postulante.value">Actualizar</ng-container>
+                <ng-container *ngIf="!id_postulante.value">Guardar</ng-container>
+            </button>
+            <button type="button" style="margin-right: 5px;" class="btn btn-sm btn-danger ripple"
+                (click)="cerrarModalPostulante()">Cerrar</button>
+        </div>
+    </div>
+</app-modal-basic>
+
+<app-modal-basic #modalFeriado [dialogClass]="'modal-sm'">
+    <div class="app-modal-header">
+        <h4 class="modal-title tit-modal1"><b>Datos Feriado</b></h4>
+        <button type="button" class="close basic-close" (click)="cerrarModalFeriado()">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+    <div class="app-modal-body">
+        <form [formGroup]="formFeriado">
+            <div class="row ">
+                <mat-form-field appearance="outline" class="mff-reduc col-sm-12 col-12">
+                    <mat-label>Descripcion</mat-label>
+                    <input matInput type="text" class="mayuscula" autocomplete="off" maxlength="255"
+                        formControlName="descripcion" [maxLength]="150">
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" class="mff-reduc col-sm-12 col-12">
+                    <mat-label>Fecha</mat-label>
+                    <input matInput type="date" formControlName="fecha">
+                </mat-form-field>
+            </div>
+        </form>
+    </div>
+    <div class="app-modal-footer w-100">
+        <div class="row px-3">
+            <button type="button" style="margin-right: 5px;" class="btn btn-sm btn-success ripple"
+                (click)="!id_feriado.value ? agregarFeriado():actualizarFeriado()">
+                <ng-container *ngIf="!id_cargo.value">Guardar</ng-container>
+                <ng-container *ngIf="id_cargo.value">Actualizar</ng-container>
+            </button>
+            <button type="button" style="margin-right: 5px;" class="btn btn-sm btn-danger ripple"
+                (click)="cerrarModalFeriado()">Cerrar</button>
+        </div>
+    </div>
+</app-modal-basic>
+
+<app-cargando [bloquearTodo]="true" *ngIf="mostrar_carga_todo"></app-cargando>

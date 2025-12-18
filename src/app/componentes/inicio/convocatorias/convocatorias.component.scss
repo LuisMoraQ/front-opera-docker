@@ -1,0 +1,284 @@
+.convocatorias-container {
+    padding: 20px 0;
+}
+
+.convocatoria-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s ease;
+    height: 100%;
+    border: 1px solid #eaeaea;
+    overflow: hidden;
+    
+    &:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+    }
+    
+    .card-header {
+        background: linear-gradient(135deg, #2c3e50, #4a6491);
+        color: white;
+        padding: 20px;
+        position: relative;
+        
+        .convocatoria-titulo {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin: 0;
+            line-height: 1.4;
+            margin-right: 80px;
+        }
+        
+        .badge {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            
+            &.badge-success {
+                background: #28a745;
+            }
+            
+            &.badge-warning {
+                background: #ffc107;
+                color: #212529;
+            }
+            
+            &.badge-danger {
+                background: #dc3545;
+            }
+        }
+    }
+    
+    .card-body {
+        padding: 20px;
+        
+        .info-item {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 15px;
+            
+            i {
+                color: #4a6491;
+                font-size: 1.2rem;
+                margin-right: 12px;
+                margin-top: 2px;
+                min-width: 20px;
+            }
+            
+            .info-content {
+                flex: 1;
+                
+                .info-label {
+                    display: block;
+                    font-size: 0.8rem;
+                    color: #666;
+                    font-weight: 600;
+                    text-transform: uppercase;
+                    margin-bottom: 2px;
+                }
+                
+                .info-value {
+                    display: block;
+                    font-size: 0.95rem;
+                    color: #333;
+                    font-weight: 500;
+                    
+                    &.pago {
+                        color: #28a745;
+                        font-weight: 600;
+                        font-size: 1rem;
+                    }
+                }
+            }
+        }
+        
+        .descripcion-corta {
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px dashed #ddd;
+            
+            p {
+                color: #666;
+                font-size: 0.9rem;
+                line-height: 1.5;
+                margin: 0;
+            }
+        }
+    }
+    
+    .card-footer {
+        padding: 15px 20px;
+        background: #f8f9fa;
+        border-top: 1px solid #eaeaea;
+        
+        .btn-postular {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #4a6491, #2c3e50);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            
+            &:hover:not(:disabled) {
+                background: linear-gradient(135deg, #2c3e50, #4a6491);
+                transform: scale(1.02);
+            }
+            
+            &:disabled {
+                background: #6c757d;
+                cursor: not-allowed;
+                opacity: 0.7;
+            }
+            
+            i {
+                font-size: 1.2rem;
+            }
+        }
+        
+        .text-muted {
+            font-size: 0.85rem;
+        }
+    }
+}
+
+.no-convocatorias {
+    i {
+        opacity: 0.5;
+    }
+    
+    h4 {
+        color: #4a6491;
+        font-weight: 600;
+    }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .convocatoria-card {
+        .card-header {
+            .convocatoria-titulo {
+                font-size: 1.1rem;
+                margin-right: 70px;
+            }
+        }
+    }
+}
+
+@media (max-width: 576px) {
+    .convocatorias-container {
+        padding: 10px;
+    }
+    
+    .convocatoria-card {
+        margin-bottom: 20px;
+        
+        .card-header {
+            padding: 15px;
+            
+            .convocatoria-titulo {
+                font-size: 1rem;
+            }
+            
+            .badge {
+                font-size: 0.7rem;
+                padding: 4px 10px;
+            }
+        }
+        
+        .card-body {
+            padding: 15px;
+            
+            .info-item {
+                margin-bottom: 12px;
+                
+                i {
+                    font-size: 1rem;
+                }
+                
+                .info-content {
+                    .info-label {
+                        font-size: 0.75rem;
+                    }
+                    
+                    .info-value {
+                        font-size: 0.9rem;
+                    }
+                }
+            }
+        }
+    }
+}
+
+.titulo-convocatorias {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 40px 0;
+    position: relative;
+}
+
+.titulo-animado {
+    font-size: 3rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    color: #2c3e50;
+    margin: 0 20px;
+    letter-spacing: 3px;
+    position: relative;
+    background: linear-gradient(45deg, #2c3e50, #4a6491, #2980b9);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: tituloGlow 3s ease-in-out infinite alternate;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.linea-decorativa {
+    height: 4px;
+    width: 100px;
+    background: linear-gradient(90deg, transparent, #4a6491, transparent);
+    position: relative;
+}
+
+.linea-decorativa.izquierda::before {
+    content: '';
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    background: #4a6491;
+    border-radius: 50%;
+    top: -4px;
+    right: 0;
+}
+
+.linea-decorativa.derecha::after {
+    content: '';
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    background: #4a6491;
+    border-radius: 50%;
+    top: -4px;
+    left: 0;
+}
+
+@keyframes tituloGlow {
+    0% {
+        background-position: 0% 50%;
+    }
+    100% {
+        background-position: 100% 50%;
+    }
+}

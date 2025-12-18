@@ -68,7 +68,7 @@ export class PanelRecursosHumanosComponent implements OnInit {
 
   formElementos = new UntypedFormGroup({
     anio: new UntypedFormControl('', [Validators.required]),
-    mes: new UntypedFormControl('', [])
+    mes: new UntypedFormControl('', [Validators.required])
   })
 
   get anio(): UntypedFormControl { return this.formElementos.get('anio') as UntypedFormControl }
@@ -212,6 +212,19 @@ export class PanelRecursosHumanosComponent implements OnInit {
   async guardarAgrupamiento() {
     try {
       this.mostrar_carga_todo = true
+      if (this.formAgrupacion.invalid) {
+        this.mostrar_carga_todo = false
+        this.toaster.error(
+          'Formulario incompleto',
+          'Error',
+          {
+            closeButton: false,
+            positionClass: 'toast-bottom-right',
+            timeOut: 4000,
+          }
+        );
+        return
+      }
       const existe = this.tablaAgrupamientos.find(ele => !ele.id_elemento && ele.indice == this.indice.value)
       if (existe) {
         this.mostrar_carga_todo = false
@@ -272,34 +285,47 @@ export class PanelRecursosHumanosComponent implements OnInit {
       input
     );
     this.anios = this.obtenerArrayAñosConMargen(response.calendario)
-    // let tablaNueva = []
-    // for (const element of this.tablaAgrupamientos) {
+    let tablaNueva = []
+    let activo = false
+    console.log('calendario', response.calendario)
+    for (const element of this.tablaAgrupamientos) {
 
-    //   tablaNueva.push(element)
-    //   const monto = response.calendario.length > 0 ? (element.monto / response.calendario.length) : 0
+      tablaNueva.push(element)
+      if (activo && !element.id_elemento && element.abrev !== 'CD') {
+        activo = false
+      } else if (!element.id_elemento && element.abrev == 'CD') {
+        activo = true
+      }
 
-    //   response.calendario.map((ele, index) => {
-    //     const obj = {
-    //       abrev: element.abrev,
-    //       descripcion: ele.mes,
-    //       estado: 0,
-    //       formula: '',
-    //       id_agrupamiento: null,
-    //       id_proyecto: element.id_proyecto,
-    //       indice: null,
-    //       item: 'p-' + (index + 1),
-    //       monto: monto,
-    //       monto2: null,
-    //       mostrar: 1,
-    //       orden: null,
-    //       presu_descripcion: '',
-    //       rubro: 'mes'
-    //     }
-    //     tablaNueva.push(obj)
-    //   })
-    // }
-    // this.tablaAgrupamientos = tablaNueva
-    // console.table(this.tablaAgrupamientos)
+      if (activo) {
+        const monto = response.calendario.length > 0 ? (element.monto / response.calendario.length) : 0
+
+        response.calendario.map((ele, index) => {
+      
+          const obj = {
+            id_agrupamiento: element.id_agrupamiento,
+            id_elemento: 1,
+            id_proyecto: element.id_proyecto,
+            descripcion: ele.mes + '-' + ele.anio,
+            indice: null,
+            orden: index + 1,
+            abreviatura: '',
+            descripcion_costo: '',
+            id_indice: '',
+            monto: monto,
+            monto2: null,
+            mostrar: 1,
+            icomost: 0,
+            estado: element.estado,
+            abrev: element.abrev
+          }
+          tablaNueva.push(obj)
+        })
+      }
+    }
+    this.tablaAgrupamientos = tablaNueva
+    console.table(this.tablaAgrupamientos)
+    console.log('this.tablaAgrupamientos', this.tablaAgrupamientos)
   }
 
   obtenerArrayAñosConMargen(calendario, margen = 2) {

@@ -3303,6 +3303,7 @@ export class ProgramacionObraComponent implements OnInit, OnDestroy {
           id_usuario: this.id_usuario,
           version: this.version
         };
+        console.log('inputProyecto', inputProyecto)
         const response = await this.principalService.restaurarPrograma(
           inputProyecto
         );

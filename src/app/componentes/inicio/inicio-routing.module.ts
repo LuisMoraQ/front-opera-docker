@@ -8,18 +8,21 @@ import { PlanesComponent } from './planes/planes.component';
 import { VentajasComponent } from './ventajas/ventajas.component';
 import { ContactosComponent } from './contactos/contactos.component';
 import { PasarelaComponent } from './pasarela/pasarela.component';
+import { ConvocatoriasComponent } from './convocatorias/convocatorias.component';
 
 const routes: Routes = [
-  {path: '',
-    component:PortadaComponent,
+  {
+    path: '',
+    component: PortadaComponent,
     children: [
-      {path:'', component : LoginComponent},
-      {path:'nosotros', component : NosotrosComponent},
-      {path: 'modulos',component :ModulosComponent},
-      {path: 'planes',component :PlanesComponent},
-      {path: 'ventajas',component :VentajasComponent},
-      {path: 'contacto',component :ContactosComponent},
-      {path: 'pasarela',component :PasarelaComponent},
+      { path: '', component: LoginComponent },
+      { path: 'convocatorias', component: ConvocatoriasComponent },
+      { path: 'nosotros', component: NosotrosComponent },
+      { path: 'modulos', component: ModulosComponent },
+      { path: 'planes', component: PlanesComponent },
+      { path: 'ventajas', component: VentajasComponent },
+      { path: 'contacto', component: ContactosComponent },
+      { path: 'pasarela', component: PasarelaComponent },
       {
         path: '**',
         redirectTo: '',
@@ -27,7 +30,7 @@ const routes: Routes = [
       }
     ]/* ,canActivate: [RutapriGuard] */
   },
-  {path: '**',redirectTo: '',pathMatch: 'full'},
+  { path: '**', redirectTo: '', pathMatch: 'full' },
 ];
 
 @NgModule({

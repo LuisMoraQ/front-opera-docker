@@ -20,13 +20,17 @@ import { RecursosHumanosRoutingModule } from "./recursos-humanos-routing.module"
 import { PanelRecursosHumanosComponent } from './panel-recursos-humanos/panel-recursos-humanos.component';
 import { RegistroInformacionComponent } from './registro-informacion/registro-informacion.component';
 import { SharedModule } from "src/app/shared/shared.module";
+import { TinymceModule } from "angular2-tinymce";
+import { NgSelectModule } from '@ng-select/ng-select';
+import {MatSliderModule} from '@angular/material/slider';
+
 
 @NgModule({
-    declarations: [
+  declarations: [
     PanelRecursosHumanosComponent,
     RegistroInformacionComponent
   ],
-    imports: [
+  imports: [
     CommonModule,
     RecursosHumanosRoutingModule,
     SharedModule,
@@ -47,7 +51,19 @@ import { SharedModule } from "src/app/shared/shared.module";
     AutoFocusModule,
     TextMaskModule,
     PintarfilapreModule,
-],
-    exports: [PanelRecursosHumanosComponent]
+    TinymceModule.withConfig({
+      selector: '#tinymce',
+      //toolbar_mode: 'sliding',
+      menubar: false,
+      language_url: '../../../assets/langs/es.js',
+      statusbar: false,
+      toolbar: [
+        "bold italic underline strikethrough | fontselect fontsizeselect formatselect | alignleft aligncenter alignright alignjustify | outdent indent |  numlist bullist checklist | forecolor backcolor | link"
+      ],
+    }),
+    NgSelectModule,
+    MatSliderModule
+  ],
+  exports: [PanelRecursosHumanosComponent]
 })
 export class RecursosHumanosModule { }

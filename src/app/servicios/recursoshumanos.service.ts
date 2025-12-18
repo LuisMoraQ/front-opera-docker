@@ -196,4 +196,565 @@ export class RecursosHumanosService {
             )
             .toPromise();
     }
+
+    guardarCargoArea(params = {}): any {
+        let formData: FormData = new FormData();
+        Object.entries(params).forEach(([key, value]) => {
+            formData.append(key, value as string);
+        });
+        const url = this.enviUrl + '/api/recursoshumanos/guardarCargoArea';
+        return this.http.post<any>(url, formData).pipe(
+            map(res => {
+                if (!res) {
+                    throw new Error
+                }
+                return res
+            }),
+            catchError(err => throwError(err))
+        ).toPromise()
+    }
+
+    eliminarCargoArea(params = {}): any {
+        let formData: FormData = new FormData();
+        Object.entries(params).forEach(([key, value]) => {
+            formData.append(key, value as string);
+        });
+        const url = this.enviUrl + '/api/recursoshumanos/eliminarCargoArea';
+        return this.http.post<any>(url, formData).pipe(
+            map(res => {
+                if (!res) {
+                    throw new Error
+                }
+                return res
+            }),
+            catchError(err => throwError(err))
+        ).toPromise()
+    }
+
+    actualizarCargoArea(params = {}): any {
+        let formData: FormData = new FormData();
+        Object.entries(params).forEach(([key, value]) => {
+            formData.append(key, value as string);
+        });
+        const url = this.enviUrl + '/api/recursoshumanos/actualizarCargoArea';
+        return this.http.post<any>(url, formData).pipe(
+            map(res => {
+                if (!res) {
+                    throw new Error
+                }
+                return res
+            }),
+            catchError(err => throwError(err))
+        ).toPromise()
+    }
+
+    listarCargosPorArea(params = {}): any {
+        let formData: FormData = new FormData();
+        Object.entries(params).forEach(([key, value]) => {
+            formData.append(key, value as string);
+        });
+        const url = this.enviUrl + '/api/recursoshumanos/listarCargosPorArea';
+        return this.http.post<any>(url, formData).pipe(
+            map(res => {
+                if (!res) {
+                    throw new Error
+                }
+                return res
+            }),
+            catchError(err => throwError(err))
+        ).toPromise()
+    }
+
+    listarUsuariosRecursosHumanos(params = {}): any {
+        let formData: FormData = new FormData();
+        Object.entries(params).forEach(([key, value]) => {
+            formData.append(key, value as string);
+        });
+        const url = this.enviUrl + '/api/recursoshumanos/listarUsuariosRecursosHumanos';
+        return this.http.post<any>(url, formData).pipe(
+            map(res => {
+                if (!res) {
+                    throw new Error
+                }
+                return res
+            }),
+            catchError(err => throwError(err))
+        ).toPromise()
+    }
+
+    guardarUsuarioRecursosHumanos(params = {}): any {
+        let formData: FormData = new FormData();
+        Object.entries(params).forEach(([key, value]) => {
+            formData.append(key, value as string);
+        });
+        const url = this.enviUrl + '/api/recursoshumanos/guardarUsuarioRecursosHumanos';
+        return this.http.post<any>(url, formData).pipe(
+            map(res => {
+                if (!res) {
+                    throw new Error
+                }
+                return res
+            }),
+            catchError(err => throwError(err))
+        ).toPromise()
+    }
+
+    actualizarUsuarioRecursosHumanos(params = {}): any {
+        let formData: FormData = new FormData();
+        Object.entries(params).forEach(([key, value]) => {
+            formData.append(key, value as string);
+        });
+        const url = this.enviUrl + '/api/recursoshumanos/actualizarUsuarioRecursosHumanos';
+        return this.http.post<any>(url, formData).pipe(
+            map(res => {
+                if (!res) {
+                    throw new Error
+                }
+                return res
+            }),
+            catchError(err => throwError(err))
+        ).toPromise()
+    }
+
+    eliminarUsuarioRecursosHumanos(params = {}): any {
+        let formData: FormData = new FormData();
+        Object.entries(params).forEach(([key, value]) => {
+            formData.append(key, value as string);
+        });
+        const url = this.enviUrl + '/api/recursoshumanos/eliminarUsuarioRecursosHumanos';
+        return this.http.post<any>(url, formData).pipe(
+            map(res => {
+                if (!res) {
+                    throw new Error
+                }
+                return res
+            }),
+            catchError(err => throwError(err))
+        ).toPromise()
+    }
+
+    guardarAreaRecursosHumanos(params = {}): any {
+        let formData: FormData = new FormData();
+        Object.entries(params).forEach(([key, value]) => {
+            formData.append(key, value as string);
+        });
+        const url = this.enviUrl + '/api/recursoshumanos/guardarAreaRecursosHumanos';
+        return this.http.post<any>(url, formData).pipe(
+            map(res => {
+                if (!res) {
+                    throw new Error
+                }
+                return res
+            }),
+            catchError(err => throwError(err))
+        ).toPromise()
+    }
+
+    actualizarAreaRecursosHumanos(params = {}): any {
+        let formData: FormData = new FormData();
+        Object.entries(params).forEach(([key, value]) => {
+            formData.append(key, value as string);
+        });
+        const url = this.enviUrl + '/api/recursoshumanos/actualizarAreaRecursosHumanos';
+        return this.http.post<any>(url, formData).pipe(
+            map(res => {
+                if (!res) {
+                    throw new Error
+                }
+                return res
+            }),
+            catchError(err => throwError(err))
+        ).toPromise()
+    }
+
+    eliminarAreaRecursosHumanos(params = {}): any {
+        let formData: FormData = new FormData();
+        Object.entries(params).forEach(([key, value]) => {
+            formData.append(key, value as string);
+        });
+        const url = this.enviUrl + '/api/recursoshumanos/eliminarAreaRecursosHumanos';
+        return this.http.post<any>(url, formData).pipe(
+            map(res => {
+                if (!res) {
+                    throw new Error
+                }
+                return res
+            }),
+            catchError(err => throwError(err))
+        ).toPromise()
+    }
+
+    guardarConvocatoriaRecursosHumanos(params = {}): any {
+        let formData: FormData = new FormData();
+        Object.entries(params).forEach(([key, value]) => {
+            formData.append(key, value as string);
+        });
+        const url = this.enviUrl + '/api/recursoshumanos/guardarConvocatoriaRecursosHumanos';
+        return this.http.post<any>(url, formData).pipe(
+            map(res => {
+                if (!res) {
+                    throw new Error
+                }
+                return res
+            }),
+            catchError(err => throwError(err))
+        ).toPromise()
+    }
+
+    listarConvocatoriasRecursosHumanos(params = {}): any {
+        let formData: FormData = new FormData();
+        Object.entries(params).forEach(([key, value]) => {
+            formData.append(key, value as string);
+        });
+        const url = this.enviUrl + '/api/recursoshumanos/listarConvocatoriasRecursosHumanos';
+        return this.http.post<any>(url, formData).pipe(
+            map(res => {
+                if (!res) {
+                    throw new Error
+                }
+                return res
+            }),
+            catchError(err => throwError(err))
+        ).toPromise()
+    }
+
+    eliminarConvocatoriaRecursosHumanos(params = {}): any {
+        let formData: FormData = new FormData();
+        Object.entries(params).forEach(([key, value]) => {
+            formData.append(key, value as string);
+        });
+        const url = this.enviUrl + '/api/recursoshumanos/eliminarConvocatoriaRecursosHumanos';
+        return this.http.post<any>(url, formData).pipe(
+            map(res => {
+                if (!res) {
+                    throw new Error
+                }
+                return res
+            }),
+            catchError(err => throwError(err))
+        ).toPromise()
+    }
+
+    actualizarConvocatoriaRecursosHumanos(params = {}): any {
+        let formData: FormData = new FormData();
+        Object.entries(params).forEach(([key, value]) => {
+            formData.append(key, value as string);
+        });
+        const url = this.enviUrl + '/api/recursoshumanos/actualizarConvocatoriaRecursosHumanos';
+        return this.http.post<any>(url, formData).pipe(
+            map(res => {
+                if (!res) {
+                    throw new Error
+                }
+                return res
+            }),
+            catchError(err => throwError(err))
+        ).toPromise()
+    }
+
+    listarPostulantesConvocatoria(params = {}): any {
+        let formData: FormData = new FormData();
+        Object.entries(params).forEach(([key, value]) => {
+            formData.append(key, value as string);
+        });
+        const url = this.enviUrl + '/api/recursoshumanos/listarPostulantesConvocatoria';
+        return this.http.post<any>(url, formData).pipe(
+            map(res => {
+                if (!res) {
+                    throw new Error
+                }
+                return res
+            }),
+            catchError(err => throwError(err))
+        ).toPromise()
+    }
+
+    guardarPostulanteConvocatoria(params = {}): any {
+        let formData: FormData = new FormData();
+        Object.entries(params).forEach(([key, value]) => {
+            formData.append(key, value as string);
+        });
+        const url = this.enviUrl + '/api/recursoshumanos/guardarPostulanteConvocatoria';
+        return this.http.post<any>(url, formData).pipe(
+            map(res => {
+                if (!res) {
+                    throw new Error
+                }
+                return res
+            }),
+            catchError(err => throwError(err))
+        ).toPromise()
+    }
+
+    actualizarPostulanteConvocatoria(params = {}): any {
+        let formData: FormData = new FormData();
+        Object.entries(params).forEach(([key, value]) => {
+            formData.append(key, value as string);
+        });
+        const url = this.enviUrl + '/api/recursoshumanos/actualizarPostulanteConvocatoria';
+        return this.http.post<any>(url, formData).pipe(
+            map(res => {
+                if (!res) {
+                    throw new Error
+                }
+                return res
+            }),
+            catchError(err => throwError(err))
+        ).toPromise()
+    }
+
+    eliminarPostulanteConvocatoria(params = {}): any {
+        let formData: FormData = new FormData();
+        Object.entries(params).forEach(([key, value]) => {
+            formData.append(key, value as string);
+        });
+        const url = this.enviUrl + '/api/recursoshumanos/eliminarPostulanteConvocatoria';
+        return this.http.post<any>(url, formData).pipe(
+            map(res => {
+                if (!res) {
+                    throw new Error
+                }
+                return res
+            }),
+            catchError(err => throwError(err))
+        ).toPromise()
+    }
+
+    listarHorarioYFeriadosArea(params = {}): any {
+        let formData: FormData = new FormData();
+        Object.entries(params).forEach(([key, value]) => {
+            formData.append(key, value as string);
+        });
+        const url = this.enviUrl + '/api/recursoshumanos/listarHorarioYFeriadosArea';
+        return this.http.post<any>(url, formData).pipe(
+            map(res => {
+                if (!res) {
+                    throw new Error
+                }
+                return res
+            }),
+            catchError(err => throwError(err))
+        ).toPromise()
+    }
+
+    guardarFeriadoRecursosHumanos(params = {}): any {
+        let formData: FormData = new FormData();
+        Object.entries(params).forEach(([key, value]) => {
+            formData.append(key, value as string);
+        });
+        const url = this.enviUrl + '/api/recursoshumanos/guardarFeriadoRecursosHumanos';
+        return this.http.post<any>(url, formData).pipe(
+            map(res => {
+                if (!res) {
+                    throw new Error
+                }
+                return res
+            }),
+            catchError(err => throwError(err))
+        ).toPromise()
+    }
+
+    actualizarFeriadoRecursosHumanos(params = {}): any {
+        let formData: FormData = new FormData();
+        Object.entries(params).forEach(([key, value]) => {
+            formData.append(key, value as string);
+        });
+        const url = this.enviUrl + '/api/recursoshumanos/actualizarFeriadoRecursosHumanos';
+        return this.http.post<any>(url, formData).pipe(
+            map(res => {
+                if (!res) {
+                    throw new Error
+                }
+                return res
+            }),
+            catchError(err => throwError(err))
+        ).toPromise()
+    }
+
+    eliminarFeriadoRecursosHumanos(params = {}): any {
+        let formData: FormData = new FormData();
+        Object.entries(params).forEach(([key, value]) => {
+            formData.append(key, value as string);
+        });
+        const url = this.enviUrl + '/api/recursoshumanos/eliminarFeriadoRecursosHumanos';
+        return this.http.post<any>(url, formData).pipe(
+            map(res => {
+                if (!res) {
+                    throw new Error
+                }
+                return res
+            }),
+            catchError(err => throwError(err))
+        ).toPromise()
+    }
+
+    guardarHorarioArea(params = {}): any {
+        let formData: FormData = new FormData();
+        Object.entries(params).forEach(([key, value]) => {
+            formData.append(key, value as string);
+        });
+        const url = this.enviUrl + '/api/recursoshumanos/guardarHorarioArea';
+        return this.http.post<any>(url, formData).pipe(
+            map(res => {
+                if (!res) {
+                    throw new Error
+                }
+                return res
+            }),
+            catchError(err => throwError(err))
+        ).toPromise()
+    }
+
+    actualizarHorarioArea(params = {}): any {
+        let formData: FormData = new FormData();
+        Object.entries(params).forEach(([key, value]) => {
+            formData.append(key, value as string);
+        });
+        const url = this.enviUrl + '/api/recursoshumanos/actualizarHorarioArea';
+        return this.http.post<any>(url, formData).pipe(
+            map(res => {
+                if (!res) {
+                    throw new Error
+                }
+                return res
+            }),
+            catchError(err => throwError(err))
+        ).toPromise()
+    }
+
+    listarAsignacionesUsuario(params = {}): any {
+        let formData: FormData = new FormData();
+        Object.entries(params).forEach(([key, value]) => {
+            formData.append(key, value as string);
+        });
+        const url = this.enviUrl + '/api/recursoshumanos/listarAsignacionesUsuario';
+        return this.http.post<any>(url, formData).pipe(
+            map(res => {
+                if (!res) {
+                    throw new Error
+                }
+                return res
+            }),
+            catchError(err => throwError(err))
+        ).toPromise()
+    }
+
+    guardarAsignacionUsuario(params = {}): any {
+        let formData: FormData = new FormData();
+        Object.entries(params).forEach(([key, value]) => {
+            formData.append(key, value as string);
+        });
+        const url = this.enviUrl + '/api/recursoshumanos/guardarAsignacionUsuario';
+        return this.http.post<any>(url, formData).pipe(
+            map(res => {
+                if (!res) {
+                    throw new Error
+                }
+                return res
+            }),
+            catchError(err => throwError(err))
+        ).toPromise()
+    }
+
+    actualizarAsignacionUsuario(params = {}): any {
+        let formData: FormData = new FormData();
+        Object.entries(params).forEach(([key, value]) => {
+            formData.append(key, value as string);
+        });
+        const url = this.enviUrl + '/api/recursoshumanos/actualizarAsignacionUsuario';
+        return this.http.post<any>(url, formData).pipe(
+            map(res => {
+                if (!res) {
+                    throw new Error
+                }
+                return res
+            }),
+            catchError(err => throwError(err))
+        ).toPromise()
+    }
+
+    eliminarAsignacionesUsuario(params = {}): any {
+        let formData: FormData = new FormData();
+        Object.entries(params).forEach(([key, value]) => {
+            formData.append(key, value as string);
+        });
+        const url = this.enviUrl + '/api/recursoshumanos/eliminarAsignacionesUsuario';
+        return this.http.post<any>(url, formData).pipe(
+            map(res => {
+                if (!res) {
+                    throw new Error
+                }
+                return res
+            }),
+            catchError(err => throwError(err))
+        ).toPromise()
+    }
+
+    listarDetalleConvocatoria(params = {}): any {
+        let formData: FormData = new FormData();
+        Object.entries(params).forEach(([key, value]) => {
+            formData.append(key, value as string);
+        });
+        const url = this.enviUrl + '/api/recursoshumanos/listarDetalleConvocatoria';
+        return this.http.post<any>(url, formData).pipe(
+            map(res => {
+                if (!res) {
+                    throw new Error
+                }
+                return res
+            }),
+            catchError(err => throwError(err))
+        ).toPromise()
+    }
+
+    guardarDetalleConvocatoria(params = {}): any {
+        let formData: FormData = new FormData();
+        Object.entries(params).forEach(([key, value]) => {
+            formData.append(key, value as string);
+        });
+        const url = this.enviUrl + '/api/recursoshumanos/guardarDetalleConvocatoria';
+        return this.http.post<any>(url, formData).pipe(
+            map(res => {
+                if (!res) {
+                    throw new Error
+                }
+                return res
+            }),
+            catchError(err => throwError(err))
+        ).toPromise()
+    }
+
+    actualizarDetalleConvocatoria(params = {}): any {
+        let formData: FormData = new FormData();
+        Object.entries(params).forEach(([key, value]) => {
+            formData.append(key, value as string);
+        });
+        const url = this.enviUrl + '/api/recursoshumanos/actualizarDetalleConvocatoria';
+        return this.http.post<any>(url, formData).pipe(
+            map(res => {
+                if (!res) {
+                    throw new Error
+                }
+                return res
+            }),
+            catchError(err => throwError(err))
+        ).toPromise()
+    }
+
+    eliminarDetalleConvocatoria(params = {}): any {
+        let formData: FormData = new FormData();
+        Object.entries(params).forEach(([key, value]) => {
+            formData.append(key, value as string);
+        });
+        const url = this.enviUrl + '/api/recursoshumanos/eliminarDetalleConvocatoria';
+        return this.http.post<any>(url, formData).pipe(
+            map(res => {
+                if (!res) {
+                    throw new Error
+                }
+                return res
+            }),
+            catchError(err => throwError(err))
+        ).toPromise()
+    }
 }

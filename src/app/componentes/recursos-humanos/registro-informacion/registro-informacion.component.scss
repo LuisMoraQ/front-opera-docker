@@ -1,0 +1,150 @@
+.h-contenedor {
+  height: calc(100vh - 225px);
+}
+
+.contendor-fichatecnica {
+    min-height: 268px;
+    height: calc(100vh - 275px);
+    overflow-x: hidden;
+}
+
+.contendor-fichatecnica-sinimg {
+    min-height: 268px;
+    height: calc(100vh - 275px);
+    overflow-x: hidden;
+}
+
+.bg-powererblue {
+  background-color: powderblue !important;
+}
+
+.h-convocatorias {
+  height: 30vh;
+}
+
+.h-postulantes {
+  height: calc(100dvh - 600px);
+}
+
+/* En tu CSS */
+.star-icon {
+  color: #ccc;
+  cursor: pointer;
+  font-size: 24px;
+  transition: color 0.2s;
+}
+
+.star-icon.filled {
+  color: #ffc107; /* Color amarillo */
+}
+
+.star-icon:hover {
+  color: #ffc107;
+}
+
+.rating-container {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.rating-value {
+  margin-left: 8px;
+  font-size: 14px;
+  color: #666;
+}
+
+/* Agrega esto en tu archivo de estilos CSS/SCSS */
+
+.label-container {
+    position: relative;
+    height: 1.5em;
+    margin-bottom: 0.5em;
+}
+
+.mat-form-field-label {
+    font-size: 0.75em; /* 12px */
+    color: rgba(0, 0, 0, 0.6); /* Color gris de Material */
+    font-weight: 400;
+    line-height: 1.125;
+    transform-origin: 0 0;
+    transition: color 0.2s;
+}
+
+/* Estilo cuando el campo está enfocado */
+:host-context(.mat-focused) .mat-form-field-label {
+    color: #3f51b5; /* Color primario de Material */
+}
+
+/* Para que los labels se parezcan a los de Material Angular */
+.label-container .mat-form-field-label {
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+/* Si quieres el efecto de "floating label" */
+.label-container.floating .mat-form-field-label {
+    transform: translateY(-1em) scale(0.75);
+}
+
+.h-contenedor-horarios {
+  height: calc(100dvh - 300px);
+}
+
+.h-35 {
+  height: 35px !important;
+}
+
+/* En tu CSS específico para la tabla */
+#tablaHorariosUnica .time-input-container {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    cursor: pointer;
+}
+
+#tablaHorariosUnica .full-click-time-input {
+    width: 100% !important;
+    height: 100% !important;
+    padding: 0 5px !important;
+    margin: 0 !important;
+    border: 1px solid #ccc !important;
+    border-radius: 3px !important;
+    text-align: center !important;
+    font-size: 12px !important;
+    cursor: pointer !important;
+    background: white !important;
+    box-sizing: border-box !important;
+}
+
+/* Ocultar el ícono nativo y hacer que todo sea clickeable */
+#tablaHorariosUnica .full-click-time-input::-webkit-calendar-picker-indicator {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    opacity: 0; /* Ícono invisible pero clickeable en toda el área */
+    cursor: pointer;
+}
+
+/* Para Firefox */
+#tablaHorariosUnica .full-click-time-input::-moz-calendar-picker-indicator {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.mat-checkbox-inner-container {
+  margin-right: 2px !important;
+}
