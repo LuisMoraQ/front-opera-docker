@@ -2,7 +2,7 @@
   <nav class="navbar-portada">
     <div class="logo"><a routerLink="/">BIPLAN</a></div>
     <ul [ngClass]="{'active': menuActive}">
-      <li [ngClass]="{'active': selectedSection === 'section6'}"><a routerLink="/convocatorias">Convocatorias</a></li>
+
       <li [ngClass]="{'active': selectedSection === 'section1'}"><a routerLink="/nosotros">Nosotros (Quienes Somos)</a>
       </li>
       <li [ngClass]="{'active': selectedSection === 'section2'}"><a routerLink="/modulos">Módulos de Software</a></li>
@@ -11,6 +11,7 @@
       <li [ngClass]="{'active': selectedSection === 'section4'}"><a routerLink="/ventajas">Ventajas y Mejoras</a></li>
       <li [ngClass]="{'active': selectedSection === 'section5'}"><a routerLink="/contacto">Contactos y
           Distribuidores</a></li>
+      <li [ngClass]="{'active': selectedSection === 'section6'}"><a routerLink="/convocatorias">Convocatorias</a></li>
       <li class="pasarela-pago"><a routerLink="/pasarela">Comprar</a></li>
       <li class="inicio-seccion"><a routerLink="/">Iniciar Sesión</a></li>
     </ul>

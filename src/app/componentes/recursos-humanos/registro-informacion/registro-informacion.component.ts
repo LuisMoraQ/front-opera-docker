@@ -99,6 +99,7 @@ export class RegistroInformacionComponent implements OnInit {
   cargosFiltrados: any[] = [];
   areaSelecHorarios = null
   diasNoLaborablesArray: any[] = [];
+  calificar: boolean = false;
   get descripcion(): UntypedFormControl { return this.formCargo.get('descripcion') as UntypedFormControl }
   get abreviatura(): UntypedFormControl { return this.formCargo.get('abreviatura') as UntypedFormControl }
   get id_cargo(): UntypedFormControl { return this.formCargo.get('id_cargo') as UntypedFormControl }
@@ -211,16 +212,18 @@ export class RegistroInformacionComponent implements OnInit {
     id_convocatoria: new UntypedFormControl('', []),
     nombres: new UntypedFormControl('', [Validators.required]),
     apellidos: new UntypedFormControl('', [Validators.required]),
-    fecha: new UntypedFormControl('', [Validators.required]),
-    evaluador: new UntypedFormControl('', [Validators.required]),
+    fecha: new UntypedFormControl('', []),
+    evaluador: new UntypedFormControl('', []),
     id_area: new UntypedFormControl('', []),
     id_cargo: new UntypedFormControl('', [Validators.required]),
-    cv: new UntypedFormControl('', [Validators.required]),
-    entrevista: new UntypedFormControl('', [Validators.required]),
-    telefono: new UntypedFormControl('', []),
-    correo: new UntypedFormControl('', []),
+    cv: new UntypedFormControl('', []),
+    entrevista: new UntypedFormControl('', []),
+    telefono: new UntypedFormControl('', [Validators.required]),
+    correo: new UntypedFormControl('', [Validators.required]),
     progreso: new UntypedFormControl('', []),
-    calidad: new UntypedFormControl('', [])
+    calidad: new UntypedFormControl('', []),
+    adicional: new UntypedFormControl('', []),
+    dni: new UntypedFormControl('', [Validators.required]),
   })
   get id_postulante(): UntypedFormControl { return this.formPostulante.get('id_postulante') as UntypedFormControl }
   get id_convocatoria_postulante(): UntypedFormControl { return this.formPostulante.get('id_convocatoria') as UntypedFormControl }
@@ -236,6 +239,8 @@ export class RegistroInformacionComponent implements OnInit {
   get correo_postulante(): UntypedFormControl { return this.formPostulante.get('correo') as UntypedFormControl }
   get progreso(): UntypedFormControl { return this.formPostulante.get('progreso') as UntypedFormControl }
   get calidad(): UntypedFormControl { return this.formPostulante.get('calidad') as UntypedFormControl }
+  get adicional(): UntypedFormControl { return this.formPostulante.get('adicional') as UntypedFormControl }
+  get dni_postulante(): UntypedFormControl { return this.formPostulante.get('dni') as UntypedFormControl }
 
 
   formFeriado = new UntypedFormGroup({
@@ -379,7 +384,6 @@ export class RegistroInformacionComponent implements OnInit {
   async eliminarCargo(row, i) {
     const sw = await SwalService.confirm('Estas seguro?', 'Se eliminarà el cargo seleccionado')
     if (sw.isConfirmed) {
-      console.log('row', row)
       this.mostrar_carga_todo = true
       const obj = {
         id_cargo: row.id_cargo,
@@ -389,6 +393,7 @@ export class RegistroInformacionComponent implements OnInit {
       const resp = await this.recursosHumanosService.eliminarCargoArea(obj)
       if (resp[0].id == 1) {
         this.tablaCargos.splice(i, 1)
+        this.filSel = null
         this.mostrar_carga_todo = false
         this.toaster.success(
           resp[0].mensaje,
@@ -753,33 +758,11 @@ export class RegistroInformacionComponent implements OnInit {
         id_proyecto: this.idProyecto
       }
       const resp = await this.recursosHumanosService.listarUsuariosRecursosHumanos(obj)
-      console.log('generarTablaUsuarios', resp)
       this.tablaUsuarios = []
       let tablaNueva = []
       let areaActual = null
       let cargoActual = null
-      // for (const element of this.tablaCargos2) {
-      //   tablaNueva.push(element)
 
-      //   if (element.id_cargo) {
-      //     cargoActual = element.descripcion
-      //     const filtrados = resp.filter(ele => (element.id_cargo == ele.id_cargo) && (element.id_area == ele.id_area))
-      //     // Agregar cargo y area a cada elemento filtrado y ordenar por fecha
-      //     const filtradosProcesados = filtrados.map(ele => ({
-      //       ...ele,
-      //       cargo: cargoActual,
-      //       area: areaActual
-      //     })).sort((a, b) => {
-      //       const fechaA = new Date(a.fecha_creacion).getTime();
-      //       const fechaB = new Date(b.fecha_creacion).getTime();
-      //       return fechaB - fechaA; // Descendente (más reciente primero)
-      //     })
-      //     tablaNueva = tablaNueva.concat(filtradosProcesados)
-      //   } else {
-      //     areaActual = element.descripcion
-      //   }
-      // }
-      // this.tablaUsuariosXCargo = tablaNueva
       this.tablaUsuarios = resp
     } catch (error) {
       console.log(error)
@@ -825,7 +808,19 @@ export class RegistroInformacionComponent implements OnInit {
         }
         const resp = await this.recursosHumanosService.eliminarUsuarioRecursosHumanos(obj)
         await this.generarTablaUsuarios()
+        this.filUsuario = null
+        this.tablaAsignaciones = []
+        this.filDetalle = null
         this.mostrar_carga_todo = false
+        this.toaster.success(
+          'Se elimino correctamente',
+          'Correcto',
+          {
+            closeButton: false,
+            positionClass: 'toast-bottom-right',
+            timeOut: 4000,
+          }
+        );
       }
 
     } catch (error) {
@@ -847,9 +842,7 @@ export class RegistroInformacionComponent implements OnInit {
           id_proyecto: this.idProyecto,
           id_usuario: this.tablaUsuarios[i].id_usuario
         }
-        console.log('obj', obj)
         const resp = await this.recursosHumanosService.listarAsignacionesUsuario(obj)
-        console.log('listarAsignacionesUsuario', resp)
         if (resp?.length) {
           this.tablaAsignaciones = resp
         }
@@ -865,7 +858,6 @@ export class RegistroInformacionComponent implements OnInit {
   }
 
   async abrirModalAsignacion(row?) {
-    console.log('row', row)
     this.mostrar_carga_todo = true
     await this.listarAreasYCargos()
     if (!row) {
@@ -1148,9 +1140,7 @@ export class RegistroInformacionComponent implements OnInit {
       const inicioExistente = moment(asignacion.fecha_inicio).format('YYYY-MM-DD');
       const finExistente = moment(asignacion.fecha_fin).format('YYYY-MM-DD');
 
-      console.log('Comparando fechas:');
-      console.log('Nueva asignación:', fechaInicio, 'a', fechaFin);
-      console.log('Existente:', inicioExistente, 'a', finExistente);
+   
 
       // Verificar solapamiento (EXCLUYENDO límites exactos)
       // Un día termina y el siguiente empieza - eso NO es solapamiento
@@ -1165,7 +1155,6 @@ export class RegistroInformacionComponent implements OnInit {
         return true; // Una empieza cuando otra termina - no hay solapamiento
       }
 
-      console.log('¿Hay solapamiento?', haySolapamiento);
       return haySolapamiento;
     });
   }
@@ -1253,7 +1242,6 @@ export class RegistroInformacionComponent implements OnInit {
       }
       this.mostrar_carga_todo = true
       const rowAsignacion = this.tablaAsignaciones[this.filAsignacion]
-      console.log('rowAsignacion', rowAsignacion)
       const obj = {
         id_asignacion: this.id_asignacion.value,
         id_proyecto: rowAsignacion.id_proyecto,
@@ -1264,7 +1252,6 @@ export class RegistroInformacionComponent implements OnInit {
         fecha_fin: this.fecha_fin_asignacion.value,
         estado: rowAsignacion.estado,
       }
-      console.log('actualizarAsignacionUsuario', obj)
       const response = await this.recursosHumanosService.actualizarAsignacionUsuario(obj)
       if (response) {
         this.cerrarModalAsignacion()
@@ -1619,9 +1606,7 @@ export class RegistroInformacionComponent implements OnInit {
           id_proyecto: row.id_proyecto,
           id_area: row.id_area
         }
-        console.log('obj', obj)
         const response = await this.recursosHumanosService.eliminarAreaRecursosHumanos(obj)
-        console.log('eliminarAreaRecursosHumanos', response)
         if (response[0]?.id == 1) {
           await this.listarCargosPorArea()
           this.mostrar_carga_todo = false
@@ -1709,7 +1694,6 @@ export class RegistroInformacionComponent implements OnInit {
 
     if (row) {
       // this.cargosFiltrados = this.cargos.filter(ele => Number(ele.id_area) == Number(row.id_area))
-      console.log('row', row)
       const fecha = row.fecha
         ? row.fecha.split('T')[0]
         : null;
@@ -1721,7 +1705,7 @@ export class RegistroInformacionComponent implements OnInit {
         // cargos: row.cargos ? row.cargos.split('|').map(item => Number(item)) : null,
         // id_area: row.id_area,
         descripcion: row.descripcion,
-        estado: row.estado
+        estado: row.estado.toString()
       })
     }
     this.modalConvocatoria.show()
@@ -1760,10 +1744,14 @@ export class RegistroInformacionComponent implements OnInit {
         descripcion: this.descripcionConvocatoria.value,
         estado: 1
       }
-      console.log('obj', obj)
       const resp = await this.recursosHumanosService.guardarConvocatoriaRecursosHumanos(obj)
-      console.log('resp', resp)
       await this.listarConvocatorias()
+
+      this.detalleConvocatoria = []
+      this.tablaPostulantes = []
+      this.filConv = null
+      this.filDetalle = null
+      this.filPostulante = null
       this.cerrarModalConvocatoria()
       this.toaster.success(
         'Se guardo correctamente',
@@ -1784,12 +1772,18 @@ export class RegistroInformacionComponent implements OnInit {
 
   async listarConvocatorias() {
     try {
+      // this.filConv = null
+      // this.filDetalle = null
+      // this.filPostulante = null
+      this.tablaConvocatorias = []
       this.mostrar_carga_todo = true
       const obj = {
         id_proyecto: this.idProyecto
       }
       const resp = await this.recursosHumanosService.listarConvocatoriasRecursosHumanos(obj)
-      console.log('listarConvocatorias', resp)
+      // this.tablaConvocatorias = []
+      // this.detalleConvocatoria = []
+      // this.tablaPostulantes
       this.tablaConvocatorias = resp
     } catch (error) {
       this.mostrar_carga_todo = false
@@ -1800,7 +1794,6 @@ export class RegistroInformacionComponent implements OnInit {
 
   cambioSelectAreaDetalle(select) {
     this.cargosFiltrados = this.cargos.filter(ele => Number(ele.id_area) == Number(this.id_area_detalle_conv.value))
-    console.log('this.cargosFiltrados', this.cargosFiltrados)
   }
 
   cambioSelectAreaAsignacion(select) {
@@ -1816,7 +1809,6 @@ export class RegistroInformacionComponent implements OnInit {
         id_proyecto: this.idProyecto
       }
       const resp = await this.recursosHumanosService.listarCargosPorArea(obj)
-      console.log('listarAreasYCargos', resp)
       this.areas = resp[0]
       this.cargos = resp[1]
 
@@ -1855,9 +1847,7 @@ export class RegistroInformacionComponent implements OnInit {
         descripcion: this.descripcionConvocatoria.value,
         estado: this.estadoConvocatoria.value
       }
-      console.log('obj', obj)
       const resp = await this.recursosHumanosService.actualizarConvocatoriaRecursosHumanos(obj)
-      console.log('resp', resp)
       await this.listarConvocatorias()
       this.cerrarModalConvocatoria()
       this.toaster.success(
@@ -1877,11 +1867,9 @@ export class RegistroInformacionComponent implements OnInit {
     }
   }
 
-
-
   async eliminarConvocatoria(row, i) {
     try {
-      const sw = await SwalService.confirm('Estas seguro?', 'Se eliminarà la convocatoria seleccionado y todas los detalles de areas relacionadas a la convocatoria')
+      const sw = await SwalService.confirm('Estas seguro?', 'Se eliminarà la convocatoria seleccionada ,detalle y postulantes relacionados a ala convocatoria')
       if (sw.isConfirmed) {
         this.mostrar_carga_todo = true
         const obj = {
@@ -1889,12 +1877,17 @@ export class RegistroInformacionComponent implements OnInit {
           id_convocatoria: row.id_convocatoria
         }
         const resp = await this.recursosHumanosService.eliminarConvocatoriaRecursosHumanos(obj)
-        if (resp[0].resultado == 'OK') {
+        if (resp[0]?.resultado == 'OK') {
           await this.listarConvocatorias()
+          this.detalleConvocatoria = []
+          this.tablaPostulantes = []
+          this.filConv = null
+          this.filDetalle = null
+          this.filPostulante = null
           this.mostrar_carga_todo = false
           this.toaster.success(
-            'Se elimino correctamente',
-            'Correcto',
+            resp[0]?.mensaje,
+            resp[0]?.resultado,
             {
               closeButton: false,
               positionClass: 'toast-bottom-right',
@@ -1927,7 +1920,6 @@ export class RegistroInformacionComponent implements OnInit {
       }
 
       this.tablaPostulantes = await this.recursosHumanosService.listarPostulantesConvocatoria(obj)
-      console.log('postulantes', this.tablaPostulantes)
       this.buscando = false
     } catch (error) {
       console.log(error)
@@ -1970,7 +1962,6 @@ export class RegistroInformacionComponent implements OnInit {
       id_convocatoria: id_convotoria
     }
     const resp = await this.recursosHumanosService.listarDetalleConvocatoria(obj)
-    console.log('listarDetalleConvocatoria', resp)
     if (resp?.length) {
       this.detalleConvocatoria = resp
     }
@@ -2010,9 +2001,7 @@ export class RegistroInformacionComponent implements OnInit {
         estado: this.estado_detalle_conv.value ? 1 : 0,
         ciudad: this.ciudad.value ? (this.ciudad.value).toUpperCase() : ''
       }
-      console.log('obj', obj)
       const resp = await this.recursosHumanosService.actualizarDetalleConvocatoria(obj)
-      console.log('resp', resp)
       await this.listarDetalleConvocatoria(convocatoria.id_convocatoria, convocatoria.id_proyecto)
       this.cerrarModalDetalleConvocatoria()
       this.toaster.success(
@@ -2065,9 +2054,7 @@ export class RegistroInformacionComponent implements OnInit {
         estado: 1,
         ciudad: this.ciudad.value ? this.ciudad.value : ''
       }
-      console.log('obj', obj)
       const resp = await this.recursosHumanosService.guardarDetalleConvocatoria(obj)
-      console.log('actualizarDetalleConvocatoria', resp)
       await this.listarDetalleConvocatoria(convocatoria.id_convocatoria, convocatoria.id_proyecto)
       this.cerrarModalDetalleConvocatoria()
       this.toaster.success(
@@ -2126,17 +2113,15 @@ export class RegistroInformacionComponent implements OnInit {
     this.modalPostulante.hide()
   }
 
-  async openModalPostulante(row?) {
+  async openModalPostulante(row?, calificar?) {
     this.cargosFiltrados = []
     this.mostrar_carga_todo = true
     this.currentRating = 0;
 
     this.formPostulante.reset()
-
-
     this.cargosFiltrados = this.detalleConvocatoria.map(ele => { const a = { descripcion: ele.area_descripcion + ' -> ' + ele.cargo_descripcion, id: ele.id_area + '-' + ele.id_cargo }; return a })
-    console.log('this.cargosFiltrados', this.cargosFiltrados)
     if (row) {
+      this.calificar = calificar ? true : false
       const fecha = row.fecha
         ? row.fecha.split('T')[0]
         : null;
@@ -2154,7 +2139,9 @@ export class RegistroInformacionComponent implements OnInit {
         telefono: row.telefono,
         correo: row.correo,
         progreso: row.progreso,
-        calidad: row.calidad
+        calidad: row.calidad,
+        adicional: row.adicional,
+        dni: row.dni
       })
       this.currentRating = row.calidad
     }
@@ -2210,29 +2197,44 @@ export class RegistroInformacionComponent implements OnInit {
 
       const convocatoria = this.tablaConvocatorias[this.filConv]
       // const existe = this.tablaCargos.find(ele=> ele.)
+      const dataPostulante = this.tablaPostulantes[this.filPostulante]
       this.mostrar_carga_todo = true
+      let area = null
+      let cargo = null
       const split = this.id_cargo_postulante.value.split('-')
+      if (this.calificar) {
+        area = dataPostulante.id_area
+        cargo = dataPostulante.id_cargo
+      } else {
+        area = split[0]
+        cargo = split[1]
+      }
       const obj = {
         id_postulante: this.id_postulante.value,
         id_proyecto: convocatoria.id_proyecto,
         id_convocatoria: convocatoria.id_convocatoria,
         nombres: (this.nombres_postulante.value).trim(),
         apellidos: (this.apellidos_postulante.value).trim(),
-        fecha: this.fecha_postulante.value,
-        evaluador: this.evaluador.value,
-        id_area: split[0],
-        id_cargo: split[1],
+        fecha: this.fecha_postulante.value ? this.fecha_postulante.value : '',
+        evaluador: this.evaluador.value ? this.evaluador.value : '',
+        id_area: area,
+        id_cargo: cargo,
         cv: this.cv.value,
-        entrevista: this.entrevista.value,
+        entrevista: this.entrevista.value ? this.entrevista.value : '',
         telefono: this.telefono_postulante.value,
         correo: this.correo_postulante.value,
         progreso: this.progreso.value ? this.progreso.value : 0,
-        calidad: this.calidad.value ? this.calidad.value : 0
+        calidad: this.calidad.value ? this.calidad.value : 0,
+        adicional: this.adicional.value ? this.adicional.value : '',
+        dni: this.dni_postulante.value
       }
-      console.log('actualizarPostulante', obj)
       const resp = await this.recursosHumanosService.actualizarPostulanteConvocatoria(obj)
-      console.log('resp', resp)
-      await this.selFilConvocatoria(this.filConv)
+      const obj2 = {
+        id_proyecto: convocatoria.id_proyecto,
+        id_convocatoria: convocatoria.id_convocatoria
+      }
+
+      this.tablaPostulantes = await this.recursosHumanosService.listarPostulantesConvocatoria(obj2)
       this.cerrarModalPostulante()
       this.toaster.success(
         'Se guardo correctamente',
@@ -2277,31 +2279,43 @@ export class RegistroInformacionComponent implements OnInit {
         id_convocatoria: convocatoria.id_convocatoria,
         nombres: (this.nombres_postulante.value).trim(),
         apellidos: (this.apellidos_postulante.value).trim(),
-        fecha: this.fecha_postulante.value,
-        evaluador: this.evaluador.value,
+        fecha: '',
+        evaluador: '',
         id_area: split[0],
         id_cargo: split[1],
         cv: this.cv.value,
-        entrevista: this.entrevista.value,
+        entrevista: '',
         telefono: this.telefono_postulante.value,
         correo: this.correo_postulante.value,
-        progreso: this.progreso.value ? this.progreso.value : 0,
-        calidad: this.calidad.value ? this.calidad.value : 0
+        progreso: 0,
+        calidad: 0,
+        adicional: this.adicional.value ? this.adicional.value : '',
+        dni: this.dni_postulante.value
       }
-      console.log('agregarPostulanteConvocatoria', obj)
       const resp = await this.recursosHumanosService.guardarPostulanteConvocatoria(obj)
-      console.log('resp', resp)
-      await this.selFilConvocatoria(this.filConv)
-      this.cerrarModalPostulante()
-      this.toaster.success(
-        'Se guardo correctamente',
-        'Correcto',
-        {
-          closeButton: false,
-          positionClass: 'toast-bottom-right',
-          timeOut: 4000,
+      if (resp[0]?.estado == "EXITO") {
+        const obj = {
+          id_proyecto: convocatoria.id_proyecto,
+          id_convocatoria: convocatoria.id_convocatoria
         }
-      );
+
+        this.tablaPostulantes = await this.recursosHumanosService.listarPostulantesConvocatoria(obj)
+        this.cerrarModalPostulante()
+        this.toaster.success(
+          'Se guardo correctamente',
+          'Correcto',
+          {
+            closeButton: false,
+            positionClass: 'toast-bottom-right',
+            timeOut: 4000,
+          }
+        );
+      } else {
+        this.mostrar_carga_todo = false;
+        SwalService.error(resp[0]?.mensaje, 'El dni se encuentra registrado para la postulacion de este cargo');
+        return
+      }
+
       this.mostrar_carga_todo = false
     } catch (error) {
       this.mostrar_carga_todo = false
@@ -2321,7 +2335,13 @@ export class RegistroInformacionComponent implements OnInit {
         }
         const resp = await this.recursosHumanosService.eliminarPostulanteConvocatoria(obj)
         if (resp[0].resultado == 'OK') {
-          await this.listarConvocatorias()
+          const obj = {
+            id_proyecto: row.id_proyecto,
+            id_convocatoria: row.id_convocatoria
+          }
+
+          this.tablaPostulantes = await this.recursosHumanosService.listarPostulantesConvocatoria(obj)
+          this.filPostulante = null
           this.mostrar_carga_todo = false
           this.toaster.success(
             'Se elimino correctamente',
@@ -2357,9 +2377,7 @@ export class RegistroInformacionComponent implements OnInit {
         id_area: this.areaSelecHorarios
       }
       let horario = null
-      console.log('listarHorarioYFeriadosArea', obj)
       const resp = await this.recursosHumanosService.listarHorarioYFeriadosArea(obj)
-      console.log('resp', resp)
       if (resp[0]) {
         if (!resp[0].length) {
           horario = {
@@ -2396,7 +2414,6 @@ export class RegistroInformacionComponent implements OnInit {
         })
       }
       this.inicioSemana = horario.inicio_semana
-      console.log('horario', horario)
       const diasNoLaborables = horario.dias_nolaborables.split('|')
       this.diasNoLaborablesArray = this.dias.map(ele => diasNoLaborables.includes(ele))
       this.cantHorasDescanso = this.calcularHorasEntreTurnos(horario.hora_salida_manana, horario.hora_ingreso_tarde)
@@ -2422,11 +2439,6 @@ export class RegistroInformacionComponent implements OnInit {
       d.unshift('Hora salida tarde')
       this.tablaHorario.push(d)
 
-      console.log('cantHorasDescanso', this.cantHorasDescanso)
-      console.log('cantHorasSemana', this.cantHorasSemana)
-      console.log('inicioSemana', this.inicioSemana)
-      console.log('tablaFeriados', this.tablaFeriados)
-      console.log('tablaHorario', this.tablaHorario)
       this.mostrar_carga_todo = false
     } catch (error) {
       this.mostrar_carga_todo = false
@@ -2485,7 +2497,6 @@ export class RegistroInformacionComponent implements OnInit {
   }
 
   horaAMinutos(hora: string): number {
-    // Eliminar segundos si existen
     const partes = hora.split(':');
     const horas = parseInt(partes[0], 10);
     const minutos = parseInt(partes[1], 10);
@@ -2527,7 +2538,6 @@ export class RegistroInformacionComponent implements OnInit {
 
   finalizarEdicion() {
     this.celdaEditable = [];
-    console.log('cambio', this.tablaHorario)
     const horario = {
       hora_ingreso_manana: this.tablaHorario[0].slice(1).join('|'),
       hora_salida_manana: this.tablaHorario[1].slice(1).join('|'),
@@ -2822,6 +2832,7 @@ export class RegistroInformacionComponent implements OnInit {
               activo: activo
             };
           })
+          this.filFeriado = null
           this.toaster.success(
             'Se eliminó correctamente',
             'Correcto',
@@ -2839,6 +2850,31 @@ export class RegistroInformacionComponent implements OnInit {
       this.mostrar_carga_todo = false
       SwalService.error()
       console.log(error)
+    }
+  }
+
+  abrirEnlace(url: string, event?: MouseEvent) {
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+
+    if (!url) return;
+
+    let urlCompleta = url;
+
+    // Agregar protocolo si no lo tiene
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+      urlCompleta = 'https://' + url;
+    }
+
+    // Validar que sea una URL válida
+    try {
+      new URL(urlCompleta);
+      window.open(urlCompleta, '_blank', 'noopener,noreferrer');
+    } catch (error) {
+      console.error('URL inválida:', url, error);
+      this.toaster.error('Enlace inválido', 'No se puede abrir el enlace');
     }
   }
 }
