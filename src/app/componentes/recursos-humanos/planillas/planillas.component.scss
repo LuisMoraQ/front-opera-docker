@@ -1,0 +1,69 @@
+.h-content {
+  height: calc(100dvh - 175px);
+}
+.h-22 {
+  height: 22px !important;
+}
+
+.bg-area {
+  background-color: #d0def5;
+}
+
+.h-planilla {
+  height: calc(100% - 150px);
+}
+
+.h-leyenda {
+  max-height: 40px;
+  min-height: 40px;
+}
+
+.badge {
+  font-size: 0.65rem;
+  padding: 0.2rem 0.35rem;
+  min-width: 24px;
+  text-align: center;
+  font-weight: 600;
+}
+
+small {
+  font-size: 0.7rem;
+  white-space: nowrap;
+}
+
+/* Colores personalizados */
+.bg-orange {
+  background-color: #fd7e14 !important;
+}
+
+.bg-dark-red {
+  background-color: #c82333 !important;
+}
+
+.bg-pink {
+  background-color: #e83e8c !important;
+}
+
+.bg-purple {
+  background-color: #6f42c1 !important;
+}
+
+.bg-teal {
+  background-color: #20c997 !important;
+}
+
+.table-sm td {
+    padding: 0.15rem 0.5rem;
+    white-space: nowrap;
+}
+
+.badge {
+    font-size: 0.65rem;
+    padding: 0.2rem 0.35rem;
+    min-width: 24px;
+    font-weight: 600;
+}
+
+small {
+    font-size: 0.7rem;
+}

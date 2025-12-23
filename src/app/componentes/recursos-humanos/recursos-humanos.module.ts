@@ -23,12 +23,14 @@ import { SharedModule } from "src/app/shared/shared.module";
 import { TinymceModule } from "angular2-tinymce";
 import { NgSelectModule } from '@ng-select/ng-select';
 import {MatSliderModule} from '@angular/material/slider';
-
+import { PlanillasComponent } from './planillas/planillas.component';
+import {MatSlideToggleModule} from '@angular/material/slide-toggle';
 
 @NgModule({
   declarations: [
     PanelRecursosHumanosComponent,
-    RegistroInformacionComponent
+    RegistroInformacionComponent,
+    PlanillasComponent
   ],
   imports: [
     CommonModule,
@@ -62,7 +64,8 @@ import {MatSliderModule} from '@angular/material/slider';
       ],
     }),
     NgSelectModule,
-    MatSliderModule
+    MatSliderModule,
+    MatSlideToggleModule
   ],
   exports: [PanelRecursosHumanosComponent]
 })

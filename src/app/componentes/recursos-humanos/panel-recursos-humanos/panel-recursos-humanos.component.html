@@ -180,8 +180,10 @@
             <app-registro-informacion [idProyecto]="idProyecto"
                 [tablaPresInd]="this.tablaPresInd"></app-registro-informacion>
         </ng-container>
-      
 
+        <ng-container *ngIf="subvista == 3">
+            <app-planillas [idProyecto]="idProyecto" [tablaPresInd]="this.tablaPresInd"></app-planillas>
+        </ng-container>
 
     </div>
 

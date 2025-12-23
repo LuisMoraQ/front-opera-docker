@@ -791,4 +791,89 @@ export class RecursosHumanosService {
             catchError(err => throwError(err))
         ).toPromise()
     }
+
+    listarAsignacionesProyecto(params = {}): any {
+        let formData: FormData = new FormData();
+        Object.entries(params).forEach(([key, value]) => {
+            formData.append(key, value as string);
+        });
+        const url = this.enviUrl + '/api/recursoshumanos/listarAsignacionesProyecto';
+        return this.http.post<any>(url, formData).pipe(
+            map(res => {
+                if (!res) {
+                    throw new Error
+                }
+                return res
+            }),
+            catchError(err => throwError(err))
+        ).toPromise()
+    }
+
+    listarRegistrosAsistencia(params = {}): any {
+        let formData: FormData = new FormData();
+        Object.entries(params).forEach(([key, value]) => {
+            formData.append(key, value as string);
+        });
+        const url = this.enviUrl + '/api/recursoshumanos/listarRegistrosAsistencia';
+        return this.http.post<any>(url, formData).pipe(
+            map(res => {
+                if (!res) {
+                    throw new Error
+                }
+                return res
+            }),
+            catchError(err => throwError(err))
+        ).toPromise()
+    }
+
+     guardarRegistrosAsistencia(params = {}): any {
+        let formData: FormData = new FormData();
+        Object.entries(params).forEach(([key, value]) => {
+            formData.append(key, value as string);
+        });
+        const url = this.enviUrl + '/api/recursoshumanos/guardarRegistrosAsistencia';
+        return this.http.post<any>(url, formData).pipe(
+            map(res => {
+                if (!res) {
+                    throw new Error
+                }
+                return res
+            }),
+            catchError(err => throwError(err))
+        ).toPromise()
+    }
+
+     actualizarRegistrosAsistencia(params = {}): any {
+        let formData: FormData = new FormData();
+        Object.entries(params).forEach(([key, value]) => {
+            formData.append(key, value as string);
+        });
+        const url = this.enviUrl + '/api/recursoshumanos/actualizarRegistrosAsistencia';
+        return this.http.post<any>(url, formData).pipe(
+            map(res => {
+                if (!res) {
+                    throw new Error
+                }
+                return res
+            }),
+            catchError(err => throwError(err))
+        ).toPromise()
+    }
+
+    eliminarRegistrosAsistencia(params = {}): any {
+        let formData: FormData = new FormData();
+        Object.entries(params).forEach(([key, value]) => {
+            formData.append(key, value as string);
+        });
+        const url = this.enviUrl + '/api/recursoshumanos/eliminarRegistrosAsistencia';
+        return this.http.post<any>(url, formData).pipe(
+            map(res => {
+                if (!res) {
+                    throw new Error
+                }
+                return res
+            }),
+            catchError(err => throwError(err))
+        ).toPromise()
+    }
 }
