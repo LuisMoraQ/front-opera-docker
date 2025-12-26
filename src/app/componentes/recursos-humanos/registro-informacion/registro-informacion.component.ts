@@ -11,6 +11,7 @@ import { SwalService } from 'src/app/servicios/swal.service';
 import { ModalBasicComponent } from 'src/app/shared/modal-basic/modal-basic.component';
 import { AddImgUrlComponent } from 'src/app/shared/add-img-url/add-img-url.component';
 import * as moment from 'moment';
+import { saveAs } from 'file-saver'; // Opcional: para descargar
 
 interface DetalleAgrupamientoCargo {
   abreviatura?: string;
@@ -81,7 +82,10 @@ export class RegistroInformacionComponent implements OnInit {
   @ViewChild("modalDetalleConvocatoria") modalDetalleConvocatoria: ModalBasicComponent;
   @ViewChild("modalPostulante") modalPostulante: ModalBasicComponent;
   @ViewChild("modalFeriado") modalFeriado: ModalBasicComponent;
+  @ViewChild("modalQRAsignacion") modalQRAsignacion: ModalBasicComponent;
   @ViewChild('tinymce', { static: false }) public tinymce: TinymceComponent;
+  @ViewChild('qrcanvas', { static: false }) qrCanvas!: ElementRef<HTMLCanvasElement>;
+
   id_usuario = null
   filSel = null
   filUsuario = null
@@ -275,6 +279,7 @@ export class RegistroInformacionComponent implements OnInit {
 
   detalleConvocatoria = []
   filDetalle = null
+  qrData = ''
   constructor(private presuservice: PresupuestosService,
     private sanitizer: DomSanitizer,
     private encriptadorService: EncriptadorService,
@@ -1140,7 +1145,7 @@ export class RegistroInformacionComponent implements OnInit {
       const inicioExistente = moment(asignacion.fecha_inicio).format('YYYY-MM-DD');
       const finExistente = moment(asignacion.fecha_fin).format('YYYY-MM-DD');
 
-   
+
 
       // Verificar solapamiento (EXCLUYENDO límites exactos)
       // Un día termina y el siguiente empieza - eso NO es solapamiento
@@ -1458,6 +1463,88 @@ export class RegistroInformacionComponent implements OnInit {
       SwalService.error()
     }
 
+  }
+
+  async cerraModalQr() {
+    this.modalQRAsignacion.hide()
+    this.qrData = ''
+  }
+  async generarQRAsignacion(row, i) {
+    this.qrData = ''
+    console.log('row', row)
+    console.log('suuari', this.tablaUsuarios[this.filUsuario])
+    const user = this.tablaUsuarios[this.filUsuario]
+    this.qrData = user.id_usuario + '|' + user.id_proyecto + '|' + user.nombres + '|' + user.apellidos + '|' + user.dni + '|' + row.descripcion_area + '|' + row.id_area + '|' + row.descripcion_cargo + '|' + row.id_cargo + '|' + moment(row.fecha_inicio).format('YYYY-MM-DD') + '|' + moment(row.fecha_fin).format('YYYY-MM-DD')
+    console.log('this.qrData', this.qrData)
+    this.modalQRAsignacion.show()
+  }
+
+  descargarQR() {
+    if (!this.qrData) return;
+
+    try {
+      // Buscar la imagen del QR generada por angularx-qrcode
+      const qrImg = document.querySelector('.qr-container img') as HTMLImageElement;
+
+      if (qrImg && qrImg.src) {
+        // Crear un canvas para procesar la imagen
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+
+        if (!ctx) return;
+
+        // Configurar canvas
+        canvas.width = 300;
+        canvas.height = 350;
+
+        // Fondo blanco
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Agregar información textual
+        ctx.fillStyle = '#000000';
+        ctx.font = '14px Arial';
+        ctx.textAlign = 'center';
+
+        // Título
+        ctx.font = 'bold 16px Arial';
+        ctx.fillText('CÓDIGO QR ASISTENCIA', canvas.width / 2, 30);
+
+        // Información del usuario
+        ctx.font = '12px Arial';
+        ctx.fillText(`Usuario: ${this.tablaUsuarios[this.filUsuario]?.nombres + ' ' + this.tablaUsuarios[this.filUsuario]?.apellidos || ''}`, canvas.width / 2, 55);
+        ctx.fillText(`Cargo: ${this.tablaAsignaciones[this.filAsignacion]?.descripcion_cargo || ''}`, canvas.width / 2, 75);
+        ctx.fillText(`Asignación: #${this.tablaAsignaciones[this.filAsignacion]?.descripcion_area || ''}`, canvas.width / 2, 95);
+
+        // Dibujar el QR (centrado)
+        const qrSize = 150;
+        const qrX = (canvas.width - qrSize) / 2;
+        const qrY = 120;
+
+        // Crear imagen para dibujar
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = () => {
+          ctx.drawImage(img, qrX, qrY, qrSize, qrSize);
+
+          // Pie de página
+          ctx.fillText(`Generado: ${new Date().toLocaleDateString()}`, canvas.width / 2, 310);
+          ctx.fillText('Usar para registro de asistencia móvil', canvas.width / 2, 330);
+
+          // Convertir a blob y descargar
+          canvas.toBlob((blob) => {
+            if (blob) {
+              saveAs(blob, `QR_Asistencia_${this.tablaUsuarios[this.filUsuario]?.nombre || 'Usuario'}.png`);
+            }
+          }, 'image/png');
+        };
+
+        img.src = qrImg.src;
+      }
+    } catch (error) {
+      console.error('Error al descargar QR:', error);
+      alert('No se pudo descargar el QR');
+    }
   }
 
   async agregarArea() {

@@ -370,6 +370,12 @@
                                                         (mouseup)="quitarfoco($event);">
                                                         <i class="fa fa-remove icono-but"></i>
                                                     </button>
+                                                    <button class="btn btn-mini btn-outline-secondary" placement="top"
+                                                        type="button" ngbTooltip="Generar QR" container="body"
+                                                        (click)="generarQRAsignacion(row,i)"
+                                                        (mouseup)="quitarfoco($event);">
+                                                        <i class="fa fa-qrcode icono-but"></i>
+                                                    </button>
                                                 </div>
                                             </td>
                                         </tr>
@@ -947,14 +953,14 @@
             <div class="row ">
                 <mat-form-field appearance="outline" class="mff-reduc col-sm-12 col-12">
                     <mat-label>Nombre Cargo</mat-label>
-                    <input matInput type="text"  autocomplete="off" maxlength="255"
-                        formControlName="descripcion" [maxLength]="150">
+                    <input matInput type="text" autocomplete="off" maxlength="255" formControlName="descripcion"
+                        [maxLength]="150">
                 </mat-form-field>
 
                 <mat-form-field appearance="outline" class="mff-reduc col-sm-12 col-12">
                     <mat-label>Abreviatura Cargo</mat-label>
-                    <input matInput type="text"  autocomplete="off" maxlength="15"
-                        formControlName="abreviatura" [maxLength]="15">
+                    <input matInput type="text" autocomplete="off" maxlength="15" formControlName="abreviatura"
+                        [maxLength]="15">
                 </mat-form-field>
             </div>
         </form>
@@ -1038,30 +1044,30 @@
 
                 <mat-form-field appearance="outline" class="mff-reduc  col-12">
                     <mat-label>Nombres</mat-label>
-                    <input matInput type="text"  autocomplete="off" maxlength="255"
-                        formControlName="nombres" [maxLength]="150">
+                    <input matInput type="text" autocomplete="off" maxlength="255" formControlName="nombres"
+                        [maxLength]="150">
                 </mat-form-field>
                 <mat-form-field appearance="outline" class="mff-reduc col-12">
                     <mat-label>Apellidos</mat-label>
-                    <input matInput type="text"  autocomplete="off" maxlength="255"
-                        formControlName="apellidos" [maxLength]="150">
+                    <input matInput type="text" autocomplete="off" maxlength="255" formControlName="apellidos"
+                        [maxLength]="150">
                 </mat-form-field>
                 <mat-form-field appearance="outline" class="mff-reduc col-sm-6 col-12">
                     <mat-label>DNI</mat-label>
-                    <input matInput type="text"  autocomplete="off" maxlength="18"
-                        formControlName="dni" [maxLength]="18">
+                    <input matInput type="text" autocomplete="off" maxlength="18" formControlName="dni"
+                        [maxLength]="18">
                 </mat-form-field>
 
                 <mat-form-field appearance="outline" class="mff-reduc col-sm-6 col-12">
                     <mat-label>Teléfono</mat-label>
-                    <input matInput type="text"  autocomplete="off" maxlength="15"
-                        formControlName="telefono" [maxLength]="15">
+                    <input matInput type="text" autocomplete="off" maxlength="15" formControlName="telefono"
+                        [maxLength]="15">
                 </mat-form-field>
 
                 <mat-form-field appearance="outline" class="mff-reduc col-12">
                     <mat-label>Correo</mat-label>
-                    <input matInput type="text"  autocomplete="off" maxlength="100"
-                        formControlName="correo" [maxLength]="100">
+                    <input matInput type="text" autocomplete="off" maxlength="100" formControlName="correo"
+                        [maxLength]="100">
                 </mat-form-field>
                 <mat-form-field appearance="outline" class="mff-reduc col-sm-6 col-12">
                     <mat-label>Fecha Asignación</mat-label>
@@ -1109,8 +1115,8 @@
             <div class="row ">
                 <mat-form-field appearance="outline" class="mff-reduc col-sm-12 col-12">
                     <mat-label>Numero</mat-label>
-                    <input matInput type="text"  autocomplete="off" maxlength="255"
-                        formControlName="nro_convocatoria" [maxLength]="150">
+                    <input matInput type="text" autocomplete="off" maxlength="255" formControlName="nro_convocatoria"
+                        [maxLength]="150">
                 </mat-form-field>
                 <mat-form-field appearance="outline" class="mff-reduc col-sm-12 col-12">
                     <mat-label>Fecha </mat-label>
@@ -1118,15 +1124,15 @@
                 </mat-form-field>
                 <mat-form-field appearance="outline" class="mff-reduc col-sm-12 col-12">
                     <mat-label>Modalidad</mat-label>
-                    <input matInput type="text"  autocomplete="off" maxlength="255"
-                        formControlName="modalidad" [maxLength]="255">
+                    <input matInput type="text" autocomplete="off" maxlength="255" formControlName="modalidad"
+                        [maxLength]="255">
                 </mat-form-field>
 
 
                 <mat-form-field appearance="outline" class="mff-reduc col-sm-12 col-12 ">
                     <mat-label>Descripcion</mat-label>
-                    <input matInput type="text"  autocomplete="off" maxlength="255"
-                        formControlName="descripcion" [maxLength]="255">
+                    <input matInput type="text" autocomplete="off" maxlength="255" formControlName="descripcion"
+                        [maxLength]="255">
                 </mat-form-field>
 
 
@@ -1185,27 +1191,27 @@
                 </mat-form-field>
                 <mat-form-field appearance="outline" class="mff-reduc col-sm-12 col-12 mt-3">
                     <mat-label>Vacantes</mat-label>
-                    <input matInput type="number"  autocomplete="off" maxlength="10"
-                        formControlName="vacantes" [min]="0">
+                    <input matInput type="number" autocomplete="off" maxlength="10" formControlName="vacantes"
+                        [min]="0">
                 </mat-form-field>
                 <mat-form-field appearance="outline" class="mff-reduc col-sm-12 col-12">
                     <mat-label>Requerimiento</mat-label>
-                    <input matInput type="text"  autocomplete="off" maxlength="255"
-                        formControlName="requerimiento" [maxLength]="255">
+                    <input matInput type="text" autocomplete="off" maxlength="255" formControlName="requerimiento"
+                        [maxLength]="255">
                 </mat-form-field>
                 <mat-form-field appearance="outline" class="mff-reduc col-sm-12 col-12">
                     <mat-label>Remuneracion</mat-label>
-                    <input matInput type="number"  autocomplete="off" formControlName="remuneracion">
+                    <input matInput type="number" autocomplete="off" formControlName="remuneracion">
                 </mat-form-field>
                 <mat-form-field appearance="outline" class="mff-reduc col-sm-12 col-12">
                     <mat-label>Link url (documento bases)</mat-label>
-                  
+
                     <textarea matInput autocomplete="off" formControlName="link_documento" rows="1"
                         placeholder="link_documento"></textarea>
                 </mat-form-field>
                 <mat-form-field appearance="outline" class="mff-reduc col-sm-12 col-12">
                     <mat-label>Ciudad</mat-label>
-                    <input matInput type="text"  autocomplete="off" formControlName="ciudad">
+                    <input matInput type="text" autocomplete="off" formControlName="ciudad">
                 </mat-form-field>
                 <div class="col-12" *ngIf="id_detalle.value">
                     <label>Activo :</label>
@@ -1243,14 +1249,14 @@
             <div class="row ">
                 <mat-form-field appearance="outline" class="mff-reduc col-sm-12 col-12">
                     <mat-label>Nombre Area</mat-label>
-                    <input matInput type="text"  autocomplete="off" maxlength="255"
-                        formControlName="descripcion" [maxLength]="150">
+                    <input matInput type="text" autocomplete="off" maxlength="255" formControlName="descripcion"
+                        [maxLength]="150">
                 </mat-form-field>
 
                 <mat-form-field appearance="outline" class="mff-reduc col-sm-12 col-12">
                     <mat-label>Abreviatura </mat-label>
-                    <input matInput type="text"  autocomplete="off" maxlength="15"
-                        formControlName="abreviatura" [maxLength]="15">
+                    <input matInput type="text" autocomplete="off" maxlength="15" formControlName="abreviatura"
+                        [maxLength]="15">
                 </mat-form-field>
             </div>
         </form>
@@ -1406,8 +1412,8 @@
             <div class="row ">
                 <mat-form-field appearance="outline" class="mff-reduc col-sm-12 col-12">
                     <mat-label>Descripcion</mat-label>
-                    <input matInput type="text"  autocomplete="off" maxlength="255"
-                        formControlName="descripcion" [maxLength]="150">
+                    <input matInput type="text" autocomplete="off" maxlength="255" formControlName="descripcion"
+                        [maxLength]="150">
                 </mat-form-field>
 
                 <mat-form-field appearance="outline" class="mff-reduc col-sm-12 col-12">
@@ -1426,6 +1432,52 @@
                 (click)="!id_feriado.value ? agregarFeriado():actualizarFeriado()">
                 <ng-container *ngIf="!id_cargo.value">Guardar</ng-container>
                 <ng-container *ngIf="id_cargo.value">Actualizar</ng-container>
+            </button>
+        </div>
+    </div>
+</app-modal-basic>
+
+
+<app-modal-basic #modalQRAsignacion [dialogClass]="'modal-md'">
+    <div class="app-modal-header">
+        <h4 class="modal-title tit-modal1"><b>QR Usuario Asignacion </b></h4>
+        <button type="button" class="close basic-close" (click)="cerraModalQr()">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+    <div class="app-modal-body">
+        <div class="mb-3">
+            <h6 class="mb-1">{{this.tablaUsuarios[this.filUsuario]?.nombres + '  '+
+                this.tablaUsuarios[this.filUsuario]?.apellidos}}</h6>
+            <p class="mb-1 text-muted small">
+                <strong>Cargo:</strong> {{this.tablaAsignaciones[this.filAsignacion]?.descripcion_cargo}}
+            </p>
+            <p class="mb-1 text-muted small">
+                <strong>Área:</strong> {{this.tablaAsignaciones[this.filAsignacion]?.descripcion_area}}
+            </p>
+        </div>
+        <div class="col-12 d-flex justify-content-center">
+            <div class="qr-container border p-3 bg-white rounded d-inline-block">
+                <qrcode [qrdata]="qrData" [width]="200" [errorCorrectionLevel]="'M'" [colorDark]="'#000000'"
+                    [colorLight]="'#FFFFFF'" [elementType]="'img'">
+                </qrcode>
+            </div>
+        </div>
+        <div class="mt-3">
+            <div class="alert alert-info small py-2 mb-2">
+                <i class="fas fa-info-circle me-1"></i>
+                Este QR es válido para el registro de asistencia del usuario en el proyecto
+            </div>
+        </div>
+    </div>
+    <div class="app-modal-footer w-100">
+        <div class="row px-3 justify-content-between">
+
+            <button type="button" style="margin-right: 5px;" class="btn btn-sm btn-danger ripple"
+                (click)="cerraModalQr()">Cerrar</button>
+            <button type="button" class="btn btn-sm btn-outline-secondary ripple me-2" (click)="descargarQR()"
+                [disabled]="!qrData">
+                <i class="fas fa-download me-1"></i> Descargar
             </button>
         </div>
     </div>

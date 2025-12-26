@@ -43,6 +43,7 @@
     "angular2-chartjs": "^0.5.1",
     "angular2-text-mask": "^9.0.0",
     "angular2-tinymce": "^3.3.0",
+    "angularx-qrcode": "^14.0.0",
     "bootstrap": "^4.5.0",
     "c3": "^0.7.18",
     "crypto-js": "^4.2.0",

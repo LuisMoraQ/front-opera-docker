@@ -25,7 +25,7 @@ import { NgSelectModule } from '@ng-select/ng-select';
 import {MatSliderModule} from '@angular/material/slider';
 import { PlanillasComponent } from './planillas/planillas.component';
 import {MatSlideToggleModule} from '@angular/material/slide-toggle';
-
+import { QRCodeModule } from 'angularx-qrcode';
 @NgModule({
   declarations: [
     PanelRecursosHumanosComponent,
@@ -65,7 +65,8 @@ import {MatSlideToggleModule} from '@angular/material/slide-toggle';
     }),
     NgSelectModule,
     MatSliderModule,
-    MatSlideToggleModule
+    MatSlideToggleModule,
+    QRCodeModule
   ],
   exports: [PanelRecursosHumanosComponent]
 })

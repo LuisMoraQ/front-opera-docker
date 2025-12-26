@@ -80,10 +80,13 @@ export class PlanillasComponent implements OnInit {
   calendarioFiltrado = []
   asignaciones = []
   areaSeleccionada = ''
+  areaSeleccionada2 = ''
   areas = []
   cargos = []
   cargosFiltrados = []
+  cargosFiltrados2 = []
   cargoSeleccionada = ''
+  cargoSeleccionada2 = ''
   tablaFiltrada: filaTabla[] = []
   tipos = [
     { codigo: 'A', tipo: 'ASISTIO' },
@@ -101,11 +104,17 @@ export class PlanillasComponent implements OnInit {
     { codigo: 'FS', tipo: 'NO MARCO SALIDA' }
   ]
   ocultarSinAsistencia: boolean = false;
+  activetab = 1
+  diaSeleccionado = ''
+  fechaSeleccionada = ''
+  tablaAsistenciaMovil = []
+  filAsisMov = null
   constructor(private recursosHumanosService: RecursosHumanosService, private cdRef: ChangeDetectorRef, private appRef: ApplicationRef) { }
 
   async ngOnInit() {
     try {
       this.mostrar_carga_todo = true
+      this.inicializarFechaActual()
       await this.listarAsignacionesProyecto()
       this.mostrar_carga_todo = false
     } catch (error) {
@@ -114,6 +123,23 @@ export class PlanillasComponent implements OnInit {
       SwalService.error()
     }
   }
+  private inicializarFechaActual() {
+    const hoy = new Date();
+
+    // Formato: YYYY-MM-DD (para input type="date")
+    const year = hoy.getFullYear();
+    const month = ('0' + (hoy.getMonth() + 1)).slice(-2);
+    const day = ('0' + hoy.getDate()).slice(-2);
+
+    this.fechaSeleccionada = `${year}-${month}-${day}`;
+
+    console.log('Fecha actual:', this.fechaSeleccionada); // Ej: "2024-01-15"
+  }
+  onNavChange(event) {
+
+  }
+
+
   async listarAsignacionesProyecto() {
     this.mostrar_carga_todo = true
     this.meses = []
@@ -230,9 +256,11 @@ export class PlanillasComponent implements OnInit {
     this.cargosFiltrados = this.cargos.filter(ele => ele.id_area == this.areaSeleccionada)
   }
 
-  cambioCargo() {
-
+  async cambioArea2() {
+    this.cargoSeleccionada2 = ''
+    this.cargosFiltrados2 = this.cargos.filter(ele => ele.id_area == this.areaSeleccionada2)
   }
+
 
   async listarRegistrosAsistencia(fechaini, fechafin) {
     const obj = {
@@ -639,5 +667,30 @@ export class PlanillasComponent implements OnInit {
 
   }
 
+
+  async listarAsistenciasMovil() {
+
+    try {
+      this.mostrar_carga_todo = true
+      this.tablaAsistenciaMovil = []
+      this.filAsisMov = null
+      const obj = {
+        id_proyecto: this.idProyecto,
+        id_area: this.areaSeleccionada2,
+        id_cargo: this.cargoSeleccionada2,
+        fecha_inicio: this.fechaSeleccionada,
+        fecha_fin: this.fechaSeleccionada,
+      }
+      console.log('obj', obj)
+      this.tablaAsistenciaMovil = await this.recursosHumanosService.listarAsistenciaMovil(obj)
+
+      this.mostrar_carga_todo = false
+    } catch (error) {
+      this.mostrar_carga_todo = false
+      console.log(error)
+      SwalService.error()
+    }
+
+  }
 }
 

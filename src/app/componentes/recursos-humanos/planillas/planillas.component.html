@@ -1,18 +1,27 @@
-<app-cargando [bloquearTodo]="true" *ngIf="mostrar_carga_todo"></app-cargando>
-<div class=" h-content " >
-    <div class="col-12 d-flex">
-        <mat-form-field appearance="outline" class="mff-reduc col-3">
-            <mat-label>Mes</mat-label>
-            <mat-select [(ngModel)]="mesSeleccionado" (ngModelChange)="cambioDeMes()">
-                <mat-option *ngFor="let mes of meses; let i=index" [value]="i">
-                    {{mes}}
-                </mat-option>
+<ul ngbNav #nav="ngbNav" [(activeId)]="activetab" class="custom-tabs nav-tabs" (navChange)="onNavChange($event)">
+    <li [ngbNavItem]="1">
+        <a ngbNavLink>Registro Asistencia Movil</a>
+        <ng-template ngbNavContent>
+        </ng-template>
+    </li>
+    <li [ngbNavItem]="2">
+        <a ngbNavLink>Registro asistencia</a>
+        <ng-template ngbNavContent>
+        </ng-template>
+    </li>
 
-            </mat-select>
+</ul>
+<div [ngbNavOutlet]="nav" class="mt-2"></div>
+<app-cargando [bloquearTodo]="true" *ngIf="mostrar_carga_todo"></app-cargando>
+<ng-container *ngIf="activetab == 1">
+    <div class="col-12 d-flex">
+        <mat-form-field appearance="outline" class="mff-reduc  col-3 ">
+            <mat-label>Fecha </mat-label>
+            <input matInput type="date" [(ngModel)]="fechaSeleccionada">
         </mat-form-field>
         <mat-form-field appearance="outline" class="mff-reduc col-3">
             <mat-label>Area</mat-label>
-            <mat-select [(ngModel)]="areaSeleccionada" (ngModelChange)="cambioArea()">
+            <mat-select [(ngModel)]="areaSeleccionada2" (ngModelChange)="cambioArea2()">
                 <mat-option [value]="''">Todas</mat-option>
                 <mat-option *ngFor="let area of areas" [value]="area.id_area">
                     {{area.descripcion}}
@@ -22,17 +31,15 @@
         </mat-form-field>
         <mat-form-field appearance="outline" class="mff-reduc col-3">
             <mat-label>Cargo</mat-label>
-            <mat-select [(ngModel)]="cargoSeleccionada" (ngModelChange)="cambioCargo()" [disabled]="!areaSeleccionada">
+            <mat-select [(ngModel)]="cargoSeleccionada2" [disabled]="!areaSeleccionada">
                 <mat-option [value]="''">Todos</mat-option>
                 <mat-option *ngFor="let cargo of cargosFiltrados" [value]="cargo.id_cargo">
                     {{cargo.descripcion}}
                 </mat-option>
             </mat-select>
         </mat-form-field>
-        <mat-slide-toggle class="mx-3" [(ngModel)]="ocultarSinAsistencia">
-            Ocultar sin asistencia
-        </mat-slide-toggle>
-        <button mat-raised-button color="primary" class="h-50" (click)="filtroListadoCargos()">
+
+        <button mat-raised-button color="primary" class="h-50" (click)="listarAsistenciasMovil()">
             <mat-icon>search</mat-icon>
             Buscar
         </button>
@@ -43,99 +50,46 @@
         <table class="table-bordered tab-10">
             <thead class="text-center">
                 <tr [ngClass]="{'h-22': !calendarioFiltrado.length }">
-                    <th rowspan="2" appAnchocol [ancho]="40"></th>
-                    <th rowspan="2" appAnchocol [ancho]="120" [detalle]="true">CARGO</th>
-                    <th rowspan="2" appAnchocol [ancho]="150" [detalle]="true">USUARIO</th>
-                    <ng-container *ngFor="let mes of calendarioFiltrado">
-                        <th [colSpan]="mes.colspan" class="mes-header">
-                            {{mes.nombre}}
-                        </th>
-                    </ng-container>
-                    <th rowspan="2" appAnchocol [ancho]="80">TOTAL JORNADA</th>
-                    <th rowspan="2" appAnchocol [ancho]="80">COSTE X DIA</th>
-                    <th rowspan="2" appAnchocol [ancho]="80 " rowspan="3">COSTE MENSUAL</th>
-                </tr>
-
-                <tr>
-
-                    <ng-container *ngFor="let mes of calendarioFiltrado">
-                        <ng-container *ngFor="let dia of mes.dias">
-                            <th class="dia-header" [ngClass]="{
-                            'laborable': dia.laborable,
-                            'no-laborable': !dia.laborable,
-                            'feriado': dia.feriado
-                        }" appAnchocol [ancho]="47">
-                                <div class="dia-numero">{{dia.numero_dia_mes}}</div>
-                                <div class="dia-abreviatura">{{dia.abreviatura}}</div>
-                            </th>
-                        </ng-container>
-                    </ng-container>
-
+                    <th appAnchocol [ancho]="40"></th>
+                    <th appAnchocol [ancho]="100">USUARIO</th>
+                    <th appAnchocol [ancho]="100">AREA</th>
+                    <th appAnchocol [ancho]="100">CARGO</th>
+                    <th appAnchocol [ancho]="100">HORA REGISTRO</th>
+                    <th appAnchocol [ancho]="100">TIPO ASISTENCIA</th>
+                    <th appAnchocol [ancho]="100">SUPERVISOR</th>
                 </tr>
             </thead>
             <tbody>
-                <ng-container *ngIf="tablaFiltrada.length; else noData">
-                    <tr *ngFor="let row of this.tablaFiltrada; let i = index;trackBy: trackByFn">
-                        <ng-container *ngIf="row.mostrar && row.asistenciaExistente">
-                            <ng-container *ngIf="!row.id_cargo && !row.id_usuario">
-                                <td [colSpan]="calendarioFiltrado[mesSeleccionado]?.colspan + 6" class="bg-area">
-                                    <div style="margin-left: 40px;">
-                                        {{row.area}}
-                                    </div>
+                <ng-container *ngIf="tablaAsistenciaMovil.length; else noDataAsisMov">
+                    <tr *ngFor="let row of tablaAsistenciaMovil; let i = index" (click)="filAsisMov = i">
+                        <td class="text-center">{{i+1}}</td>
+                        <td>{{row.nombre_completo_usuario}}</td>
+                        <td>{{row.nombre_area}}</td>
+                        <td>{{row.nombre_cargo}}</td>
+                        <td class="text-center">{{row.fecha_hora | date:'h:mm:ss a'}}</td>
+                        <td class="text-center">
+                            <div class="badge-custom text-center d-flex justify-content-center"
+                                style="width: 120px; justify-self: center;" [ngClass]="{
+        'bg-success': row.tipo_asistencia == 1 || row.tipo_asistencia == 3,   
+        'bg-secondary': row.tipo_asistencia == 2 || row.tipo_asistencia == 4   
+     }">
+                                <span class="w-100 text-white fw-bold" *ngIf="row.tipo_asistencia == 1">INGRESO
+                                    MAÑANA</span>
+                                <span class="w-100 text-white fw-bold" *ngIf="row.tipo_asistencia == 2">SALIDA
+                                    MAÑANA</span>
+                                <span class="w-100 text-white fw-bold" *ngIf="row.tipo_asistencia == 3">INGRESO
+                                    TARDE</span>
+                                <span class="w-100 text-white fw-bold" *ngIf="row.tipo_asistencia == 4">SALIDA
+                                    TARDE</span>
+                            </div>
 
-                                </td>
-                            </ng-container>
-                            <ng-container *ngIf="row.id_cargo && !row.id_usuario">
-                                <td colspan="3" class="text-center">
-                                    <div class="font-weight-bold text-decoration-underline">{{row.cargo}}</div>
-                                </td>
-                                <td [colSpan]="calendarioFiltrado[mesSeleccionado]?.colspan + 3" class="bg-cargo">
-
-                                </td>
-                            </ng-container>
-                            <ng-container *ngIf="row.id_usuario">
-                                <td class="text-center">{{row.nro_grupo}}</td>
-                                <td>{{row.cargo}}</td>
-                                <td>{{row.descripcion_usuario}}</td>
-                                <td *ngFor="let dia of row.dias; let j = index" appAnchocol [ancho]="47">
-                                    <select class="form-select form-select-sm border-0 text-white fw-bold text-center"
-                                        style="margin-left: 4px;"
-                                        [ngClass]="row.dias[j].tipo ? getSelectClass(row.dias[j].tipo): 'bg-light text-dark'"
-                                        [ngModel]="row.dias[j].tipo" (ngModelChange)="onTipoChange($event, i, j)">
-                                        <option value="" disabled selected hidden> </option>
-                                        <option *ngFor="let tipo of tipos" [value]="tipo.codigo"
-                                            [ngStyle]="{'background-color': getColor(tipo.codigo), 'color': getTextColor(tipo.codigo)}">
-                                            {{tipo.codigo}}
-                                        </option>
-                                    </select>
-                                </td>
-                                <td>
-                                    <div class="w-100 d-flex justify-content-between">
-                                        <div style="opacity: 0.6;">S/.</div>
-                                        <div>{{row.total_jornada | number:'0.2-2'}}</div>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="w-100 d-flex justify-content-between">
-                                        <div style="opacity: 0.6;">S/.</div>
-                                        <div>{{row.coste_dia | number:'0.2-2'}}</div>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="w-100 d-flex justify-content-between">
-                                        <div style="opacity: 0.6;">S/.</div>
-                                        <div>{{row.coste_mensual | number:'0.2-2'}}</div>
-                                    </div>
-                                </td>
-                            </ng-container>
-                        </ng-container>
+                        </td>
+                        <td>{{row.nombre_completo_supervisor}}</td>
                     </tr>
-
                 </ng-container>
-                <ng-template #noData>
+                <ng-template #noDataAsisMov>
                     <tr>
-                        <td class="mat-cell text-center"
-                            [colSpan]="calendarioFiltrado[mesSeleccionado]?.colspan ? calendarioFiltrado[mesSeleccionado]?.colspan + 6:6">
+                        <td class="mat-cell text-center" colspan="7">
                             <label>No se encontraron resultados</label>
                         </td>
                     </tr>
@@ -143,104 +97,252 @@
             </tbody>
         </table>
     </div>
-    <div class="col-12 ">
-        <div class="col-12 px-0">
-            <div class="card mb-3" *ngIf="tablaFiltrada.length">
-                <div class="card-header py-1" style="background-color: #aee2f3;">
-                    <h6 class="mb-0">Leyenda de Asistencias</h6>
-                </div>
-                <div class="card-body p-2">
-                    <div class="col-12 overflow-auto ">
-                        <table class="table table-bordered table-sm m-0">
-                            <tbody>
-                                <tr class="d-table-row">
-                                    <!-- Fila única con todas las celdas -->
-                                    <td class="p-1">
-                                        <div class="d-flex align-items-center">
-                                            <span class="badge bg-success me-1">A</span>
-                                            <small class="text-muted ml-1">Asistio</small>
-                                        </div>
-                                    </td>
-                                    <td class="p-1">
-                                        <div class="d-flex align-items-center">
-                                            <span class="badge bg-warning text-dark me-1">T</span>
-                                            <small class="text-muted ml-1">Tardanza</small>
-                                        </div>
-                                    </td>
-                                    <td class="p-1">
-                                        <div class="d-flex align-items-center">
-                                            <span class="badge bg-orange text-white me-1">TI</span>
-                                            <small class="text-muted ml-1">Tard. Injust.</small>
-                                        </div>
-                                    </td>
-                                    <td class="p-1">
-                                        <div class="d-flex align-items-center">
-                                            <span class="badge bg-yellow text-dark me-1">TJ</span>
-                                            <small class="text-muted ml-1">Tard. Just.</small>
-                                        </div>
-                                    </td>
-                                    <td class="p-1">
-                                        <div class="d-flex align-items-center">
-                                            <span class="badge bg-danger me-1">F</span>
-                                            <small class="text-muted ml-1">Falta</small>
-                                        </div>
-                                    </td>
-                                    <td class="p-1">
-                                        <div class="d-flex align-items-center">
-                                            <span class="badge bg-dark-red text-white me-1">FI</span>
-                                            <small class="text-muted ml-1">Falta Injust.</small>
-                                        </div>
-                                    </td>
-                                    <td class="p-1">
-                                        <div class="d-flex align-items-center">
-                                            <span class="badge bg-pink text-white me-1">FJ</span>
-                                            <small class="text-muted ml-1">Falta Just.</small>
-                                        </div>
-                                    </td>
-                                    <td class="p-1">
-                                        <div class="d-flex align-items-center">
-                                            <span class="badge bg-purple text-white me-1">FM</span>
-                                            <small class="text-muted ml-1">Desc. Médico</small>
-                                        </div>
-                                    </td>
-                                    <td class="p-1">
-                                        <div class="d-flex align-items-center">
-                                            <span class="badge bg-info text-white me-1">FV</span>
-                                            <small class="text-muted ml-1">Vacaciones</small>
-                                        </div>
-                                    </td>
-                                    <td class="p-1">
-                                        <div class="d-flex align-items-center">
-                                            <span class="badge bg-teal text-white me-1">FC</span>
-                                            <small class="text-muted ml-1">Cita Médica</small>
-                                        </div>
-                                    </td>
-                                    <td class="p-1">
-                                        <div class="d-flex align-items-center">
-                                            <span class="badge bg-dark text-white me-1">FD</span>
-                                            <small class="text-muted ml-1">Duelo</small>
-                                        </div>
-                                    </td>
-                                    <td class="p-1">
-                                        <div class="d-flex align-items-center">
-                                            <span class="badge bg-secondary me-1 text-white">FE</span>
-                                            <small class="text-muted ml-1">Sin Entrada</small>
-                                        </div>
-                                    </td>
-                                    <td class="p-1">
-                                        <div class="d-flex align-items-center">
-                                            <span class="badge bg-light text-dark border me-1">FS</span>
-                                            <small class="text-muted ml-1">Sin Salida</small>
-                                        </div>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
+</ng-container>
+<ng-container *ngIf="activetab == 2">
+    <div class=" h-content ">
+        <div class="col-12 d-flex">
+            <mat-form-field appearance="outline" class="mff-reduc col-3">
+                <mat-label>Mes</mat-label>
+                <mat-select [(ngModel)]="mesSeleccionado" (ngModelChange)="cambioDeMes()">
+                    <mat-option *ngFor="let mes of meses; let i=index" [value]="i">
+                        {{mes}}
+                    </mat-option>
+
+                </mat-select>
+            </mat-form-field>
+            <mat-form-field appearance="outline" class="mff-reduc col-3">
+                <mat-label>Area</mat-label>
+                <mat-select [(ngModel)]="areaSeleccionada" (ngModelChange)="cambioArea()">
+                    <mat-option [value]="''">Todas</mat-option>
+                    <mat-option *ngFor="let area of areas" [value]="area.id_area">
+                        {{area.descripcion}}
+                    </mat-option>
+
+                </mat-select>
+            </mat-form-field>
+            <mat-form-field appearance="outline" class="mff-reduc col-3">
+                <mat-label>Cargo</mat-label>
+                <mat-select [(ngModel)]="cargoSeleccionada" [disabled]="!areaSeleccionada">
+                    <mat-option [value]="''">Todos</mat-option>
+                    <mat-option *ngFor="let cargo of cargosFiltrados" [value]="cargo.id_cargo">
+                        {{cargo.descripcion}}
+                    </mat-option>
+                </mat-select>
+            </mat-form-field>
+            <mat-slide-toggle class="mx-3" [(ngModel)]="ocultarSinAsistencia">
+                Ocultar sin asistencia
+            </mat-slide-toggle>
+            <button mat-raised-button color="primary" class="h-50" (click)="filtroListadoCargos()">
+                <mat-icon>search</mat-icon>
+                Buscar
+            </button>
 
 
         </div>
+        <div class="col-12 overflow-auto h-planilla">
+            <table class="table-bordered tab-10">
+                <thead class="text-center">
+                    <tr [ngClass]="{'h-22': !calendarioFiltrado.length }">
+                        <th rowspan="2" appAnchocol [ancho]="40"></th>
+                        <th rowspan="2" appAnchocol [ancho]="120" [detalle]="true">CARGO</th>
+                        <th rowspan="2" appAnchocol [ancho]="150" [detalle]="true">USUARIO</th>
+                        <ng-container *ngFor="let mes of calendarioFiltrado">
+                            <th [colSpan]="mes.colspan" class="mes-header">
+                                {{mes.nombre}}
+                            </th>
+                        </ng-container>
+                        <th rowspan="2" appAnchocol [ancho]="80">TOTAL JORNADA</th>
+                        <th rowspan="2" appAnchocol [ancho]="80">COSTE X DIA</th>
+                        <th rowspan="2" appAnchocol [ancho]="80 " rowspan="3">COSTE MENSUAL</th>
+                    </tr>
+
+                    <tr>
+
+                        <ng-container *ngFor="let mes of calendarioFiltrado">
+                            <ng-container *ngFor="let dia of mes.dias">
+                                <th class="dia-header" [ngClass]="{
+                            'laborable': dia.laborable,
+                            'no-laborable': !dia.laborable,
+                            'feriado': dia.feriado
+                        }" appAnchocol [ancho]="47">
+                                    <div class="dia-numero">{{dia.numero_dia_mes}}</div>
+                                    <div class="dia-abreviatura">{{dia.abreviatura}}</div>
+                                </th>
+                            </ng-container>
+                        </ng-container>
+
+                    </tr>
+                </thead>
+                <tbody>
+                    <ng-container *ngIf="tablaFiltrada.length; else noData">
+                        <tr *ngFor="let row of this.tablaFiltrada; let i = index;trackBy: trackByFn">
+                            <ng-container *ngIf="row.mostrar && row.asistenciaExistente">
+                                <ng-container *ngIf="!row.id_cargo && !row.id_usuario">
+                                    <td [colSpan]="calendarioFiltrado[mesSeleccionado]?.colspan + 6" class="bg-area">
+                                        <div style="margin-left: 40px;">
+                                            {{row.area}}
+                                        </div>
+
+                                    </td>
+                                </ng-container>
+                                <ng-container *ngIf="row.id_cargo && !row.id_usuario">
+                                    <td colspan="3" class="text-center">
+                                        <div class="font-weight-bold text-decoration-underline">{{row.cargo}}</div>
+                                    </td>
+                                    <td [colSpan]="calendarioFiltrado[mesSeleccionado]?.colspan + 3" class="bg-cargo">
+
+                                    </td>
+                                </ng-container>
+                                <ng-container *ngIf="row.id_usuario">
+                                    <td class="text-center">{{row.nro_grupo}}</td>
+                                    <td>{{row.cargo}}</td>
+                                    <td>{{row.descripcion_usuario}}</td>
+                                    <td *ngFor="let dia of row.dias; let j = index" appAnchocol [ancho]="47">
+                                        <select
+                                            class="form-select form-select-sm border-0 text-white fw-bold text-center"
+                                            style="margin-left: 4px;"
+                                            [ngClass]="row.dias[j].tipo ? getSelectClass(row.dias[j].tipo): 'bg-light text-dark'"
+                                            [ngModel]="row.dias[j].tipo" (ngModelChange)="onTipoChange($event, i, j)">
+                                            <option value="" disabled selected hidden> </option>
+                                            <option *ngFor="let tipo of tipos" [value]="tipo.codigo"
+                                                [ngStyle]="{'background-color': getColor(tipo.codigo), 'color': getTextColor(tipo.codigo)}">
+                                                {{tipo.codigo}}
+                                            </option>
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <div class="w-100 d-flex justify-content-between">
+                                            <div style="opacity: 0.6;">S/.</div>
+                                            <div>{{row.total_jornada | number:'0.2-2'}}</div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="w-100 d-flex justify-content-between">
+                                            <div style="opacity: 0.6;">S/.</div>
+                                            <div>{{row.coste_dia | number:'0.2-2'}}</div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="w-100 d-flex justify-content-between">
+                                            <div style="opacity: 0.6;">S/.</div>
+                                            <div>{{row.coste_mensual | number:'0.2-2'}}</div>
+                                        </div>
+                                    </td>
+                                </ng-container>
+                            </ng-container>
+                        </tr>
+
+                    </ng-container>
+                    <ng-template #noData>
+                        <tr>
+                            <td class="mat-cell text-center"
+                                [colSpan]="calendarioFiltrado[mesSeleccionado]?.colspan ? calendarioFiltrado[mesSeleccionado]?.colspan + 6:6">
+                                <label>No se encontraron resultados</label>
+                            </td>
+                        </tr>
+                    </ng-template>
+                </tbody>
+            </table>
+        </div>
+        <div class="col-12 ">
+            <div class="col-12 px-0">
+                <div class="card mb-3" *ngIf="tablaFiltrada.length">
+                    <div class="card-header py-1" style="background-color: #aee2f3;">
+                        <h6 class="mb-0">Leyenda de Asistencias</h6>
+                    </div>
+                    <div class="card-body p-2">
+                        <div class="col-12 overflow-auto ">
+                            <table class="table table-bordered table-sm m-0">
+                                <tbody>
+                                    <tr class="d-table-row">
+                                        <!-- Fila única con todas las celdas -->
+                                        <td class="p-1">
+                                            <div class="d-flex align-items-center">
+                                                <span class="badge bg-success me-1">A</span>
+                                                <small class="text-muted ml-1">Asistio</small>
+                                            </div>
+                                        </td>
+                                        <td class="p-1">
+                                            <div class="d-flex align-items-center">
+                                                <span class="badge bg-warning text-dark me-1">T</span>
+                                                <small class="text-muted ml-1">Tardanza</small>
+                                            </div>
+                                        </td>
+                                        <td class="p-1">
+                                            <div class="d-flex align-items-center">
+                                                <span class="badge bg-orange text-white me-1">TI</span>
+                                                <small class="text-muted ml-1">Tard. Injust.</small>
+                                            </div>
+                                        </td>
+                                        <td class="p-1">
+                                            <div class="d-flex align-items-center">
+                                                <span class="badge bg-yellow text-dark me-1">TJ</span>
+                                                <small class="text-muted ml-1">Tard. Just.</small>
+                                            </div>
+                                        </td>
+                                        <td class="p-1">
+                                            <div class="d-flex align-items-center">
+                                                <span class="badge bg-danger me-1">F</span>
+                                                <small class="text-muted ml-1">Falta</small>
+                                            </div>
+                                        </td>
+                                        <td class="p-1">
+                                            <div class="d-flex align-items-center">
+                                                <span class="badge bg-dark-red text-white me-1">FI</span>
+                                                <small class="text-muted ml-1">Falta Injust.</small>
+                                            </div>
+                                        </td>
+                                        <td class="p-1">
+                                            <div class="d-flex align-items-center">
+                                                <span class="badge bg-pink text-white me-1">FJ</span>
+                                                <small class="text-muted ml-1">Falta Just.</small>
+                                            </div>
+                                        </td>
+                                        <td class="p-1">
+                                            <div class="d-flex align-items-center">
+                                                <span class="badge bg-purple text-white me-1">FM</span>
+                                                <small class="text-muted ml-1">Desc. Médico</small>
+                                            </div>
+                                        </td>
+                                        <td class="p-1">
+                                            <div class="d-flex align-items-center">
+                                                <span class="badge bg-info text-white me-1">FV</span>
+                                                <small class="text-muted ml-1">Vacaciones</small>
+                                            </div>
+                                        </td>
+                                        <td class="p-1">
+                                            <div class="d-flex align-items-center">
+                                                <span class="badge bg-teal text-white me-1">FC</span>
+                                                <small class="text-muted ml-1">Cita Médica</small>
+                                            </div>
+                                        </td>
+                                        <td class="p-1">
+                                            <div class="d-flex align-items-center">
+                                                <span class="badge bg-dark text-white me-1">FD</span>
+                                                <small class="text-muted ml-1">Duelo</small>
+                                            </div>
+                                        </td>
+                                        <td class="p-1">
+                                            <div class="d-flex align-items-center">
+                                                <span class="badge bg-secondary me-1 text-white">FE</span>
+                                                <small class="text-muted ml-1">Sin Entrada</small>
+                                            </div>
+                                        </td>
+                                        <td class="p-1">
+                                            <div class="d-flex align-items-center">
+                                                <span class="badge bg-light text-dark border me-1">FS</span>
+                                                <small class="text-muted ml-1">Sin Salida</small>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+
+            </div>
+        </div>
     </div>
-</div>
+</ng-container>
