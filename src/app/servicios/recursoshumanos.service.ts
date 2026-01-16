@@ -826,7 +826,7 @@ export class RecursosHumanosService {
         ).toPromise()
     }
 
-     guardarRegistrosAsistencia(params = {}): any {
+    guardarRegistrosAsistencia(params = {}): any {
         let formData: FormData = new FormData();
         Object.entries(params).forEach(([key, value]) => {
             formData.append(key, value as string);
@@ -843,7 +843,7 @@ export class RecursosHumanosService {
         ).toPromise()
     }
 
-     actualizarRegistrosAsistencia(params = {}): any {
+    actualizarRegistrosAsistencia(params = {}): any {
         let formData: FormData = new FormData();
         Object.entries(params).forEach(([key, value]) => {
             formData.append(key, value as string);
@@ -877,12 +877,185 @@ export class RecursosHumanosService {
         ).toPromise()
     }
 
-     listarAsistenciaMovil(params = {}): any {
+    listarAsistenciaMovil(params = {}): any {
         let formData: FormData = new FormData();
         Object.entries(params).forEach(([key, value]) => {
             formData.append(key, value as string);
         });
         const url = this.enviUrl + '/api/recursoshumanos/listarAsistenciaMovil';
+        return this.http.post<any>(url, formData).pipe(
+            map(res => {
+                if (!res) {
+                    throw new Error
+                }
+                return res
+            }),
+            catchError(err => throwError(err))
+        ).toPromise()
+    }
+
+
+    agregarActualizarAsistenciaMovil(params = {}): any {
+        let formData: FormData = new FormData();
+        Object.entries(params).forEach(([key, value]) => {
+            formData.append(key, value as string);
+        });
+        const url = this.enviUrl + '/api/recursoshumanos/agregarActualizarAsistenciaMovil';
+        return this.http.post<any>(url, formData).pipe(
+            map(res => {
+                if (!res) {
+                    throw new Error
+                }
+                return res
+            }),
+            catchError(err => throwError(err))
+        ).toPromise()
+    }
+
+    guardarActualizarRegistrosAsistencia(params: any[]): Promise<any> {
+        const url = this.enviUrl + '/api/recursoshumanos/guardarActualizarRegistrosAsistencia';
+
+        // Asegurar que se envíe como JSON válido
+        return this.http
+            .post<any>(url, params, {
+                headers: new HttpHeaders({
+                    'Content-Type': 'application/json'
+                })
+            })
+            .toPromise();
+    }
+
+    listarPresAnaliticoRH(params = {}): any {
+        let formData: FormData = new FormData();
+        Object.entries(params).forEach(([key, value]) => {
+            formData.append(key, value as string);
+        });
+        const url = this.enviUrl + '/api/recursoshumanos/listarPresAnaliticoRH';
+        return this.http.post<any>(url, formData).pipe(
+            map(res => {
+                if (!res) {
+                    throw new Error
+                }
+                return res
+            }),
+            catchError(err => throwError(err))
+        ).toPromise()
+    }
+
+    guardarPresAnaliticoRH(params: any[]): any {
+        const url = this.enviUrl + '/api/recursoshumanos/guardarPresAnaliticoRH';
+        const headers = new HttpHeaders({
+            'Content-Type': 'application/json'
+        });
+
+        return this.http.post<any>(url, params, { headers: headers }).pipe(
+            map(res => {
+                if (!res) {
+                    throw new Error
+                }
+                return res
+            }),
+            catchError(err => throwError(err))
+        ).toPromise()
+    }
+
+    actualizarPresAnaliticoRH(params = {}): any {
+        let formData: FormData = new FormData();
+        Object.entries(params).forEach(([key, value]) => {
+            formData.append(key, value as string);
+        });
+        const url = this.enviUrl + '/api/recursoshumanos/actualizarPresAnaliticoRH';
+        return this.http.post<any>(url, formData).pipe(
+            map(res => {
+                if (!res) {
+                    throw new Error
+                }
+                return res
+            }),
+            catchError(err => throwError(err))
+        ).toPromise()
+    }
+
+    eliminarPresAnaliticoRH(params = {}): any {
+        let formData: FormData = new FormData();
+        Object.entries(params).forEach(([key, value]) => {
+            formData.append(key, value as string);
+        });
+        const url = this.enviUrl + '/api/recursoshumanos/eliminarPresAnaliticoRH';
+        return this.http.post<any>(url, formData).pipe(
+            map(res => {
+                if (!res) {
+                    throw new Error
+                }
+                return res
+            }),
+            catchError(err => throwError(err))
+        ).toPromise()
+    }
+
+    actualizarPresAnaliticoRHLote(params: any[]): Promise<any> {
+        const url = this.enviUrl + '/api/recursoshumanos/actualizarPresAnaliticoRHLote';
+
+        // Asegurar que se envíe como JSON válido
+        return this.http
+            .post<any>(url, params, {
+                headers: new HttpHeaders({
+                    'Content-Type': 'application/json'
+                })
+            })
+            .toPromise();
+    }
+
+    eliminarYActualizarPresAnaliticoRH(params: any): Promise<any> {
+        const url = this.enviUrl + '/api/recursoshumanos/eliminarYActualizarPresAnaliticoRH';
+
+        // Asegurar que se envíe como JSON válido
+        return this.http
+            .post<any>(url, params, {
+                headers: new HttpHeaders({
+                    'Content-Type': 'application/json'
+                })
+            })
+            .toPromise();
+    }
+
+    eliminarAreaPresAnaliticoRH(params = {}): any {
+        let formData: FormData = new FormData();
+        Object.entries(params).forEach(([key, value]) => {
+            formData.append(key, value as string);
+        });
+        const url = this.enviUrl + '/api/recursoshumanos/eliminarAreaPresAnaliticoRH';
+        return this.http.post<any>(url, formData).pipe(
+            map(res => {
+                if (!res) {
+                    throw new Error
+                }
+                return res
+            }),
+            catchError(err => throwError(err))
+        ).toPromise()
+    }
+
+
+    guardarLoteRegistroAsistenciaRH(params: any): Promise<any> {
+        const url = this.enviUrl + '/api/recursoshumanos/guardarLoteRegistroAsistenciaRH';
+
+        // Asegurar que se envíe como JSON válido
+        return this.http
+            .post<any>(url, params, {
+                headers: new HttpHeaders({
+                    'Content-Type': 'application/json'
+                })
+            })
+            .toPromise();
+    }
+
+     listarMontosAreaPresAnaliticoRH(params = {}): any {
+        let formData: FormData = new FormData();
+        Object.entries(params).forEach(([key, value]) => {
+            formData.append(key, value as string);
+        });
+        const url = this.enviUrl + '/api/recursoshumanos/listarMontosAreaPresAnaliticoRH';
         return this.http.post<any>(url, formData).pipe(
             map(res => {
                 if (!res) {

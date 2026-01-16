@@ -9,6 +9,11 @@
         <ng-template ngbNavContent>
         </ng-template>
     </li>
+    <li [ngbNavItem]="3">
+        <a ngbNavLink>Presupuesto Analitico</a>
+        <ng-template ngbNavContent>
+        </ng-template>
+    </li>
 
 </ul>
 <div [ngbNavOutlet]="nav" class="mt-2"></div>
@@ -29,34 +34,48 @@
 
             </mat-select>
         </mat-form-field>
-        <mat-form-field appearance="outline" class="mff-reduc col-3">
-            <mat-label>Cargo</mat-label>
-            <mat-select [(ngModel)]="cargoSeleccionada2" [disabled]="!areaSeleccionada">
-                <mat-option [value]="''">Todos</mat-option>
-                <mat-option *ngFor="let cargo of cargosFiltrados" [value]="cargo.id_cargo">
-                    {{cargo.descripcion}}
-                </mat-option>
-            </mat-select>
-        </mat-form-field>
+        <div class="col-4 d-flex">
+            <mat-form-field appearance="outline" class="mff-reduc">
+                <mat-label>Cargo</mat-label>
+                <mat-select [(ngModel)]="cargoSeleccionada2" [disabled]="!areaSeleccionada">
+                    <mat-option [value]="''">Todos</mat-option>
+                    <mat-option *ngFor="let cargo of cargosFiltrados" [value]="cargo.id_cargo">
+                        {{cargo.descripcion}}
+                    </mat-option>
+                </mat-select>
+            </mat-form-field>
+            <button mat-raised-button color="primary" class="h-75" style="margin-left: 1rem;"
+                (click)="listarAsistenciasMovil()">
+                <mat-icon>search</mat-icon>
+                Buscar
+            </button>
+        </div>
 
-        <button mat-raised-button color="primary" class="h-50" (click)="listarAsistenciasMovil()">
-            <mat-icon>search</mat-icon>
-            Buscar
-        </button>
-
-
+        <div class="col-2 d-flex pr-0 justify-content-end">
+            <button mat-stroked-button color="warn" class="h-75" (click)="vincularASistenciaDiaPlanilla()"
+                *ngIf="tablaAsistenciaMovil.length">
+                <mat-icon>update</mat-icon>
+                Vincular
+            </button>
+        </div>
     </div>
-    <div class="col-12 overflow-auto h-planilla">
+    <div class="col-12 overflow-auto h-planilla2">
         <table class="table-bordered tab-10">
             <thead class="text-center">
                 <tr [ngClass]="{'h-22': !calendarioFiltrado.length }">
-                    <th appAnchocol [ancho]="40"></th>
-                    <th appAnchocol [ancho]="100">USUARIO</th>
-                    <th appAnchocol [ancho]="100">AREA</th>
-                    <th appAnchocol [ancho]="100">CARGO</th>
-                    <th appAnchocol [ancho]="100">HORA REGISTRO</th>
-                    <th appAnchocol [ancho]="100">TIPO ASISTENCIA</th>
-                    <th appAnchocol [ancho]="100">SUPERVISOR</th>
+                    <th rowspan="2" appAnchocol [ancho]="40"></th>
+                    <th rowspan="2" appAnchocol [ancho]="150">USUARIO</th>
+                    <th rowspan="2" appAnchocol [ancho]="150">AREA</th>
+                    <th rowspan="2" appAnchocol [ancho]="150">CARGO</th>
+                    <!-- <th appAnchocol [ancho]="100">HORA REGISTRO</th> -->
+                    <th colspan="4" appAnchocol [ancho]="400">REGISTRO ASISTENCIA</th>
+                    <th rowspan="2" appAnchocol [ancho]="100">SUPERVISOR</th>
+                </tr>
+                <tr>
+                    <th appAnchocol [ancho]="100">INGRESO 1</th>
+                    <th appAnchocol [ancho]="100">SALIDA 1</th>
+                    <th appAnchocol [ancho]="100">INGRESO 2</th>
+                    <th appAnchocol [ancho]="100">SALIDA 2</th>
                 </tr>
             </thead>
             <tbody>
@@ -66,8 +85,8 @@
                         <td>{{row.nombre_completo_usuario}}</td>
                         <td>{{row.nombre_area}}</td>
                         <td>{{row.nombre_cargo}}</td>
-                        <td class="text-center">{{row.fecha_hora | date:'h:mm:ss a'}}</td>
-                        <td class="text-center">
+                        <!-- <td class="text-center">{{row.fecha_hora  | date:'h:mm:ss a'}}</td> -->
+                        <!-- <td class="text-center"> 
                             <div class="badge-custom text-center d-flex justify-content-center"
                                 style="width: 120px; justify-self: center;" [ngClass]="{
         'bg-success': row.tipo_asistencia == 1 || row.tipo_asistencia == 3,   
@@ -83,7 +102,11 @@
                                     TARDE</span>
                             </div>
 
-                        </td>
+                        </td> -->
+                        <td class="text-center">{{row.tipo_asistencia1 | date:'h:mm:ss a'}}</td>
+                        <td class="text-center">{{row.tipo_asistencia2 | date:'h:mm:ss a'}}</td>
+                        <td class="text-center">{{row.tipo_asistencia3 | date:'h:mm:ss a'}}</td>
+                        <td class="text-center">{{row.tipo_asistencia4 | date:'h:mm:ss a'}}</td>
                         <td>{{row.nombre_completo_supervisor}}</td>
                     </tr>
                 </ng-container>
@@ -103,7 +126,7 @@
         <div class="col-12 d-flex">
             <mat-form-field appearance="outline" class="mff-reduc col-3">
                 <mat-label>Mes</mat-label>
-                <mat-select [(ngModel)]="mesSeleccionado" (ngModelChange)="cambioDeMes()">
+                <mat-select [(ngModel)]="mesSeleccionado">
                     <mat-option *ngFor="let mes of meses; let i=index" [value]="i">
                         {{mes}}
                     </mat-option>
@@ -139,7 +162,7 @@
 
 
         </div>
-        <div class="col-12 overflow-auto h-planilla">
+        <!-- <div class="col-12 overflow-auto h-planilla">
             <table class="table-bordered tab-10">
                 <thead class="text-center">
                     <tr [ngClass]="{'h-22': !calendarioFiltrado.length }">
@@ -151,7 +174,6 @@
                                 {{mes.nombre}}
                             </th>
                         </ng-container>
-                        <th rowspan="2" appAnchocol [ancho]="80">TOTAL JORNADA</th>
                         <th rowspan="2" appAnchocol [ancho]="80">COSTE X DIA</th>
                         <th rowspan="2" appAnchocol [ancho]="80 " rowspan="3">COSTE MENSUAL</th>
                     </tr>
@@ -164,7 +186,7 @@
                             'laborable': dia.laborable,
                             'no-laborable': !dia.laborable,
                             'feriado': dia.feriado
-                        }" appAnchocol [ancho]="47">
+                        }" appAnchocol [ancho]="56">
                                     <div class="dia-numero">{{dia.numero_dia_mes}}</div>
                                     <div class="dia-abreviatura">{{dia.abreviatura}}</div>
                                 </th>
@@ -178,7 +200,7 @@
                         <tr *ngFor="let row of this.tablaFiltrada; let i = index;trackBy: trackByFn">
                             <ng-container *ngIf="row.mostrar && row.asistenciaExistente">
                                 <ng-container *ngIf="!row.id_cargo && !row.id_usuario">
-                                    <td [colSpan]="calendarioFiltrado[mesSeleccionado]?.colspan + 6" class="bg-area">
+                                    <td [colSpan]="calendarioFiltrado[0]?.colspan + 6" class="bg-area">
                                         <div style="margin-left: 40px;">
                                             {{row.area}}
                                         </div>
@@ -189,7 +211,7 @@
                                     <td colspan="3" class="text-center">
                                         <div class="font-weight-bold text-decoration-underline">{{row.cargo}}</div>
                                     </td>
-                                    <td [colSpan]="calendarioFiltrado[mesSeleccionado]?.colspan + 3" class="bg-cargo">
+                                    <td [colSpan]="calendarioFiltrado[0]?.colspan + 3" class="bg-cargo">
 
                                     </td>
                                 </ng-container>
@@ -197,25 +219,21 @@
                                     <td class="text-center">{{row.nro_grupo}}</td>
                                     <td>{{row.cargo}}</td>
                                     <td>{{row.descripcion_usuario}}</td>
-                                    <td *ngFor="let dia of row.dias; let j = index" appAnchocol [ancho]="47">
+                                    <td *ngFor="let dia of row.dias; let j = index" appAnchocol [ancho]="56">
                                         <select
                                             class="form-select form-select-sm border-0 text-white fw-bold text-center"
-                                            style="margin-left: 4px;"
+                                            style="margin-left: 1px; width: 52px;"
                                             [ngClass]="row.dias[j].tipo ? getSelectClass(row.dias[j].tipo): 'bg-light text-dark'"
-                                            [ngModel]="row.dias[j].tipo" (ngModelChange)="onTipoChange($event, i, j)">
+                                            [(ngModel)]="row.dias[j].tipo" (ngModelChange)="onTipoChange($event, i, j)">
                                             <option value="" disabled selected hidden> </option>
                                             <option *ngFor="let tipo of tipos" [value]="tipo.codigo"
                                                 [ngStyle]="{'background-color': getColor(tipo.codigo), 'color': getTextColor(tipo.codigo)}">
-                                                {{tipo.codigo}}
+                                                {{tipo.codigo}} <ng-container
+                                                    *ngIf="row.dias[j].fuente">*</ng-container>
                                             </option>
                                         </select>
                                     </td>
-                                    <td>
-                                        <div class="w-100 d-flex justify-content-between">
-                                            <div style="opacity: 0.6;">S/.</div>
-                                            <div>{{row.total_jornada | number:'0.2-2'}}</div>
-                                        </div>
-                                    </td>
+                                 
                                     <td>
                                         <div class="w-100 d-flex justify-content-between">
                                             <div style="opacity: 0.6;">S/.</div>
@@ -236,13 +254,188 @@
                     <ng-template #noData>
                         <tr>
                             <td class="mat-cell text-center"
-                                [colSpan]="calendarioFiltrado[mesSeleccionado]?.colspan ? calendarioFiltrado[mesSeleccionado]?.colspan + 6:6">
+                                [colSpan]="calendarioFiltrado[0]?.colspan ? calendarioFiltrado[0]?.colspan + 6:6">
                                 <label>No se encontraron resultados</label>
                             </td>
                         </tr>
                     </ng-template>
                 </tbody>
             </table>
+        </div> -->
+
+        <div class="col-12 position-relative">
+            <div class="h-planilla overflow-auto">
+
+                <table class="table-bordered tab-10">
+                    <thead class="text-center">
+                        <tr [ngClass]="{'h-22': !calendarioFiltrado.length }">
+                            <th rowspan="2" appAnchocol [ancho]="40"></th>
+                            <th rowspan="2" appAnchocol [ancho]="120" [detalle]="true">CARGO</th>
+                            <th rowspan="2" appAnchocol [ancho]="150" [detalle]="true">USUARIO</th>
+                            <ng-container *ngFor="let mes of calendarioFiltrado">
+                                <th [colSpan]="mes.colspan" class="mes-header">
+                                    {{mes.nombre}}
+                                </th>
+                            </ng-container>
+
+                            <th rowspan="2" appAnchocol [ancho]="60">LABORADO</th>
+                            <th rowspan="2" appAnchocol [ancho]="60">DOMINICALES</th>
+                            <th rowspan="2" appAnchocol [ancho]="60">FERIADOS</th>
+                            <th rowspan="2" appAnchocol [ancho]="60">TARDANZA</th>
+                            <th rowspan="2" appAnchocol [ancho]="60">PERMISO</th>
+                            <th rowspan="2" appAnchocol [ancho]="60">FALTAS</th>
+                            <th rowspan="2" appAnchocol [ancho]="60">OBS</th>
+                            <th rowspan="2" appAnchocol [ancho]="80">COSTE X DIA</th>
+                            <th rowspan="2" appAnchocol [ancho]="80 ">COSTE MENSUAL</th>
+                        </tr>
+
+                        <tr>
+
+                            <ng-container *ngFor="let mes of calendarioFiltrado">
+                                <ng-container *ngFor="let dia of mes.dias">
+                                    <th class="dia-header" [ngClass]="{
+                            'laborable': dia.laborable,
+                            'no-laborable': !dia.laborable,
+                            'feriado': dia.feriado
+                        }" appAnchocol [ancho]="56">
+                                        <div class="dia-numero">{{dia.numero_dia_mes}}</div>
+                                        <div class="dia-abreviatura">{{dia.abreviatura}}</div>
+                                    </th>
+                                </ng-container>
+                            </ng-container>
+
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <ng-container *ngIf="tablaFiltrada.length; else noData">
+                            <tr *ngFor="let row of this.tablaFiltrada; let i = index;trackBy: trackByFn"
+                                (click)="this.usuarioSeleccionado = row; filTabFil = i">
+                                <ng-container *ngIf="row.mostrar && row.asistenciaExistente">
+                                    <ng-container *ngIf="!row.id_cargo && !row.id_usuario">
+                                        <td [colSpan]="calendarioFiltrado[0]?.colspan + 13" class="bg-area">
+                                            <div style="margin-left: 40px;">
+                                                {{row.area}}
+                                            </div>
+
+                                        </td>
+                                    </ng-container>
+                                    <ng-container *ngIf="row.id_cargo && !row.id_usuario">
+                                        <td colspan="3" class="text-center">
+                                            <div class="font-weight-bold text-decoration-underline">{{row.cargo}}
+                                            </div>
+                                        </td>
+
+                                        <ng-container *ngFor="let mes of calendarioFiltrado">
+                                            <ng-container *ngFor="let dia of mes.dias; let k = index">
+                                                <td appAnchocol [ancho]="56">
+                                                    <select *ngIf="mostrarSelColum" #selectElement
+                                                        class="form-select form-select-sm  fw-bold text-center"
+                                                        style="margin-left: 1px; width: 52px;"
+                                                        (change)="cambiarColumna($event.target.value, k, selectElement)">
+                                                        <option value="" disabled selected hidden> </option>
+                                                        <option *ngFor="let tipo of tipos" [value]="tipo.codigo"
+                                                            [ngStyle]="{'background-color': getColor(tipo.codigo), 'color': getTextColor(tipo.codigo)}">
+                                                            {{tipo.codigo}}
+                                                        </option>
+                                                    </select>
+                                                </td>
+                                            </ng-container>
+                                        </ng-container>
+                                        <td colspan="9">
+
+                                        </td>
+                                    </ng-container>
+                                    <ng-container *ngIf="row.id_usuario">
+                                        <td class="text-center">{{row.nro_grupo}}</td>
+                                        <td>{{row.cargo}}</td>
+                                        <td>
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <span>{{row.descripcion_usuario || 'Sin nombre'}}</span>
+                                                <button type="button"
+                                                    class="btn btn-sm btn-outline-primary btn-mini2 ml-2"
+                                                    (mouseup)="quitarfoco($event)" (click)="detalleUsuario(row, i)">
+                                                    <i class="fa fa-list mr-0"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                        <td *ngFor="let dia of row.dias; let j = index" appAnchocol [ancho]="56">
+                                            <select
+                                                class="form-select form-select-sm border-0 text-white fw-bold text-center"
+                                                style="margin-left: 1px; width: 52px;"
+                                                [ngClass]="row.dias[j].tipo ? getSelectClass(row.dias[j].tipo): 'bg-light text-dark'"
+                                                [(ngModel)]="row.dias[j].tipo"
+                                                (ngModelChange)="onTipoChange($event, i, j)">
+                                                <option value="" disabled selected hidden> </option>
+                                                <option *ngFor="let tipo of tipos" [value]="tipo.codigo"
+                                                    [ngStyle]="{'background-color': getColor(tipo.codigo), 'color': getTextColor(tipo.codigo)}">
+                                                    {{tipo.codigo}} <ng-container
+                                                        *ngIf="row.dias[j].fuente">*</ng-container>
+                                                </option>
+                                            </select>
+                                        </td>
+                                        <td class="text-center">{{row.dias_laborados }}</td>
+                                        <td class="text-center">{{row.dias_dominicales }}</td>
+                                        <td class="text-center">{{row.dias_feriados }}</td>
+                                        <td class="text-center">{{row.dias_tardanzas }}</td>
+                                        <td class="text-center">{{row.dias_permiso }}</td>
+                                        <td class="text-center">{{row.dias_faltados }}</td>
+                                        <td class="text-center">{{row.dias_otros}}</td>
+                                        <td>
+                                            <div class="w-100 d-flex justify-content-between">
+                                                <div style="opacity: 0.6;">S/.</div>
+                                                <div>{{row.coste_dia | number:'0.2-2'}}</div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="w-100 d-flex justify-content-between">
+                                                <div style="opacity: 0.6;">S/.</div>
+                                                <div>
+                                                    <ng-container *ngIf="!row.invalido">{{row.coste_mensual |
+                                                        number:'0.2-2'}}</ng-container>
+                                                    <ng-container *ngIf="row.invalido">
+                                                        <i class="fa fa-exclamation-triangle text-danger"
+                                                            ngbTooltip="Existen dias observados o incompletos cambie de estado"></i>
+                                                    </ng-container>
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </ng-container>
+                                </ng-container>
+                            </tr>
+
+                        </ng-container>
+                        <ng-template #noData>
+                            <tr>
+                                <td class="mat-cell text-center"
+                                    [colSpan]="calendarioFiltrado[0]?.colspan ? calendarioFiltrado[0]?.colspan + 6:6">
+                                    <label>No se encontraron resultados</label>
+                                </td>
+                            </tr>
+                        </ng-template>
+                    </tbody>
+                    <tfoot class="sticky-footer-wrapper" *ngIf="tablaFiltrada.length">
+                        <tr class="bg-light">
+                            <td colspan="3" class="text-center font-weight-bold">Total personal por dia</td>
+                            <!-- <td [colSpan]="calendarioFiltrado[0]?.colspan || 0"></td> -->
+                            <ng-container *ngFor="let item of cantidadUsuariosDia">
+                                <td class="text-center">
+                                    {{item}}
+                                </td>
+                            </ng-container>
+                            <td colspan="8" class="text-center font-weight-bold">TOTAL GENERAL:</td>
+                            <td class="font-weight-bold text-end">
+                                <div class="w-100 d-flex justify-content-between">
+                                    <div style="opacity: 0.6;">S/.</div>
+                                    <div>{{totalMes | number:'0.2-2'}}</div>
+                                </div>
+                            </td>
+                        </tr>
+                    </tfoot>
+                </table>
+
+            </div>
+
+
         </div>
         <div class="col-12 ">
             <div class="col-12 px-0">
@@ -324,14 +517,36 @@
                                         </td>
                                         <td class="p-1">
                                             <div class="d-flex align-items-center">
-                                                <span class="badge bg-secondary me-1 text-white">FE</span>
-                                                <small class="text-muted ml-1">Sin Entrada</small>
+                                                <span class="badge bg-secondary me-1 text-white">PE</span>
+                                                <small class="text-muted ml-1">permiso</small>
                                             </div>
                                         </td>
-                                        <td class="p-1">
+                                        <!-- <td class="p-1">
                                             <div class="d-flex align-items-center">
                                                 <span class="badge bg-light text-dark border me-1">FS</span>
                                                 <small class="text-muted ml-1">Sin Salida</small>
+                                            </div>
+                                        </td> -->
+                                        <td class="p-1">
+                                            <div class="d-flex align-items-center">
+                                                <span class="badge bg-indigo text-white me-1">OBS</span>
+                                                <small class="text-muted ml-1">Observado</small>
+                                            </div>
+                                        </td>
+
+                                        <!-- Estado Incompleto -->
+                                        <td class="p-1">
+                                            <div class="d-flex align-items-center">
+                                                <span class="badge bg-light-blue text-dark border me-1">IN</span>
+                                                <small class="text-muted ml-1">Incompleto</small>
+                                            </div>
+                                        </td>
+
+                                        <!-- Estado Tiempo Extra -->
+                                        <td class="p-1">
+                                            <div class="d-flex align-items-center">
+                                                <span class="badge bg-lime text-dark me-1">TEX</span>
+                                                <small class="text-muted ml-1">Tiempo Extra</small>
                                             </div>
                                         </td>
                                     </tr>
@@ -346,3 +561,209 @@
         </div>
     </div>
 </ng-container>
+
+<ng-container *ngIf="activetab == 3">
+    <div class=" h-content">
+        <div class="col-12 d-flex px-0">
+            <mat-form-field appearance="outline" class="mff-reduc col-3 pl-0">
+                <mat-label>Area</mat-label>
+                <mat-select [(ngModel)]="areaSeleccionadaPres" (ngModelChange)="cambioAreaPres()">
+                    <!-- <mat-option [value]="''">Todas</mat-option> -->
+                    <mat-option *ngFor="let area of areas" [value]="area.id_area">
+                        {{area.descripcion}}
+                    </mat-option>
+
+                </mat-select>
+            </mat-form-field>
+
+            <div class="col d-flex" style="height: 29px;">
+                <button class="btn btn-mini btn-group-mini btn-outline-primary" container="body"
+                    style="margin-left: 1px" ngbTooltip="Agregar Fila" type="button" (mouseup)="quitarfoco($event)"
+                    (click)="agregarFila()">
+                    <i class="fa fa-plus icono-but" aria-hidden="true"></i>
+                </button>
+                <button class="btn btn-mini btn-group-mini btn-outline-primary" container="body"
+                    [disabled]="!filPresAna" style="margin-left: 1px" ngbTooltip="Eliminar Fila" type="button"
+                    (click)="eliminarFila()" (mouseup)="quitarfoco($event)">
+                    <i class="fa fa-times icono-but" aria-hidden="true"></i>
+                </button>
+                <button class="btn btn-mini btn-group-mini btn-outline-primary" container="body"
+                    [disabled]="!filPresAna || filPresAna < 2" style="margin-left: 1px" ngbTooltip="Mover Arriba Fila"
+                    type="button" (click)="moverFilaArriba()">
+                    <i class="fa fa-arrow-up icono-but" aria-hidden="true"></i>
+                </button>
+
+                <button class="btn btn-mini btn-group-mini btn-outline-primary" container="body"
+                    [disabled]="!filPresAna || filPresAna === tablaPresAnalitico.length - 1" style="margin-left: 1px"
+                    ngbTooltip="Mover Abajo Fila" type="button" (click)="moverFilaAbajo()">
+                    <i class="fa fa-arrow-down icono-but" aria-hidden="true"></i>
+                </button>
+                <button class="btn btn-mini btn-group-mini btn-outline-primary" container="body"
+                    style="margin-left: 1px" ngbTooltip="Limpiar presupuesto area" type="button"
+                    (click)="eliminarAreaPresAnaliticoRH()" (mouseup)="quitarfoco($event)">
+                    <i class="fa fa-trash icono-but" aria-hidden="true"></i>
+                </button>
+            </div>
+        </div>
+        <div class="h-planilla overflow-auto">
+            <table class="tablacust table-bordered tab-10" style="table-layout: fixed; width: 100%;">
+                <thead class="text-center">
+                    <tr [ngClass]="{'h-22': !tablaPresAnalitico.length }">
+                        <th rowspan="2" appAnchocol2 [ancho]="40">Item</th>
+                        <th rowspan="2" appAnchocol2 [ancho]="300">Descripcion</th>
+                        <th rowspan="2" appAnchocol2 [ancho]="90">Abreviatura</th>
+                        <th rowspan="2" appAnchocol2 [ancho]="250">Formula</th>
+
+                        <ng-container *ngFor="let cargo of cargosFiltradosPres">
+                            <th class="mes-header" colspan="2">
+                                {{cargo.descripcion}}
+                            </th>
+                        </ng-container>
+                    </tr>
+
+                    <tr>
+                        <ng-container *ngFor="let cargo of cargosFiltradosPres">
+                            <!-- Nota: No tienes appAnchocol2 en estos th -->
+                            <th class="mes-header" appAnchocol2 [ancho]="80">
+                                %
+                            </th>
+                            <th class="mes-header" appAnchocol2 [ancho]="80">
+                                Parcial
+                            </th>
+                        </ng-container>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let row of tablaPresAnalitico; let i = index" (click)="filPresAna = i"
+                        [ngClass]="{'highlight': i == filPresAna }">
+
+                        <!-- Item -->
+                        <td class="text-center" appAnchocol2 [ancho]="40">{{row.item}}</td>
+
+                        <!-- Descripción -->
+                        <td appAnchocol2 [ancho]="300">
+                            <input type="text" [value]="row.descripcion" class="w-100"
+                                (blur)="blurDescripcion($event.target.value, i)" />
+                        </td>
+
+                        <!-- Abreviatura -->
+                        <td class="text-center" appAnchocol2 [ancho]="90">
+                            <input type="text" [value]="row.abreviatura" class="w-100 text-center"
+                                (blur)="blurAbreviatura($event.target.value, i)" />
+                        </td>
+
+                        <!-- Fórmula -->
+                        <td appAnchocol2 [ancho]="250">
+                            <span *ngIf="i === 0">{{row.formula}}</span>
+                            <input *ngIf="i !== 0" type="text" [value]="row.formula" class="mayuscula w-100"
+                                (blur)="blurFormula($event.target.value, i)"
+                                (keyup.enter)="blurFormula($event.target.value, i)" placeholder="Ej: %RB+50" />
+                        </td>
+
+                        <!-- Cargos -->
+                        <ng-container *ngFor="let cargo of row.cargos; let j = index">
+                            <!-- Porcentaje -->
+                            <td class="text-center" appAnchocol2 [ancho]="80">
+                                <span *ngIf="i === 0">{{cargo.porcentaje | number:'1.2-2'}}</span>
+                                <input *ngIf="i !== 0" type="number" [value]="cargo.porcentaje"
+                                    class="w-100 text-center" step="0.01"
+                                    (blur)="blurporcentaje($event.target.value, i, j)" />
+                            </td>
+
+                            <!-- Parcial -->
+                            <td class="text-center" appAnchocol2 [ancho]="80">
+                                <input type="number" [value]="cargo.parcial" class="w-100 text-center" step="0.01"
+                                    (blur)="blurparcial($event.target.value, i, j)" />
+                            </td>
+                        </ng-container>
+                    </tr>
+                </tbody>
+                <tfoot class="font-weight-colder text-center" *ngIf="this.tablaPresAnalitico.length">
+
+                    <tr *ngFor="let row of this.tablaPresAnaliticoFooter; let i = index ">
+                        <th colspan="3">{{row.descripcion}}</th>
+                        <th>
+                            <input type="number" [(ngModel)]="row.formula" class="w-100 text-center"
+                                *ngIf="row.item == '0-1'" (blur)="blurHoraJornal($event.target.value, i)" />
+                        </th>
+                        <ng-container *ngFor="let cargo of row.cargos; let j = index">
+                            <!-- Porcentaje -->
+                            <th class="text-center" appAnchocol2 [ancho]="80">
+                                <span *ngIf="row.item == '0-1' || row.item == '0-0'">{{cargo.porcentaje |
+                                    number:'1.2-2'}}</span>
+                                <input *ngIf="row.item !== '0-1' && row.item !== '0-0'" type="number"
+                                    [value]="cargo.porcentaje" class="w-100 text-center" step="0.01"
+                                    (blur)="blurporcentajeFooter($event.target.value, i, j)" />
+                            </th>
+
+                            <!-- Parcial -->
+                            <th class="text-center" appAnchocol2 [ancho]="80">
+                                <input type="number" [value]="cargo.parcial" class="w-100 text-center" step="0.01"
+                                    (blur)="blurparcialFooter($event.target.value, i, j)" />
+                            </th>
+                        </ng-container>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+</ng-container>
+
+<app-modal-basic #modalDetalleUsuario [dialogClass]="'modal-lg'">
+    <div class="app-modal-header">
+        <h4 class="modal-title tit-modal1"><b>Datos Mes usuario </b></h4>
+        <button type="button" class="close basic-close" (click)="cerrarModalDetalleUsuario()">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+    <div class="app-modal-body">
+        <table class="table-bordered tab-10">
+            <thead class="text-center">
+                <tr>
+                    <th rowspan="2">Dia</th>
+                    <th rowspan="2">Tipo</th>
+                    <th rowspan="2">Ingreso 1</th>
+                    <th rowspan="2">Salida 1</th>
+                    <th rowspan="2">Ingreso 2</th>
+                    <th rowspan="2">Salida 2</th>
+                    <th colspan="2"> Extra</th>
+                </tr>
+                <tr>
+                    <th>Tiempo</th>
+                    <th>Monto</th>
+                </tr>
+            </thead>
+            <tbody class=" text-center">
+                <tr *ngFor="let row of tablaMesUsuario; let i = index">
+                    <td>{{row.fecha}}</td>
+                    <td>{{row.tipo}}</td>
+                    <td>{{row.asistencia1 | date:'h:mm:ss a'}}</td>
+                    <td>{{row.asistencia2 | date:'h:mm:ss a'}}</td>
+                    <td>{{row.asistencia3 | date:'h:mm:ss a'}}</td>
+                    <td>{{row.asistencia4 | date:'h:mm:ss a'}}</td>
+                    <td>
+                        <input type="number" [value]="row.horas_extra" style="width: 70px;"
+                            (blur)="blurModal($event.target.value, 'horas_extra', i)" />
+                    </td>
+                    <td>
+
+                        <input type="number" [value]="row.monto_extra" style="width: 70px;"
+                            (blur)="blurModal($event.target.value, 'monto_extra', i)" />
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="app-modal-footer w-100">
+        <div class="row px-3 justify-content-between">
+
+            <button type="button" style="margin-right: 5px;" class="btn btn-sm btn-secondary ripple"
+                (click)="cerrarModalDetalleUsuario()">Cerrar</button>
+            <button type="button" style="margin-right: 5px;" class="btn btn-sm btn-success ripple"
+                (click)="guardarLoteUsuarioExtras()">
+                Guardar
+
+            </button>
+        </div>
+    </div>
+</app-modal-basic>

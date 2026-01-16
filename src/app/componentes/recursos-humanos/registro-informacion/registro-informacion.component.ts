@@ -1,3 +1,4 @@
+import { FormsService } from './../../../servicios/forms.service';
 import { Component, ElementRef, Input, OnInit, QueryList, ViewChild, ViewChildren } from '@angular/core';
 import { AbstractControl, FormGroup, UntypedFormControl, UntypedFormGroup, ValidationErrors, Validators } from '@angular/forms';
 import { DomSanitizer } from '@angular/platform-browser';
@@ -96,17 +97,20 @@ export class RegistroInformacionComponent implements OnInit {
   formCargo = new UntypedFormGroup({
     id_cargo: new UntypedFormControl('', []),
     descripcion: new UntypedFormControl('', [Validators.required]),
-    abreviatura: new UntypedFormControl('', [Validators.required])
+    abreviatura: new UntypedFormControl('', [Validators.required]),
+    categorias: new UntypedFormControl('', [Validators.required]),
   })
   tablaUsuarios: any[] = [];
   tablaCargos2: DetalleAgrupamientoCargo[] = [];
   cargosFiltrados: any[] = [];
+  tiposFiltrados: any = []
   areaSelecHorarios = null
   diasNoLaborablesArray: any[] = [];
   calificar: boolean = false;
   get descripcion(): UntypedFormControl { return this.formCargo.get('descripcion') as UntypedFormControl }
   get abreviatura(): UntypedFormControl { return this.formCargo.get('abreviatura') as UntypedFormControl }
   get id_cargo(): UntypedFormControl { return this.formCargo.get('id_cargo') as UntypedFormControl }
+  get categorias(): UntypedFormControl { return this.formCargo.get('categorias') as UntypedFormControl }
 
   formUsuario = new UntypedFormGroup({
     nombres: new UntypedFormControl('', [Validators.required]),
@@ -132,6 +136,7 @@ export class RegistroInformacionComponent implements OnInit {
     id_asignacion: new UntypedFormControl('', []),
     id_area: new UntypedFormControl('', [Validators.required]),
     id_cargo: new UntypedFormControl('', [Validators.required]),
+    tipo_cargo: new UntypedFormControl('', [Validators.required]),
     fecha_inicio: new UntypedFormControl('', [Validators.required, this.validarFechaInicio.bind(this)]),
     fecha_fin: new UntypedFormControl('', [Validators.required, this.validarFechaFin.bind(this)]),
     estado: new UntypedFormControl('', []),
@@ -139,6 +144,7 @@ export class RegistroInformacionComponent implements OnInit {
   get id_asignacion(): UntypedFormControl { return this.formAsignacion.get('id_asignacion') as UntypedFormControl }
   get id_area_asignacion(): UntypedFormControl { return this.formAsignacion.get('id_area') as UntypedFormControl }
   get id_cargo_asignacion(): UntypedFormControl { return this.formAsignacion.get('id_cargo') as UntypedFormControl }
+  get tipo_cargo(): UntypedFormControl { return this.formAsignacion.get('tipo_cargo') as UntypedFormControl }
   get fecha_inicio_asignacion(): UntypedFormControl { return this.formAsignacion.get('fecha_inicio') as UntypedFormControl }
   get fecha_fin_asignacion(): UntypedFormControl { return this.formAsignacion.get('fecha_fin') as UntypedFormControl }
   get estado_asignacion(): UntypedFormControl { return this.formAsignacion.get('estado') as UntypedFormControl }
@@ -261,18 +267,21 @@ export class RegistroInformacionComponent implements OnInit {
   tiposAsistencia = []
   tipos = [
     { codigo: 'A', tipo: 'ASISTIO', porcentaje: null },
-    { codigo: 'T', tipo: 'TARDANZA', porcentaje: null },
-    { codigo: 'TI', tipo: 'TARDANZA INJUSTIFICADA', porcentaje: null },
+    { codigo: 'T', tipo: 'TARDANZA', porcentaje: 10 },
+    { codigo: 'TI', tipo: 'TARDANZA INJUSTIFICADA', porcentaje: 10 },
     { codigo: 'TJ', tipo: 'TARDANZA JUSTIFICADA', porcentaje: null },
-    { codigo: 'F', tipo: 'FALTA', porcentaje: null },
-    { codigo: 'FI', tipo: 'FALTA INJUSTIFICADA', porcentaje: null },
+    { codigo: 'F', tipo: 'FALTA', porcentaje: 100 },
+    { codigo: 'FI', tipo: 'FALTA INJUSTIFICADA', porcentaje: 100 },
     { codigo: 'FJ', tipo: 'FALTA JUSTIFICADA', porcentaje: null },
     { codigo: 'FM', tipo: 'DESCANSO MEDICO', porcentaje: null },
     { codigo: 'FV', tipo: 'VACACIONES', porcentaje: null },
     { codigo: 'FC', tipo: 'CITA MEDICA', porcentaje: null },
     { codigo: 'FD', tipo: 'DUELO', porcentaje: null },
-    { codigo: 'FE', tipo: 'NO MARCO ENTRADA', porcentaje: null },
-    { codigo: 'FS', tipo: 'NO MARCO SALIDA', porcentaje: null }
+    { codigo: 'PE', tipo: 'PERMISO', porcentaje: null },
+    // { codigo: 'FS', tipo: 'NO MARCO SALIDA', porcentaje: null },
+    // { codigo: 'OBS', tipo: 'OBSERVADO', porcentaje: null },
+    // { codigo: 'IN', tipo: 'INCOMPLETO', porcentaje: null },
+    // { codigo: 'TEX', tipo: 'TEXTRA', porcentaje: null }
   ]
   tablaAsignaciones = []
   filAsignacion = null
@@ -280,12 +289,23 @@ export class RegistroInformacionComponent implements OnInit {
   detalleConvocatoria = []
   filDetalle = null
   qrData = ''
+  tardanza = 0
+  tiempo_extra = 0
+
+  tipos_cargos = [
+    'Categoria t1',
+    'Categoria t2',
+    'Categoria t3',
+    'Categoria t4',
+    'Categoria t5'
+  ]
   constructor(private presuservice: PresupuestosService,
     private sanitizer: DomSanitizer,
     private encriptadorService: EncriptadorService,
     private recursosHumanosService: RecursosHumanosService,
     private toaster: ToastrService,
     private modalService: NgbModal,
+    public formsService: FormsService
   ) { }
 
   async ngOnInit() {
@@ -427,13 +447,24 @@ export class RegistroInformacionComponent implements OnInit {
     }
   }
 
-  abrirModalCargo(row?, i?) {
+  async abrirModalCargo(row?, i?) {
     this.formCargo.reset()
     if (row) {
+      let categoria = 'Categoria t1'
+      if (row.id_cargo) {
+        const categorias = [{ value: 'Categoria t1', key: 'categoria_t1' }, { value: 'Categoria t2', key: 'categoria_t2' }, { value: 'Categoria t3', key: 'categoria_t3' }, { value: 'Categoria t4', key: 'categoria_t4' }, { value: 'Categoria t5', key: 'categoria_t5' }]
+        for (const element of categorias) {
+          if (row[element.key] == 1) {
+            categoria = element.value
+          }
+        }
+      }
+
       this.formCargo.patchValue({
         id_cargo: row.id_cargo,
         descripcion: row.descripcion,
-        abreviatura: row.abreviatura
+        abreviatura: row.abreviatura,
+        categorias: categoria
       })
     } else {
 
@@ -462,6 +493,7 @@ export class RegistroInformacionComponent implements OnInit {
         );
         return
       }
+      const categorias = [{ value: 'Categoria t1', key: 'categoria_t1' }, { value: 'Categoria t2', key: 'categoria_t2' }, { value: 'Categoria t3', key: 'categoria_t3' }, { value: 'Categoria t4', key: 'categoria_t4' }, { value: 'Categoria t5', key: 'categoria_t5' }]
 
       const fila = this.tablaCargos[this.filSel]
       const obj: Cargo = {
@@ -469,7 +501,7 @@ export class RegistroInformacionComponent implements OnInit {
         id_area: fila.id_area,
         descripcion: this.descripcion.value.trim().toUpperCase(),
         abreviatura: this.abreviatura.value.trim().toUpperCase(),
-        categoria_t1: 1,
+        categoria_t1: 0,
         categoria_t2: 0,
         categoria_t3: 0,
         categoria_t4: 0,
@@ -477,6 +509,14 @@ export class RegistroInformacionComponent implements OnInit {
         habilitado: 1,
         texto: ''
       }
+      for (const element of categorias) {
+        if (element.value == this.categorias.value) {
+          obj[element.key] = 1
+        } else {
+          obj[element.key] = 0
+        }
+      }
+      console.log('giardar', obj)
       const response = await this.recursosHumanosService.guardarCargoArea(obj)
       await this.listarCargosPorArea()
       this.cerrarModal()
@@ -541,7 +581,7 @@ export class RegistroInformacionComponent implements OnInit {
   }
 
   async actualizarCategoria(row, categoria, checked, i) {
-
+    const categorias = [{ value: 'Categoria t1', key: 'categoria_t1' }, { value: 'Categoria t2', key: 'categoria_t2' }, { value: 'Categoria t3', key: 'categoria_t3' }, { value: 'Categoria t4', key: 'categoria_t4' }, { value: 'Categoria t5', key: 'categoria_t5' }]
     this.tablaCargos[i][categoria] = checked
     const obj: Cargo = {
       id_cargo: row.id_cargo,
@@ -557,6 +597,14 @@ export class RegistroInformacionComponent implements OnInit {
       habilitado: row.habilitado ? 1 : 0,
       texto: row.texto ? row.texto : ''
     }
+    for (const element of categorias) {
+      if (element.value == this.categorias.value) {
+        obj[element.key] = 1
+      } else {
+        obj[element.key] = 0
+      }
+    }
+    console.log('obj', obj)
     const resp = await this.recursosHumanosService.actualizarCargoArea(obj)
     if (resp[0]) {
       // this.mostrar_carga_todo = false
@@ -869,6 +917,7 @@ export class RegistroInformacionComponent implements OnInit {
       this.formAsignacion.reset()
     } else {
       this.cargosFiltrados = this.cargos.filter(ele => Number(ele.id_area) == Number(row.id_area))
+      console.log('this.cargosFiltrados', this.cargosFiltrados)
       const fechaAsignacion = row.fecha_inicio
         ? row.fecha_inicio.split('T')[0]
         : null;
@@ -876,19 +925,52 @@ export class RegistroInformacionComponent implements OnInit {
       const fechaCulminacion = row.fecha_fin
         ? row.fecha_fin.split('T')[0]
         : null;
+
+      const cargo = this.cargosFiltrados.find(ele => row.id_cargo == ele.id_cargo)
+      let tiposBuscar = ['categoria_t1', 'categoria_t2', 'categoria_t3', 'categoria_t4', 'categoria_t5']
+      let categoria = 'categoria_t1'
+      for (const element of tiposBuscar) {
+        if (cargo[element] == 1) {
+          categoria = element
+        }
+      }
+      console.log('categoria', categoria)
+      this.tiposFiltrados = this.tipos_cargos.filter(ele => Number(ele.charAt(ele.length - 1)) <= Number(categoria.charAt(categoria.length - 1)))
+      console.log('tiposFiltrados', this.tiposFiltrados)
+      const tipocargo = row.tipo_cargo ? this.tipos_cargos[row.tipo_cargo] : this.tipos_cargos[0]
       this.formAsignacion.reset()
       this.formAsignacion.patchValue({
         id_asignacion: row.id_asignacion,
         id_area: row.id_area,
         id_cargo: row.id_cargo,
+        tipo_cargo: tipocargo,
         fecha_inicio: fechaAsignacion,
         fecha_fin: fechaCulminacion,
         estado: row.estado,
       })
+
     }
 
     this.modalAsignacion.show()
     this.mostrar_carga_todo = false
+  }
+
+  getRomanNumeral(num: any): string {
+    const romanNumerals: { [key: number]: string } = {
+      1: 'I',
+      2: 'II',
+      3: 'III',
+      4: 'IV',
+      5: 'V'
+    };
+
+    // Convertir a número y validar
+    const numero = Number(num);
+    if (isNaN(numero) || numero < 1 || numero > 5 || !Number.isInteger(numero)) {
+      return '';
+    }
+
+    return romanNumerals[numero] || '';
   }
 
   cerrarModalAsignacion() {
@@ -1103,6 +1185,7 @@ export class RegistroInformacionComponent implements OnInit {
         id_usuario: row.id_usuario,
         id_area: this.id_area_asignacion.value,
         id_cargo: this.id_cargo_asignacion.value,
+        tipo_cargo: Number(this.tipo_cargo.value.charAt(this.tipo_cargo.value.length - 1)),
         fecha_inicio: this.fecha_inicio_asignacion.value,
         fecha_fin: this.fecha_fin_asignacion.value,
         estado: 1,
@@ -1253,10 +1336,12 @@ export class RegistroInformacionComponent implements OnInit {
         id_usuario: rowAsignacion.id_usuario,
         id_area: this.id_area_asignacion.value,
         id_cargo: this.id_cargo_asignacion.value,
+        tipo_cargo: Number(this.tipo_cargo.value.charAt(this.tipo_cargo.value.length - 1)),
         fecha_inicio: this.fecha_inicio_asignacion.value,
         fecha_fin: this.fecha_fin_asignacion.value,
         estado: rowAsignacion.estado,
       }
+      console.log('actualizarAsignacionUsuario', obj)
       const response = await this.recursosHumanosService.actualizarAsignacionUsuario(obj)
       if (response) {
         this.cerrarModalAsignacion()
@@ -1474,7 +1559,7 @@ export class RegistroInformacionComponent implements OnInit {
     console.log('row', row)
     console.log('suuari', this.tablaUsuarios[this.filUsuario])
     const user = this.tablaUsuarios[this.filUsuario]
-    this.qrData = user.id_usuario + '|' + user.id_proyecto + '|' + user.nombres + '|' + user.apellidos + '|' + user.dni + '|' + row.descripcion_area + '|' + row.id_area + '|' + row.descripcion_cargo + '|' + row.id_cargo + '|' + moment(row.fecha_inicio).format('YYYY-MM-DD') + '|' + moment(row.fecha_fin).format('YYYY-MM-DD')
+    this.qrData = user.id_usuario + '|' + user.id_proyecto + '|' + user.nombres + '|' + user.apellidos + '|' + user.dni + '|' + row.id_asignacion + '|' + row.descripcion_area + '|' + row.id_area + '|' + row.descripcion_cargo + '|' + row.id_cargo + '|' + moment(row.fecha_inicio).format('YYYY-MM-DD') + '|' + moment(row.fecha_fin).format('YYYY-MM-DD')
     console.log('this.qrData', this.qrData)
     this.modalQRAsignacion.show()
   }
@@ -1739,14 +1824,23 @@ export class RegistroInformacionComponent implements OnInit {
         id_area: row.id_area,
         descripcion: this.descripcion.value,
         abreviatura: this.abreviatura.value,
-        categoria_t1: row.categoria_t1 ? 1 : 0,
-        categoria_t2: row.categoria_t2 ? 1 : 0,
-        categoria_t3: row.categoria_t3 ? 1 : 0,
-        categoria_t4: row.categoria_t4 ? 1 : 0,
-        categoria_t5: row.categoria_t5 ? 1 : 0,
+        categoria_t1: 0,
+        categoria_t2: 0,
+        categoria_t3: 0,
+        categoria_t4: 0,
+        categoria_t5: 0,
         habilitado: row.habilitado ? 1 : 0,
         texto: row.texto ? row.texto : ''
       }
+      const categorias = [{ value: 'Categoria t1', key: 'categoria_t1' }, { value: 'Categoria t2', key: 'categoria_t2' }, { value: 'Categoria t3', key: 'categoria_t3' }, { value: 'Categoria t4', key: 'categoria_t4' }, { value: 'Categoria t5', key: 'categoria_t5' }]
+      for (const element of categorias) {
+        if (element.value == this.categorias.value) {
+          obj[element.key] = 1
+        } else {
+          obj[element.key] = 0
+        }
+      }
+      console.log('acutalizar', obj)
       const resp = await this.recursosHumanosService.actualizarCargoArea(obj)
       if (resp[0]) {
         await this.listarCargosPorArea()
@@ -1885,6 +1979,44 @@ export class RegistroInformacionComponent implements OnInit {
 
   cambioSelectAreaAsignacion(select) {
     this.cargosFiltrados = this.cargos.filter(ele => Number(ele.id_area) == Number(this.id_area_asignacion.value))
+    this.id_cargo_asignacion.reset()
+    this.tipo_cargo.reset()
+  }
+
+  cambioCargoAsignacion(value) {
+    if (this.id_cargo_asignacion.value) {
+      const cargo = this.cargosFiltrados.find(ele => this.tipo_cargo.value)
+      let tiposBuscar = ['categoria_t1', 'categoria_t2', 'categoria_t3', 'categoria_t4', 'categoria_t5']
+      let categoria = 'categoria_t1'
+      for (const element of tiposBuscar) {
+        if (cargo[element] == 1) {
+          categoria = element
+        }
+      }
+      this.tiposFiltrados = this.tipos_cargos.filter(ele => Number(ele.charAt(ele.length - 1)) < Number(categoria.charAt(categoria.length - 1)))
+      this.tipo_cargo.reset()
+    }
+
+
+  }
+
+  getCategorias(row: any): string[] {
+    const categorias: string[] = [];
+
+    // Lógica jerárquica: si existe una categoría superior
+    if (row.categoria_t5 == 1) {
+      categorias.push('I', 'II', 'III', 'IV', 'V');
+    } else if (row.categoria_t4 == 1) {
+      categorias.push('I', 'II', 'III', 'IV');
+    } else if (row.categoria_t3 == 1) {
+      categorias.push('I', 'II', 'III');
+    } else if (row.categoria_t2 == 1) {
+      categorias.push('I', 'II');
+    } else if (row.categoria_t1 == 1) {
+      categorias.push('I');
+    }
+
+    return categorias;
   }
 
   async listarAreasYCargos() {
@@ -2451,6 +2583,11 @@ export class RegistroInformacionComponent implements OnInit {
     }
   }
 
+  async cambioAreaSelecHorarios() {
+    console.log('cambioAreaSelecHorarios')
+    await this.listarHorarioYFeriadosArea()
+  }
+
   async listarHorarioYFeriadosArea() {
     try {
       this.mostrar_carga_todo = true
@@ -2459,6 +2596,8 @@ export class RegistroInformacionComponent implements OnInit {
       this.cantHorasDescanso = 0
       this.tablaFeriados = []
       this.diasNoLaborablesArray = []
+      this.tardanza = 0
+      this.tiempo_extra = 0
       const obj = {
         id_proyecto: this.idProyecto,
         id_area: this.areaSelecHorarios
@@ -2473,12 +2612,14 @@ export class RegistroInformacionComponent implements OnInit {
             id_area: this.areaSelecHorarios,
             inicio_semana: 'LUNES',
             dias_nolaborables: 'DOMINGO',
-            hora_ingreso_manana: '07:30:00|07:30:00|07:30:00|07:30:00|07:30:00|07:30:00|00:00:00',
-            hora_salida_manana: '12:00:00|12:00:00|12:00:00|12:00:00|12:00:00|13:00:00|00:00:00',
-            hora_ingreso_tarde: '14:00:00|14:00:00|14:00:00|14:00:00|14:00:00|00:00:00|00:00:00',
-            hora_salida_tarde: '18:00:00|18:00:00|18:00:00|18:00:00|18:00:00|00:00:00|00:00:00',
+            hora_ingreso_manana: '07:30:00|07:30:00|07:30:00|07:30:00|07:30:00|07:30:00|',
+            hora_salida_manana: '12:00:00|12:00:00|12:00:00|12:00:00|12:00:00|13:00:00|',
+            hora_ingreso_tarde: '14:00:00|14:00:00|14:00:00|14:00:00|14:00:00||',
+            hora_salida_tarde: '18:00:00|18:00:00|18:00:00|18:00:00|18:00:00||',
             totales_dia: 48,
-            descuentos: ''
+            descuentos: '',
+            tardanza: 0,
+            tiempo_extra: 0
           }
 
         } else {
@@ -2501,6 +2642,8 @@ export class RegistroInformacionComponent implements OnInit {
         })
       }
       this.inicioSemana = horario.inicio_semana
+      this.tardanza = horario.tardanza
+      this.tiempo_extra = horario.tiempo_extra
       const diasNoLaborables = horario.dias_nolaborables.split('|')
       this.diasNoLaborablesArray = this.dias.map(ele => diasNoLaborables.includes(ele))
       this.cantHorasDescanso = this.calcularHorasEntreTurnos(horario.hora_salida_manana, horario.hora_ingreso_tarde)
@@ -2553,7 +2696,7 @@ export class RegistroInformacionComponent implements OnInit {
         const ingresoTarde = ingresosTarde[i];
 
         // Verificar que ambos horarios sean válidos (no 00:00:00)
-        if (salidaManana !== '00:00:00' && ingresoTarde !== '00:00:00') {
+        if (salidaManana !== '' && ingresoTarde !== '') {
           const horas = this.calcularDiferenciaHoras(salidaManana, ingresoTarde);
           horasTotales += horas;
         }
@@ -2602,7 +2745,7 @@ export class RegistroInformacionComponent implements OnInit {
         const ingresoM = hora_ingreso_manana.split('|')[i];
         const salidaM = hora_salida_manana.split('|')[i];
 
-        if (ingresoM !== '00:00:00' && salidaM !== '00:00:00') {
+        if (ingresoM !== '' && salidaM !== '') {
           const [h1, m1] = ingresoM.split(':').map(Number);
           const [h2, m2] = salidaM.split(':').map(Number);
           total += (h2 * 60 + m2 - (h1 * 60 + m1)) / 60;
@@ -2612,7 +2755,7 @@ export class RegistroInformacionComponent implements OnInit {
         const ingresoT = hora_ingreso_tarde.split('|')[i];
         const salidaT = hora_salida_tarde.split('|')[i];
 
-        if (ingresoT !== '00:00:00' && salidaT !== '00:00:00') {
+        if (ingresoT !== '' && salidaT !== '') {
           const [h1, m1] = ingresoT.split(':').map(Number);
           const [h2, m2] = salidaT.split(':').map(Number);
           total += (h2 * 60 + m2 - (h1 * 60 + m1)) / 60;
@@ -2658,7 +2801,9 @@ export class RegistroInformacionComponent implements OnInit {
         hora_ingreso_tarde: hora_ingreso_tarde,
         hora_salida_tarde: hora_salida_tarde,
         totales_dia: this.cantHorasDescanso,
-        descuentos: descuentos
+        descuentos: descuentos,
+        tardanza: this.tardanza,
+        tiempo_extra: this.tiempo_extra
       }
 
       const resp = await this.recursosHumanosService.actualizarHorarioArea(obj)
@@ -2674,7 +2819,9 @@ export class RegistroInformacionComponent implements OnInit {
         hora_ingreso_tarde: hora_ingreso_tarde,
         hora_salida_tarde: hora_salida_tarde,
         totales_dia: this.cantHorasDescanso,
-        descuentos: descuentos
+        descuentos: descuentos,
+        tardanza: this.tardanza,
+        tiempo_extra: this.tiempo_extra
       }
 
       const resp = await this.recursosHumanosService.guardarHorarioArea(obj)

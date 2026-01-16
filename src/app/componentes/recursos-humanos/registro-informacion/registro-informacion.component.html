@@ -39,18 +39,18 @@
                             <th appAnchocol [ancho]="30" rowspan="2">Nro</th>
                             <th appAnchocol [ancho]="130" rowspan="2">Area/Cargo</th>
                             <th appAnchocol [ancho]="80" colspan="2">Abreviatura</th>
-                            <th appAnchocol [ancho]="200" colspan="5">Categoria Evaluacion</th>
+                            <th appAnchocol [ancho]="200" colspan="1">Categoria Evaluacion</th>
                             <th appAnchocol [ancho]="40" rowspan="2">Habilitado</th>
                             <th appAnchocol [ancho]="80" rowspan="2"></th>
                         </tr>
                         <tr>
                             <th appAnchocol [ancho]="40">Area</th>
                             <th appAnchocol [ancho]="40">Cargo</th>
-                            <th appAnchocol [ancho]="40">Tipo I</th>
-                            <th appAnchocol [ancho]="40">Tipo II</th>
+                            <th appAnchocol [ancho]="40">Tipos</th>
+                            <!-- <th appAnchocol [ancho]="40">Tipo II</th>
                             <th appAnchocol [ancho]="40">Tipo III</th>
                             <th appAnchocol [ancho]="40">Tipo IV</th>
-                            <th appAnchocol [ancho]="40">Tipo V</th>
+                            <th appAnchocol [ancho]="40">Tipo V</th> -->
                         </tr>
                     </thead>
 
@@ -62,16 +62,18 @@
                                 <td appAnchocol [ancho]="130">{{row.descripcion}}</td>
                                 <td appAnchocol [ancho]="40">{{row.area_abreviatura}}</td>
                                 <td appAnchocol [ancho]="40">{{row.abreviatura}}</td>
-
-                                <!-- Categoría T1 - Checkbox -->
-                                <td appAnchocol [ancho]="40">
+                                <td>
+                                    <ng-container *ngIf="getCategorias(row).length > 0">
+                                        {{ getCategorias(row).join(', ') }}
+                                    </ng-container>
+                                </td>
+                                <!-- <td appAnchocol [ancho]="40">
                                     <input type="checkbox" *ngIf="row.id_cargo"
                                         [checked]="row.categoria_t1 === '1' || row.categoria_t1 === 1 || row.categoria_t1 === true"
                                         (change)="actualizarCategoria(row, 'categoria_t1', $event.target.checked,i)"
                                         [disabled]="!row.habilitado ">
                                 </td>
 
-                                <!-- Categoría T2 - Checkbox -->
                                 <td appAnchocol [ancho]="40">
                                     <input type="checkbox" *ngIf="row.id_cargo"
                                         [checked]="row.categoria_t2 === '1' || row.categoria_t2 === 1 || row.categoria_t2 === true"
@@ -79,7 +81,6 @@
                                         [disabled]="!row.habilitado ">
                                 </td>
 
-                                <!-- Categoría T3 - Checkbox -->
                                 <td appAnchocol [ancho]="40">
                                     <input type="checkbox" *ngIf="row.id_cargo"
                                         [checked]="row.categoria_t3 === '1' || row.categoria_t3 === 1 || row.categoria_t3 === true"
@@ -87,7 +88,6 @@
                                         [disabled]="!row.habilitado ">
                                 </td>
 
-                                <!-- Categoría T4 - Checkbox -->
                                 <td appAnchocol [ancho]="40">
                                     <input type="checkbox" *ngIf="row.id_cargo"
                                         [checked]="row.categoria_t4 === '1' || row.categoria_t4 === 1 || row.categoria_t4 === true"
@@ -95,13 +95,12 @@
                                         [disabled]="!row.habilitado ">
                                 </td>
 
-                                <!-- Categoría T5 - Checkbox -->
                                 <td appAnchocol [ancho]="40">
                                     <input type="checkbox" *ngIf="row.id_cargo"
                                         [checked]="row.categoria_t5 === '1' || row.categoria_t5 === 1 || row.categoria_t5 === true"
                                         (change)="actualizarCategoria(row, 'categoria_t5', $event.target.checked,i)"
                                         [disabled]="!row.habilitado ">
-                                </td>
+                                </td> -->
 
                                 <!-- Habilitado - Slider Switch -->
                                 <td appAnchocol [ancho]="40">
@@ -331,8 +330,9 @@
                                 <thead class="text-center">
 
                                     <tr style="height: 22px;">
-                                        <th appAnchocol [ancho]="150">Cargo</th>
                                         <th appAnchocol [ancho]="150">Area</th>
+                                        <th appAnchocol [ancho]="150">Cargo</th>
+                                        <th appAnchocol [ancho]="60">Categoria</th>
                                         <th appAnchocol [ancho]="80">Inicio</th>
                                         <th appAnchocol [ancho]="80">Culmina</th>
                                         <th appAnchocol [ancho]="70">ESTADO</th>
@@ -345,6 +345,7 @@
                                             (click)="filAsignacion=i">
                                             <td>{{row.descripcion_area}}</td>
                                             <td>{{row.descripcion_cargo}}</td>
+                                            <td>{{ getRomanNumeral(row.tipo_cargo)}}</td>
                                             <td class="text-center">{{row.fecha_inicio | date:'dd-MM-yyyy'}}</td>
                                             <td class="text-center">{{row.fecha_fin | date:'dd-MM-yyyy'}}</td>
                                             <td class="text-center">
@@ -751,7 +752,7 @@
         <div class="col-4">
             <mat-form-field appearance="outline" class="mff-reduc col-12 mt-3">
                 <mat-label>Area</mat-label>
-                <mat-select [(ngModel)]="areaSelecHorarios">
+                <mat-select [(ngModel)]="areaSelecHorarios" (selectionChange)="cambioAreaSelecHorarios()">
                     <mat-option *ngFor="let area of areas" [value]="area.id_area">
                         {{area.descripcion}}
                     </mat-option>
@@ -937,6 +938,21 @@
                     </tr>
                 </tbody>
             </table>
+            <div class="d-flex mt-3">
+                <mat-form-field appearance="outline" class="mff-reduc col-6">
+                    <mat-label>Tardanza(minutos)</mat-label>
+                    <input matInput type="number" [textMask]="this.formsService.maskUsAmountDecimal" autocomplete="off"
+                        class="mayuscula" autocomplete="off" maxlength="255" (blur)="this.actualizarHorario()"
+                        [(ngModel)]="tardanza" [maxLength]="150">
+                </mat-form-field>
+                <mat-form-field appearance="outline" class="mff-reduc col-6">
+                    <mat-label>Tiempo extra(minutos)</mat-label>
+                    <input matInput type="number" [textMask]="this.formsService.maskUsAmountDecimal" class="mayuscula"
+                        autocomplete="off" maxlength="255" (blur)="this.actualizarHorario()" [(ngModel)]="tiempo_extra"
+                        [maxLength]="150">
+                </mat-form-field>
+            </div>
+
         </div>
     </div>
 </ng-container>
@@ -961,6 +977,14 @@
                     <mat-label>Abreviatura Cargo</mat-label>
                     <input matInput type="text" autocomplete="off" maxlength="15" formControlName="abreviatura"
                         [maxLength]="15">
+                </mat-form-field>
+                <mat-form-field appearance="outline" class="mff-reduc col-sm-12 col-12">
+                    <mat-label>Categorias</mat-label>
+                    <select matNativeControl formControlName="categorias">
+                        <option *ngFor="let tipo of tipos_cargos" [value]="tipo">
+                            {{tipo}}
+                        </option>
+                    </select>
                 </mat-form-field>
             </div>
         </form>
@@ -1000,9 +1024,20 @@
                 </mat-form-field>
                 <mat-form-field appearance="outline" class="mff-reduc col-12 alto-35 mt-3">
                     <mat-label>Cargo</mat-label>
-                    <select matNativeControl formControlName="id_cargo">
+                    <select matNativeControl formControlName="id_cargo"
+                        [disabled]="!formAsignacion.get('id_area')?.value"
+                        (change)="cambioCargoAsignacion($event.target.value)">
                         <option *ngFor="let cargo of cargosFiltrados" [value]="cargo.id_cargo">
                             {{cargo.descripcion}}
+                        </option>
+                    </select>
+                </mat-form-field>
+                <mat-form-field appearance="outline" class="mff-reduc col-12 alto-35 mt-3">
+                    <mat-label>Categoria Cargo</mat-label>
+                    <select matNativeControl formControlName="tipo_cargo"
+                        [disabled]="!formAsignacion.get('id_cargo')?.value">
+                        <option *ngFor="let tipo of tiposFiltrados" [value]="tipo">
+                            {{tipo}}
                         </option>
                     </select>
                 </mat-form-field>
@@ -1447,7 +1482,7 @@
     </div>
     <div class="app-modal-body">
         <div class="mb-3">
-            <h6 class="mb-1">{{this.tablaUsuarios[this.filUsuario]?.nombres + '  '+
+            <h6 class="mb-1">{{this.tablaUsuarios[this.filUsuario]?.nombres + ' '+
                 this.tablaUsuarios[this.filUsuario]?.apellidos}}</h6>
             <p class="mb-1 text-muted small">
                 <strong>Cargo:</strong> {{this.tablaAsignaciones[this.filAsignacion]?.descripcion_cargo}}

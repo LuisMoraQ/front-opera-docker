@@ -54,7 +54,7 @@ export const options: Partial<IConfig> | (() => Partial<IConfig>) = null;
     MatFormFieldModule,
     MatInputModule,
     ToastrModule.forRoot(),
-    NgxMaskModule.forRoot(options),
+    NgxMaskModule.forRoot(options)
   ],
   providers: [MenuItems,{provide:HTTP_INTERCEPTORS,useClass:MainiterceptorInterceptor,multi:true}],
   bootstrap: [AppComponent],

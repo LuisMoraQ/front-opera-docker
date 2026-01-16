@@ -53,17 +53,85 @@ small {
 }
 
 .table-sm td {
-    padding: 0.15rem 0.5rem;
-    white-space: nowrap;
+  padding: 0.15rem 0.5rem;
+  white-space: nowrap;
 }
 
 .badge {
-    font-size: 0.65rem;
-    padding: 0.2rem 0.35rem;
-    min-width: 24px;
-    font-weight: 600;
+  font-size: 0.65rem;
+  padding: 0.2rem 0.35rem;
+  min-width: 24px;
+  font-weight: 600;
 }
 
 small {
-    font-size: 0.7rem;
+  font-size: 0.7rem;
+}
+
+.planilla2 {
+  height: calc(100dvh - 250px);
+}
+
+/* Agrega esto en tu archivo styles.css o en el CSS del componente */
+
+/* Clases de colores personalizados */
+.bg-orange {
+  background-color: #fd7e14 !important;
+}
+
+.bg-yellow {
+  background-color: #ffeb3b !important;
+}
+
+.bg-dark-red {
+  background-color: #c82333 !important;
+}
+
+.bg-pink {
+  background-color: #e83e8c !important;
+}
+
+.bg-indigo {
+  background-color: #6610f2 !important;
+}
+
+.bg-light-blue {
+  background-color: #85d6ff !important;
+}
+
+.bg-lime {
+  background-color: #d4edda !important;
+  border-color: #c3e6cb !important;
+}
+.sticky-footer-wrapper {
+  position: sticky;
+  bottom: 0;
+  background-color: white;
+  border-top: 2px solid #dee2e6;
+  z-index: 100;
+  overflow-x: auto;
+}
+
+.sticky-footer-wrapper table {
+  margin-bottom: 0;
+  width: 100%;
+}
+
+/* Sincronizar ancho de columnas */
+.sticky-footer-wrapper .tab-10 {
+  width: auto; /* Se ajustará al contenido */
+  min-width: 100%; /* Mínimo ancho completo */
+}
+
+.tablacust {
+  table-layout: fixed;
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.tablacust th,
+.tablacust td {
+  box-sizing: border-box;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
