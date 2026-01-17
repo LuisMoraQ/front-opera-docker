@@ -343,6 +343,7 @@ export class RegistroInformacionComponent implements OnInit {
       if (!this.areaSelecHorarios && this.areas.length) {
         this.areaSelecHorarios = this.areas[0].id_area
         await this.listarHorarioYFeriadosArea()
+        
       }
     }
     this.mostrar_carga_todo = false
@@ -516,7 +517,6 @@ export class RegistroInformacionComponent implements OnInit {
           obj[element.key] = 0
         }
       }
-      console.log('giardar', obj)
       const response = await this.recursosHumanosService.guardarCargoArea(obj)
       await this.listarCargosPorArea()
       this.cerrarModal()
@@ -604,7 +604,6 @@ export class RegistroInformacionComponent implements OnInit {
         obj[element.key] = 0
       }
     }
-    console.log('obj', obj)
     const resp = await this.recursosHumanosService.actualizarCargoArea(obj)
     if (resp[0]) {
       // this.mostrar_carga_todo = false
@@ -915,9 +914,10 @@ export class RegistroInformacionComponent implements OnInit {
     await this.listarAreasYCargos()
     if (!row) {
       this.formAsignacion.reset()
+      this.id_cargo_asignacion.disable()
+      this.tipo_cargo.disable()
     } else {
       this.cargosFiltrados = this.cargos.filter(ele => Number(ele.id_area) == Number(row.id_area))
-      console.log('this.cargosFiltrados', this.cargosFiltrados)
       const fechaAsignacion = row.fecha_inicio
         ? row.fecha_inicio.split('T')[0]
         : null;
@@ -934,10 +934,8 @@ export class RegistroInformacionComponent implements OnInit {
           categoria = element
         }
       }
-      console.log('categoria', categoria)
       this.tiposFiltrados = this.tipos_cargos.filter(ele => Number(ele.charAt(ele.length - 1)) <= Number(categoria.charAt(categoria.length - 1)))
-      console.log('tiposFiltrados', this.tiposFiltrados)
-      const tipocargo = row.tipo_cargo ? this.tipos_cargos[row.tipo_cargo] : this.tipos_cargos[0]
+      const tipocargo = row.tipo_cargo ? this.tipos_cargos[row.tipo_cargo - 1] : this.tipos_cargos[0]
       this.formAsignacion.reset()
       this.formAsignacion.patchValue({
         id_asignacion: row.id_asignacion,
@@ -948,7 +946,6 @@ export class RegistroInformacionComponent implements OnInit {
         fecha_fin: fechaCulminacion,
         estado: row.estado,
       })
-
     }
 
     this.modalAsignacion.show()
@@ -1191,7 +1188,6 @@ export class RegistroInformacionComponent implements OnInit {
         estado: 1,
       }
       const response = await this.recursosHumanosService.guardarAsignacionUsuario(obj)
-
       if (response) {
         this.cerrarModalAsignacion()
         this.toaster.success(
@@ -1341,7 +1337,6 @@ export class RegistroInformacionComponent implements OnInit {
         fecha_fin: this.fecha_fin_asignacion.value,
         estado: rowAsignacion.estado,
       }
-      console.log('actualizarAsignacionUsuario', obj)
       const response = await this.recursosHumanosService.actualizarAsignacionUsuario(obj)
       if (response) {
         this.cerrarModalAsignacion()
@@ -1556,11 +1551,8 @@ export class RegistroInformacionComponent implements OnInit {
   }
   async generarQRAsignacion(row, i) {
     this.qrData = ''
-    console.log('row', row)
-    console.log('suuari', this.tablaUsuarios[this.filUsuario])
     const user = this.tablaUsuarios[this.filUsuario]
     this.qrData = user.id_usuario + '|' + user.id_proyecto + '|' + user.nombres + '|' + user.apellidos + '|' + user.dni + '|' + row.id_asignacion + '|' + row.descripcion_area + '|' + row.id_area + '|' + row.descripcion_cargo + '|' + row.id_cargo + '|' + moment(row.fecha_inicio).format('YYYY-MM-DD') + '|' + moment(row.fecha_fin).format('YYYY-MM-DD')
-    console.log('this.qrData', this.qrData)
     this.modalQRAsignacion.show()
   }
 
@@ -1840,7 +1832,6 @@ export class RegistroInformacionComponent implements OnInit {
           obj[element.key] = 0
         }
       }
-      console.log('acutalizar', obj)
       const resp = await this.recursosHumanosService.actualizarCargoArea(obj)
       if (resp[0]) {
         await this.listarCargosPorArea()
@@ -1975,17 +1966,27 @@ export class RegistroInformacionComponent implements OnInit {
 
   cambioSelectAreaDetalle(select) {
     this.cargosFiltrados = this.cargos.filter(ele => Number(ele.id_area) == Number(this.id_area_detalle_conv.value))
+
   }
 
   cambioSelectAreaAsignacion(select) {
     this.cargosFiltrados = this.cargos.filter(ele => Number(ele.id_area) == Number(this.id_area_asignacion.value))
     this.id_cargo_asignacion.reset()
     this.tipo_cargo.reset()
+    if (!this.id_area_asignacion.value) {
+      this.tipo_cargo.disable()
+      this.id_cargo_asignacion.disable()
+    } else {
+      this.id_cargo_asignacion.enable()
+    }
   }
 
   cambioCargoAsignacion(value) {
+    this.tipo_cargo.reset()
     if (this.id_cargo_asignacion.value) {
-      const cargo = this.cargosFiltrados.find(ele => this.tipo_cargo.value)
+      this.tipo_cargo.enable()
+
+      const cargo = this.cargosFiltrados.find(ele => this.id_cargo_asignacion.value == ele.id_cargo)
       let tiposBuscar = ['categoria_t1', 'categoria_t2', 'categoria_t3', 'categoria_t4', 'categoria_t5']
       let categoria = 'categoria_t1'
       for (const element of tiposBuscar) {
@@ -1993,8 +1994,10 @@ export class RegistroInformacionComponent implements OnInit {
           categoria = element
         }
       }
-      this.tiposFiltrados = this.tipos_cargos.filter(ele => Number(ele.charAt(ele.length - 1)) < Number(categoria.charAt(categoria.length - 1)))
-      this.tipo_cargo.reset()
+      this.tiposFiltrados = this.tipos_cargos.filter(ele => Number(ele.charAt(ele.length - 1)) <= Number(categoria.charAt(categoria.length - 1)))
+
+    } else {
+      this.tipo_cargo.disable()
     }
 
 
@@ -2584,7 +2587,6 @@ export class RegistroInformacionComponent implements OnInit {
   }
 
   async cambioAreaSelecHorarios() {
-    console.log('cambioAreaSelecHorarios')
     await this.listarHorarioYFeriadosArea()
   }
 
@@ -2617,8 +2619,8 @@ export class RegistroInformacionComponent implements OnInit {
             hora_ingreso_tarde: '14:00:00|14:00:00|14:00:00|14:00:00|14:00:00||',
             hora_salida_tarde: '18:00:00|18:00:00|18:00:00|18:00:00|18:00:00||',
             totales_dia: 48,
-            descuentos: '',
-            tardanza: 0,
+            descuentos: '|10|10||100|100|||||||',
+            tardanza: 10,
             tiempo_extra: 0
           }
 
@@ -2650,6 +2652,7 @@ export class RegistroInformacionComponent implements OnInit {
       this.cantHorasSemana = this.calcularTotalHorasSemana(horario.hora_ingreso_manana, horario.hora_salida_manana, horario.hora_ingreso_tarde, horario.hora_salida_tarde)
       const porcentajes = horario.descuentos.split('|')
       if (porcentajes.length) {
+
         this.tiposAsistencia = this.tipos.map((ele, index) => { ele.porcentaje = porcentajes[index]; return ele })
       } else {
         this.tiposAsistencia = JSON.parse(JSON.stringify(this.tipos))

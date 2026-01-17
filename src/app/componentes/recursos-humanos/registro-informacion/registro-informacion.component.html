@@ -248,7 +248,12 @@
                                 </td>
                                 <td appAnchocol [ancho]="50">{{row.dni}}</td>
                                 <td appAnchocol [ancho]="50">{{row.telefono}}</td>
-                                <td appAnchocol [ancho]="80">{{row.correo}}</td>
+                                <td appAnchocol [ancho]="80">
+                                    <div [ngbTooltip]="row.correo"
+                                        style=" overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                                        {{row.correo}}
+                                    </div>
+                                </td>
                                 <!-- <td appAnchocol [ancho]="70">{{row.area}}</td>
                         <td appAnchocol [ancho]="70">{{row.cargo}}</td> -->
                                 <td appAnchocol [ancho]="70">{{row.fecha_asignacion | date :'dd-MM-YYYY'}}</td>
@@ -1025,7 +1030,6 @@
                 <mat-form-field appearance="outline" class="mff-reduc col-12 alto-35 mt-3">
                     <mat-label>Cargo</mat-label>
                     <select matNativeControl formControlName="id_cargo"
-                        [disabled]="!formAsignacion.get('id_area')?.value"
                         (change)="cambioCargoAsignacion($event.target.value)">
                         <option *ngFor="let cargo of cargosFiltrados" [value]="cargo.id_cargo">
                             {{cargo.descripcion}}
@@ -1034,14 +1038,33 @@
                 </mat-form-field>
                 <mat-form-field appearance="outline" class="mff-reduc col-12 alto-35 mt-3">
                     <mat-label>Categoria Cargo</mat-label>
-                    <select matNativeControl formControlName="tipo_cargo"
-                        [disabled]="!formAsignacion.get('id_cargo')?.value">
+                    <select matNativeControl formControlName="tipo_cargo">
                         <option *ngFor="let tipo of tiposFiltrados" [value]="tipo">
                             {{tipo}}
                         </option>
                     </select>
                 </mat-form-field>
-                <mat-form-field appearance="outline" class="mff-reduc  col-12 mt-3">
+                <div class="col-12 mt-3 mb-0">
+                    <div class="alert alert-info text-center py-2 mb-3" role="alert">
+                        <div>
+                            <strong>📅 Límites de fechas permitidas</strong>
+                        </div>
+
+                        <div class="mt-1" style="font-size: 10px;">
+                            Desde
+                            <strong>
+                                {{ tablaUsuarios[filUsuario]?.fecha_asignacion | date:'dd-MM-yyyy' }}
+                            </strong>
+                            &nbsp; hasta &nbsp;
+                            <strong>
+                                {{ tablaUsuarios[filUsuario]?.fecha_culminacion | date:'dd-MM-yyyy' }}
+                            </strong>
+                        </div>
+                    </div>
+                </div>
+
+
+                <mat-form-field appearance="outline" class="mff-reduc  col-12 ">
                     <mat-label>Fecha Inicio</mat-label>
                     <input matInput type="date" formControlName="fecha_inicio">
                 </mat-form-field>

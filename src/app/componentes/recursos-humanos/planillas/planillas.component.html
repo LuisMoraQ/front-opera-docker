@@ -576,7 +576,7 @@
                 </mat-select>
             </mat-form-field>
 
-            <div class="col d-flex" style="height: 29px;">
+            <div class="col d-flex" style="height: 29px;" *ngIf="this.areaSeleccionadaPres">
                 <button class="btn btn-mini btn-group-mini btn-outline-primary" container="body"
                     style="margin-left: 1px" ngbTooltip="Agregar Fila" type="button" (mouseup)="quitarfoco($event)"
                     (click)="agregarFila()">
@@ -634,49 +634,58 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr *ngFor="let row of tablaPresAnalitico; let i = index" (click)="filPresAna = i"
-                        [ngClass]="{'highlight': i == filPresAna }">
+                    <ng-container *ngIf="tablaPresAnalitico.length; else noPresAna">
+                        <tr *ngFor="let row of tablaPresAnalitico; let i = index" (click)="filPresAna = i"
+                            [ngClass]="{'highlight': i == filPresAna }">
 
-                        <!-- Item -->
-                        <td class="text-center" appAnchocol2 [ancho]="40">{{row.item}}</td>
+                            <!-- Item -->
+                            <td class="text-center" appAnchocol2 [ancho]="40">{{row.item}}</td>
 
-                        <!-- Descripción -->
-                        <td appAnchocol2 [ancho]="300">
-                            <input type="text" [value]="row.descripcion" class="w-100"
-                                (blur)="blurDescripcion($event.target.value, i)" />
-                        </td>
-
-                        <!-- Abreviatura -->
-                        <td class="text-center" appAnchocol2 [ancho]="90">
-                            <input type="text" [value]="row.abreviatura" class="w-100 text-center"
-                                (blur)="blurAbreviatura($event.target.value, i)" />
-                        </td>
-
-                        <!-- Fórmula -->
-                        <td appAnchocol2 [ancho]="250">
-                            <span *ngIf="i === 0">{{row.formula}}</span>
-                            <input *ngIf="i !== 0" type="text" [value]="row.formula" class="mayuscula w-100"
-                                (blur)="blurFormula($event.target.value, i)"
-                                (keyup.enter)="blurFormula($event.target.value, i)" placeholder="Ej: %RB+50" />
-                        </td>
-
-                        <!-- Cargos -->
-                        <ng-container *ngFor="let cargo of row.cargos; let j = index">
-                            <!-- Porcentaje -->
-                            <td class="text-center" appAnchocol2 [ancho]="80">
-                                <span *ngIf="i === 0">{{cargo.porcentaje | number:'1.2-2'}}</span>
-                                <input *ngIf="i !== 0" type="number" [value]="cargo.porcentaje"
-                                    class="w-100 text-center" step="0.01"
-                                    (blur)="blurporcentaje($event.target.value, i, j)" />
+                            <!-- Descripción -->
+                            <td appAnchocol2 [ancho]="300">
+                                <input type="text" [value]="row.descripcion" class="w-100"
+                                    (blur)="blurDescripcion($event.target.value, i)" />
                             </td>
 
-                            <!-- Parcial -->
-                            <td class="text-center" appAnchocol2 [ancho]="80">
-                                <input type="number" [value]="cargo.parcial" class="w-100 text-center" step="0.01"
-                                    (blur)="blurparcial($event.target.value, i, j)" />
+                            <!-- Abreviatura -->
+                            <td class="text-center" appAnchocol2 [ancho]="90">
+                                <input type="text" [value]="row.abreviatura" class="w-100 text-center"
+                                    (blur)="blurAbreviatura($event.target.value, i)" />
                             </td>
-                        </ng-container>
-                    </tr>
+
+                            <!-- Fórmula -->
+                            <td appAnchocol2 [ancho]="250">
+                                <span *ngIf="i === 0">{{row.formula}}</span>
+                                <input *ngIf="i !== 0" type="text" [value]="row.formula" class="mayuscula w-100"
+                                    (blur)="blurFormula($event.target.value, i)"
+                                    (keyup.enter)="blurFormula($event.target.value, i)" placeholder="Ej: %RB+50" />
+                            </td>
+
+                            <!-- Cargos -->
+                            <ng-container *ngFor="let cargo of row.cargos; let j = index">
+                                <!-- Porcentaje -->
+                                <td class="text-center" appAnchocol2 [ancho]="80">
+                                    <span *ngIf="i === 0">{{cargo.porcentaje | number:'1.2-2'}}</span>
+                                    <input *ngIf="i !== 0" type="number" [value]="cargo.porcentaje"
+                                        class="w-100 text-center" step="0.01"
+                                        (blur)="blurporcentaje($event.target.value, i, j)" />
+                                </td>
+
+                                <!-- Parcial -->
+                                <td class="text-center" appAnchocol2 [ancho]="80">
+                                    <input type="number" [value]="cargo.parcial" class="w-100 text-center" step="0.01"
+                                        (blur)="blurparcial($event.target.value, i, j)" />
+                                </td>
+                            </ng-container>
+                        </tr>
+                    </ng-container>
+                    <ng-template #noPresAna>
+                        <tr>
+                            <td class="mat-cell text-center" [colSpan]="4 + cargosFiltradosPres?.length * 2">
+                                <label>No se encontraron datos almacenados</label>
+                            </td>
+                        </tr>
+                    </ng-template>
                 </tbody>
                 <tfoot class="font-weight-colder text-center" *ngIf="this.tablaPresAnalitico.length">
 

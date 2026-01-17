@@ -436,7 +436,6 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
       }
       let tablaNueva = []
       const montosAreas = await this.listarMontosAreaPresAnaliticoRH()
-      console.log('montosAreas', montosAreas)
       if (!this.areaSeleccionada) {
         let totalMes = 0
         for (const area of this.areas) {
@@ -526,14 +525,12 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
                     hora_ingreso_tarde: '14:00:00|14:00:00|14:00:00|14:00:00|14:00:00||',
                     hora_salida_tarde: '18:00:00|18:00:00|18:00:00|18:00:00|18:00:00||',
                     totales_dia: 48,
-                    descuentos: '',
-                    tardanza: 0,
+                    descuentos: '|10|10||100|100|||||||',
+                    tardanza: 10,
                     tiempo_extra: 0
                   }
                 }
-                // const costesCargoHora = montosAreas.find(ele => ele.id_area == usuario.id_area && ele.tipo == "JORNAL HORARIO" )?.cargos.find(ele => ele.id_cargo == usuario.id_cargo)
-                const costesCargoDia = montosAreas.find(ele => ele.id_area == usuario.id_area && ele.tipo == "JORNAL DIARIO")?.cargos.find(ele => ele.id_cargo == usuario.id_cargo)
-                // let costeHora = costesCargoHora ? costesCargoHora.parcial : 0
+                const costesCargoDia = montosAreas.find(ele => ele.id_area == usuario.id_area && ele.tipo == ('JORNAL CATEGORIA ' + usuario.tipo_cargo))?.cargos.find(ele => ele.id_cargo == usuario.id_cargo)
                 let costeDia = costesCargoDia ? costesCargoDia.parcial : 0
 
                 const descuentos = dataHorario?.descuentos.split('|')
@@ -684,13 +681,13 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
                     hora_ingreso_tarde: '14:00:00|14:00:00|14:00:00|14:00:00|14:00:00||',
                     hora_salida_tarde: '18:00:00|18:00:00|18:00:00|18:00:00|18:00:00||',
                     totales_dia: 48,
-                    descuentos: '',
-                    tardanza: 0,
+                    descuentos: '|10|10||100|100|||||||',
+                    tardanza: 10,
                     tiempo_extra: 0
                   }
                 }
                 // const costesCargoHora = montosAreas.find(ele => ele.id_area == usuario.id_area && ele.tipo == "JORNAL DIARIO")?.cargos.find(ele => ele.id_cargo == usuario.id_cargo)
-                const costesCargoDia = montosAreas.find(ele => ele.id_area == usuario.id_area && ele.tipo == "JORNAL HORARIO")?.cargos.find(ele => ele.id_cargo == usuario.id_cargo)
+                const costesCargoDia = montosAreas.find(ele => ele.id_area == usuario.id_area && ele.tipo == ('JORNAL CATEGORIA ' + usuario.tipo_cargo))?.cargos.find(ele => ele.id_cargo == usuario.id_cargo)
                 // let costeHora = costesCargoHora ? costesCargoHora.parcial : 0
                 let costeDia = costesCargoDia ? costesCargoDia.parcial : 0
                 const descuentos = dataHorario?.descuentos.split('|')
@@ -772,7 +769,6 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
       }
       // this.mostrar_carga_todo = false
       await this.recalcularTotales()
-      console.log('this.tablaFiltrada', this.tablaFiltrada)
     } catch (error) {
       console.error('Error:', error);
     } finally {
@@ -1088,7 +1084,6 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
 
   async onTipoChange(nuevoValor: string, fila: number, columna: any) {
 
-    console.log('onTipoChange', nuevoValor, this.tablaFiltrada[fila].dias[columna].tipo)
     // if (this.tablaFiltrada[fila].dias[columna].tipo !== nuevoValor) {
     this.tablaFiltrada[fila].dias[columna].tipo = nuevoValor
     const row = this.tablaFiltrada[fila]
@@ -1104,7 +1099,6 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   recalcularTodoFila(ind: number): void {
-    console.log('Recalculando todo para fila:', ind);
 
     // 1. Recalcular montos
     this.recalcularMontosFila(ind);
@@ -1112,7 +1106,6 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
     // 2. Recalcular contadores
     this.recalcularContadoresFila(ind);
 
-    console.log('Recálculo completo para fila:', ind);
     this.recalcularTotales()
   }
 
@@ -1142,7 +1135,6 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
         });
       });
     }
-    console.log('cantidadUsuariosDia', this.cantidadUsuariosDia)
   }
 
   async guardarRegistro(row, dataDia, tipo, fila, columna) {
@@ -1234,7 +1226,6 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
   // Método para recalcular solo los contadores de una fila específica usando los datos que ya tiene
   recalcularContadoresFila(ind: number): void {
     const row = this.tablaFiltrada[ind];
-    console.log('Recalculando contadores para:', row.descripcion_usuario);
 
     if (!row || !row.dias || !Array.isArray(row.dias)) {
       console.error('Fila no válida o sin días');
@@ -1496,7 +1487,6 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
 
   }
 
-
   // Método auxiliar: obtener día de la semana en español
   getDiaSemanaEspanol(fecha: moment.Moment): string {
     const diasMap: { [key: string]: string } = {
@@ -1586,7 +1576,7 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
             hora_ingreso_tarde: '14:00:00|14:00:00|14:00:00|14:00:00|14:00:00||',
             hora_salida_tarde: '18:00:00|18:00:00|18:00:00|18:00:00|18:00:00||',
             totales_dia: 48,
-            descuentos: '',
+            descuentos: '|10|10||100|100|||||||',
             tardanza: 0,
             tiempo_extra: 0
           }
@@ -2228,7 +2218,6 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
         if (element.item.includes('0-')) {
 
           array2.push(fila)
-          console.log('element', element,)
         } else {
           array.push(fila);
         }
@@ -2421,7 +2410,6 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
 
   blurporcentajeFooter(valor, filaIndex, cargoIndex) {
     // if (filaIndex === 0) return; // Fila base no tiene porcentajes
-    console.log('blurporcentajeFooter', valor, filaIndex, cargoIndex)
     const valorActual = this.tablaPresAnaliticoFooter[filaIndex].cargos[cargoIndex].porcentaje;
     const nuevoPorcentaje = parseFloat(valor) || 0;
 
@@ -2448,7 +2436,6 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   blurparcialFooter(valor, filaIndex, cargoIndex) {
-    console.log('blurparcialFooter', valor, filaIndex, cargoIndex)
     const valorActual = this.tablaPresAnaliticoFooter[filaIndex].cargos[cargoIndex].parcial;
     const nuevoParcial = parseFloat(valor) || 0;
 
@@ -2566,13 +2553,12 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
     let i = 0;
     let acumuladosCalculados: cargoFila[] = [];
 
-    console.log('a1', JSON.parse(JSON.stringify(this.tablaPresAnaliticoFooter)));
 
     for (const element of this.tablaPresAnaliticoFooter) {
       if (i == 0) {
         // Caso 0: copiar los acumulados directamente
         element.cargos = JSON.parse(JSON.stringify(acumulados));
-
+        acumuladosCalculados = JSON.parse(JSON.stringify(acumulados));
         // Asegurar que todos los parciales estén redondeados
         element.cargos.forEach(cargo => {
           if (cargo.parcial !== null && cargo.parcial !== undefined) {
@@ -2582,7 +2568,7 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
       } else if (i == 1) {
         // Caso 1: dividir todos por las horas
         const horas = element?.formula ? Number(element?.formula) : 1;
-        acumuladosCalculados = acumulados.map(ele => {
+        const a = acumulados.map(ele => {
           let parcial = ele.parcial || 0;
           if (horas !== 0) {
             parcial = parcial / horas;
@@ -2594,13 +2580,11 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
               : null
           };
         });
-        element.cargos = acumuladosCalculados;
+        element.cargos = a;
       } else {
         let k = 0;
         for (const cargo of element.cargos) {
           if (cargo.porcentaje) {
-            console.log('cargo', cargo);
-            console.log('p1', JSON.parse(JSON.stringify(cargo.porcentaje)));
 
             if (acumuladosCalculados[k]?.parcial != null &&
               cargo?.porcentaje != null &&
@@ -2613,7 +2597,6 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
               cargo.parcial = null;
             }
 
-            console.log('p2', JSON.parse(JSON.stringify(cargo.porcentaje)));
           } else if (!cargo.porcentaje && !acumuladosCalculados[k]?.parcial) {
             cargo.parcial = null;
           } else if (!cargo.porcentaje && acumuladosCalculados[k]?.parcial != null) {
@@ -2626,7 +2609,6 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
       i++;
     }
 
-    console.log('a2', JSON.parse(JSON.stringify(this.tablaPresAnaliticoFooter)));
   }
 
   obtenerDependencias(formula: string): string[] {
@@ -2655,9 +2637,11 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
         arrayGuardar.push(obj)
       }
       const response = await this.recursosHumanosService.guardarPresAnaliticoRH(arrayGuardar)
-      console.log('response', response)
       if (response?.length > 1) {
         await this.listarPresAnaliticoArea()
+        this.tablaFiltrada = []
+        this.totalMes = 0
+        this.cantidadUsuariosDia = []
       } else if (response?.length == 1 && arrayGuardar.length == 1) {
         // Si es solo un elemento, encontrar su índice y actualizar
         const itemABuscar = arrayGuardar[0].item;
@@ -2674,10 +2658,12 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
         } else {
           console.warn(`No se encontró el elemento con item: ${itemABuscar}`);
         }
+        this.tablaFiltrada = []
+        this.totalMes = 0
+        this.cantidadUsuariosDia = []
       } else {
         SwalService.error()
       }
-      console.log('this.tabla', this.tablaPresAnalitico)
       this.mostrar_carga_todo = false
     } catch (error) {
       console.log(error)
@@ -2730,12 +2716,13 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
 
       completo = registros.concat(registros2)
       // Solo enviar si hay registros
-      console.log('completo', completo)
       if (completo.length > 0) {
         const response = await this.recursosHumanosService.actualizarPresAnaliticoRHLote(completo);
-        console.log('acutalizar', response)
         if (response.success) {
           // console.log('Registros actualizados correctamente');
+          this.tablaFiltrada = []
+          this.totalMes = 0
+          this.cantidadUsuariosDia = []
         } else {
           SwalService.error(response.message || 'Error al actualizar registros');
         }
@@ -3128,6 +3115,9 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
 
               SwalService.success(response.message);
               this.filPresAna = undefined;
+              this.tablaFiltrada = []
+              this.totalMes = 0
+              this.cantidadUsuariosDia = []
             } else {
               SwalService.error(response.message || 'Error al eliminar el registro');
             }
@@ -3426,7 +3416,9 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
         if (resp) {
           this.tablaPresAnalitico = [];
           this.tablaPresAnaliticoFooter = []
-
+          this.tablaFiltrada = []
+          this.totalMes = 0
+          this.cantidadUsuariosDia = []
           this.toaster.success(
             'Se eliminaron correctamente los registros',
             'Correcto',
@@ -3714,7 +3706,6 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
 
       } else {
         console.warn(`❌ No se encontró fecha ${fechaOriginal} en la fila del usuario`);
-        console.log('Fechas disponibles:', filaUsuario.dias.map(d => d?.fecha));
       }
     });
 
