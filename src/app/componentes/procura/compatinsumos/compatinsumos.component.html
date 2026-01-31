@@ -21,12 +21,13 @@
             <th appAnchocol [ancho]="300" [detalle]="true">Insumos del Expediente Tecnico Agrupados</th>
             <th appAnchocol [ancho]="94">Lugar de Entrega</th>
             <th appAnchocol [ancho]="70">Fecha Programada</th>
-            <th appAnchocol [ancho]="70">Fecha Solicitada</th>
-            <th appAnchocol [ancho]="70">Plazo Atención</th>
-            <th appAnchocol [ancho]="50">Estado</th>
+            <th appAnchocol [ancho]="75">Estado</th>
             <th appAnchocol [ancho]="130">Requerimiento Programado Exp Tecnico</th>
             <th appAnchocol [ancho]="118">Requerimiento Solicitado por OE</th>
             <th appAnchocol [ancho]="105">Variacion</th>
+            <th appAnchocol [ancho]="70">Fecha Solicitada</th>
+            <th appAnchocol [ancho]="70">Plazo Atención</th>
+            <th appAnchocol [ancho]="175">Estado Situacional</th>
           </tr>
         </thead>
         <tbody>
@@ -34,7 +35,7 @@
             <tr *ngFor="let row of dataSource6;let indice=index;" (click)="cambindicesel6(indice,row)" [ngClass]="{'highlight': fila6_sel == indice,'filagrupo':row.complemento=='0'}" 
             [hidden]="row.indice!=null">
               <td appAnchocol [ancho]="72">{{row.id_comple}}</td>
-              <td appAnchocol [ancho]="30"> {{row.idgrupo}}</td>
+              <td appAnchocol [ancho]="30"> {{row.nomgrupo}}</td>
               <td appAnchocol [ancho]="300" [detalle]="true" class="celdasalto text-left"> 
                 <!-- <span class="span-container" placement="top" ngbTooltip="{{row.descripcion!=''?row.descripcion:row.nombre}}" container="body">
                   <span class="span-ellipsis w-100 d-flex">
@@ -45,11 +46,11 @@
               </td>
               <td appAnchocol [ancho]="94">{{row.entrega=='1'?'Almacen Central':row.entrega=='2'?'Almacen de Obra':''}}</td>
               <td appAnchocol [ancho]="70">{{row.fecha}}</td>
-              <td appAnchocol [ancho]="70">{{row.fecha_sol}}</td>
-              <td appAnchocol [ancho]="70">{{row.plazo_ate}}</td>
-              <td appAnchocol [ancho]="50">
-                <label *ngIf="row.estado==0" class="label" style="font-size: 9px;padding-left: 2px; padding-right: 2px; margin-right: 2px !important; background-color: 'darkorange';">Pendiente</label>
-                <label *ngIf="row.estado==1" class="label label-success" style="font-size: 9px;padding-left: 2px; padding-right: 2px; margin-right: 2px !important;">Aprobado</label>
+              <td appAnchocol [ancho]="75">
+                <label *ngIf="row.estado==0" class="label label-est" style="background-color: 'darkorange';cursor: pointer;" (click)="Cambioest(indice)">Borrador</label>
+                <label *ngIf="row.estado==1" class="label label-info label-est">Requerimiento</label>
+                <label *ngIf="row.estado==3" class="label label-primary label-est">Cotización</label>
+                <label *ngIf="row.estado==2" class="label label-success label-est">Orden Atención</label>
               </td>
               <td appAnchocol [ancho]="130">
                 <span class="float-left">{{simbolo}}</span>
@@ -69,11 +70,14 @@
                   <div class="progressj-fill" [ngStyle]="{'width': (row.variacion*-1)+'%','background':'#ff5656'}"></div>
                 </div>
               </td>
+              <td appAnchocol [ancho]="70">{{row.fecha}}</td>
+              <td appAnchocol [ancho]="70">{{row.plazo_ate}}</td>
+              <td appAnchocol [ancho]="175">{{row.estado==0?'':row.estado==1?'Fase de Selección - Convocatoria':row.estado==2?'Fase de Ejecución - Orden Compra':row.estado==3?'Fase de Cotización':''}}</td>
             </tr>
           </ng-container>
           <ng-container *ngIf="dataSource6.length<=0">
             <tr>
-              <td class="mat-cell text-center" colspan="11">
+              <td class="mat-cell text-center" colspan="12">
                   <label *ngIf="!buscando6">No se encontraron resultados</label>
                   <div *ngIf="buscando6" class="preloader3 loader-block">
                       <div class="circ1"></div>

@@ -1,0 +1,160 @@
+<div class="main-container">
+    <div class="form-wrapper">
+      <div class="imgcont">
+        <img src="https://ucarecdn.com/8280195b-127b-4a46-9a6f-2910f9576521/changerequest.png"
+            alt="Change Request Form Illustration"
+            class="form-image"/>
+      </div>
+        <form [formGroup]="formSoli">
+          <!-- Title and Description -->
+          <div class="form-header">
+              <h2 class="form-title">Solicitud de Cotización</h2>
+              <p class="form-description">
+                Proporcione los detalles de la solicitud de Cotización. Todos los campos obligatorios están marcados con *.
+              </p>
+          </div>
+          <div class="row ">
+              <mat-form-field appearance="outline" class="mff-reduc col-sm-12 col-12">
+                  <mat-label>Razon Social</mat-label>
+                  <input matInput type="text" class="mayuscula" autocomplete="off" maxlength="300" formControlName="razon">
+              </mat-form-field>
+              <mat-form-field appearance="outline" class="mff-reduc col-sm-12 col-12">
+                  <mat-label>RUC</mat-label>
+                  <input matInput type="text" class="mayuscula" autocomplete="off" maxlength="15" formControlName="ruc">
+              </mat-form-field>
+              <mat-form-field appearance="outline" class="mff-reduc col-sm-12 col-12">
+                  <mat-label>Dirección</mat-label>
+                  <input matInput type="text" class="mayuscula" autocomplete="off" maxlength="300" formControlName="direccion"
+                      class="mayuscula">
+              </mat-form-field>
+              <mat-form-field appearance="outline" class="mff-reduc col-sm-6 col-12">
+                  <mat-label>Telefono</mat-label>
+                  <input matInput type="text" class="mayuscula" autocomplete="off" maxlength="15" formControlName="telefono"
+                      class="mayuscula">
+              </mat-form-field>
+              <mat-form-field appearance="outline" class="mff-reduc col-sm-6 col-12">
+                  <mat-label>Correo</mat-label>
+                  <input matInput type="text" autocomplete="off" maxlength="250" formControlName="correo">
+              </mat-form-field>
+              <mat-form-field appearance="outline" class="mff-reduc col-sm-12 col-12">
+                  <mat-label>Contacto</mat-label>
+                  <input matInput type="text" class="mayuscula" autocomplete="off" maxlength="250" formControlName="contacto"
+                      class="mayuscula">
+              </mat-form-field>
+              <!-- <mat-form-field appearance="outline" class="mff-reduc col-sm-12 col-12">
+                  <mat-label>Referencia</mat-label>
+                  <input matInput type="text" class="mayuscula" autocomplete="off" maxlength="20" formControlName="referencia"
+                      class="mayuscula">
+              </mat-form-field> -->
+              <mat-form-field appearance="outline" class="mff-reduc col-sm-12 col-12">
+                  <mat-label>Lugar de Entrega</mat-label>
+                  <input matInput type="text" class="mayuscula" autocomplete="off" maxlength="300" formControlName="lugar" placeholder="ALMACEN DE OBRA, OTRO LUGAR" autofocus>
+              </mat-form-field>
+              <mat-form-field appearance="outline" class="mff-reduc col-sm-6 col-12">
+                  <mat-label>Plazo de Atención</mat-label>
+                  <input matInput type="text" class="mayuscula" autocomplete="off" formControlName="plazo"
+                    [textMask]="{mask: this.formService.maskTelefono}" maxlength="4">
+              </mat-form-field>
+              <mat-form-field appearance="outline" class="mff-reduc col-sm-6 col-12">
+                  <mat-label>Duración de Oferta</mat-label>
+                  <input matInput type="text" class="mayuscula" autocomplete="off" formControlName="oferta"
+                      [textMask]="{mask: this.formService.maskTelefono}" maxlength="4">
+              </mat-form-field>
+          </div>
+          <span>
+            Sirvanse cotizarnos Precios Netos <b>incluidos IGV</b> de los articulos que se detallan en el cuadro siguiente para ser entregados en el almacen de la 
+            Puede editar las columnas MARCA y PRECIO haciendo clic sobre las celdas.
+          </span>
+          <!-- tabla con detalles -->
+          <div class="tabla-limp tablast m-b-10" [style.margin-bottom.px]="-paddingscroll2" id="tableBody" (scroll)="SyncScroll()">
+            <table class="table-bordered tab-10 minspacelet">
+              <thead>
+                <tr class="header-custom">
+                  <th appAnchocol [ancho]="30">ITEM</th>
+                  <th appAnchocol [ancho]="200" [detalle]="true" class="sticky-col">DESCRIPCION</th>
+                  <th appAnchocol [ancho]="35">UND</th>
+                  <th appAnchocol [ancho]="90">CANT</th>
+                  <th appAnchocol [ancho]="100">MARCA</th>
+                  <th appAnchocol [ancho]="100">P.UNITARIO</th>
+                  <th appAnchocol [ancho]="100">IMPORTE</th>
+                </tr>
+              </thead>
+              <tbody>
+                <ng-container *ngIf="dataSource2.length>0">
+                  <tr *ngFor="let row of dataSource2;let indice=index;" (click)="cambindicesel2(indice)">
+                    <td appAnchocol [ancho]="30"  [ngClass]="{'filaseldata': fila2_sel == indice}"> 
+                      {{indice+1}}
+                    </td>
+                    <td appAnchocol [ancho]="200" [detalle]="true" class="celdasalto text-left" class="sticky-col"  [ngClass]="{'filaseldata': fila2_sel == indice}"> 
+                      <span class="span-container" placement="top" ngbTooltip="{{row.descripcion}}" container="body">
+                        <span class="span-ellipsis w-100 d-flex">
+                          <span>{{row.descripcion}}</span> 
+                        </span>
+                      </span>
+                    </td>
+                    <td appAnchocol [ancho]="35" [ngClass]="{'filaseldata': fila2_sel == indice}">{{row.unidad}}</td>
+                    <td appAnchocol [ancho]="90" class="text-right" [ngClass]="{'filaseldata': fila2_sel == indice}">
+                        {{row.cantidad | number: mask_cant}}
+                    </td>
+                    <td appAnchocol [ancho]="100" [ngClass]="{'filaseldata': fila2_sel == indice}">
+                        <span *ngIf="row.editar==0" class="w-100 span-container" [ngStyle]="{'cursor': 'pointer' }" placement="top" ngbTooltip="{{row.marca}}" container="body" (click)="editarcelda3(row)">
+                            <span class="span-ellipsis w-100 d-flex">
+                                <span>{{row.marca}}</span> 
+                            </span>
+                        </span>
+                        <input *ngIf="row.editar==1" type="text" class="formcontrol w-100 d-flex" style="height: 20px;" value="{{row.marca}}" appAutoFocus (keyup)="presenter3($event,indice)" (blur)="caneditarcelda3($event.target.value,row)">
+                    </td>
+                    <td appAnchocol [ancho]="100" class="text-right" [ngClass]="{'filaseldata': fila2_sel == indice}">
+                        <div *ngIf="row.editar2==0" class="float-right w-100" (click)="editarcelda2(indice)" style="cursor: pointer;">
+                            <span class="float-left">{{simbolo}}</span>
+                            <span class="float-right">{{row.precio | number: mask_precio}}</span>
+                        </div >
+                        <input [textMask]="dec_precio == 4? formService.maskUsAmountDecimal4 : (dec_precio==3? formService.maskUsAmountDecimal3:formService.maskUsAmountDecimal2)" style="height: 20px;text-align: center;" 
+                        *ngIf="row.editar2==1" type="text" class="formcontrol w-100 d-flex" autocomplete="off"
+                        value="{{row.precio}}" appAutoFocus (keyup)="presenter2($event,indice)" (blur)="caneditarcelda2($event.target.value,indice)">
+                    </td>
+                    <td appAnchocol [ancho]="100" class="text-right" [ngClass]="{'filaseldata': fila2_sel == indice}">
+                        <span class="float-left">{{simbolo}}</span>
+                        <span class="float-right">{{row.parcial | number: mask_parcial}}</span>
+                    </td>
+                  </tr>
+                </ng-container>
+                <ng-container *ngIf="dataSource2.length<=0">
+                  <tr>
+                    <td class="mat-cell text-center" colspan="11">
+                        <label *ngIf="!buscando2">No se encontraron resultados</label>
+                        <div *ngIf="buscando2" class="preloader3 loader-block">
+                            <div class="circ1"></div>
+                            <div class="circ2"></div>
+                            <div class="circ3"></div>
+                            <div class="circ4"></div>
+                        </div>
+                    </td>
+                  </tr>
+                </ng-container>
+              </tbody>
+            </table>
+          </div>
+          <div class="tare-footer footer-tabla tablast tabla-limp m-b-5" [style.padding-right.px]="paddingscroll" id="tableFoot" (scroll)="SyncScroll2()">
+            <table class="table-bordered tab-10" style="position: sticky; bottom: 1px;">
+                <tfoot>
+                <tr>
+                  <th appAnchocol [ancho]="30"></th>
+                  <th appAnchocol [ancho]="200" [detalle]="true" class="sticky-col">Total</th>
+                  <th appAnchocol [ancho]="35"></th>
+                  <th appAnchocol [ancho]="90"></th>
+                  <th appAnchocol [ancho]="100"></th>
+                  <th appAnchocol [ancho]="100"></th>
+                  <th appAnchocol [ancho]="100" class="text-right">
+                    {{tabtotal| number: mask_parcial}}
+                  </th>
+                </tr>
+                </tfoot>
+            </table>
+        </div>
+          <!-- Submit Button -->
+          <button type="button" class="submit-btn" (click)="EnviarSol()">Enviar Solicitud</button>
+        </form>
+    </div>
+</div>
+<app-cargando [bloquearTodo]="true" *ngIf="mostrar_carga_todo"></app-cargando>

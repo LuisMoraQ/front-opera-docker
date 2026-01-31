@@ -230,7 +230,7 @@ export class SwalService {
     })
   }
 
-  static inputNumber(title: string = 'OBSERVACIÓN') {
+  static inputNumber(title: string = 'OBSERVACIÓN',okbuttom:string='Ok') {
     return Swal.fire({
       title,
       input: 'number',
@@ -238,15 +238,16 @@ export class SwalService {
         autocapitalize: 'off'
       },
       allowOutsideClick: false,
-      showCancelButton: false,
-      confirmButtonText: 'OK',
+      showCancelButton: true,
+      cancelButtonText:'Cancelar',
+      confirmButtonText: okbuttom,
       showLoaderOnConfirm: true,
       preConfirm: (value) => {
         if (value.length > 0) {
           return value
         } else {
           Swal.showValidationMessage(
-            `OBSERVACIÓN es un campo obligatorio`
+            title+`es un campo obligatorio`
           )
         }
       }

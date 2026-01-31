@@ -332,4 +332,131 @@ export class LogisticaService {
       catchError(err => throwError(err))
     ).toPromise()
   }
+  //proveedores
+  ListarProveedores(params = {}): Promise<any> {
+    const url = this.enviUrl + '/api/logistica/listar/proveedor';
+    return this.http.post<any>(url, this.Cargafrmdata(params)).pipe(
+      map(res => {
+        return res
+      }),
+      catchError(err => throwError(err))
+    ).toPromise()
+  }
+  GuardarProveedor(params = {}): Promise<any> {
+    const url = this.enviUrl + '/api/logistica/guardar/proveedor';
+    return this.http.post<any>(url, this.Cargafrmdata(params)).pipe(
+      map(res => {
+        return res
+      }),
+      catchError(err => throwError(err))
+    ).toPromise()
+  }
+  ModificarProveedor(params = {}): Promise<any> {
+    const url = this.enviUrl + '/api/logistica/modificar/proveedor';
+    return this.http.post<any>(url, this.Cargafrmdata(params)).pipe(
+      map(res => {
+        return res
+      }),
+      catchError(err => throwError(err))
+    ).toPromise()
+  }
+  EliminarProveedor(params = {}): Promise<any> {
+    const url = this.enviUrl + '/api/logistica/eliminar/proveedor';
+    return this.http.post<any>(url, this.Cargafrmdata(params)).pipe(
+      map(res => {
+        return res
+      }),
+      catchError(err => throwError(err))
+    ).toPromise()
+  }
+  ListarAgruadquisol(params = {}): Promise<any> {
+    const url = this.enviUrl + '/api/logistica/listar/agruadquisol';
+    return this.http.post<any>(url, this.Cargafrmdata(params)).pipe(
+      map(res => {
+        return res
+      }),
+      catchError(err => throwError(err))
+    ).toPromise()
+  }
+  AdquisolAsignaProv(params = {}): Promise<any> {
+    const url = this.enviUrl + '/api/logistica/adquiasignaProv';
+    return this.http.post<any>(url, this.Cargafrmdata(params)).pipe(
+      map(res => {
+        return res
+      }),
+      catchError(err => throwError(err))
+    ).toPromise()
+  }
+  AdquisolEliminaProv(params = {}): Promise<any> {
+    const url = this.enviUrl + '/api/logistica/adquiEliminaProv';
+    return this.http.post<any>(url, this.Cargafrmdata(params)).pipe(
+      map(res => {
+        return res
+      }),
+      catchError(err => throwError(err))
+    ).toPromise()
+  }
+  adquiCambiarPreseleccion(params = {}): Promise<any> {
+    const url = this.enviUrl + '/api/logistica/adquiCambiarPresel';
+    return this.http.post<any>(url, this.Cargafrmdata(params)).pipe(
+      map(res => {
+        return res
+      }),
+      catchError(err => throwError(err))
+    ).toPromise()
+  }
+  AdquisolEnviarSol(params = {}): Promise<any> {
+    const url = this.enviUrl + '/api/logistica/enviarSolicitud';
+    return this.http.post<any>(url, this.Cargafrmdata(params)).pipe(
+      map(res => {
+        return res
+      }),
+      catchError(err => throwError(err))
+    ).toPromise()
+  }
+  ListarInsDisgregaCoti(params = {}): Promise<any> {
+    const url = this.enviUrl + '/api/logistica/listarInsdisgreCoti';
+    return this.http.post<any>(url, this.Cargafrmdata(params)).pipe(
+      map(res => {
+        return res
+      }),
+      catchError(err => throwError(err))
+    ).toPromise()
+  }
+  GuardarRespuestaSoli(params = {}):any//ejemplo con json
+  {
+    const url = this.enviUrl + '/api/logistica/guardarRespuestaSol';
+    return this.http.post<any>(url, params, { headers: this.httpHeaders }).pipe(
+      map(res => {
+        if (!res) {
+          throw new Error
+        }
+        return res
+      }),
+      catchError(err => throwError(err))
+    ).toPromise()
+  }
+  AprobarCotizacion(params = {}):any//ejemplo con json
+  {
+    const url = this.enviUrl + '/api/logistica/aprobarCotizacion';
+    return this.http.post<any>(url, params, { headers: this.httpHeaders }).pipe(
+      map(res => {
+        if (!res) {
+          throw new Error
+        }
+        return res
+      }),
+      catchError(err => throwError(err))
+    ).toPromise()
+  }
+  DesAprobarCotizacion(params = {}):any//ejemplo con json
+  {
+    const url = this.enviUrl + '/api/logistica/desaprobarCotizacion';
+    return this.http.post<any>(url, this.Cargafrmdata(params)).pipe(
+      map(res => {
+        return res
+      }),
+      catchError(err => throwError(err))
+    ).toPromise()
+  }
 }

@@ -1,0 +1,131 @@
+<div class="row mx-0 contenido-menu-responsive">
+  <!-- <div class="row mx-0 w-100">
+    <h4 class="modal-title tit-modal1 m-b-2" 
+    style="background-color: #448aff; color: white; border-radius: 4px; padding-left: 4px; margin-top: 0px !important;margin-bottom:2px !important;width:calc(100% - 86px)">
+      &nbsp;&nbsp;
+      <b>{{'Saldo Presupuestal '+filareg.detalle}}</b>
+    </h4>
+    <button type="button" class="btn btn-inverse btn-sm m-l-5" style="padding: 4px 8px;" (click)="Imprimir()"><i
+      class="fa fa-check"></i>Imprimir
+    </button>
+  </div> -->
+  <div style="padding-left: 5px; padding-right: 5px;" class="col-12">
+    <div class="tabla-limp" [style.height.px]="heightpres">
+      <table mat-table class="table-bordered tab-9">
+        <thead>
+          <tr class="headsticky header-custom">
+            <th appAnchocol [ancho]="30" rowspan="2">Item</th>
+            <th appAnchocol [ancho]="40" rowspan="2">B/S</th>
+            <th appAnchocol [ancho]="250" [detalle]="true" rowspan="2">Descripción del Requerimiento</th>
+            <th appAnchocol [ancho]="50" rowspan="2">N° Requerimiento</th>
+            <th colspan="2">COMPATIBILIZACION (C)</th>
+            <th colspan="3">REQUERIMIENTO (R)</th>
+            <th colspan="2">ORDEN ATENCION (A)</th>
+            <th colspan="3">ORDEN DE INTERNAMIENTO (I)</th>
+            <th colspan="2">Variación Presupuesto (C) y (A)</th>
+            <th colspan="2">Variación de Plazo (R) y (I)</th>
+          </tr>
+          <tr class="headsticky2 header-custom" style="top:23px">
+            <th appAnchocol [ancho]="65">Valor Exp. Tec.</th>
+            <th appAnchocol [ancho]="65">Fecha</th>
+            <th appAnchocol [ancho]="78">Valor Proyectado</th>
+            <th appAnchocol [ancho]="65">Fecha</th>
+            <th appAnchocol [ancho]="78">Plazo Atención</th>
+            <th appAnchocol [ancho]="45">Valor Aprobado</th>
+            <th appAnchocol [ancho]="65">Fecha</th>
+            <th appAnchocol [ancho]="78">Valor Ingresado</th>
+            <th appAnchocol [ancho]="45">Fecha</th>
+            <th appAnchocol [ancho]="65">Plazo Atendido</th>
+            <th appAnchocol [ancho]="78">Monto</th>
+            <th appAnchocol [ancho]="45">%</th>
+            <th appAnchocol [ancho]="78">Variación Dias</th>
+            <th appAnchocol [ancho]="45">%</th>
+          </tr>
+        </thead>
+        <tbody>
+          <ng-container *ngIf="dataSource2.length>0">
+            <tr *ngFor="let row of dataSource2;let indice=index;" (click)="cambindicesel1(indice)" [ngClass]="{'highlight': fila2_sel == indice}">
+              <td appAnchocol [ancho]="30">
+                {{indice+1}}
+              </td>
+              <td appAnchocol [ancho]="40">
+                {{row.porcentaje=="%"?'Servicio':'Bien'}}
+              </td>
+              <td appAnchocol [ancho]="250" [detalle]="true" class="text-left  cellsinpadding"> 
+                <div class="d-flex">
+                  <div class="recortatextlinea" ngbTooltip="{{row.descripcion}}" #t="ngbTooltip" container="body" triggers="click:blur" (mouseout)="t.close()">
+                    {{row.descripcion}}
+                  </div>
+                </div>
+              </td>
+              <td appAnchocol [ancho]="30">
+                {{row.id_grupo}}
+              </td>
+              <td appAnchocol [ancho]="65">
+                <span class="float-left">{{simbolo}}</span>
+                <span class="float-right">{{row.parcial | number: mask_parcial}}</span>
+              </td>
+              <td appAnchocol [ancho]="65">
+                {{row.fecha}}
+              </td>
+              <td appAnchocol [ancho]="65">
+                <span class="float-left">{{simbolo}}</span>
+                <span class="float-right">{{row.reqsol | number: mask_parcial}}</span>
+              </td>
+              <td appAnchocol [ancho]="65">
+                {{row.fecha_sol}}
+              </td>
+              <td appAnchocol [ancho]="65">
+                {{row.plazo_ate}}
+              </td>
+              <td appAnchocol [ancho]="78">
+                <span *ngIf="row.parcialsol" class="float-left">{{simbolo}}</span>
+                <span class="float-right">{{row.parcialsol | number: mask_parcial}}</span>
+              </td>
+              <td appAnchocol [ancho]="65">
+                {{row.fecha3}}<!-- fecha aprueba -->
+              </td>
+              <td appAnchocol [ancho]="65">
+                <span *ngIf="row.parcial4" class="float-left">{{simbolo}}</span>
+                <span class="float-right">{{row.parcial4 | number: mask_parcial}}</span><!-- parcial de almacen -->
+              </td>
+              <td appAnchocol [ancho]="65">
+                {{row.fecha4}}<!-- fecha almacen -->
+              </td>
+              <td appAnchocol [ancho]="65">
+                {{row.plazo2}}
+              </td>
+              <td appAnchocol [ancho]="65">
+                <span *ngIf="row.monto1" class="float-left">{{simbolo}}</span>
+                <span class="float-right">{{row.monto1 | number: mask_parcial}}</span>
+              </td>
+              <td appAnchocol [ancho]="65">
+                {{row.porc1?row.porc1+' %':''}}
+              </td>
+              <td appAnchocol [ancho]="65">
+                {{row.varia?row.varia+' Dias':''}}
+              </td>
+              <td appAnchocol [ancho]="65">
+                {{row.porc2?row.porc2+' %':''}}
+              </td>
+            </tr>
+          </ng-container>
+          <ng-container *ngIf="dataSource2.length<=0">
+            <tr>
+              <td class="mat-cell text-center" colspan="18">
+                  <label *ngIf="!buscando1">No se encontraron resultados</label>
+                  <div *ngIf="buscando1" class="preloader3 loader-block">
+                      <div class="circ1"></div>
+                      <div class="circ2"></div>
+                      <div class="circ3"></div>
+                      <div class="circ4"></div>
+                  </div>
+              </td>
+            </tr>
+          </ng-container>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<app-cargando [bloquearTodo]="true" *ngIf="mostrar_carga_todo"></app-cargando>

@@ -118,7 +118,7 @@ export class PanelprocuraComponent implements OnInit {
 
   async ngOnInit() {
     this.mostrar_carga=true;
-    this.scrollbut=document.body.clientWidth <= 988?true:false;
+    this.scrollbut=document.body.clientWidth <= 1398?true:false;
     let id_user = await this.encriptadorService.recuperarlocalstory('idusuario');//deberia ser el id_usuario del creador del proyecto(usuarios secundarios)
     const datoaccs = await this.principalService.ConfgsAsignaUserProy({id_proyecto: this.id_proyecto,id_usuario:id_user});
     if(datoaccs?.length>0){
@@ -173,7 +173,7 @@ export class PanelprocuraComponent implements OnInit {
   @HostListener('window:resize', ['$event'])
   onResize(event) {
     //resize a las tablas
-    this.scrollbut=document.body.clientWidth <= 988?true:false;
+    this.scrollbut=document.body.clientWidth <= 1398?true:false;
   }
   leftDivBut(){
     var face1 = document.getElementById('divbut');

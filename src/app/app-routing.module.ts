@@ -44,6 +44,10 @@ const routes: Routes = [
       }
     ],canActivate: [RutaGuard]
   },
+  {
+    path: 'externo', /* redirectTo: '/principal/inicio',pathMatch: 'full' */
+    loadChildren: () => import('./componentes/externos/externos.module').then(m => m.ExternosModule),
+  },
   /* {path: 'login',component :LoginComponent}, */
   {
     path: '', /* redirectTo: '/principal/inicio',pathMatch: 'full' */

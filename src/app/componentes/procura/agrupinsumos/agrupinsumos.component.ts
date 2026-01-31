@@ -51,6 +51,9 @@ export class AgrupinsumosComponent implements OnInit {
   totalinsagru = '0.00';
   promporc1 = 100;
   dataSource6 = []; //tabla insumodisgrega
+  //data5agrega=[]//agregados y eliminados con valor accion: 1 inserta, 2 edita
+  data5Elimina=[]
+  data6Elimina=[]
 
   dec_metrado = 4;
   mask_metrado = '0.4';
@@ -170,7 +173,7 @@ export class AgrupinsumosComponent implements OnInit {
         this.dataSource6 = res[2];
         let sumatot = 0;
         for (let row of this.dataSource5) {
-          if (row.indice) {
+          if (!row.indice) {
             sumatot += Number(row.parcial);
           }
         }
@@ -413,6 +416,10 @@ export class AgrupinsumosComponent implements OnInit {
   }
   //metodos tabla2
   AgregarGrupo() {
+    if(this.buscando4){
+      this.toaster.error('Espere a que carguen las tablas.', 'Advertencia', {closeButton: false,positionClass: 'toast-bottom-right',timeOut: 5000,});
+      return;
+    }
     let nomite = 'R-';
     let existe = [];
     let total = [];
@@ -420,9 +427,9 @@ export class AgrupinsumosComponent implements OnInit {
     let mayor = 1;
     for (let i = 0; i < this.dataSource5.length; i++) {
       if (!this.dataSource5[i].indice) {
-        existe.push(Number(this.dataSource5[i].idgrupo.split('-')[1]));
-        if (mayor < Number(this.dataSource5[i].idgrupo.split('-')[1])) {
-          mayor = Number(this.dataSource5[i].idgrupo.split('-')[1]);
+        existe.push(Number(this.dataSource5[i].nomgrupo.split('-')[1]));
+        if (mayor < Number(this.dataSource5[i].nomgrupo.split('-')[1])) {
+          mayor = Number(this.dataSource5[i].nomgrupo.split('-')[1]);
         }
       }
     }
@@ -445,6 +452,7 @@ export class AgrupinsumosComponent implements OnInit {
     this.Iditem12a.setValue(nomite);
     this.Descgru12a.setValue('');
     this.Lugar.setValue('');
+    this.Plazo.setValue(1);
     this.modalmostrar12a.show();
   }
   cerrarModalmostrar12a() {
@@ -481,17 +489,21 @@ export class AgrupinsumosComponent implements OnInit {
         }
       }
       nomite = nomite + falta[0];
-      var idgrup = this.Iditem12a.value;
+      var nomgrup = this.Iditem12a.value;
       var descrip = this.Descgru12a.value;
       var lugar = this.Lugar.value;
       var fecham = moment(this.fechaac).format('DD-MM-YY');
+      let idgrumay=0;
       for (let row of this.dataSource5) {
         row.seleccion = 0;
+        let numgru=Number(row.idgrupo)
+        idgrumay=idgrumay<numgru?numgru:idgrumay
       }
+      console.log(idgrumay)
       let ejm = {
         id_proyecto: this.id_proyecto,
         id_registro: this.id_reg,
-        idgrupo: idgrup,
+        idgrupo: idgrumay+1,
         idfila: 0,
         nro: 0,
         indice: null,
@@ -510,7 +522,7 @@ export class AgrupinsumosComponent implements OnInit {
         variacion: 100,
         estado: 0,
         saldo: null,
-        observacion: '',
+        nomgrupo: nomgrup,
         fecha: fecham,
         fecha_sol: null,
         plazo_ate: this.Plazo.value,
@@ -521,6 +533,7 @@ export class AgrupinsumosComponent implements OnInit {
         mostrar: 1,
         icomost: 1,
         editar: 0,
+        accion:1//insertar
       };
       this.dataSource5.push(ejm);
       this.bcambiost5 = true;
@@ -538,44 +551,37 @@ export class AgrupinsumosComponent implements OnInit {
     //confirmar
     let tablaux = [];
     let totfilas = this.dataSource5.length;
-    let idgrupo = '';
+    let nomgrupo = '';
     let estadogru = '0';
     let existecomp = 0;
     let agrup = '';
     for (let h = 0; h < this.dataSource5.length; h++) {
-      if (
-        this.dataSource5[h].seleccion == 1 &&
-        this.dataSource5[h].indice == null
-      ) {
+      if ( this.dataSource5[h].seleccion == 1 && this.dataSource5[h].indice == null ) {
         estadogru = this.dataSource5[h].estado;
         //if(this.dataSource5[h].complemento==0){
         agrup = this.dataSource5[h].id_comple;
         //}
       } else {
-        if (
-          this.dataSource5[h].indice == null &&
-          this.dataSource5[h].id_comple === agrup
-        ) {
+        if (this.dataSource5[h].indice == null && this.dataSource5[h].id_comple === agrup) {
           existecomp = 1;
         }
       }
     }
-    if (estadogru != '1') {
+    if (estadogru == '0') {
       if (existecomp == 0) {
         if (agrup != '') {
-          const sw = await SwalService.confirm(
-            'Estas seguro?',
-            'Una vez realizada la acción no se podra revertir los cambios!'
-          );
+          const sw = await SwalService.confirm('Estas seguro?','Una vez realizada la acción no se podra revertir los cambios!');
           if (sw.isConfirmed) {
             for (let j = 0; j < totfilas; j++) {
-              if (idgrupo != '') {
-                if (
-                  this.dataSource5[j].seleccion == 1 &&
-                  this.dataSource5[j].indice
-                ) {
+              if (nomgrupo != '') {
+                if (this.dataSource5[j].seleccion == 1 && this.dataSource5[j].indice) {
                   tablaux.push(this.dataSource5[j]);
                   let totelim = Number(this.dataSource5[j].parcial);
+                  //eliminar de data5agre o eli
+                  if(this.dataSource5[j].accion!=1){
+                    this.data5Elimina.push(this.dataSource5[j])
+                  }
+                  //fin
                   this.dataSource5.splice(j, 1);
                   j = j - 1;
                   totfilas = totfilas - 1;
@@ -586,21 +592,24 @@ export class AgrupinsumosComponent implements OnInit {
                   );
                 }
               } else {
-                if (
-                  this.dataSource5[j].seleccion == 1 &&
-                  this.dataSource5[j].indice == null
-                ) {
-                  idgrupo = this.dataSource5[j].idgrupo;
+                if (this.dataSource5[j].seleccion == 1 && this.dataSource5[j].indice == null) {
+                  nomgrupo = this.dataSource5[j].nomgrupo;
                   estadogru = this.dataSource5[j].estado;
                   //eliminar si existe en tabla8
                   for (let k = 0; k < this.dataSource6.length; k++) {
-                    if (
-                      this.dataSource5[j].idgrupo == this.dataSource6[k].idgrupo
-                    ) {
+                    if (this.dataSource5[j].nomgrupo == this.dataSource6[k].nomgrupo) {
+                      //eliminar de data6agre o eli
+                      this.data6Elimina.push(this.dataSource6[k])
+                      //fin
                       this.dataSource6.splice(k, 1);
                       k--;
                     }
                   }
+                  //eliminar de data5agre o eli
+                  if(this.dataSource5[j].accion!=1){
+                    this.data5Elimina.push(this.dataSource5[j])
+                  }
+                  //fin
                   this.dataSource5.splice(j, 1);
                   this.bcambiost5 = true;
                   j = j - 1;
@@ -608,7 +617,7 @@ export class AgrupinsumosComponent implements OnInit {
                 }
               }
             }
-            if (idgrupo != '') {
+            if (nomgrupo != '') {
               let gruant = '';
               let gruact = '';
               let cambgru = '';
@@ -616,7 +625,7 @@ export class AgrupinsumosComponent implements OnInit {
               for (let k = 0; k < this.dataSource5.length; k++) {
                 if (this.dataSource5[k].indice == null) {
                   //es grupo
-                  gruact = this.dataSource5[k].idgrupo;
+                  gruact = this.dataSource5[k].nomgrupo;
                   let numgru = Number(gruact.split('-')[1]);
                   if (gruant != '') {
                     let numgruant = Number(gruant.split('-')[1]);
@@ -626,23 +635,19 @@ export class AgrupinsumosComponent implements OnInit {
                     } else {
                       cambiar = true;
                       cambgru = 'R-' + (numgruant + 1);
-                      for (let row of this.dataSource6) {
-                        if (row.idgrupo == this.dataSource5[k].idgrupo) {
-                          row.idgrupo = cambgru;
-                        }
-                      }
-                      this.dataSource5[k].idgrupo = cambgru;
+                      this.dataSource5[k].nomgrupo = cambgru;
+                      //editar si es antiguo
+                      this.dataSource5[k].accion=this.dataSource5[k].accion!=1?2:1;
+                      //fin
                     }
                   } else {
                     if (numgru != 1) {
                       cambiar = true;
                       cambgru = 'R-1';
-                      for (let row of this.dataSource6) {
-                        if (row.idgrupo == this.dataSource5[k].idgrupo) {
-                          row.idgrupo = cambgru;
-                        }
-                      }
-                      this.dataSource5[k].idgrupo = cambgru;
+                      this.dataSource5[k].nomgrupo = cambgru;
+                      //editar si es antiguo
+                      this.dataSource5[k].accion=this.dataSource5[k].accion!=1?2:1;
+                      //fin
                     } else {
                       cambiar = false;
                       cambgru = '';
@@ -653,19 +658,19 @@ export class AgrupinsumosComponent implements OnInit {
                   if (cambiar) {
                     if (this.dataSource5[k].idgrupo == gruact) {
                       this.dataSource5[k].idgrupo = cambgru;
+                      //editar si es antiguo
+                      this.dataSource5[k].accion=this.dataSource5[k].accion!=1?2:1;
+                      //fin
                     }
                   }
-                }
+                } 
               }
               let grucomant = '';
               let grucomact = '';
               let cambgrucom = '';
               let cambiarcom = false;
               for (let k = 0; k < this.dataSource5.length; k++) {
-                if (
-                  this.dataSource5[k].unidad == null &&
-                  this.dataSource5[k].complemento == 0
-                ) {
+                if (this.dataSource5[k].unidad == null && this.dataSource5[k].complemento == 0) {
                   grucomact = this.dataSource5[k].id_comple;
                   let numgru = Number(grucomact.split('-')[1]);
                   if (grucomant != '') {
@@ -686,6 +691,9 @@ export class AgrupinsumosComponent implements OnInit {
                         }
                       }
                       this.dataSource5[k].id_comple = cambgrucom;
+                      //editar si es antiguo
+                      this.dataSource5[k].accion=this.dataSource5[k].accion!=1?2:1;
+                      //fin
                     }
                   } else {
                     if (numgru != 1) {
@@ -701,29 +709,26 @@ export class AgrupinsumosComponent implements OnInit {
                         }
                       }
                       this.dataSource5[k].id_comple = cambgrucom;
+                      //editar si es antiguo
+                      this.dataSource5[k].accion=this.dataSource5[k].accion!=1?2:1;
+                      //fin
                     } else {
                       cambiarcom = false;
                       cambgrucom = '';
                     }
                   }
                   grucomant = cambgrucom != '' ? cambgrucom : grucomact;
-                } else {
+                }  else {
                   if (cambiar) {
                     if (this.dataSource5[k].id_comple == grucomact) {
                       this.dataSource5[k].id_comple = cambgrucom;
+                      //editar si es antiguo
+                      this.dataSource5[k].accion=this.dataSource5[k].accion!=1?2:1;
+                      //fin
                     }
                   }
-                }
+                } 
               }
-              //this.actualizarvistat5();
-              // let tabla6aux=[];
-              // for(let row of this.dataSource5Pri){
-              //   if(row.idinsumo==''){
-              //     tabla6aux.push(row);
-              //   }
-              // }
-              // this.dataSource6.data=tabla6aux;
-              // this.ordenart6();
               for (let k = 0; k < tablaux.length; k++) {
                 //actualizar en tabla 4 la seleccion
                 for (let i = 0; i < this.dataSource4.length; i++) {
@@ -776,15 +781,7 @@ export class AgrupinsumosComponent implements OnInit {
         );
       }
     } else {
-      this.toaster.error(
-        'No se puede eliminar un grupo con estado APROBADO.',
-        'Advertencia',
-        {
-          closeButton: false,
-          positionClass: 'toast-bottom-right',
-          timeOut: 5000,
-        }
-      );
+      this.toaster.error('No se puede eliminar un grupo que no es BORRADOR.','Advertencia',{closeButton: false,positionClass: 'toast-bottom-right',timeOut: 5000,});
     }
   }
   AgregarComple() {
@@ -795,11 +792,8 @@ export class AgrupinsumosComponent implements OnInit {
     let entrega = '';
     let complemento = 0;
     for (let j = 0; j < totfilas; j++) {
-      if (
-        this.dataSource5[j].seleccion == 1 &&
-        this.dataSource5[j].indice == null
-      ) {
-        idgrupo = this.dataSource5[j].idgrupo;
+      if (this.dataSource5[j].seleccion == 1 && this.dataSource5[j].indice == null) {
+        idgrupo = this.dataSource5[j].nomgrupo;
         nomgrupo = this.dataSource5[j].descripcion;
         idcomgru = this.dataSource5[j].id_comple;
         entrega = this.dataSource5[j].entrega;
@@ -815,9 +809,9 @@ export class AgrupinsumosComponent implements OnInit {
         let mayor = 1;
         for (let i = 0; i < this.dataSource5.length; i++) {
           if (this.dataSource5[i].indice == null) {
-            existe.push(Number(this.dataSource5[i].idgrupo.split('-')[1]));
-            if (mayor < Number(this.dataSource5[i].idgrupo.split('-')[1])) {
-              mayor = Number(this.dataSource5[i].idgrupo.split('-')[1]);
+            existe.push(Number(this.dataSource5[i].nomgrupo.split('-')[1]));
+            if (mayor < Number(this.dataSource5[i].nomgrupo.split('-')[1])) {
+              mayor = Number(this.dataSource5[i].nomgrupo.split('-')[1]);
             }
           }
         }
@@ -878,16 +872,20 @@ export class AgrupinsumosComponent implements OnInit {
       var entrega = this.Lugarb.value;
       var fecham = moment(this.fechaac).format('DD-MM-YY');
       let taux = [];
+      let idgrumay=0;
       for (let row1 of this.dataSource5) {
         if (row1.seleccion == 1) {
           row1.seleccion = 0;
           taux.push(JSON.parse(JSON.stringify(row1)));
         }
+        let numgru=Number(row1.idgrupo)
+        idgrumay=idgrumay<numgru?numgru:idgrumay
       }
+      idgrumay++;
       let ejm = {
         id_proyecto: this.id_proyecto,
         id_registro: this.id_reg,
-        idgrupo: idgrup,
+        idgrupo: idgrumay,
         idfila: 0,
         nro: 0,
         indice: null,
@@ -906,7 +904,7 @@ export class AgrupinsumosComponent implements OnInit {
         variacion: null,
         estado: 0,
         saldo: null,
-        observacion: '',
+        nomgrupo: idgrup,
         fecha: fecham,
         fecha_sol: null,
         plazo_ate: this.Plazob.value,
@@ -917,6 +915,7 @@ export class AgrupinsumosComponent implements OnInit {
         mostrar: 1,
         icomost: 1,
         editar: 0,
+        accion:1//insertar
       };
       this.dataSource5.push(ejm);
       for (let row of taux) {
@@ -924,7 +923,7 @@ export class AgrupinsumosComponent implements OnInit {
           ejm = {
             id_proyecto: this.id_proyecto,
             id_registro: this.id_reg,
-            idgrupo: idgrup,
+            idgrupo: idgrumay,
             idfila: row.idfila,
             nro: row.nro, //se asigna dependiendo al ultimo del grupo?es lo mismo del principal
             indice: row.indice,
@@ -943,7 +942,7 @@ export class AgrupinsumosComponent implements OnInit {
             variacion: row.variacion,
             estado: 0,
             saldo: 100,
-            observacion: '',
+            nomgrupo: idgrup,
             fecha: null,
             fecha_sol: null,
             plazo_ate: null,
@@ -954,18 +953,11 @@ export class AgrupinsumosComponent implements OnInit {
             mostrar: 1,
             icomost: row.icomost,
             editar: 0,
+            accion:1//insertar
           }; //todo se asigna igual
           this.dataSource5.push(ejm);
         }
       }
-      // let tabla6aux=[];
-      // for(let row of this.dataSource5Pri){
-      //   if(row.idinsumo==''){
-      //     tabla6aux.push(row);
-      //   }
-      // }
-      // this.dataSource6.data=tabla6aux;
-      // this.ordenart6();
       this.bcambiost5 = true;
       this.modalmostrar12b.hide();
     } else {
@@ -993,28 +985,17 @@ export class AgrupinsumosComponent implements OnInit {
           break;
         }
       }
-      if (
-        (this.dataSource5[j].seleccion == 1 ||
-          this.dataSource5[j].seleccion == 2) &&
-        this.dataSource5[j].indice == null
-      ) {
+      if ((this.dataSource5[j].seleccion == 1 || this.dataSource5[j].seleccion == 2) && this.dataSource5[j].indice == null) {
         inddetfin = j;
         indgrupo = j;
         estgru = this.dataSource5[j].estado;
         complem = this.dataSource5[j].complemento;
         idgraux = this.dataSource5[j].idgrupo;
         idcomple = this.dataSource5[j].id_comple;
-      } else if (
-        (this.dataSource5[j].seleccion == 1 ||
-          this.dataSource5[j].seleccion == 2) &&
-        this.dataSource5[j].indice
-      ) {
+      } else if ((this.dataSource5[j].seleccion == 1 || this.dataSource5[j].seleccion == 2) && this.dataSource5[j].indice) {
         inddetfin = j;
         nropas = this.dataSource5[j].nro;
-        idfilmay =
-          this.dataSource5[j].idfila > idfilmay
-            ? this.dataSource5[j].idfila
-            : idfilmay;
+        idfilmay = this.dataSource5[j].idfila > idfilmay ? this.dataSource5[j].idfila : idfilmay;
       }
     }
     if (indgrupo > -1) {
@@ -1032,6 +1013,7 @@ export class AgrupinsumosComponent implements OnInit {
               //porcentaje no tiene cantidad
               cont++;
               var idgrup = this.dataSource5[indgrupo].idgrupo;
+              var nomgrup = this.dataSource5[indgrupo].nomgrupo;
               var entrega = this.dataSource5[indgrupo].entrega;
               let ejm = {
                 id_proyecto: this.id_proyecto,
@@ -1055,7 +1037,7 @@ export class AgrupinsumosComponent implements OnInit {
                 variacion: null,
                 estado: 0,
                 saldo: 100,
-                observacion: '',
+                nomgrupo: nomgrup,
                 fecha: null,
                 fecha_sol: null,
                 plazo_ate: null,
@@ -1066,6 +1048,7 @@ export class AgrupinsumosComponent implements OnInit {
                 mostrar: this.dataSource5[indgrupo].icomost == 1 ? 1 : 0,
                 icomost: 1,
                 editar: 0,
+                accion:1
               }; //todo se asigna igual
               this.dataSource5.splice(++inddetfin, 0, ejm);
               totagrins = totagrins + Number(row.parcial);
@@ -1075,26 +1058,12 @@ export class AgrupinsumosComponent implements OnInit {
               suma = suma + Number(row.parcial);
             }
           }
-          this.dataSource5[indgrupo].parcial = this.formService.redondeo(
-            suma,
-            this.dec_parcial
-          );
-          this.totalinsagru = this.formService.redondeo(
-            totagrins,
-            this.dec_parcial
-          );
+          this.dataSource5[indgrupo].parcial = this.formService.redondeo(suma,this.dec_parcial);
+          //editar si es antiguo
+          this.dataSource5[indgrupo].accion=this.dataSource5[indgrupo].accion!=1?2:1;
+          //fin
+          this.totalinsagru = this.formService.redondeo(totagrins,this.dec_parcial);
           this.calcporcentajegrupoins(false);
-          // let tabla6aux=[];
-          // let indaux=0
-          // for(let row of this.dataSource5Pri){
-          //   row.indice=indaux;
-          //   if(row.idinsumo==''){
-          //     tabla6aux.push(row);
-          //   }
-          //   indaux++;
-          // }
-          // this.dataSource6.data=tabla6aux;
-          // this.ordenart6();
           if (cont < 1) {
             this.toaster.error(
               'Seleccione los insumos para agregar al grupo.',
@@ -1156,19 +1125,14 @@ export class AgrupinsumosComponent implements OnInit {
     for (let j = 0; j < indicesgru.length; j++) {
       let parcfila = Number(this.dataSource5[indicesgru[j]].parcial);
       var porcfilag = (parcfila * 100) / suma;
-      this.dataSource5[indicesgru[j]].porc = this.formService.redondeo(
-        porcfilag,
-        1
-      );
+      this.dataSource5[indicesgru[j]].porc = this.formService.redondeo(porcfilag,1);
+      //editar si es antiguo
+      this.dataSource5[indicesgru[j]].accion=this.dataSource5[indicesgru[j]].accion!=1?2:1;
       //calcular la variacion
       if (calcvar) {
         let reqsoli = Number(this.dataSource5[indicesgru[j]].reqsol);
-        let varia = this.formService.redondeo(
-          ((parcfila - reqsoli) / parcfila) * 100,
-          2
-        );
-        this.dataSource5[indicesgru[j]].variacion =
-          this.dataSource5[indicesgru[j]].complemento == 1 ? '' : varia;
+        let varia = this.formService.redondeo(((parcfila - reqsoli) / parcfila) * 100,2);
+        this.dataSource5[indicesgru[j]].variacion = this.dataSource5[indicesgru[j]].complemento == 1 ? '' : varia;
       }
     }
     // this.actualizarvistat5();
@@ -1178,12 +1142,7 @@ export class AgrupinsumosComponent implements OnInit {
     //revisar bucle, se puede modificar?no for dentro de otro for, un for para sacar datos, otro for para agregar datos
     let inddetfin = -1;
     for (let h = 0; h < this.dataSource5.length; h++) {
-      if (
-        this.dataSource5[h].idgrupo != idgrupo &&
-        this.dataSource5[h].id_comple == idcomp &&
-        this.dataSource5[h].indice == null &&
-        this.dataSource5[h].complemento == '1'
-      ) {
+      if (this.dataSource5[h].idgrupo != idgrupo && this.dataSource5[h].id_comple == idcomp && this.dataSource5[h].indice == null && this.dataSource5[h].complemento == '1') {
         let indgrupo = -1;
         let idgraux = '';
         for (let j = 0; j < this.dataSource5.length; j++) {
@@ -1193,22 +1152,17 @@ export class AgrupinsumosComponent implements OnInit {
               break;
             }
           }
-          if (
-            this.dataSource5[j].idgrupo == this.dataSource5[h].idgrupo &&
-            this.dataSource5[j].indice == null
-          ) {
+          if (this.dataSource5[j].idgrupo == this.dataSource5[h].idgrupo && this.dataSource5[j].indice == null) {
             indgrupo = j;
             idgraux = this.dataSource5[j].idgrupo;
           }
         }
         inddetfin = inddetfin == -1 ? this.dataSource5.length : inddetfin;
         for (let row of datos_Selcomp) {
-          if (
-            (row.operador != '%' && Number(row.cantidad) > 0) ||
-            row.operador == '%'
-          ) {
+          if ((row.operador != '%' && Number(row.cantidad) > 0) || row.operador == '%') {
             //porcentaje no tiene cantidad
             var idgrup = this.dataSource5[indgrupo].idgrupo;
+            var nomgrup = this.dataSource5[indgrupo].nomgrupo;
             let ejm = {
               id_proyecto: this.id_proyecto,
               id_registro: this.id_reg,
@@ -1231,7 +1185,7 @@ export class AgrupinsumosComponent implements OnInit {
               variacion: null,
               estado: 0,
               saldo: 100,
-              observacion: '',
+              nomgrupo: nomgrup,
               fecha: null,
               fecha_sol: null,
               plazo_ate: null,
@@ -1242,8 +1196,8 @@ export class AgrupinsumosComponent implements OnInit {
               mostrar: this.dataSource5[indgrupo].icomost == 1 ? 1 : 0,
               icomost: 1,
               editar: 0,
+              accion:1
             }; //todo se asigna igual
-            //this.dataSource5.push(ejm);
             this.dataSource5.splice(inddetfin++, 0, ejm);
           }
         }
@@ -1264,11 +1218,7 @@ export class AgrupinsumosComponent implements OnInit {
     let suma = 0;
     let totagrins = Number(this.totalinsagru);
     for (let h = 0; h < this.dataSource5.length; h++) {
-      if (
-        (this.dataSource5[h].seleccion == 1 ||
-          this.dataSource5[h].seleccion == 2) &&
-        this.dataSource5[h].indice == null
-      ) {
+      if ((this.dataSource5[h].seleccion == 1 || this.dataSource5[h].seleccion == 2) && this.dataSource5[h].indice == null) {
         suma = Number(this.dataSource5[h].parcial);
         reqsolgru = Number(this.dataSource5[h].reqsol);
         indgru = h;
@@ -1282,39 +1232,30 @@ export class AgrupinsumosComponent implements OnInit {
       if (complem == 0) {
         let existefsel = 0;
         for (let j = 0; j < this.dataSource5.length; j++) {
-          if (
-            this.dataSource5[j].seleccion == 1 &&
-            this.dataSource5[j].indice != null
-          ) {
+          if (this.dataSource5[j].seleccion == 1 && this.dataSource5[j].indice != null) {
             existefsel++;
           }
         }
         if (existefsel > 0) {
-          const sw = await SwalService.confirm(
-            'Estas seguro?',
-            'Una vez realizada la acción no se podra revertir los cambios!'
-          );
+          const sw = await SwalService.confirm('Estas seguro?','Una vez realizada la acción no se podra revertir los cambios!');
           if (sw.isConfirmed) {
             let totfilas = this.dataSource5.length;
             for (let j = 0; j < totfilas; j++) {
-              if (
-                this.dataSource5[j].seleccion == 1 &&
-                this.dataSource5[j].indice != null
-              ) {
+              if (this.dataSource5[j].seleccion == 1 && this.dataSource5[j].indice != null) {
                 tablaux.push(this.dataSource5[j]); //corregir la clave que se debe pasar -> toda la fila
                 suma = suma - Number(this.dataSource5[j].parcial);
                 totagrins = totagrins - Number(this.dataSource5[j].parcial);
                 //eliminar si existe en tabla8
                 for (let k = 0; k < this.dataSource6.length; k++) {
-                  if (
-                    this.dataSource5[j].idgrupo ==
-                      this.dataSource6[k].idgrupo &&
-                    this.dataSource5[j].idfila == this.dataSource6[k].idfila
-                  ) {
+                  if (this.dataSource5[j].idgrupo == this.dataSource6[k].idgrupo && this.dataSource5[j].idfila == this.dataSource6[k].idfila ) {
                     reqsolgru = reqsolgru - Number(this.dataSource6[k].parcial);
+                    this.data6Elimina.push(this.dataSource6[k])
                     this.dataSource6.splice(k, 1);
                     k--;
                   }
+                }
+                if(this.dataSource5[j].accion!=1){
+                  this.data5Elimina.push(this.dataSource5[j])
                 }
                 this.dataSource5.splice(j, 1);
                 j = j - 1;
@@ -1323,29 +1264,17 @@ export class AgrupinsumosComponent implements OnInit {
               }
             }
             if (indgru > -1) {
-              this.dataSource5[indgru].parcial = this.formService.redondeo(
-                suma,
-                this.dec_parcial
-              );
+              this.dataSource5[indgru].parcial = this.formService.redondeo(suma,this.dec_parcial);
               //this.tab6total=this.dataSource5[indgru].parcial;
               //las desviaciones y requerimiento solicitado
-              this.dataSource5[indgru].reqsol = this.formService.redondeo(
-                reqsolgru,
-                this.dec_parcial
-              );
+              this.dataSource5[indgru].reqsol = this.formService.redondeo(reqsolgru,this.dec_parcial);
               //this.tab7total=this.redondeo(reqsolgru,this.dec_parcial);
-              let varia = this.formService.redondeo(
-                ((suma - reqsolgru) / suma) * 100,
-                2
-              );
-              this.dataSource5[indgru].variacion =
-                this.dataSource5[indgru].complemento == 1 ? '' : varia;
+              let varia = this.formService.redondeo(((suma - reqsolgru) / suma) * 100,2);
+              this.dataSource5[indgru].variacion =this.dataSource5[indgru].complemento == 1 ? '' : varia;
+              this.dataSource5[indgru].accion=this.dataSource5[indgru].accion!=1?2:1;
             }
             this.eliminarfilaInsComple(idgrupo, idcomple, tablaux);
-            this.totalinsagru = this.formService.redondeo(
-              totagrins,
-              this.dec_parcial
-            );
+            this.totalinsagru = this.formService.redondeo(totagrins,this.dec_parcial);
             this.calcporcentajegrupoins(false);
             // let tabla6aux=[];
             // for(let row of this.dataSource5Pri){
@@ -1408,42 +1337,30 @@ export class AgrupinsumosComponent implements OnInit {
     for (let row of datos_Selcomp) {
       for (let h = 0; h < totfilas; h++) {
         if (idgrupocomple != '') {
-          if (
-            this.dataSource5[h].idgrupo == idgrupocomple &&
-            this.dataSource5[h].indice == row.indice &&
-            this.dataSource5[h].id_filadetalle == row.id_filadetalle
-          ) {
+          if (this.dataSource5[h].idgrupo == idgrupocomple && this.dataSource5[h].indice == row.indice && this.dataSource5[h].id_filadetalle == row.id_filadetalle) {
             //eliminar si existe en tabla8
             for (let k = 0; k < this.dataSource6.length; k++) {
-              if (
-                this.dataSource5[h].idgrupo == this.dataSource6[k].idgrupo &&
-                this.dataSource5[h].idfila == this.dataSource6[k].idfila
-              ) {
-                reqsolgru =
-                  reqsolgru -
-                  Number(this.dataSource6[k].parcial.replace(/\,/g, ''));
+              if (this.dataSource5[h].idgrupo == this.dataSource6[k].idgrupo && this.dataSource5[h].idfila == this.dataSource6[k].idfila) {
+                reqsolgru = reqsolgru - Number(this.dataSource6[k].parcial.replace(/\,/g, ''));
+                this.data6Elimina.push(this.dataSource6[k])
                 this.dataSource6.splice(k, 1);
                 k--;
               }
             }
             if (indgru > -1) {
               //las desviaciones y requerimiento solicitado
-              this.dataSource5[indgru].reqsol = this.formService.redondeo(
-                reqsolgru,
-                this.dec_parcial
-              );
+              this.dataSource5[indgru].reqsol = this.formService.redondeo(reqsolgru,this.dec_parcial);
+              this.dataSource5[indgru].accion=this.dataSource5[indgru].accion!=1?2:1;
+            }
+            if(this.dataSource5[h].accion!=1){
+              this.data5Elimina.push(this.dataSource5[h])
             }
             this.dataSource5.splice(h, 1);
             h = h - 1;
             totfilas = totfilas - 1;
           }
         }
-        if (
-          this.dataSource5[h].idgrupo != idgrupo &&
-          this.dataSource5[h].id_comple == idcomp &&
-          this.dataSource5[h].indice == null &&
-          this.dataSource5[h].complemento == '1'
-        ) {
+        if (this.dataSource5[h].idgrupo != idgrupo && this.dataSource5[h].id_comple == idcomp && this.dataSource5[h].indice == null && this.dataSource5[h].complemento == '1') {
           reqsolgru = Number(this.dataSource5[h].reqsol);
           idgrupocomple = this.dataSource5[h].idgrupo;
           indgru = h;
@@ -1456,10 +1373,7 @@ export class AgrupinsumosComponent implements OnInit {
     let cantfil = 0;
     let indfilasel = 0;
     for (let i = 0; i < this.dataSource5.length; i++) {
-      if (
-        this.dataSource5[i].seleccion == 1 &&
-        this.dataSource5[i].indice != null
-      ) {
+      if (this.dataSource5[i].seleccion == 1 && this.dataSource5[i].indice != null) {
         cantfil = cantfil + 1;
         indfilasel = i;
       }
@@ -1477,9 +1391,11 @@ export class AgrupinsumosComponent implements OnInit {
           //subir
           fiact.nro = nroant;
           this.dataSource5[ind_ant] = fiact;
+          this.dataSource5[ind_ant].accion=this.dataSource5[ind_ant].accion!=1?2:1;
           //bajar
           rowant.nro = nroact;
           this.dataSource5[indfilasel] = rowant;
+          this.dataSource5[indfilasel].accion=this.dataSource5[indfilasel].accion!=1?2:1;
         } else {
           this.toaster.error(
             'El registro ya no se puede Subir.',
@@ -1536,9 +1452,11 @@ export class AgrupinsumosComponent implements OnInit {
           //subir
           fiact.nro = nroant;
           this.dataSource5[ind_ant] = fiact;
+          this.dataSource5[ind_ant].accion=this.dataSource5[ind_ant].accion!=1?2:1;
           //bajar
           rowant.nro = nroact;
           this.dataSource5[indfilasel] = rowant;
+          this.dataSource5[indfilasel].accion=this.dataSource5[indfilasel].accion!=1?2:1;
         } else {
           this.toaster.error(
             'El registro ya no se puede Bajar.',
@@ -1685,6 +1603,7 @@ export class AgrupinsumosComponent implements OnInit {
   caneditarcelda3(valor: any, row: any) {
     if (row.descripcion != valor) {
       row.descripcion = valor;
+      row.accion=row.accion!=1?2:1;
       this.bcambiost5 = true;
     }
     row.editar = 0;
@@ -1705,17 +1624,27 @@ export class AgrupinsumosComponent implements OnInit {
         for (let row of this.dataSource4) {
           if (row.accion == 1) tabaux.push(row);
         }
+        console.log(this.dataSource5)
+        let tabaux2 = [];
+        for (let row of this.dataSource5) {
+          if (row.accion == 1 || row.accion==2) tabaux2.push(row);
+        }
+        console.log(tabaux2);
+        console.log(this.data5Elimina)
+        console.log(this.data6Elimina)
         //verificar estado y parsar si se va a cambiar a 2
         let actestado = this.filareg.estado == 1 ? 1 : 0;
         const datos1 = JSON.stringify(tabaux);
-        const datos2 = JSON.stringify(this.dataSource5);
-        const datos3 = JSON.stringify(this.dataSource6);
+        const datos2 = JSON.stringify(tabaux2);
+        const datos2a = JSON.stringify(this.data5Elimina);
+        const datos3 = JSON.stringify(this.data6Elimina);
         let objpasa = {
           id_proyecto: this.id_proyecto,
           id_registro: this.id_reg,
           actestado: actestado,
           datos1: datos1,
           datos2: datos2,
+          datos2a: datos2a,
           datos3: datos3,
         };
         let res = await this._logisticaService.GuardarAdquiAgruins(objpasa);

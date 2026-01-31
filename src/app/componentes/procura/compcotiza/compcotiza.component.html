@@ -1,0 +1,242 @@
+<div class="contenido-menu-responsive">
+  <div class="contepri row mx-0 w-100">
+    <div class="col-12 col-sm-6" style="padding-left: 5px; padding-right: 5px;">
+      <div class="tabla-limp" style="height: calc(100vh - 170px);">
+        <table class="table-bordered tab-9">
+          <thead>
+            <tr class="headsticky header-custom">
+              <th appAnchocol [ancho]="48" rowspan="2">N°</th>
+              <th appAnchocol [ancho]="200" [detalle]="true" rowspan="2">Descripción</th>
+              <th appAnchocol [ancho]="35" rowspan="2">Und</th>
+              <th appAnchocol [ancho]="60" rowspan="2">Cantidad</th>
+              <th colspan="1">Cotización N°01</th>
+              <th colspan="1">Cotización N°01</th>
+              <th colspan="1">Cotización N°03</th>
+              <th appAnchocol [ancho]="50" rowspan="2">Precio Referencial INC/IGV</th>
+            </tr>
+            <tr class="headsticky2 header-custom" style="top:23px">
+              <th appAnchocol [ancho]="60">PU</th>
+              <th appAnchocol [ancho]="78">PU</th>
+              <th appAnchocol [ancho]="42">PU</th>
+            </tr>
+          </thead>
+          <tbody>
+            <ng-container *ngIf="dataSource.length>0">
+              <tr *ngFor="let row of dataSource;let indice=index;" (click)="cambindicesel(indice)" [ngClass]="{'highlight': fila_sel == indice,'filagrupo':row.indice==null}"
+              [hidden]="row.mostrar==0">
+                <td appAnchocol [ancho]="48" style="cursor: pointer;" (click)="row.orden==0 && row.icomost=='0'?toggleOn(row.idgrupo):row.orden==0 && row.icomost=='1'?toggleOff(row.idgrupo):false">
+                  <a  *ngIf="row.orden==0 && row.icomost=='0'" style="color:green; width: 14px;">
+                    <i class="fa fa-sort-desc expand"></i>
+                  </a>
+                  <a  *ngIf="row.orden==0 && row.icomost=='1'" style="color:red; width: 14px;">
+                    <i class="fa fa-sort-up contract"></i>
+                  </a>&nbsp; 
+                  {{row.orden==0?row.nomgrupo:row.orden}}
+                </td>
+                <td appAnchocol [ancho]="200" [detalle]="true" class="celdasalto text-left"> 
+                  <span class="span-container" placement="top" ngbTooltip="{{row.descripcion}}" container="body">
+                    <span class="span-ellipsis w-100 d-flex">
+                      <span>{{row.descripcion}}</span> 
+                    </span>
+                  </span>
+                </td>
+                <td appAnchocol [ancho]="35">{{row.unidad}}</td>
+                <td appAnchocol [ancho]="60" class="text-right">
+                  {{row.cantidad | number: mask_cant}}
+                </td>
+                <td appAnchocol [ancho]="60" class="text-right">
+                  {{row.idfila==0?row.monto1:row.preciosol1 | number: mask_precio}}
+                </td>
+                <td appAnchocol [ancho]="60" class="text-right">
+                  {{row.idfila==0?row.monto2:row.preciosol2 | number: mask_precio}}
+                </td>
+                <td appAnchocol [ancho]="60" class="text-right">
+                  {{row.idfila==0?row.monto3:row.preciosol3 | number: mask_precio}}
+                </td>
+                <td appAnchocol [ancho]="60" class="text-right">
+                  <ng-container *ngIf="row.orden==0">
+                    <button type="button" class="btn btn-mini3 btn-info" placement="top" ngbTooltip="Ver Proveedores" container="body" (click)="VerProvs(row)" style="margin-right: 2px;">
+                      <i class="fa fa-search icono-but"></i>
+                    </button>
+                  </ng-container>
+                  <ng-container *ngIf="row.orden!=0">
+                    {{row.preciosol | number: mask_precio}}
+                  </ng-container>
+                </td>
+              </tr>
+            </ng-container>
+            <ng-container *ngIf="dataSource.length<=0">
+              <tr>
+                <td class="mat-cell text-center" colspan="11">
+                  <label *ngIf="!buscando">No se encontraron resultados</label>
+                  <div *ngIf="buscando" class="preloader3 loader-block">
+                    <div class="circ1"></div>
+                    <div class="circ2"></div>
+                    <div class="circ3"></div>
+                    <div class="circ4"></div>
+                  </div>
+                </td>
+              </tr>
+            </ng-container>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="w-100 m-b-10 col-12 col-sm-6" style="padding-left: 5px; padding-right: 5px;">
+      <div class="borde-div col-12" [ngClass]="{'baprob': presel==1}">
+        <h4 class="col-12 sub-title h4-grupo"><b>Proveedor 01: {{razon1.value}} <span class="text-success">{{presel==1 && rowver.estado==3?' (PreAprobado)':(presel==1 && rowver.estado==2?' (Aprobado)':'')}}</span></b></h4>
+        <form [formGroup]="formSoli">
+          <div class="row mx-0 m-t-10">
+            <mat-form-field appearance="outline" class="mff-reduc my-form-field col-md-6 col-lg-4 col-12">
+                  <mat-label>RUC</mat-label>
+                  <input matInput type="text" class="mayuscula" autocomplete="off" maxlength="15" formControlName="ruc1">
+              </mat-form-field>
+              <mat-form-field appearance="outline" class="mff-reduc my-form-field col-md-6 col-lg-4 col-12">
+                  <mat-label>Telefono</mat-label>
+                  <input matInput type="text" class="mayuscula" autocomplete="off" maxlength="15" formControlName="telefono1">
+              </mat-form-field>
+              <mat-form-field appearance="outline" class="mff-reduc my-form-field col-md-12 col-lg-4 col-12">
+                  <mat-label>Correo</mat-label>
+                  <input matInput type="text" class="mayuscula" autocomplete="off" maxlength="250" formControlName="correo1">
+              </mat-form-field>
+              <mat-form-field appearance="outline" class="mff-reduc my-form-field col-md-12 col-lg-6 col-12">
+                  <mat-label>Dirección</mat-label>
+                  <input matInput type="text" class="mayuscula" autocomplete="off" maxlength="300" formControlName="direccion1">
+              </mat-form-field>
+              <mat-form-field appearance="outline" class="mff-reduc my-form-field col-md-12 col-lg-6 col-12">
+                  <mat-label>Actividad</mat-label>
+                  <input matInput type="text" class="mayuscula" autocomplete="off" maxlength="300" formControlName="actividad1">
+              </mat-form-field>
+              <mat-form-field appearance="outline" class="mff-reduc my-form-field col-md-12 col-lg-6 col-12">
+                  <mat-label>Representante Legal</mat-label>
+                  <input matInput type="text" class="mayuscula" autocomplete="off" maxlength="20" formControlName="contacto1">
+              </mat-form-field>
+              <mat-form-field appearance="outline" class="mff-reduc my-form-field col-md-12 col-lg-6 col-12">
+                  <mat-label>Fecha Notificada</mat-label>
+                  <input matInput type="text" class="mayuscula" autocomplete="off" maxlength="300" formControlName="fecha1">
+              </mat-form-field>
+              <mat-form-field appearance="outline" class="mff-reduc my-form-field col-md-12 col-lg-6 col-12">
+                  <mat-label>Plazo</mat-label>
+                  <input matInput type="text" class="mayuscula" autocomplete="off" maxlength="20" formControlName="plazo1">
+              </mat-form-field>
+              <mat-form-field appearance="outline" class="mff-reduc my-form-field col-md-12 col-lg-6 col-12">
+                  <mat-label>Estado</mat-label>
+                  <input matInput type="text" class="mayuscula" autocomplete="off" maxlength="20" formControlName="estado1">
+              </mat-form-field>
+
+              <div *ngIf="estado1.value=='Atendido'" class="row px-3 justify-content-between d-flex w-100">
+                <button *ngIf="puedecanc==1" type="button" class="btn btn-danger btn-mini" (click)="Cancelar(1)"><i
+                  class="fa fa-times"></i>Cancelar</button>
+                <span *ngIf="puedecanc!=1"></span>
+                <button *ngIf="rowver.estado==3" type="button" class="btn btn-success btn-mini" (click)="Aprobar(1)"><i
+                  class="fa fa-check"></i>Aprobar</button>
+              </div>
+          </div>
+        </form>
+      </div>
+      <div class="borde-div col-12" [ngClass]="{'baprob': presel==2}">
+        <h4 class="col-12 sub-title h4-grupo"><b>Proveedor 02: {{razon2.value}} <span class="text-success">{{presel==2 && rowver.estado==3?' (PreAprobado)':(presel==2 && rowver.estado==2?' (Aprobado)':'')}}</span></b></h4>
+        <form [formGroup]="formSoli">
+          <div class="row mx-0 m-t-10">
+            <mat-form-field appearance="outline" class="mff-reduc my-form-field col-md-6 col-lg-4 col-12">
+                  <mat-label>RUC</mat-label>
+                  <input matInput type="text" class="mayuscula" autocomplete="off" maxlength="15" formControlName="ruc2">
+              </mat-form-field>
+              <mat-form-field appearance="outline" class="mff-reduc my-form-field col-md-6 col-lg-4 col-12">
+                  <mat-label>Telefono</mat-label>
+                  <input matInput type="text" class="mayuscula" autocomplete="off" maxlength="15" formControlName="telefono2">
+              </mat-form-field>
+              <mat-form-field appearance="outline" class="mff-reduc my-form-field col-md-12 col-lg-4 col-12">
+                  <mat-label>Correo</mat-label>
+                  <input matInput type="text" class="mayuscula" autocomplete="off" maxlength="250" formControlName="correo2">
+              </mat-form-field>
+              <mat-form-field appearance="outline" class="mff-reduc my-form-field col-md-12 col-lg-6 col-12">
+                  <mat-label>Dirección</mat-label>
+                  <input matInput type="text" class="mayuscula" autocomplete="off" maxlength="300" formControlName="direccion2">
+              </mat-form-field>
+              <mat-form-field appearance="outline" class="mff-reduc my-form-field col-md-12 col-lg-6 col-12">
+                  <mat-label>Actividad</mat-label>
+                  <input matInput type="text" class="mayuscula" autocomplete="off" maxlength="300" formControlName="actividad2">
+              </mat-form-field>
+              <mat-form-field appearance="outline" class="mff-reduc my-form-field col-md-12 col-lg-6 col-12">
+                  <mat-label>Representante Legal</mat-label>
+                  <input matInput type="text" class="mayuscula" autocomplete="off" maxlength="20" formControlName="contacto2">
+              </mat-form-field>
+              <mat-form-field appearance="outline" class="mff-reduc my-form-field col-md-12 col-lg-6 col-12">
+                  <mat-label>Fecha Notificada</mat-label>
+                  <input matInput type="text" class="mayuscula" autocomplete="off" maxlength="300" formControlName="fecha2">
+              </mat-form-field>
+              <mat-form-field appearance="outline" class="mff-reduc my-form-field col-md-12 col-lg-6 col-12">
+                  <mat-label>Plazo</mat-label>
+                  <input matInput type="text" class="mayuscula" autocomplete="off" maxlength="20" formControlName="plazo2">
+              </mat-form-field>
+              <mat-form-field appearance="outline" class="mff-reduc my-form-field col-md-12 col-lg-6 col-12">
+                  <mat-label>Estado</mat-label>
+                  <input matInput type="text" class="mayuscula" autocomplete="off" maxlength="20" formControlName="estado2">
+              </mat-form-field>
+
+              <div *ngIf="estado2.value=='Atendido'" class="row px-3 justify-content-between d-flex w-100">
+                <button *ngIf="puedecanc==2" type="button" class="btn btn-danger btn-mini" (click)="Cancelar(2)"><i
+                  class="fa fa-times"></i>Cancelar</button>
+                <span *ngIf="puedecanc!=2"></span>
+                <button *ngIf="rowver.estado==3" type="button" class="btn btn-success btn-mini" (click)="Aprobar(2)"><i
+                  class="fa fa-check"></i>Aprobar</button>
+              </div>
+          </div>
+        </form>
+      </div>
+      <div class="borde-div col-12" [ngClass]="{'baprob': presel==3}">
+        <h4 class="col-12 sub-title h4-grupo"><b>Proveedor 03: {{razon3.value}} <span class="text-success">{{presel==3 && rowver.estado==3?' (PreAprobado)':(presel==3 && rowver.estado==2?' (Aprobado)':'')}}</span></b></h4>
+        <form [formGroup]="formSoli">
+          <div class="row mx-0 m-t-10">
+            <mat-form-field appearance="outline" class="mff-reduc my-form-field col-md-6 col-lg-4 col-12">
+                  <mat-label>RUC</mat-label>
+                  <input matInput type="text" class="mayuscula" autocomplete="off" maxlength="15" formControlName="ruc3">
+              </mat-form-field>
+              <mat-form-field appearance="outline" class="mff-reduc my-form-field col-md-6 col-lg-4 col-12">
+                  <mat-label>Telefono</mat-label>
+                  <input matInput type="text" class="mayuscula" autocomplete="off" maxlength="15" formControlName="telefono3">
+              </mat-form-field>
+              <mat-form-field appearance="outline" class="mff-reduc my-form-field col-md-12 col-lg-4 col-12">
+                  <mat-label>Correo</mat-label>
+                  <input matInput type="text" class="mayuscula" autocomplete="off" maxlength="250" formControlName="correo3">
+              </mat-form-field>
+              <mat-form-field appearance="outline" class="mff-reduc my-form-field col-md-12 col-lg-6 col-12">
+                  <mat-label>Dirección</mat-label>
+                  <input matInput type="text" class="mayuscula" autocomplete="off" maxlength="300" formControlName="direccion3">
+              </mat-form-field>
+              <mat-form-field appearance="outline" class="mff-reduc my-form-field col-md-12 col-lg-6 col-12">
+                  <mat-label>Actividad</mat-label>
+                  <input matInput type="text" class="mayuscula" autocomplete="off" maxlength="300" formControlName="actividad3">
+              </mat-form-field>
+              <mat-form-field appearance="outline" class="mff-reduc my-form-field col-md-12 col-lg-6 col-12">
+                  <mat-label>Representante Legal</mat-label>
+                  <input matInput type="text" class="mayuscula" autocomplete="off" maxlength="20" formControlName="contacto3">
+              </mat-form-field>
+              <mat-form-field appearance="outline" class="mff-reduc my-form-field col-md-12 col-lg-6 col-12">
+                  <mat-label>Fecha Notificada</mat-label>
+                  <input matInput type="text" class="mayuscula" autocomplete="off" maxlength="300" formControlName="fecha3">
+              </mat-form-field>
+              <mat-form-field appearance="outline" class="mff-reduc my-form-field col-md-12 col-lg-6 col-12">
+                  <mat-label>Plazo</mat-label>
+                  <input matInput type="text" class="mayuscula" autocomplete="off" maxlength="20" formControlName="plazo3">
+              </mat-form-field>
+              <mat-form-field appearance="outline" class="mff-reduc my-form-field col-md-12 col-lg-6 col-12">
+                  <mat-label>Estado</mat-label>
+                  <input matInput type="text" class="mayuscula" autocomplete="off" maxlength="20" formControlName="estado3">
+              </mat-form-field>
+
+              <div *ngIf="estado3.value=='Atendido'" class="row px-3 justify-content-between d-flex w-100">
+                <button *ngIf="puedecanc==3" type="button" class="btn btn-danger btn-mini" (click)="Cancelar(3)"><i
+                  class="fa fa-times"></i>Cancelar</button>
+                <span *ngIf="puedecanc!=3"></span>
+                <button *ngIf="rowver.estado==3" type="button" class="btn btn-success btn-mini" (click)="Aprobar(3)"><i
+                  class="fa fa-check"></i>Aprobar</button>
+              </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+

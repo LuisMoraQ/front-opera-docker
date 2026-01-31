@@ -40,6 +40,7 @@ export class CompatinsumosComponent implements OnInit {
   //indfila6_sel=-1;
   tab6idgrsel='';
   idcomple='';
+  DisgreElimina=[]
 
   dataSource7=[]
   paddingscroll2=0
@@ -207,19 +208,20 @@ export class CompatinsumosComponent implements OnInit {
     }catch(ex){}
   }
   cambindicesel6(ind:any,row:any){
-    if(ind==this.fila6_sel)
-    {
-      this.fila6_sel=-1;
-      //this.indfila6_sel=-1;
-      this.tab6idgrsel='';
-      this.idcomple='';
-      this.tab6total='';
-      this.fila7_sel=-1;
-      this.tab7total='';
-      this.dataSource8=[];
-      this.dataSource7=[];
-    }
-    else{
+    // if(ind==this.fila6_sel)
+    // {
+    //   this.fila6_sel=-1;
+    //   //this.indfila6_sel=-1;
+    //   this.tab6idgrsel='';
+    //   this.idcomple='';
+    //   this.tab6total='';
+    //   this.fila7_sel=-1;
+    //   this.tab7total='';
+    //   this.dataSource8=[];
+    //   this.dataSource7=[];
+    // }
+    // else{
+    if(ind!=this.fila6_sel){
       this.fila6_sel=ind;
       //this.indfila6_sel=row.indice;
       this.tab6idgrsel=row.idgrupo;
@@ -314,7 +316,7 @@ export class CompatinsumosComponent implements OnInit {
         num_det:this.dataSource7[ind].num_det,codigo:this.dataSource7[ind].codigo,descripcion:this.dataSource7[ind].descripcion,unidad:this.dataSource7[ind].unidad,
         cantidad:this.dataSource7[ind].operador=='%'?1:this.dataSource7[ind].cantidad,
         precio:this.dataSource7[ind].operador=='%'?this.dataSource7[ind].parcial:this.dataSource7[ind].precio,parcial:this.dataSource7[ind].parcial,
-        operador:this.dataSource7[ind].operador,acumulado:this.dataSource7[ind].parcial,proceso:'',princi:1,estado:0,ingreso:0,salida:0,fecha_sol:null,mostrar:1,icomost:1,editar:0,editar2:0};
+        operador:this.dataSource7[ind].operador,acumulado:this.dataSource7[ind].parcial,proceso:'',princi:1,estado:0,ingreso:0,salida:0,fecha_sol:null,mostrar:1,icomost:1,editar:0,editar2:0,accion:1};
       this.dataSource8.push(ejm);
       this.bcambiost8=true;
       //agregar tambien a data
@@ -424,6 +426,7 @@ export class CompatinsumosComponent implements OnInit {
             if(row1.idgrupo==this.dataSource8[k].idgrupo && row1.idfila==this.dataSource8[k].idfila && row1.indrep==this.dataSource8[k].indrep){
               row1.acumulado=this.formService.redondeo(difer,this.dec_parcial);
               row1.princi=1
+              row1.accion=row1.accion!=1?2:1
               break;
             }
           }
@@ -439,6 +442,7 @@ export class CompatinsumosComponent implements OnInit {
           for(let row1 of this.DatosDisgre){
             if(row1.idgrupo==this.dataSource8[k].idgrupo && row1.idfila==this.dataSource8[k].idfila && row1.indrep==this.dataSource8[k].indrep){
               row1.acumulado=this.formService.redondeo(difer,this.dec_parcial);
+              row1.accion=row1.accion!=1?2:1
               break;
             }
           }
@@ -465,6 +469,9 @@ export class CompatinsumosComponent implements OnInit {
     //this.actualizarvistat5();
     for(let a=0;a<this.DatosDisgre.length;a++){
       if(this.DatosDisgre[a].idgrupo==this.dataSource8[ind].idgrupo && this.DatosDisgre[a].idfila==this.dataSource8[ind].idfila && this.DatosDisgre[a].indrep==this.dataSource8[ind].indrep){
+        if(this.DatosDisgre[a].accion!=1){
+          this.DisgreElimina.push(this.DatosDisgre[a])
+        }
         this.DatosDisgre.splice(a,1)
         break;
       }
@@ -659,6 +666,7 @@ export class CompatinsumosComponent implements OnInit {
           this.dataSource8aux[i].orden=morden
           this.dataSource8aux[i].editar=0
           this.dataSource8aux[i].editar2=0
+          this.dataSource8aux[i].accion=1
           this.dataSource8.push(this.dataSource8aux[i]);
           //agregar tambien a data
           this.DatosDisgre.push(JSON.parse(JSON.stringify(this.dataSource8aux[i])))
@@ -704,6 +712,7 @@ export class CompatinsumosComponent implements OnInit {
             this.dataSource8aux[i].orden=this.dataSource8[indgrupo].orden
             this.dataSource8aux[i].editar=0
             this.dataSource8aux[i].editar2=0
+            this.dataSource8aux[i].accion=1
             this.dataSource8.splice(indgrupo+1,0,this.dataSource8aux[i]);
             //agregar tambien a data
             this.DatosDisgre.push(JSON.parse(JSON.stringify(this.dataSource8aux[i])))
@@ -717,6 +726,7 @@ export class CompatinsumosComponent implements OnInit {
         for(let rowds of this.DatosDisgre){
           if(rowds.idgrupo==this.dataSource8[indgrupo].idgrupo && rowds.idfila==this.dataSource8[indgrupo].idfila && rowds.princi==1){
             rowds.acumulado=this.formService.redondeo(suma,this.dec_parcial);//agrupacion suma tabla8
+            rowds.accion=rowds.accion!=1?2:1
           }
         }
         //las desviaciones y requerimiento solicitado
@@ -779,7 +789,7 @@ export class CompatinsumosComponent implements OnInit {
           //agregar a tabla 8 e datosdisg
           let ejm={id_proyecto:this.id_proyecto,id_registro:this.id_reg,idgrupo:idgru,idfila:this.dataSource7[this.ind_disgrega].idfila,indrep:0,orden:this.UltOrden(),indice:this.dataSource7[this.ind_disgrega].indice,id_filadetalle:this.dataSource7[this.ind_disgrega].id_filadetalle,
             num_det:this.dataSource7[this.ind_disgrega].num_det,codigo:this.dataSource7[this.ind_disgrega].codigo,descripcion:insumo,unidad:unid,cantidad:cantidad,
-            precio:precio,parcial:parcial,operador:this.dataSource7[this.ind_disgrega].operador,acumulado:parcial,proceso:'',princi:1,estado:0,ingreso:0,salida:0,fecha_sol:null,icomost:1,mostrar:1,editar:0,editar2:0};
+            precio:precio,parcial:parcial,operador:this.dataSource7[this.ind_disgrega].operador,acumulado:parcial,proceso:'',princi:1,estado:0,ingreso:0,salida:0,fecha_sol:null,icomost:1,mostrar:1,editar:0,editar2:0,accion:1};
           this.dataSource8.splice(indgrupo+1,0,ejm);
           //agregar tambien a data
           this.DatosDisgre.push(JSON.parse(JSON.stringify(ejm)))
@@ -817,7 +827,7 @@ export class CompatinsumosComponent implements OnInit {
 
           let ejm={id_proyecto:this.id_proyecto,id_registro:this.id_reg,idgrupo:idgru,idfila:this.dataSource7[this.ind_disgrega].idfila,indrep:nrorep,orden:this.dataSource8[indgrupo].orden,indice:this.dataSource7[this.ind_disgrega].indice,id_filadetalle:this.dataSource7[this.ind_disgrega].id_filadetalle,
             num_det:this.dataSource7[this.ind_disgrega].num_det,codigo:this.dataSource7[this.ind_disgrega].codigo,descripcion:insumo,unidad:unid,cantidad:cantidad,
-            precio:precio,parcial:parcial,operador:this.dataSource7[this.ind_disgrega].operador,acumulado:null,proceso:'',princi:0,estado:0,ingreso:0,salida:0,fecha_sol:null,icomost:1,mostrar:1,editar:0,editar2:0};
+            precio:precio,parcial:parcial,operador:this.dataSource7[this.ind_disgrega].operador,acumulado:null,proceso:'',princi:0,estado:0,ingreso:0,salida:0,fecha_sol:null,icomost:1,mostrar:1,editar:0,editar2:0,accion:1};
           this.dataSource8.splice(indgrupo+1,0,ejm);
           //agregar tambien a data
           this.DatosDisgre.push(JSON.parse(JSON.stringify(ejm)))
@@ -864,13 +874,22 @@ export class CompatinsumosComponent implements OnInit {
           if(row.accion==1)
             tabaux.push(row);
         }
+        let tabaux2 = [];
+        for (let row of this.DatosDisgre) {
+          if (row.accion == 1 || row.accion==2) tabaux2.push(row);
+        }
+        console.log(tabaux)
+        console.log(tabaux2)
+        console.log(this.DisgreElimina)
         const datos1 = JSON.stringify(tabaux);
-        const datos2 = JSON.stringify(this.DatosDisgre);
+        const datos2 = JSON.stringify(tabaux2);
+        const datos3 = JSON.stringify(this.DisgreElimina);
         let objpasa={
           id_proyecto:this.id_proyecto,
           id_registro:this.id_reg,
           datos1:datos1,
           datos2:datos2,
+          datos3:datos3,
         }
         let res=await this._logisticaService.GuardarAdquiDisgreins(objpasa);
         if(res.id==1)
@@ -898,7 +917,8 @@ export class CompatinsumosComponent implements OnInit {
     }
   }
   editarcelda1(ind:any){
-    this.dataSource8[ind].editar=1;
+    if(this.dataSource8[ind].estado==0)
+      this.dataSource8[ind].editar=1;
   }
   caneditarcelda1(eve:any,ind:any){
     var valor=Number(eve.toString().replace(/\,/g, ''));
@@ -941,10 +961,12 @@ export class CompatinsumosComponent implements OnInit {
           if(rowds.idgrupo==this.dataSource8[ind].idgrupo && rowds.idfila==this.dataSource8[ind].idfila && rowds.indrep==this.dataSource8[ind].indrep){
             rowds.cantidad=this.formService.redondeo(Number(valor),this.dec_cant);
             rowds.parcial=nparc;
+            rowds.accion=rowds.accion!=1?2:1
           }
           if(rowds.idgrupo==this.dataSource8[ind].idgrupo && rowds.idfila==this.dataSource8[ind].idfila && rowds.princi==1){
             let suma=Number(rowds.acumulado)-pactual+Number(nparc);//agrupacion suma tabla8
             rowds.acumulado=this.formService.redondeo(suma,this.dec_parcial);//agrupacion suma tabla8
+            rowds.accion=rowds.accion!=1?2:1
           }
         }
         //las desviaciones y requerimiento solicitado
@@ -993,7 +1015,8 @@ export class CompatinsumosComponent implements OnInit {
     }
   }
   editarcelda2(ind:any){
-    this.dataSource8[ind].editar2=1;
+    if(this.dataSource8[ind].estado==0)
+      this.dataSource8[ind].editar2=1;
   }
   caneditarcelda2(eve:any,ind:any){
     var valor=Number(eve.toString().replace(/\,/g, ''));
@@ -1027,10 +1050,12 @@ export class CompatinsumosComponent implements OnInit {
         if(rowds.idgrupo==this.dataSource8[ind].idgrupo && rowds.idfila==this.dataSource8[ind].idfila && rowds.indrep==this.dataSource8[ind].indrep){
           rowds.precio=this.formService.redondeo(Number(valor),this.dec_precio);
           rowds.parcial=nparc;
+          rowds.accion=rowds.accion!=1?2:1
         }
         if(rowds.idgrupo==this.dataSource8[ind].idgrupo && rowds.idfila==this.dataSource8[ind].idfila && rowds.princi==1){
           let suma=Number(rowds.acumulado)-pactual+Number(nparc);//agrupacion suma tabla8
           rowds.acumulado=this.formService.redondeo(suma,this.dec_parcial);//agrupacion suma tabla8
+          rowds.accion=rowds.accion!=1?2:1
         }
       }
       //las desviaciones y requerimiento solicitado
@@ -1220,5 +1245,29 @@ export class CompatinsumosComponent implements OnInit {
     });
     modalRef.componentInstance.datos = datos;
     const result = await modalRef.result;
+  }
+  async Cambioest(ind:any){
+    const respu = await SwalService.confirm('Esta seguro que desea Cambiar a Estado REQUERIMIENTO?', 'Ya no podra editar el requerimiento despues de continuar.');
+    if (respu.isConfirmed) {
+      this.mostrar_carga_todo=true;
+      this.dataSource6[ind].estado=1;
+      this.dataSource6[ind].accion=1
+      //actualizar detalles?
+      let idgru6=this.dataSource6[ind].idgrupo;
+      for(let row of this.dataSource6){
+        if(row.idgrupo==idgru6 && row.indice!=null){
+          row.estado=1
+          row.accion=1
+        }
+      }
+      for(let i=0;i<this.DatosDisgre.length;i++){
+        if(this.DatosDisgre[i].idgrupo==idgru6){
+          this.DatosDisgre[i].estado=1
+          this.DatosDisgre[i].accion=this.DatosDisgre[i].accion!=1?2:1
+        }
+      }
+      this.mostrar_carga_todo=false;
+      this.bcambiost8=true;
+    }
   }
 }

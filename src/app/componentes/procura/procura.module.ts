@@ -26,6 +26,10 @@ import { AgrupinsumosComponent } from './agrupinsumos/agrupinsumos.component';
 import { CompatinsumosComponent } from './compatinsumos/compatinsumos.component';
 import { SaldopresupuestalComponent } from './saldopresupuestal/saldopresupuestal.component';
 import { InformesReportesComponent } from './informes-reportes/informes-reportes.component';
+import { ElaborareqComponent } from './elaborareq/elaborareq.component';
+import { CompcotizaComponent } from './compcotiza/compcotiza.component';
+import { CompcostosComponent } from './compcostos/compcostos.component';
+import { SegcontrolComponent } from './segcontrol/segcontrol.component';
 
 
 @NgModule({
@@ -35,7 +39,11 @@ import { InformesReportesComponent } from './informes-reportes/informes-reportes
     AgrupinsumosComponent,
     CompatinsumosComponent,
     SaldopresupuestalComponent,
-    InformesReportesComponent
+    InformesReportesComponent,
+    ElaborareqComponent,
+    CompcotizaComponent,
+    CompcostosComponent,
+    SegcontrolComponent
   ],
   imports: [
     CommonModule,

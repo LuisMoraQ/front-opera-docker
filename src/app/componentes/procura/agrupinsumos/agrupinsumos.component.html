@@ -160,7 +160,7 @@
                 <a  *ngIf="row.indice==null && row.icomost=='1'" style="color:red; width: 14px;" >
                     <i class="fa fa-sort-up contract"></i>
                 </a>
-                {{row.indice==null?row.idgrupo:row.num_det}}
+                {{row.indice==null?row.nomgrupo:row.num_det}}
               </td>
               <td appAnchocol [ancho]="185" [detalle]="true" class="celdasalto text-left"> 
                 <span *ngIf="row.editar==0" class="span-container" [ngStyle]="{'cursor': row.indice==null?'pointer':'default' }" placement="top" ngbTooltip="{{row.descripcion}}" container="body" (click)="row.indice==null?editarcelda3(row):null">
@@ -176,8 +176,10 @@
                 <span *ngIf="row.complemento==1" style="color: red;">{{row.id_comple}}</span>
               </td>
               <td appAnchocol [ancho]="50" style="font-size: 12px !important;">
-                <label *ngIf="row.estado==0" class="label" style="padding-left: 2px; padding-right: 2px; margin-right: 2px !important; background-color: 'darkorange';">Borrador</label>
-                <label *ngIf="row.estado==1" class="label label-success" style="padding-left: 2px; padding-right: 2px; margin-right: 2px !important;">Aprobado</label>
+                <label *ngIf="row.estado==0" class="label label-est" style="background-color: 'darkorange';">Borrador</label>
+                <label *ngIf="row.estado==2" class="label label-success label-est">Aprobado</label>
+                <label *ngIf="row.estado==1" class="label label-info label-est">Requerimiento</label>
+                <label *ngIf="row.estado==3" class="label label-primary label-est">Cotización</label>
               </td>
               <td appAnchocol [ancho]="80">
                 <span class="float-left">{{simbolo}}</span>

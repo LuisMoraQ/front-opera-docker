@@ -1,6 +1,6 @@
 <div id="divbut" style="width: calc(100% - 58px);margin-left:44px" class="hidescroll m-b-10">
   <span *ngIf="scrollbut" class="icscrol-l" (click)="rigthDivBut()"><i class="icofont icofont-caret-left icono-but"></i></span>
-  <div class="row" style="width: 805px;margin-right: 0px;margin-left: 0px;">
+  <div class="row" style="width: 1213px;margin-right: 0px;margin-left: 0px;">
     <button class="btn btn-sm btn-outline-secondary btn-menu-top" type="button" (mouseup)="quitarfoco($event)"
     (click)="cambioVista(1)" style="padding: 4px 8px" [ngClass]="{ 'btn-custom-active': subvista == 1 }">
       <i class="fa fa-list"></i> RESUMEN DE PROCURA
@@ -9,15 +9,31 @@
       style="padding: 4px 8px" (click)="cambioVista(3)" [ngClass]="{ 'btn-custom-active': subvista == 3 }">
       <i class="fa fa-list"></i> RELACION DE INSUMOS
     </button>
-    <button class="btn btn-sm btn-outline-secondary btn-menu-top" type="button" (mouseup)="quitarfoco($event)"
+    <button class="btn btn-sm btn-outline-secondary btn-menu-top2" type="button" (mouseup)="quitarfoco($event)"
       style="padding: 4px 8px" (click)="cambioVista(4)" [ngClass]="{ 'btn-custom-active': subvista == 4 }">
       <i class="fa fa-list"></i> AGRUPAMIENTO DE INSUMOS PROGRAMADOS
     </button>
-    <button class="btn btn-sm btn-outline-secondary btn-menu-top" type="button" (mouseup)="quitarfoco($event)"
+    <button class="btn btn-sm btn-outline-secondary btn-menu-top2" type="button" (mouseup)="quitarfoco($event)"
       style="padding: 4px 8px" (click)="cambioVista(5)" [ngClass]="{ 'btn-custom-active': subvista == 5 }">
       <i class="fa fa-list"></i> COMPATIBILIZACION DE INSUMOS
     </button>
     <button class="btn btn-sm btn-outline-secondary btn-menu-top" type="button" (mouseup)="quitarfoco($event)"
+      style="padding: 4px 8px" (click)="cambioVista(6)" [ngClass]="{ 'btn-custom-active': subvista == 6 }">
+      <i class="fa fa-list"></i> ELABORACIÓN DE REQUERIMIENTO
+    </button>
+    <button class="btn btn-sm btn-outline-secondary btn-menu-top" type="button" (mouseup)="quitarfoco($event)"
+      style="padding: 4px 8px" (click)="cambioVista(7)" [ngClass]="{ 'btn-custom-active': subvista == 7 }">
+      <i class="fa fa-list"></i> COMPARATIVA DE COTIZACIONES
+    </button>
+    <button class="btn btn-sm btn-outline-secondary btn-menu-top" type="button" (mouseup)="quitarfoco($event)"
+      style="padding: 4px 8px" (click)="cambioVista(8)" [ngClass]="{ 'btn-custom-active': subvista == 8 }">
+      <i class="fa fa-list"></i> COMPARATIVA DE COSTOS
+    </button>
+    <button class="btn btn-sm btn-outline-secondary btn-menu-top" type="button" (mouseup)="quitarfoco($event)"
+      style="padding: 4px 8px" (click)="cambioVista(9)" [ngClass]="{ 'btn-custom-active': subvista == 9 }">
+      <i class="fa fa-list"></i> SEGUIMIENTO Y CONTROL
+    </button>
+    <button class="btn btn-sm btn-outline-secondary btn-menu-top2" type="button" (mouseup)="quitarfoco($event)"
       style="padding: 4px 8px" (click)="cambioVista(2)" [ngClass]="{ 'btn-custom-active': subvista == 2 }">
       <i class="fa fa-list"></i> SALDO PRESUPUESTAL SEGUN ADQUISICIONES
     </button>
@@ -328,9 +344,6 @@
     </div>
   </app-card>
 </div>
-<div *ngIf="subvista==2">
-  <app-saldopresupuestal [filareg]="filareg" [decproy]="decpasa" [colproy]="colorpasa"></app-saldopresupuestal>
-</div>
 <div *ngIf="subvista==3">
   <app-relacioninsumos [filareg]="filareg" [decproy]="decpasa" [colproy]="colorpasa" (listarpri)="ListarExterno($event)"></app-relacioninsumos>
 </div>
@@ -339,6 +352,21 @@
 </div>
 <div *ngIf="subvista==5">
   <app-compatinsumos [filareg]="filareg" [decproy]="decpasa"></app-compatinsumos>
+</div>
+<div *ngIf="subvista==6">
+  <app-elaborareq [filareg]="filareg" [decproy]="decpasa"></app-elaborareq>
+</div>
+<div *ngIf="subvista==7">
+  <app-compcotiza [filareg]="filareg" [decproy]="decpasa"></app-compcotiza>
+</div>
+<div *ngIf="subvista==8">
+  <app-compcostos [filareg]="filareg" [decproy]="decpasa"></app-compcostos>
+</div>
+<div *ngIf="subvista==9">
+  <app-segcontrol [filareg]="filareg" [decproy]="decpasa"></app-segcontrol>
+</div>
+<div *ngIf="subvista==2">
+  <app-saldopresupuestal [filareg]="filareg" [decproy]="decpasa" [colproy]="colorpasa"></app-saldopresupuestal>
 </div>
 
 <app-modal-basic #modalmodadqui [dialogClass]="'modal-lg'">

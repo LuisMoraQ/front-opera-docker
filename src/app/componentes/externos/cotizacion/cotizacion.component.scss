@@ -1,0 +1,140 @@
+body {
+    font-family: "Inter", sans-serif;
+    //background-color: #f3f4f6;
+    margin: 0;
+}
+
+/* Main container for centering the form */
+.main-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 1rem;
+    min-height: 100vh;
+    box-sizing: border-box;
+    background-color: #f3f4f6;
+}
+
+/* Form wrapper/card */
+.form-wrapper {
+    width: 100%;
+    max-width: 50rem; /* max-w-2xl */
+    border-radius: 0.5rem; /* rounded-lg */
+    background-color: white;
+    padding: 2.5rem; /* p-10 */
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
+        0 4px 6px -4px rgba(0, 0, 0, 0.1);
+    box-sizing: border-box;
+}
+
+/* Top image styling */
+.form-image {
+    //margin-bottom: 3rem; /* mb-12 */
+    width: 50%;
+    border-radius: 0.5rem;
+}
+
+/* Header section for title and description */
+.form-header {
+    margin-bottom: 2rem; /* mb-8 */
+    text-align: center;
+}
+
+.form-title {
+    font-size: 1.875rem; /* text-2xl */
+    font-weight: 600; /* font-semibold */
+    color: #1f2937; /* text-gray-800 */
+}
+
+.form-description {
+    margin-top: 0.5rem; /* mt-2 */
+    font-size: 0.875rem; /* text-sm */
+    color: #4b5563; /* text-gray-600 */
+    line-height: 1.5;
+}
+
+/* Container for each form field group */
+.form-group {
+    margin-bottom: 1.5rem; /* mb-6 */
+}
+
+/* Form labels */
+.form-label {
+    display: block;
+    margin-bottom: 0.5rem; /* mb-2 */
+    font-size: 0.875rem; /* text-sm */
+    font-weight: 500; /* font-medium */
+    color: #4b5563; /* text-gray-600 */
+}
+
+/* Submit Button */
+.submit-btn {
+    width: 100%;
+    border-radius: 0.375rem;
+    background-color: #4f46e5;
+    padding: 0.75rem 1.5rem;
+    font-weight: 500;
+    color: white;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s, box-shadow 0.3s;
+}
+
+.submit-btn:hover {
+    background-color: #4338ca;
+}
+
+.submit-btn:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.5);
+}
+
+/* Mobile Responsive Styles */
+@media (max-width: 640px) {
+    .main-container {
+        padding: 1rem;
+    }
+    .form-wrapper {
+        padding: 1.5rem;
+    }
+    .form-title {
+        font-size: 1.5rem;
+    }
+}
+
+.imgcont{
+  display: flex;
+  justify-content: center;
+}
+
+.filaseldata{
+  background-color: #E1E1E1 !important;
+}
+
+.footer-tabla {
+    min-height: unset;
+    position: relative;
+    //margin-top: -17px;
+    overflow-x: auto;
+}
+.tare-footer table th {
+    color: #fafafa !important;
+    background-color: #FF5C44 !important;
+}
+
+.tablast{
+    border-collapse: collapse;
+    td{
+        min-height: 23px;
+        height: 23px;
+        background-color: white;
+    }
+}
+th.sticky-col{
+    background-color:#0047AB;
+}
+.sticky-col {
+    position: sticky;
+    left: 0;
+    z-index: 1;
+}
