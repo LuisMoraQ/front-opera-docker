@@ -767,6 +767,10 @@ export class PrincipalComponent implements OnInit, OnDestroy {
       plazo: new UntypedFormControl(datosProyecto.plazo, [Validators.required, Validators.min(1), Validators.max(5000)]),
       fecha_inicio: new UntypedFormControl(fecha_inicio, [Validators.required, this.fechaElaboracionValidator()]),
       fecha_culmina: new UntypedFormControl(fecha_culmina, [Validators.required, this.fechaElaboracionValidator()]),
+      nombre_empresa: new UntypedFormControl(datosProyecto.nombre_empresa, []),
+      ruc_empresa: new UntypedFormControl(datosProyecto.ruc_empresa, []),
+      direccion_empresa: new UntypedFormControl(datosProyecto.direccion_empresa, []),
+      imagen_empresa: new UntypedFormControl(datosProyecto.imagen_empresa, []),
     })
     return datos_form
   }
@@ -930,7 +934,11 @@ export class PrincipalComponent implements OnInit, OnDestroy {
           plazo: datosProyecto.plazo ? datosProyecto.plazo : '',
           fecha_inicio: datosProyecto.fecha_inicio ? datosProyecto.fecha_inicio : '',
           fecha_culmina: datosProyecto.fecha_culmina ? datosProyecto.fecha_culmina : '',
-          id_usuario: this.idUsuario
+          id_usuario: this.idUsuario,
+          nombre_empresa: datosProyecto.nombre_empresa,
+          ruc_empresa: datosProyecto.ruc_empresa,
+          direccion_empresa: datosProyecto.direccion_empresa,
+          imagen_empresa: datosProyecto.imagen_empresa
         }
         const response = await this.principalService.modificarProyecto(modificarProyecto)
         this.mostrar_carga_todo = false;

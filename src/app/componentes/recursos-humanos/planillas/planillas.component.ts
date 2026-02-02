@@ -1,3 +1,4 @@
+import { ProcesosRhService } from './../../../servicios/procesos-rh.service';
 import { SwalService } from './../../../servicios/swal.service';
 import { RecursosHumanosService } from './../../../servicios/recursoshumanos.service';
 import { AfterViewInit, ApplicationRef, ChangeDetectorRef, Component, Input, OnChanges, OnDestroy, OnInit, QueryList, ViewChild, ViewChildren } from '@angular/core';
@@ -71,7 +72,7 @@ interface filaTabla {
   descuentos: any,
   diasNoLaborables: any,
   feriadosSoloFecha: any
-
+  tipo_cargo: number
 }
 interface Asistencia {
   id_asistencia: number;
@@ -211,8 +212,20 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
   filTabFil = null
   mostrarSelColum: boolean;
   cantidadUsuariosDia: number[] = [];
+  mesSelAcum = null
+  areaSelAcum = null
+  cargoSelAcum = null
+  mesesAcum = []
+  areasAcum = []
+  cargosAcum = []
+  cargosFiltradosAcum = []
+  consolidado = []
+  tablaAcumFiltrada = []
+  calendarioCompleto
+  calendarioFiltrado2
+  totalesAcumulados = {}
   constructor(private recursosHumanosService: RecursosHumanosService, private cdRef: ChangeDetectorRef, private appRef: ApplicationRef, private toaster: ToastrService,
-    public formsService: FormsService, private formulaEvaluator: FormulaEvaluatorService) { }
+    public formsService: FormsService, private formulaEvaluator: FormulaEvaluatorService, private procesosRhService: ProcesosRhService) { }
 
   quitarfoco(element: any) {
     element.target.blur();
@@ -258,9 +271,82 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
     if (event.nextId == 3 && !this.areaSeleccionadaPres) {
       this.areaSeleccionadaPres = this.areas.length ? this.areas[0]?.id_area : null
       await this.cambioAreaPres()
+    } else if (event.nextId == 4) {
+      this.mostrar_carga_todo = true
+      this.mesSelAcum = null
+      this.mesesAcum = []
+      this.areasAcum = []
+      this.cargosAcum = []
+      this.consolidado = []
+      this.tablaAcumFiltrada = []
+      this.calendarioCompleto = []
+      this.calendarioFiltrado2 = []
+      this.totalesAcumulados = {}
+      this.areaSelAcum = null
+      const consolidado = await this.procesosRhService.calendarioXAsignaciones(this.idProyecto)
+      this.mesesAcum = consolidado.consolidadoPorMeses?.map(ele => { return ele.mes_key })
+      this.areasAcum = consolidado.areas
+      this.cargosAcum = consolidado.cargos
+      this.consolidado = this.agregarEncabezadosArea(consolidado.consolidadoPorMeses);
+      this.calendarioCompleto = consolidado.calendario
+
+      this.mostrar_carga_todo = false
     }
     this.mostrar_carga_todo = false
   }
+
+  agregarEncabezadosArea(consolidadoData) {
+    return consolidadoData.map(mes => {
+      const nuevosItems = [];
+      let areaActual = null;
+
+      mes.items.forEach((item, index) => {
+        // Si es una fila de total de área, la mantenemos como está
+        if (item.es_total_area) {
+          // Si había un área activa, agregamos el total antes de cambiar
+          if (areaActual !== null) {
+            areaActual = null;
+          }
+          nuevosItems.push(item);
+          return;
+        }
+
+        // Si cambia de área, agregamos encabezado
+        if (areaActual !== item.id_area) {
+          areaActual = item.id_area;
+
+          // Creamos el encabezado del área
+          const encabezadoArea = {
+            id_area: item.id_area,
+            descripcion_area: item.descripcion_area,
+            id_cargo: null,
+            descripcion_cargo: `ÁREA: ${item.descripcion_area}`,
+            tipo_cargo: null,
+            cantidad: null,
+            asignaciones: [],
+            calendario: item.calendario.map(dia => ({
+              ...dia,
+              detalle_asistencias: []
+            })),
+            costo_total: null,
+            es_encabezado_area: true // Nueva bandera para identificar encabezados
+          };
+
+          nuevosItems.push(encabezadoArea);
+        }
+
+        // Agregamos el item normal
+        nuevosItems.push(item);
+      });
+
+      return {
+        ...mes,
+        items: nuevosItems
+      };
+    });
+  }
+
+  // Uso:
 
   ngOnDestroy() {
     if (this.temporizador) {
@@ -474,7 +560,8 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
                 dias_faltados: null,
                 descuentos: null,
                 diasNoLaborables: null,
-                feriadosSoloFecha: null
+                feriadosSoloFecha: null,
+                tipo_cargo: null
               }
               areagrupo.push(areadata)
             }
@@ -507,7 +594,8 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
                 dias_faltados: null,
                 descuentos: null,
                 diasNoLaborables: null,
-                feriadosSoloFecha: null
+                feriadosSoloFecha: null,
+                tipo_cargo: null
               }
               areagrupo.push(cargoData)
               let j = 1
@@ -569,7 +657,8 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
                   dias_tardanzas: resusuario.conteos.dias_tardanzas,
                   descuentos: descuentos,
                   diasNoLaborables: diasNoLaborables,
-                  feriadosSoloFecha: feriadosSoloFecha
+                  feriadosSoloFecha: feriadosSoloFecha,
+                  tipo_cargo: usuario.tipo_cargo
                 }
                 cargoTotal += resusuario.montoMes
                 areagrupo.push(asignacionData)
@@ -617,7 +706,8 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
               dias_faltados: null,
               descuentos: null,
               diasNoLaborables: null,
-              feriadosSoloFecha: null
+              feriadosSoloFecha: null,
+              tipo_cargo: null
             }
             areaarray.push(areadata)
             const cargos = this.cargos.filter(ele => ele.id_area == area.id_area)
@@ -662,7 +752,8 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
                 dias_faltados: null,
                 descuentos: null,
                 diasNoLaborables: null,
-                feriadosSoloFecha: null
+                feriadosSoloFecha: null,
+                tipo_cargo: null
               }
 
               areaarray.push(cargoData)
@@ -725,7 +816,8 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
                   dias_tardanzas: resusuario.conteos.dias_tardanzas,
                   descuentos: descuentos,
                   diasNoLaborables: diasNoLaborables,
-                  feriadosSoloFecha: feriadosSoloFecha
+                  feriadosSoloFecha: feriadosSoloFecha,
+                  tipo_cargo: usuario.tipo_cargo
                 }
                 cargoTotal += resusuario.montoMes
                 areaarray.push(asignacionData)
@@ -786,8 +878,6 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
     if (item.id_area) return `area_${item.id_area}`;
     return index;
   }
-
-
 
   filtrarPorUsuario(registrosAsistencia: any[], id_usuario: number, id_asignacion: number, descuentos: string[], diasNoLaborables: string[], feriadosSoloFecha: string[], costedia) {
 
@@ -1221,7 +1311,6 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
       SwalService.error()
     }
   }
-
 
   // Método para recalcular solo los contadores de una fila específica usando los datos que ya tiene
   recalcularContadoresFila(ind: number): void {
@@ -4147,6 +4236,174 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
     }
     return montos
   }
+
+  // Método para convertir a número romano
+  getRomanNumeral(num: number): string {
+    if (!num) return
+    const romanNumerals: { [key: number]: string } = {
+      1: 'I',
+      2: 'II',
+      3: 'III',
+      4: 'IV',
+      5: 'V'
+    };
+
+    return romanNumerals[num] || num.toString();
+  }
+
+  // Método para obtener clase CSS según categoría (opcional)
+  getCategoriaBadgeClass(categoria: number): string {
+    const classes: { [key: number]: string } = {
+      1: 'badge badge-primary',
+      2: 'badge badge-success',
+      3: 'badge badge-info',
+      4: 'badge badge-warning',
+      5: 'badge badge-danger'
+    };
+
+    return classes[categoria] || 'badge badge-secondary';
+  }
+
+  cambioAreaAcum(select) {
+    this.cargoSelAcum = null
+    if (this.areaSelAcum) {
+      this.cargosFiltradosAcum = this.cargosAcum.filter(ele => ele.id_area == this.areaSelAcum)
+    } else {
+
+    }
+
+  }
+
+  filtroAcum() {
+
+    if (this.mesSelAcum === null || this.mesSelAcum === undefined) {
+      this.toaster.error(
+        'Seleccione un mes ',
+        '',
+        {
+          closeButton: false,
+          positionClass: 'toast-bottom-right',
+          timeOut: 3000,
+        }
+      );
+      return;
+    }
+
+    const mesSeleccionado = this.consolidado[this.mesSelAcum];
+
+    if (!mesSeleccionado) {
+      // console.error('Mes no encontrado en el consolidado');
+      this.toaster.error(
+        'Mes no encontrado en el consolidado ',
+        '',
+        {
+          closeButton: false,
+          positionClass: 'toast-bottom-right',
+          timeOut: 3000,
+        }
+      );
+      this.tablaAcumFiltrada = [];
+      this.totalesAcumulados = {}
+      return;
+    }
+    this.filtrarCalendarioPorMes(mesSeleccionado);
+    let itemsFiltrados = mesSeleccionado.items;
+
+
+    if (this.areaSelAcum && this.areaSelAcum !== '') {
+      itemsFiltrados = itemsFiltrados.filter(item =>
+        item.id_area == this.areaSelAcum
+      );
+
+      if (this.cargoSelAcum && this.cargoSelAcum !== '') {
+        itemsFiltrados = itemsFiltrados.filter(item =>
+          item.id_cargo == this.cargoSelAcum
+        );
+      }
+    }
+
+    this.tablaAcumFiltrada = itemsFiltrados;
+
+    let acumulados = {}
+    let totalGeneral = 0
+    for (const fila of this.tablaAcumFiltrada) {
+      // Solo excluye los encabezados de área, pero incluye los totales
+      if (!fila.es_total_area && !fila.es_encabezado_area) {
+        for (const dia of fila.calendario) {
+          acumulados[dia.fecha] = (acumulados[dia.fecha] || 0) + dia.monto_dia;
+        }
+      }
+      if (fila.es_total_area) {
+        totalGeneral = totalGeneral + fila.costo_total
+      }
+    }
+    this.totalesAcumulados = { acumulados: Object.values(acumulados), totalGeneral }
+  }
+  normalizarNombreMes(nombreMes: string): string {
+    const mesesMap: { [key: string]: string } = {
+      'ENERO': 'Enero',
+      'FEBRERO': 'Febrero',
+      'MARZO': 'Marzo',
+      'ABRIL': 'Abril',
+      'MAYO': 'Mayo',
+      'JUNIO': 'Junio',
+      'JULIO': 'Julio',
+      'AGOSTO': 'Agosto',
+      'SETIEMBRE': 'Setiembre',
+      'SEPTIEMBRE': 'Setiembre',
+      'OCTUBRE': 'Octubre',
+      'NOVIEMBRE': 'Noviembre',
+      'DICIEMBRE': 'Diciembre'
+    };
+
+    const nombreUpper = nombreMes.toUpperCase();
+    return mesesMap[nombreUpper] || nombreMes.charAt(0) + nombreMes.slice(1).toLowerCase();
+  }
+  filtrarCalendarioPorMes(mesSeleccionado: any) {
+    this.calendarioFiltrado2 = null;
+
+    if (!mesSeleccionado || !this.calendarioCompleto || this.calendarioCompleto.length === 0) {
+      return;
+    }
+
+    const mesKey = mesSeleccionado.mes_key;
+    const partes = mesKey.split('-');
+
+    if (partes.length !== 2) {
+      console.error('Formato de mes_key inválido:', mesKey);
+      return;
+    }
+
+    const nombreMesMayusculas = partes[0];
+    const anio = parseInt(partes[1]);
+
+    // Normalizar el nombre del mes
+    const nombreMesNormalizado = this.normalizarNombreMes(nombreMesMayusculas);
+
+    if (this.calendarioCompleto[0]?.meses) {
+      const meses = this.calendarioCompleto[0].meses;
+      // Buscar coincidencia exacta
+      let mesEncontrado = meses.find((mes: any) =>
+        mes.mes === nombreMesNormalizado && mes.anio === anio
+      );
+
+      // Si no se encuentra, buscar ignorando mayúsculas/minúsculas
+      if (!mesEncontrado) {
+        mesEncontrado = meses.find((mes: any) =>
+          mes.mes.toUpperCase() === nombreMesMayusculas && mes.anio === anio
+        );
+      }
+
+      if (mesEncontrado) {
+        this.calendarioFiltrado2 = mesEncontrado;
+        // console.log('Calendario filtrado encontrado:', this.calendarioFiltrado2);
+      } else {
+        console.warn('No se encontró calendario para el mes:', mesKey);
+
+      }
+    }
+  }
 }
+
 
 

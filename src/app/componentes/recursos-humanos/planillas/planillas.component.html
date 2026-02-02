@@ -14,6 +14,12 @@
         <ng-template ngbNavContent>
         </ng-template>
     </li>
+    <li [ngbNavItem]="4">
+        <a ngbNavLink>Registro MO</a>
+        <ng-template ngbNavContent>
+        </ng-template>
+    </li>
+
 
 </ul>
 <div [ngbNavOutlet]="nav" class="mt-2"></div>
@@ -348,9 +354,26 @@
                                     <ng-container *ngIf="row.id_usuario">
                                         <td class="text-center">{{row.nro_grupo}}</td>
                                         <td>{{row.cargo}}</td>
-                                        <td>
+                                        <!-- <td>
                                             <div class="d-flex justify-content-between align-items-center">
                                                 <span>{{row.descripcion_usuario || 'Sin nombre'}}</span>
+                                                <button type="button"
+                                                    class="btn btn-sm btn-outline-primary btn-mini2 ml-2"
+                                                    (mouseup)="quitarfoco($event)" (click)="detalleUsuario(row, i)">
+                                                    <i class="fa fa-list mr-0"></i>
+                                                </button>
+                                            </div>
+                                        </td> -->
+                                        <td>
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <div class="d-flex align-items-center">
+                                                    <span class="mr-2">{{row.descripcion_usuario }}</span>
+                                                    <span [ngClass]="getCategoriaBadgeClass(row.tipo_cargo)"
+                                                        [ngbTooltip]=" 'categoria '+ row.tipo_cargo" container="body"
+                                                        *ngIf="row.tipo_cargo">
+                                                        {{getRomanNumeral(row.tipo_cargo)}}
+                                                    </span>
+                                                </div>
                                                 <button type="button"
                                                     class="btn btn-sm btn-outline-primary btn-mini2 ml-2"
                                                     (mouseup)="quitarfoco($event)" (click)="detalleUsuario(row, i)">
@@ -717,7 +740,147 @@
         </div>
     </div>
 </ng-container>
+<ng-container *ngIf="activetab == 4">
+    <div class=" h-content ">
+        <div class="col-12 d-flex px-0">
+            <mat-form-field appearance="outline" class="mff-reduc col-3">
+                <mat-label>Mes</mat-label>
+                <mat-select [(ngModel)]="mesSelAcum">
+                    <mat-option *ngFor="let mes of mesesAcum; let i=index" [value]="i">
+                        {{mes}}
+                    </mat-option>
 
+                </mat-select>
+            </mat-form-field>
+            <mat-form-field appearance="outline" class="mff-reduc col-3">
+                <mat-label>Area</mat-label>
+                <mat-select [(ngModel)]="areaSelAcum" (ngModelChange)="cambioAreaAcum()">
+                    <mat-option [value]="''">Todas</mat-option>
+                    <mat-option *ngFor="let area of areasAcum" [value]="area.id_area">
+                        {{area.descripcion}}
+                    </mat-option>
+
+                </mat-select>
+            </mat-form-field>
+            <mat-form-field appearance="outline" class="mff-reduc col-3">
+                <mat-label>Cargo</mat-label>
+                <mat-select [(ngModel)]="cargoSelAcum" [disabled]="!areaSelAcum">
+                    <mat-option [value]="''">Todos</mat-option>
+                    <mat-option *ngFor="let cargo of cargosFiltradosAcum" [value]="cargo.id_cargo">
+                        {{cargo.descripcion}}
+                    </mat-option>
+                </mat-select>
+            </mat-form-field>
+            <button mat-raised-button color="primary" class="h-50" (click)="filtroAcum()">
+                <mat-icon>search</mat-icon>
+                Buscar
+            </button>
+        </div>
+        <div class="col-12 overflow-auto">
+            <table class="table-bordered tab-10">
+                <thead class="text-center">
+                    <tr>
+                        <!-- <th rowspan="3"></th> -->
+                        <!-- <th rowspan="3">Area</th> -->
+                        <th rowspan="3">Cargo</th>
+                        <th rowspan="3">Categoria</th>
+                        <!-- <th rowspan="3">Cantidad</th> -->
+                        <th [colSpan]="calendarioFiltrado2?.dias?.length * 2">
+                            {{calendarioFiltrado2?.mes}} - {{calendarioFiltrado2?.anio}}
+                        </th>
+                        <th rowspan="3">Total Mes</th>
+                    </tr>
+                    <tr>
+                        <ng-container *ngFor="let dia of calendarioFiltrado2.dias">
+                            <th colspan="2">
+                                <div class="dia-numero">{{dia.numero_dia_mes}} - {{dia.abreviatura}}</div>
+                                <!-- <div class="dia-abreviatura"></div> -->
+                            </th>
+                        </ng-container>
+                    </tr>
+                    <tr>
+                        <ng-container *ngFor="let dia of calendarioFiltrado2.dias">
+                            <th appAnchocol [ancho]="40">
+                                Cant.
+                            </th>
+                            <th appAnchocol [ancho]="70">
+                                Monto
+                            </th>
+                        </ng-container>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let row of tablaAcumFiltrada; let i = index"
+                        [ngClass]="{ 
+                                        'font-weight-bolder': row.es_encabezado_area || row.es_total_area, 'bg-area':row.es_encabezado_area, 'bg-total': row.es_total_area}">
+                        <!-- <td class="text-center">{{i+1}}</td> -->
+                        <!-- <td>{{row.descripcion_area}}</td> -->
+                        <td [ngClass]="{'pl-3':!row.es_encabezado_area && !row.es_total_area}">
+                            {{row.descripcion_cargo}}
+                        </td>
+                        <td class="text-center">{{getRomanNumeral(row.tipo_cargo)}}</td>
+                        <!-- <td>{{row.cantidad}}</td> -->
+                        <ng-container *ngFor="let dia of row.calendario">
+                            <ng-container>
+                                <td class="text-center">
+                                    <ng-container
+                                        *ngIf="dia.cantidad_asignaciones && !row.es_encabezado_area && !row.es_total_area">{{dia.cantidad_asignaciones}}</ng-container>
+
+                                </td>
+                                <td>
+                                    <div class="d-flex justify-content-between align-items-center"
+                                        *ngIf="dia.monto_dia && !row.es_encabezado_area && !row.es_total_area">
+                                        <!-- Símbolo izquierdo -->
+                                        <span class="text-muted small">S/.</span>
+
+                                        <!-- Monto -->
+                                        <span>{{dia.monto_dia | number:'0.2-2'}}</span>
+                                    </div>
+                                </td>
+                            </ng-container>
+                        </ng-container>
+                        <td>
+                            <!-- {{row.costo_total| number:'0.2-2'}} -->
+                            <div class="d-flex justify-content-between align-items-center" *ngIf="row.costo_total">
+                                <!-- Símbolo izquierdo -->
+                                <span class="text-muted small">S/.</span>
+
+                                <!-- Monto -->
+                                <span>{{row.costo_total | number:'0.2-2'}}</span>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+                <tfoot>
+                    <tr *ngIf="tablaAcumFiltrada.length">
+                        <th colspan="2" class="text-center">TOTAL </th>
+                        <ng-container *ngFor="let diaAcumulado of totalesAcumulados?.acumulados">
+                            <th></th>
+                            <th>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <!-- Símbolo izquierdo -->
+                                    <span class="text-muted small text-white">S/.</span>
+
+                                    <!-- Monto -->
+                                    <span>{{diaAcumulado | number:'0.2-2'}}</span>
+                                </div>
+                            </th>
+                        </ng-container>
+                        <th>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <!-- Símbolo izquierdo -->
+                                <span class="text-muted small text-white">S/.</span>
+
+                                <!-- Monto -->
+                                <span>{{totalesAcumulados?.totalGeneral | number:'0.2-2'}}</span>
+                            </div>
+                        </th>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+</ng-container>
 <app-modal-basic #modalDetalleUsuario [dialogClass]="'modal-lg'">
     <div class="app-modal-header">
         <h4 class="modal-title tit-modal1"><b>Datos Mes usuario </b></h4>

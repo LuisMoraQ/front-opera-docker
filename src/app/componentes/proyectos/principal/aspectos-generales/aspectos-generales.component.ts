@@ -76,7 +76,8 @@ export class AspectosGeneralesComponent implements OnInit {
   dec_parcial = 2;
   mask_parcial = '0.2';
   idUsuario
-  
+  imagenSeleccionada: File | null = null;
+  imagenPreview: string | null = null;
   @Input() set tabproyecto(value: any) {
     this.prueba = value.get('aspectos_generales').value.datos_recuperado;
     this.allform = value;
@@ -93,7 +94,7 @@ export class AspectosGeneralesComponent implements OnInit {
     this.colores = value.get('aspectab').value;
     this.decima = value.get('decimal').value;
     this.solover = value.get('solover').value;
-    this.moneda=datosrec.value.simbolo
+    this.moneda = datosrec.value.simbolo
   }
   departamentos = [];
   async listarDepartamentos() {
@@ -539,7 +540,7 @@ export class AspectosGeneralesComponent implements OnInit {
     private formulaservice: FormulaPolinomicaService,
     private metradoservice: MetradoService,
     private toaster: ToastrService
-  ) {}
+  ) { }
 
   @HostListener('window:resize', ['$event'])
   onResize(event) {
@@ -584,6 +585,10 @@ export class AspectosGeneralesComponent implements OnInit {
       Validators.required,
       this.fechaElaboracionValidator(),
     ]),
+    nombre_empresa: new UntypedFormControl('', []),
+    ruc_empresa: new UntypedFormControl('', []),
+    direccion_empresa: new UntypedFormControl('', []),
+    imagen_empresa: new UntypedFormControl('', []),
   });
   get departamento(): UntypedFormControl {
     return this.myGroup.get('departamento') as UntypedFormControl;
@@ -609,10 +614,22 @@ export class AspectosGeneralesComponent implements OnInit {
   get fecha_culmina(): UntypedFormControl {
     return this.myGroup.get('fecha_culmina') as UntypedFormControl;
   }
+  get nombre_empresa(): UntypedFormControl {
+    return this.myGroup.get('nombre_empresa') as UntypedFormControl;
+  }
+  get ruc_empresa(): UntypedFormControl {
+    return this.myGroup.get('ruc_empresa') as UntypedFormControl;
+  }
+  get direccion_empresa(): UntypedFormControl {
+    return this.myGroup.get('direccion_empresa') as UntypedFormControl;
+  }
+  get imagen_empresa(): UntypedFormControl {
+    return this.myGroup.get('imagen_empresa') as UntypedFormControl;
+  }
   distritos = [];
   grupos = [];
   provincias = [];
-  async CrearGrupo(carga=false) {
+  async CrearGrupo(carga = false) {
     const usuarioEncontrado = JSON.parse(JSON.stringify(this.prueba))
     const form = this.myGroup;
     form.get('descripcion').setValue(usuarioEncontrado.descripcion);
@@ -625,9 +642,9 @@ export class AspectosGeneralesComponent implements OnInit {
     form.get('id_clasificacion').setValue(usuarioEncontrado.id_clasificacion);
     let idProvincia = '';
     let idDistrito = '';
-    if (this.myGroup.get('cod_pais').value ==227) {
+    if (this.myGroup.get('cod_pais').value == 227) {
       this.OtroPais = false;
-      if(!carga){
+      if (!carga) {
         await this.listarDepartamentos()
       }
       if (usuarioEncontrado.id_deptact) {
@@ -652,9 +669,9 @@ export class AspectosGeneralesComponent implements OnInit {
           usuarioEncontrado.id_provact +
           '-' +
           usuarioEncontrado.id_distact;
-          setTimeout(() => {
-            form.get('distrito').setValue(idDistrito);
-          });
+        setTimeout(() => {
+          form.get('distrito').setValue(idDistrito);
+        });
       }
     } else {
       this.OtroPais = true;
@@ -679,6 +696,23 @@ export class AspectosGeneralesComponent implements OnInit {
     form.get('plazo').setValue(usuarioEncontrado.plazo);
     form.get('fecha_inicio').setValue(fecha_inicio);
     form.get('fecha_culmina').setValue(fecha_culmina);
+    form.get('nombre_empresa').setValue(usuarioEncontrado.nombre_empresa);
+    form.get('ruc_empresa').setValue(usuarioEncontrado.ruc_empresa);
+    form.get('direccion_empresa').setValue(usuarioEncontrado.direccion_empresa);
+
+    if (usuarioEncontrado.imagen_empresa) {
+      this.principalService.obtenerImagenProyecto(usuarioEncontrado.imagen_empresa).subscribe(
+        (blob: Blob) => {
+          const reader = new FileReader();
+          reader.onload = (e: any) => {
+            this.imagenPreview = e.target.result;
+            form.get('imagen_empresa').setValue(usuarioEncontrado.imagen_empresa);
+          };
+          reader.readAsDataURL(blob);
+        },
+        error => console.error('Error al cargar imagen:', error)
+      );
+    }
     form.disable();
   }
   TeclaCalcFin(event: any) {
@@ -687,10 +721,10 @@ export class AspectosGeneralesComponent implements OnInit {
     }
   }
   async ngOnInit() {
-    this.mostrar_carga_todo=true
+    this.mostrar_carga_todo = true
     await this.onResize(null);
     this.idUadmin = await this.encriptadorService.recuperarlocalstory('id_admin');
-    this.permiso = (!this.solover||this.idUadmin== this.idUsuario)? true:false
+    this.permiso = (!this.solover || this.idUadmin == this.idUsuario) ? true : false
     let decimales = this.encriptadorService.recuperarlocalstory('decimales');
     if (decimales?.toString().includes('|')) {
       let arrdec = decimales.split('|');
@@ -706,25 +740,25 @@ export class AspectosGeneralesComponent implements OnInit {
     await this.listarClasificacionProyectos();
     await this.listarGrupos();
     await this.CrearGrupo()
-    this.mostrar_carga_todo=false
+    this.mostrar_carga_todo = false
   }
   totaldir
   abretotal
-  FindTotal(){
+  FindTotal() {
     let aspectosGen = (this.allform.get('aspectos_generales') as UntypedFormGroup)
     let datosrec = aspectosGen.get('tabla_prueba') as UntypedFormGroup;
     // console.log(datosrec.value.totdir)
-    this.abretotal='CD'
-    this.totaldir=datosrec.value.totdir
+    this.abretotal = 'CD'
+    this.totaldir = datosrec.value.totdir
   }
-  findabrev(input){
+  findabrev(input) {
     let aspectosGen = (this.allform.get('aspectos_generales') as UntypedFormGroup)
     let datosrec = aspectosGen.get('tabla_prueba') as UntypedFormGroup;
-    let tabla2=datosrec.value.totind
-    const encontrado= tabla2.find((item)=>item.abrev==input)
-    if(encontrado){
+    let tabla2 = datosrec.value.totind
+    const encontrado = tabla2.find((item) => item.abrev == input)
+    if (encontrado) {
       return encontrado?.monto
-    }else{
+    } else {
       return this.totaldir
     }
   }
@@ -805,70 +839,70 @@ export class AspectosGeneralesComponent implements OnInit {
   listaFeriados = [];
   arrayDiasNoLab = [];
   fechIniAlm: string;
-    async CalculaFechaFin(nrotab: any,valmod:any) {
-      // let aspectos_generales = (this.allform.get('aspectos_generales') as UntypedFormGroup)
-      // let datosProyecto = (aspectos_generales.get('datos_proyecto') as UntypedFormGroup)
-      let datosProyecto=this.myGroup
-      let fiform = datosProyecto.value.fecha_inicio!=''?moment(datosProyecto.value.fecha_inicio).format('YYYY-MM-DD'):'';
-      let fcform = datosProyecto.value.fecha_culmina!=''?moment(datosProyecto.value.fecha_culmina).format('YYYY-MM-DD'):'';
-      let plazoform = datosProyecto.value.plazo
-      if(valmod==0){//plazo
-        let plazores=!isNaN(Number(plazoform))?plazoform:1;
-        if(plazores==null || plazores=='' || plazores==0){
+  async CalculaFechaFin(nrotab: any, valmod: any) {
+    // let aspectos_generales = (this.allform.get('aspectos_generales') as UntypedFormGroup)
+    // let datosProyecto = (aspectos_generales.get('datos_proyecto') as UntypedFormGroup)
+    let datosProyecto = this.myGroup
+    let fiform = datosProyecto.value.fecha_inicio != '' ? moment(datosProyecto.value.fecha_inicio).format('YYYY-MM-DD') : '';
+    let fcform = datosProyecto.value.fecha_culmina != '' ? moment(datosProyecto.value.fecha_culmina).format('YYYY-MM-DD') : '';
+    let plazoform = datosProyecto.value.plazo
+    if (valmod == 0) {//plazo
+      let plazores = !isNaN(Number(plazoform)) ? plazoform : 1;
+      if (plazores == null || plazores == '' || plazores == 0) {
+        datosProyecto.get('fecha_culmina').setValue(moment(fiform).format('YYYY-MM-DD'))
+        datosProyecto.get('plazo').setValue(1);
+      }
+      else {
+        if (fiform) {
+          let fechaf = new Date(fiform);
+          this.calculandofecha = true;
+          fechaf.setDate(fechaf.getDate() + Number(plazores))
+          this.calculandofecha = false;
+          datosProyecto.get('fecha_culmina').setValue(moment(fechaf).format('YYYY-MM-DD'))
+        }
+      }
+    } else if (valmod == 1) {//inicio
+      if (fiform) {
+        const nombDiaFi = moment(fiform).format('dddd').toUpperCase()
+        const fechai = moment(fiform).format('YYYY-MM-DD')
+
+        if (this.listaFeriados.includes(fechai) || this.arrayDiasNoLab.includes(nombDiaFi)) {
+          datosProyecto.get('fecha_culmina').setValue(this.fechIniAlm)
+          this.toaster.error('La fecha ingresada esta registrada como dia no laborable', 'Advertencia', { closeButton: false, positionClass: 'toast-bottom-right', timeOut: 5000 })
+          return
+        }
+
+        let plazores = !isNaN(Number(plazoform)) ? plazoform : 0;
+        if (plazores == null || plazores == '') {
           datosProyecto.get('fecha_culmina').setValue(moment(fiform).format('YYYY-MM-DD'))
-          datosProyecto.get('plazo').setValue(1);
         }
-        else{
-          if(fiform){
-            let fechaf=new Date(fiform);
-            this.calculandofecha=true;
-            fechaf.setDate(fechaf.getDate()+Number(plazores))
-            this.calculandofecha=false;
-            datosProyecto.get('fecha_culmina').setValue(moment(fechaf).format('YYYY-MM-DD'))
-          }
+        else {
+          let fechaf = new Date(fiform);
+          this.calculandofecha = true;
+          fechaf.setDate(fechaf.getDate() + Number(plazores))
+          this.calculandofecha = false;
+          datosProyecto.get('fecha_culmina').setValue(moment(fechaf).format('YYYY-MM-DD'))
         }
-      }else if(valmod==1){//inicio
-        if(fiform){
-          const nombDiaFi = moment(fiform).format('dddd').toUpperCase()
-          const fechai = moment(fiform).format('YYYY-MM-DD')
-   
-          if(this.listaFeriados.includes(fechai) || this.arrayDiasNoLab.includes(nombDiaFi)) {
-            datosProyecto.get('fecha_culmina').setValue(this.fechIniAlm)
-            this.toaster.error('La fecha ingresada esta registrada como dia no laborable', 'Advertencia', { closeButton: false, positionClass: 'toast-bottom-right', timeOut: 5000 })
-            return
-          }
-  
-          let plazores=!isNaN(Number(plazoform))?plazoform:0;
-          if(plazores==null || plazores==''){
+      }
+    } else if (valmod == 2) {//culmina
+      if (fcform != '') {
+        if (fiform != '') {
+          //fecha culmina menor, error, asignar fecha actual plazo 1 dia
+          let fechaa = moment(fiform);
+          let fechab = moment(fcform);
+          let difdias = fechab.diff(fechaa, 'days');
+          if (difdias < 0) {
+            this.toaster.error('La Fecha de Culminación no puede ser menor a la Fecha Inicial.', 'Advertencia', { closeButton: false, positionClass: 'toast-bottom-right', timeOut: 5000 })
             datosProyecto.get('fecha_culmina').setValue(moment(fiform).format('YYYY-MM-DD'))
+            datosProyecto.get('plazo').setValue(1);
           }
-          else{
-            let fechaf=new Date(fiform);
-            this.calculandofecha=true;
-            fechaf.setDate(fechaf.getDate()+Number(plazores))
-            this.calculandofecha=false;
-            datosProyecto.get('fecha_culmina').setValue(moment(fechaf).format('YYYY-MM-DD'))
-          }
-        }
-      }else if(valmod==2){//culmina
-        if(fcform!=''){
-          if(fiform!=''){
-            //fecha culmina menor, error, asignar fecha actual plazo 1 dia
-            let fechaa = moment(fiform);
-            let fechab = moment(fcform);
-            let difdias=fechab.diff(fechaa, 'days');
-            if(difdias<0){
-              this.toaster.error('La Fecha de Culminación no puede ser menor a la Fecha Inicial.', 'Advertencia', { closeButton: false, positionClass: 'toast-bottom-right', timeOut: 5000 })
-              datosProyecto.get('fecha_culmina').setValue(moment(fiform).format('YYYY-MM-DD'))
-              datosProyecto.get('plazo').setValue(1);
-            }
-            else{
-              datosProyecto.get('plazo').setValue(difdias+1)
-            }
+          else {
+            datosProyecto.get('plazo').setValue(difdias + 1)
           }
         }
       }
     }
+  }
   // async actualizarDatosProyecto2() {
   //   const datosProyecto = this.prueba
   //   try {
@@ -987,11 +1021,11 @@ export class AspectosGeneralesComponent implements OnInit {
       var nombreDia = arrayDays[fechaSeleccionado.getDay()];
       let encontrado1 = false
       let encontrado = false
-      const aspectos = await this.principalService.ListarAspectosDiasProy({ id_proyecto:this.id_proyecto })
-      if(aspectos[0].length>0){
-        let diasnolabo=aspectos[0][0].nolabo1?(aspectos[0][0].nolabo1.toString().includes('|')?aspectos[0][0].nolabo1.toString().split('|'):[aspectos[0][0].nolabo1.toString()]):[];
+      const aspectos = await this.principalService.ListarAspectosDiasProy({ id_proyecto: this.id_proyecto })
+      if (aspectos[0].length > 0) {
+        let diasnolabo = aspectos[0][0].nolabo1 ? (aspectos[0][0].nolabo1.toString().includes('|') ? aspectos[0][0].nolabo1.toString().split('|') : [aspectos[0][0].nolabo1.toString()]) : [];
         if (aspectos[0][0]) {
-          encontrado1 = diasnolabo.find(ele => ele==nombreDia.toUpperCase())?true:false;
+          encontrado1 = diasnolabo.find(ele => ele == nombreDia.toUpperCase()) ? true : false;
         }
       }
       if (aspectos[1]) {
@@ -1003,7 +1037,7 @@ export class AspectosGeneralesComponent implements OnInit {
         SwalService.error('Advertencia', 'Datos Incompletos')
         return
       } else if (fechainicioInvalida) {
-        this.toaster.error('La Fecha Inicio Seleccionada es  dia no laborable', 'Advertencia', {closeButton: false,positionClass: 'toast-bottom-right',timeOut: 5000})
+        this.toaster.error('La Fecha Inicio Seleccionada es  dia no laborable', 'Advertencia', { closeButton: false, positionClass: 'toast-bottom-right', timeOut: 5000 })
       } else {
         this.mostrar_carga_todo = true;
         const fiAnterior = moment(this.prueba.fecha_inicio).format('YYYY-MM-DD')
@@ -1012,12 +1046,12 @@ export class AspectosGeneralesComponent implements OnInit {
           const sw = await SwalService.multiple('Estas seguro?', 'El cambio de fecha inicio modificara la programación')
           if (sw.isConfirmed) {
             let progratemp = await this.principalService.listarCambiosTemporalesProgramacion({ id_proyecto: this.id_proyecto, id_usuario: '' })
-            if(progratemp){
+            if (progratemp) {
               this.toaster.error('Existen cambios que no se guardaron en Programación. No puede hacer cambios hasta guardar los de Programación.', 'Advertencia', { closeButton: false, positionClass: 'toast-bottom-right', timeOut: 5000 });
-              this.mostrar_carga_todo=false;
+              this.mostrar_carga_todo = false;
               return;
             }
-            else{
+            else {
               const objeto = {
                 id_proyecto: this.id_proyecto,
                 duracion: '',
@@ -1027,7 +1061,7 @@ export class AspectosGeneralesComponent implements OnInit {
               }
               const response = await this.principalService.fechaDespuesDuracion(objeto)
               const diasModificados = fiAnterior < fiform ? Number(response.duracion) * 1 : Number(response.duracion) * -1
-              await this.principalService.desplazarProgramacion({ id_proyecto: this.id_proyecto, diasmodificados: diasModificados,iniproy:fiform})
+              await this.principalService.desplazarProgramacion({ id_proyecto: this.id_proyecto, diasmodificados: diasModificados, iniproy: fiform })
             }
           } else {
             await this.cancelarEditarDatosProyecto();
@@ -1038,26 +1072,30 @@ export class AspectosGeneralesComponent implements OnInit {
         let descpasa = this.myGroup.get('descripcion').value.toString().toUpperCase().trim().replace(/\s+/g, ' ');
         const modificarProyecto = {
           id_proyecto: this.id_proyecto,
-          cui:this.myGroup.get('cod_pais').value===227? '':this.myGroup.get('otrodepartamento').value+'|'+ this.myGroup.get('otraprovincia').value+'|'+ this.myGroup.get('otrodistrito').value,
+          cui: this.myGroup.get('cod_pais').value === 227 ? '' : this.myGroup.get('otrodepartamento').value + '|' + this.myGroup.get('otraprovincia').value + '|' + this.myGroup.get('otrodistrito').value,
           descripcion: descpasa,
           id_clasificacion: this.myGroup.get('id_clasificacion').value,
           modalidad: this.myGroup.get('modalidad').value,
           id_grupo: this.myGroup.get('id_grupo').value,
           moneda: this.myGroup.get('moneda').value,
           estado: this.myGroup.get('estado').value,
-          cod_pais: this.myGroup.get('cod_pais').value? this.myGroup.get('cod_pais').value: '',
-          id_localidad: this.myGroup.get('distrito').value? this.myGroup.get('distrito').value: '',
-          direccion: this.myGroup.get('direccion').value? this.myGroup.get('direccion').value: '',
-          fecha_elaboracion: this.myGroup.get('fecha_elaboracion').value? this.myGroup.get('fecha_elaboracion').value: '',
-          plazo: this.myGroup.get('plazo').value? this.myGroup.get('plazo').value: '',
-          fecha_inicio: this.myGroup.get('fecha_inicio').value? this.myGroup.get('fecha_inicio').value: '',
-          fecha_culmina: this.myGroup.get('fecha_culmina').value? this.myGroup.get('fecha_culmina').value: '',
+          cod_pais: this.myGroup.get('cod_pais').value ? this.myGroup.get('cod_pais').value : '',
+          id_localidad: this.myGroup.get('distrito').value ? this.myGroup.get('distrito').value : '',
+          direccion: this.myGroup.get('direccion').value ? this.myGroup.get('direccion').value : '',
+          fecha_elaboracion: this.myGroup.get('fecha_elaboracion').value ? this.myGroup.get('fecha_elaboracion').value : '',
+          plazo: this.myGroup.get('plazo').value ? this.myGroup.get('plazo').value : '',
+          fecha_inicio: this.myGroup.get('fecha_inicio').value ? this.myGroup.get('fecha_inicio').value : '',
+          fecha_culmina: this.myGroup.get('fecha_culmina').value ? this.myGroup.get('fecha_culmina').value : '',
           id_usuario: this.idUsuario,
+          nombre_empresa: this.myGroup.get('nombre_empresa').value ? this.myGroup.get('nombre_empresa').value : '',
+          ruc_empresa: this.myGroup.get('ruc_empresa').value ? this.myGroup.get('ruc_empresa').value : '',
+          direccion_empresa: this.myGroup.get('direccion_empresa').value ? this.myGroup.get('direccion_empresa').value : '',
+          imagen_empresa: this.myGroup.get('imagen_empresa').value ? this.myGroup.get('imagen_empresa').value : '',
         };
         const response = await this.principalService.modificarProyecto(modificarProyecto)
         this.mostrar_carga_todo = false;
         if (response.id == '1') {
-          this.moneda=this.monedas.find((item)=>item.id_moneda==modificarProyecto.moneda).simbolo
+          this.moneda = this.monedas.find((item) => item.id_moneda == modificarProyecto.moneda).simbolo
           SwalService.success();
           await this.habilitarEdicionDatosProyecto();
           const emitir = {
@@ -1078,7 +1116,7 @@ export class AspectosGeneralesComponent implements OnInit {
       SwalService.error()
     }
   }
-  
+
   ngAfterContentChecked(): void {
     this.changeDetector.detectChanges();
   }
@@ -1464,7 +1502,7 @@ export class AspectosGeneralesComponent implements OnInit {
     const tabla = aspectos_generales.get('tabla_prueba') as UntypedFormGroup;
     const datoaccs = await this.principalService.ConfgsAsignaUserProy({
       id_proyecto: aspectos_generales.value.datos_recuperado.id_proyecto,
-      id_usuario: this.idUsuario ,
+      id_usuario: this.idUsuario,
     });
     if (datoaccs?.length > 0) {
       if (datoaccs[0].presu == 0) {
@@ -1602,7 +1640,7 @@ export class AspectosGeneralesComponent implements OnInit {
         let resind = await this.presuservice.ListarPresuIndirecto({ id_usuario: this.idUsuario, id_proyecto: datos_recuperado.value.id_proyecto, titulo: "0" });
         let arrind = [];
         if (resind.id == "1") {
-          let tablapas=JSON.parse(resind.tabla);
+          let tablapas = JSON.parse(resind.tabla);
           arrind = tablapas[0];
         }
         let aux = [];
@@ -1656,7 +1694,7 @@ export class AspectosGeneralesComponent implements OnInit {
     try {
       this.dataSourceorg = [];
       this.buscando = true;
-      if(this.idUadmin!=this.idUsuario){
+      if (this.idUadmin != this.idUsuario) {
         let tabaux = await this.principalService.ListarProyectosSec(
           this.idUadmin
         );
@@ -1695,32 +1733,32 @@ export class AspectosGeneralesComponent implements OnInit {
     const tabla1 = formdata.aspectos_generales.tabla_prueba?.data_source
     const arrayHeader = ['ITEM', 'DETALLE DE ESTRUCTURA', 'MANO DE OBRA', 'MATERIALES', 'EQUIPOS', 'SUB CONTRATOS', 'SUB PARTIDAS', 'TOTAL']
     const arrayKeys = ['item', 'descripcion', 'manoobra', 'materiales', 'equipos', 'subcontratos', 'subpartidas', 'total']
-    const arralig=['center','left','right','right','right','right','right','right'];
+    const arralig = ['center', 'left', 'right', 'right', 'right', 'right', 'right', 'right'];
     const tablaSubPresupuesto = tabla1
-    let monedapas=this.moneda;
+    let monedapas = this.moneda;
     let tablaTotales = []
     const obj = [
-      { text: 'COSTO DIRECTO', colSpan: 2 , tipoletra:'3',color:'',fondo:'',alinea:'left'},
-      { text: tablaprueba.totmano, colSpan: 1, tipoletra:'3',color:'',fondo:'',alinea:'right' },
-      { text: tablaprueba.totmat, colSpan: 1, tipoletra:'3',color:'',fondo:'',alinea:'right' },
-      { text: tablaprueba.totequi, colSpan: 1, tipoletra:'3',color:'',fondo:'',alinea:'right' },
-      { text: tablaprueba.totsubc, colSpan: 1, tipoletra:'3',color:'',fondo:'',alinea:'right' },
-      { text: tablaprueba.totsubp, colSpan: 1, tipoletra:'3',color:'',fondo:'',alinea:'right' },
-      { text: tablaprueba.totdir, colSpan: 1, tipoletra:'3',color:'',fondo:'',alinea:'right' }
+      { text: 'COSTO DIRECTO', colSpan: 2, tipoletra: '3', color: '', fondo: '', alinea: 'left' },
+      { text: tablaprueba.totmano, colSpan: 1, tipoletra: '3', color: '', fondo: '', alinea: 'right' },
+      { text: tablaprueba.totmat, colSpan: 1, tipoletra: '3', color: '', fondo: '', alinea: 'right' },
+      { text: tablaprueba.totequi, colSpan: 1, tipoletra: '3', color: '', fondo: '', alinea: 'right' },
+      { text: tablaprueba.totsubc, colSpan: 1, tipoletra: '3', color: '', fondo: '', alinea: 'right' },
+      { text: tablaprueba.totsubp, colSpan: 1, tipoletra: '3', color: '', fondo: '', alinea: 'right' },
+      { text: tablaprueba.totdir, colSpan: 1, tipoletra: '3', color: '', fondo: '', alinea: 'right' }
     ]
     tablaTotales.push(obj)
     for (const iterator of tablaprueba.totind) {
       let formulaaux
-      if(iterator.tipo_registro===4){
-        formulaaux= iterator.abrev+'/'+(iterator.formula==''?this.abretotal:iterator.formula)+'='+(iterator.monto*100/(iterator.formula==''?this.totaldir:this.findabrev(iterator.formula))).toFixed(2)+'%'
-      }else{
-        formulaaux=iterator.formula
+      if (iterator.tipo_registro === 4) {
+        formulaaux = iterator.abrev + '/' + (iterator.formula == '' ? this.abretotal : iterator.formula) + '=' + (iterator.monto * 100 / (iterator.formula == '' ? this.totaldir : this.findabrev(iterator.formula))).toFixed(2) + '%'
+      } else {
+        formulaaux = iterator.formula
       }
       const obj2 = [
-        { text: iterator.descripcion, colSpan: 4, tipoletra:iterator.tipo_registro=='2' || iterator.tipo_registro=='3'?'3':'',color:'',fondo:'',alinea:'left' },
-        { text: iterator.abrev, colSpan: 1, tipoletra:iterator.tipo_registro=='2' || iterator.tipo_registro=='3'?'3':'',color:'',fondo:'',alinea:'center' },
-        { text: formulaaux, colSpan: 1, tipoletra:iterator.tipo_registro=='2' || iterator.tipo_registro=='3'?'3':'',color:'',fondo:'',alinea:'center' },
-        { text: this.formService.redondeo(Number(iterator.monto.toString()),this.dec_parcial), colSpan: 2, tipoletra:iterator.tipo_registro=='2' || iterator.tipo_registro=='3'?'3':'',color:'',fondo:'',alinea:'right' },
+        { text: iterator.descripcion, colSpan: 4, tipoletra: iterator.tipo_registro == '2' || iterator.tipo_registro == '3' ? '3' : '', color: '', fondo: '', alinea: 'left' },
+        { text: iterator.abrev, colSpan: 1, tipoletra: iterator.tipo_registro == '2' || iterator.tipo_registro == '3' ? '3' : '', color: '', fondo: '', alinea: 'center' },
+        { text: formulaaux, colSpan: 1, tipoletra: iterator.tipo_registro == '2' || iterator.tipo_registro == '3' ? '3' : '', color: '', fondo: '', alinea: 'center' },
+        { text: this.formService.redondeo(Number(iterator.monto.toString()), this.dec_parcial), colSpan: 2, tipoletra: iterator.tipo_registro == '2' || iterator.tipo_registro == '3' ? '3' : '', color: '', fondo: '', alinea: 'right' },
       ]
       tablaTotales.push(obj2)
     }
@@ -1728,16 +1766,55 @@ export class AspectosGeneralesComponent implements OnInit {
       datos_proyecto: formdata.aspectos_generales.datos_recuperado,
       header: arrayHeader,
       keys_body: arrayKeys,
-      col_alig:arralig,
+      col_alig: arralig,
       tabla: tablaSubPresupuesto,
       tabla2: tablaTotales,
-      concat_tabla2:true,
-      tipo_reporte:0,
-      moneda:monedapas,
-      titulo:'RESUMEN DEL PROYECTO',
+      concat_tabla2: true,
+      tipo_reporte: 0,
+      moneda: monedapas,
+      titulo: 'RESUMEN DEL PROYECTO',
     }
-    const modalRef = this.modalService.open(ReportesComponent,{size: 'lg modalgrande',backdrop: 'static',windowClass: 'pcoded',keyboard: false});
+    const modalRef = this.modalService.open(ReportesComponent, { size: 'lg modalgrande', backdrop: 'static', windowClass: 'pcoded', keyboard: false });
     modalRef.componentInstance.datos = datos;
     const result = await modalRef.result;
+  }
+
+  onFileSelected(event: any): void {
+    const file: File = event.target.files[0];
+
+    if (file) {
+      // Validar tamaño (5MB máximo)
+      const maxSize = 5 * 1024 * 1024; // 5MB
+      if (file.size > maxSize) {
+        this.toaster.error('La imagen debe ser menor a 5MB', 'Error');
+        return;
+      }
+
+      // Validar tipo de archivo
+      const tiposPermitidos = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+      if (!tiposPermitidos.includes(file.type)) {
+        this.toaster.error('Formato no permitido. Use JPG, PNG, GIF o WEBP', 'Error');
+        return;
+      }
+
+      this.imagenSeleccionada = file;
+
+      // Crear vista previa
+      const reader = new FileReader();
+      reader.onload = (e: any) => {
+        this.imagenPreview = e.target.result;
+        this.imagen_empresa?.setValue(e.target.result);
+
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+
+  eliminarImagen(): void {
+    this.imagenSeleccionada = null;
+    this.imagenPreview = null;
+    // También puedes limpiar el input file
+    const fileInput = document.querySelector('#fileInput') as HTMLInputElement;
+    if (fileInput) fileInput.value = '';
   }
 }

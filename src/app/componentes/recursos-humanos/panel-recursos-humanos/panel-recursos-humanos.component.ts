@@ -287,7 +287,6 @@ export class PanelRecursosHumanosComponent implements OnInit {
     this.anios = this.obtenerArrayAñosConMargen(response.calendario)
     let tablaNueva = []
     let activo = false
-    console.log('calendario', response.calendario)
     for (const element of this.tablaAgrupamientos) {
 
       tablaNueva.push(element)
@@ -325,7 +324,6 @@ export class PanelRecursosHumanosComponent implements OnInit {
     }
     this.tablaAgrupamientos = tablaNueva
     console.table(this.tablaAgrupamientos)
-    console.log('this.tablaAgrupamientos', this.tablaAgrupamientos)
   }
 
   obtenerArrayAñosConMargen(calendario, margen = 2) {

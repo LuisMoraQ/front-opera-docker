@@ -59,7 +59,8 @@
                             <tr *ngFor="let row of this.tablaCargos; let i = index" (click)="seleccionFila(i)"
                                 [ngClass]="{'font-weight-bolder': !row.id_cargo, 'highlight': i == this.filSel}">
                                 <td appAnchocol [ancho]="30">{{row.item}}</td>
-                                <td appAnchocol [ancho]="130">{{row.descripcion}}</td>
+                                <td appAnchocol [ancho]="130" class="text-left" [ngClass]="{'pl-2':row.id_cargo}">
+                                    {{row.descripcion}}</td>
                                 <td appAnchocol [ancho]="40">{{row.area_abreviatura}}</td>
                                 <td appAnchocol [ancho]="40">{{row.abreviatura}}</td>
                                 <td>
@@ -215,11 +216,16 @@
     <div class="row h-contenedor">
         <div class="col-12 px-0 d-flex">
             <div class="col-7 overflow-auto">
-                <div class="col-12 px-0">
+                <div class="col-12 px-0 d-flex">
                     <button class="btn btn-success btn-sm light ripple m-b-10 d-flex" placement="top" type="button"
                         ngbTooltip="Agregar Usuario" container="body" (click)="abrirModal2()"
                         (mouseup)="quitarfoco($event);">
                         <i class="fa fa-plus icono-but"></i> PERSONAL
+                    </button>
+                    <button class="btn btn-secondary btn-sm light ripple m-b-10 d-flex ml-1" placement="top"
+                        type="button" ngbTooltip="Agregar Usuario calificado desde convocatoria" container="body"
+                        (click)="abrirModalPostulUsuario()" (mouseup)="quitarfoco($event);">
+                        <i class="fa fa-plus icono-but"></i> APROBADOS
                     </button>
                 </div>
                 <table class="table-bordered tab-10">
@@ -249,7 +255,7 @@
                                 <td appAnchocol [ancho]="50">{{row.dni}}</td>
                                 <td appAnchocol [ancho]="50">{{row.telefono}}</td>
                                 <td appAnchocol [ancho]="80">
-                                    <div [ngbTooltip]="row.correo"
+                                    <div [ngbTooltip]="row.correo" container="body"
                                         style=" overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
                                         {{row.correo}}
                                     </div>
@@ -407,7 +413,7 @@
 
     <div class="h-convocatorias ">
         <div class="row px-0">
-            <div class="col-6">
+            <div class="col-6 px-0">
                 <div class="content col-12 d-flex px-0">
                     <button type="button" class="btn btn-success btn-sm light ripple m-b-10"
                         (click)="openModalConvocatoria()" type="button" (mouseup)="quitarfoco($event);">
@@ -418,14 +424,16 @@
                     <table class="table-bordered tab-10 mt-1">
                         <thead class="text-center">
                             <tr style="height: 22px;">
-                                <th colspan="8">CONVOCATORIAS</th>
+                                <th colspan="10">CONVOCATORIAS</th>
                             </tr>
                             <tr style="height: 22px;">
-                                <th appAnchocol [ancho]="130">Nro</th>
+                                <th appAnchocol [ancho]="40"></th>
+                                <th appAnchocol [ancho]="130">Nro Convocatoria</th>
+                                <th appAnchocol [ancho]="150">Nombre Proyecto</th>
                                 <th appAnchocol [ancho]="80">Fecha</th>
+                                <th appAnchocol [ancho]="80">Culmina</th>
                                 <th appAnchocol [ancho]="100">Modalidad Contrata</th>
-                                <!-- <th appAnchocol [ancho]="170">Area</th>
-                    <th appAnchocol [ancho]="170">Cargo(s)</th> -->
+                                <th appAnchocol [ancho]="40">Bases</th>
                                 <th appAnchocol [ancho]="200">Descripcion</th>
                                 <th appAnchocol [ancho]="100">Estado</th>
                                 <th appAnchocol [ancho]="80">Acciones</th>
@@ -435,27 +443,37 @@
                             <ng-container *ngIf="tablaConvocatorias.length; else nodataConv">
                                 <tr *ngFor="let row of this.tablaConvocatorias; let i = index"
                                     (click)="selFilConvocatoria(i)" [ngClass]="{'highlight':filConv == i}">
-                                    <td>{{row.nro_convocatoria }}</td>
-                                    <td class="text-center">{{row.fecha | date:'dd-MM-yyyy'}}</td>
-                                    <td class="text-center">{{row.modalidad}}</td>
-                                    <!-- <td class="text-center">{{row.area_descripcion}}</td>
-                        <td class="text-center">
-                            <div class="d-flex flex-wrap gap-1 justify-content-center">
-                                <span *ngFor="let cargo of splitearText(row.cargo_descripcion)"
-                                    class="badge rounded-pill bg-secondary text-truncate text-white" style="max-width: 100px;
-    font-size: 0.55rem;
-    padding-top: 5px;">
-                                    {{ cargo }}
-                                </span>
-                                <span *ngIf="!row.cargo_descripcion || splitearText(row.cargo_descripcion).length === 0"
-                                    class="badge rounded-pill bg-warning text-muted text-dark" style="max-width: 100px;
-    font-size: 0.55rem;
-    padding-top: 5px;">
-                                    Sin cargos
-                                </span>
-                            </div>
-                        </td> -->
-                                    <td>{{row.descripcion}}</td>
+                                    <td class="text-center"> {{i+1}}</td>
+                                    <td appAnchocol [ancho]="130">{{row.nro_convocatoria }}</td>
+                                    <td appAnchocol [ancho]="130">
+                                        <div [ngbTooltip]="row.nombre_proyecto"
+                                            style=" overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"
+                                            container="body">
+                                            {{row.nombre_proyecto }}
+                                        </div>
+                                    </td>
+                                    <td class="text-center" appAnchocol [ancho]="80">{{row.fecha | date:'dd-MM-yyyy'}}
+                                    </td>
+                                    <td class="text-center" appAnchocol [ancho]="80">{{row.fecha_culmina |
+                                        date:'dd-MM-yyyy'}}</td>
+                                    <td class="text-center" appAnchocol [ancho]="100">{{row.modalidad}}</td>
+                                    <td appAnchocol [ancho]="40">
+
+                                        <a href="javascript:void(0)" *ngIf="row.link_bases"
+                                            class="d-flex align-items-center justify-content-center gap-1 p-1"
+                                            style="width: 40px; height: 30px; font-size: 12px; cursor: pointer;"
+                                            title="Abrir: {{row.link_bases}}" (click)="abrirEnlace(row.link_bases)">
+                                            <i class="icofont-external-link" style="font-size: 14px;"></i>
+                                            <span></span>
+                                        </a>
+                                    </td>
+                                    <td appAnchocol [ancho]="200">
+                                        <div [ngbTooltip]="row.descripcion"
+                                            style=" overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"
+                                            container="body">
+                                            {{row.descripcion}}
+                                        </div>
+                                    </td>
                                     <td>
                                         <div class="badge-custom text-center d-flex justify-content-center text-white"
                                             style="width: auto;justify-self: center;"
@@ -501,7 +519,7 @@
                     <h5> CARGOS REQUERIDOS </h5> <ng-container *ngIf="filConv !== null">
                         <div class="badge-custom bg-info text-center d-flex justify-content-center ml-1" style="width: auto;
     margin-left: 4px;">
-                            <span class="w-100 mt-0">{{tablaConvocatorias[this.filConv]?.descripcion}}</span>
+                            <span class="w-100 mt-0">{{tablaConvocatorias[this.filConv]?.nro_convocatoria}}</span>
                         </div>
                     </ng-container>
                 </div>
@@ -535,7 +553,11 @@
                                         <td>{{row.area_descripcion }}</td>
                                         <td>{{row.cargo_descripcion }}</td>
                                         <td class="text-center">{{row.vacantes}}</td>
-                                        <td>{{row.requerimiento }}</td>
+                                        <td appAnchocol [ancho]="200">
+                                            <div [ngbTooltip]="row.correo" container="body"
+                                                style=" overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                                                {{row.requerimiento }} </div>
+                                        </td>
                                         <td class="text-right">
                                             <ng-container *ngIf="row.remuneracion">
                                                 <div class="w-100 d-flex justify-content-between">
@@ -544,8 +566,20 @@
                                                 </div>
                                             </ng-container>
                                         </td>
-                                        <td>{{row.ciudad }}</td>
-                                        <td>{{row.link_documento }}</td>
+                                        <td class="text-center">{{row.ciudad }}</td>
+                                        <td appAnchocol [ancho]="80">
+                                            <!-- <div [ngbTooltip]="row.correo" container="body"
+                                                style=" overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                                                {{row.link_documento }} </div> -->
+                                            <a href="javascript:void(0)" *ngIf="row.link_documento"
+                                                class="d-flex align-items-center justify-content-center gap-1 p-1"
+                                                style="width: 60px; height: 30px; font-size: 12px; cursor: pointer;"
+                                                title="Abrir: {{row.link_documento}}"
+                                                (click)="abrirEnlace(row.link_documento)">
+                                                <i class="icofont-external-link" style="font-size: 14px;"></i>
+                                                <span>Abrir</span>
+                                            </a>
+                                        </td>
                                         <td>
                                             <div class="badge-custom text-center d-flex justify-content-center"
                                                 style="width: 50px;justify-self: center;"
@@ -609,7 +643,7 @@
         <table class="table-bordered tab-10">
             <thead class="text-center">
                 <tr style="height: 22px;">
-                    <th colspan="14">
+                    <th colspan="15">
                         <div class="d-flex justify-content-center">
                             <div>
                                 POSTULANTES
@@ -618,7 +652,8 @@
 
                                 <div class="badge-custom bg-info text-center d-flex justify-content-center ml-1" style="width: auto;
     margin-left: 4px;">
-                                    <span class="w-100 mt-0">{{tablaConvocatorias[this.filConv]?.descripcion}}</span>
+                                    <span
+                                        class="w-100 mt-0">{{tablaConvocatorias[this.filConv]?.nro_convocatoria}}</span>
                                 </div>
 
                             </ng-container>
@@ -627,11 +662,12 @@
                     </th>
                 </tr>
                 <tr>
-                    <th colspan="9">Data postulante</th>
+                    <th colspan="10">Data postulante</th>
                     <th colspan="4">Evaluacion postulante</th>
                     <th></th>
                 </tr>
                 <tr style="height: 22px;">
+                    <th appAnchocol [ancho]="30"></th>
                     <th appAnchocol [ancho]="130">Postulante</th>
                     <th appAnchocol [ancho]="130">Dni</th>
                     <th appAnchocol [ancho]="80">Registro</th>
@@ -652,6 +688,7 @@
                 <ng-container *ngIf="tablaPostulantes.length; else nodataPost">
                     <tr *ngFor="let row of this.tablaPostulantes; let i = index" (click)="filPostulante = i"
                         [ngClass]="{'highlight':filConv == i}">
+                        <td class="text-center"> {{i+1}}</td>
                         <td>{{row.apellidos}} {{row.nombres}}</td>
                         <td class="text-center">{{row.dni}}</td>
                         <td class="text-center">{{row.fecha_registro | date:'dd-MM-yyyy'}}</td>
@@ -661,7 +698,7 @@
                         <td>{{row.telefono}}</td>
                         <td>{{row.correo}}</td>
                         <td class="text-center">
-                            <a href="javascript:void(0)"
+                            <a href="javascript:void(0)" *ngIf="row.cv"
                                 class="d-flex align-items-center justify-content-center gap-1 p-1"
                                 style="width: 60px; height: 30px; font-size: 12px; cursor: pointer;"
                                 title="Abrir: {{row.cv}}" (click)="abrirEnlace(row.cv)">
@@ -681,7 +718,7 @@
                             <div class="badge-custom text-center d-flex justify-content-center"
                                 *ngIf="row.entrevista !== '' && row.entrevista !== null && row.entrevista !== undefined"
                                 style="width: 70px;justify-self: center;"
-                                [ngClass]="{'bg-danger': row.entrevista == 'RECHAZADO', 'bg-success':row.entrevista=='APROBADO', 'bd-secondary':row.entrevista == 'PROGRAMADO'}">
+                                [ngClass]="{'bg-danger': row.entrevista == 'RECHAZADO', 'bg-success':row.entrevista=='APROBADO', 'bd-info':row.entrevista == 'PROGRAMADO','bg-secondary text-white': row.entrevista == 'CONTRATADO'}">
                                 <span class="w-100">{{row.entrevista}}</span>
                             </div>
                         </td>
@@ -714,16 +751,19 @@
                         </td>
                         <td>
                             <div class="d-flex justify-content-center">
-                                <button class="btn btn-mini btn-outline-secondary" placement="top" type="button"
-                                    ngbTooltip="Actualizar Postulante" container="body"
-                                    (click)="openModalPostulante(row)" (mouseup)="quitarfoco($event);">
-                                    <i class="fa fa-edit icono-but"></i>
-                                </button>
-                                <button class="btn btn-mini btn-outline-secondary" placement="top" type="button"
-                                    ngbTooltip="Calificar Postulante" container="body"
-                                    (click)="openModalPostulante(row,true)" (mouseup)="quitarfoco($event);">
-                                    <i class="fa fa-check icono-but"></i>
-                                </button>
+                                <ng-container
+                                    *ngIf="row.entrevista !== 'CONTRATADO' && this.tablaConvocatorias[this.filConv]?.estado == 0">
+                                    <button class="btn btn-mini btn-outline-secondary" placement="top" type="button"
+                                        ngbTooltip="Actualizar Postulante" container="body"
+                                        (click)="openModalPostulante(row)" (mouseup)="quitarfoco($event);">
+                                        <i class="fa fa-edit icono-but"></i>
+                                    </button>
+                                    <button class="btn btn-mini btn-outline-secondary" placement="top" type="button"
+                                        ngbTooltip="Calificar Postulante" container="body"
+                                        (click)="openModalPostulante(row,true)" (mouseup)="quitarfoco($event);">
+                                        <i class="fa fa-check icono-but"></i>
+                                    </button>
+                                </ng-container>
                                 <button class="btn btn-mini btn-outline-danger" placement="top" type="button"
                                     ngbTooltip="Eliminar Postulante" container="body"
                                     (click)="eliminarPostulanteConvocatoria(row,i)" (mouseup)="quitarfoco($event);">
@@ -886,7 +926,7 @@
                                     <i class="fa fa-pencil icono-but"></i>
                                 </button>
                                 <button class="btn btn-mini btn-outline-danger" placement="top" type="button"
-                                    ngbTooltip="Eliminar Cargo" container="body" *ngIf="row.estado !== 2"
+                                    ngbTooltip="Eliminar Feriado" container="body" *ngIf="row.estado !== 2"
                                     (click)="eliminarFeriado(row,i)" (mouseup)="quitarfoco($event);">
                                     <i class="fa fa-remove icono-but"></i>
                                 </button>
@@ -921,7 +961,7 @@
                         <th appAnchocol [ancho]="130">
                             <div class="d-flex justify-content-center">
                                 <div> Porcentaje Descuento (dia)</div>
-                                <div><i class="fa fa-pencil ml-2" [ngbTooltip]="'editable'"></i></div>
+                                <div><i class="fa fa-pencil ml-2" [ngbTooltip]="'editable'" container="body"></i></div>
                             </div>
 
                         </th>
@@ -932,12 +972,16 @@
                         <td class="text-center">{{row.codigo}}</td>
                         <td class="text-center">{{row.tipo}}</td>
                         <td class="text-center">
-                            <!-- <mat-form-field appearance="outline" class="mff-reduc col-12"> -->
-
-                            <input matInput type="number" class="mayuscula w-100" autocomplete="off" maxlength="255"
-                                (input)="actualizarHorario()" [(ngModel)]="tiposAsistencia[i].porcentaje" [max]="100"
-                                [min]="0">
-                            <!-- </mat-form-field> -->
+                            <div style="display: flex; height: 100%; align-items: center; justify-content: center;">
+                                <input type="number" class="form-control mayuscula"
+                                    style="width: 60px; height: 24px; padding: 0 5px; text-align: right; border: 1px solid #ccc; border-right: none; border-radius: 4px 0 0 4px;"
+                                    autocomplete="off" maxlength="3" (input)="actualizarHorario()"
+                                    [(ngModel)]="tiposAsistencia[i].porcentaje" [min]="0">
+                                <span
+                                    style="height: 24px; padding: 0 8px; display: flex; align-items: center; justify-content: center; border: 1px solid #ccc; border-left: none; border-radius: 0 4px 4px 0; background-color: #f8f9fa;">
+                                    %
+                                </span>
+                            </div>
                         </td>
 
                     </tr>
@@ -1031,6 +1075,7 @@
                     <mat-label>Cargo</mat-label>
                     <select matNativeControl formControlName="id_cargo"
                         (change)="cambioCargoAsignacion($event.target.value)">
+                        <option [ngValue]="null">-- Seleccione cargo --</option>
                         <option *ngFor="let cargo of cargosFiltrados" [value]="cargo.id_cargo">
                             {{cargo.descripcion}}
                         </option>
@@ -1039,6 +1084,7 @@
                 <mat-form-field appearance="outline" class="mff-reduc col-12 alto-35 mt-3">
                     <mat-label>Categoria Cargo</mat-label>
                     <select matNativeControl formControlName="tipo_cargo">
+                        <option [ngValue]="null">-- Seleccione categoria --</option>
                         <option *ngFor="let tipo of tiposFiltrados" [value]="tipo">
                             {{tipo}}
                         </option>
@@ -1172,13 +1218,15 @@
         <form [formGroup]="formConvocatoria">
             <div class="row ">
                 <mat-form-field appearance="outline" class="mff-reduc col-sm-12 col-12">
-                    <mat-label>Numero</mat-label>
-                    <input matInput type="text" autocomplete="off" maxlength="255" formControlName="nro_convocatoria"
-                        [maxLength]="150">
+                    <mat-label>Nombre Proyecto</mat-label>
+                    <input matInput type="text" autocomplete="off" maxlength="255" formControlName="nombre_proyecto"
+                        [maxLength]="250">
                 </mat-form-field>
+
                 <mat-form-field appearance="outline" class="mff-reduc col-sm-12 col-12">
-                    <mat-label>Fecha </mat-label>
-                    <input matInput type="date" formControlName="fecha">
+                    <mat-label>Numero de Convocatoria</mat-label>
+                    <input matInput type="text" autocomplete="off" maxlength="255" formControlName="nro_convocatoria"
+                        [maxLength]="250">
                 </mat-form-field>
                 <mat-form-field appearance="outline" class="mff-reduc col-sm-12 col-12">
                     <mat-label>Modalidad</mat-label>
@@ -1186,21 +1234,38 @@
                         [maxLength]="255">
                 </mat-form-field>
 
-
-                <mat-form-field appearance="outline" class="mff-reduc col-sm-12 col-12 ">
-                    <mat-label>Descripcion</mat-label>
-                    <input matInput type="text" autocomplete="off" maxlength="255" formControlName="descripcion"
-                        [maxLength]="255">
+                <mat-form-field appearance="outline" class="mff-reduc col-sm-12 col-12">
+                    <mat-label>Descripción de la Solicitud</mat-label>
+                    <textarea matInput autocomplete="off" maxlength="255" formControlName="descripcion"
+                        [maxLength]="255" rows="4">
+                    </textarea>
                 </mat-form-field>
+                <mat-form-field appearance="outline" class="mff-reduc col-sm-12 col-12">
+                    <mat-label>Link url (documento bases)</mat-label>
 
-
-                <mat-form-field appearance="outline" class="mff-reduc col-sm-12 col-12 " *ngIf="id_convocatoria.value">
+                    <textarea matInput autocomplete="off" formControlName="link_bases" rows="1"
+                        placeholder="link_bases"></textarea>
+                </mat-form-field>
+                <mat-form-field appearance="outline" class="mff-reduc col-sm-12 col-12 ">
                     <mat-label>Estado</mat-label>
-                    <mat-select formControlName="estado">
+                    <mat-select formControlName="estado" (valueChange)="cambioEstadoConvocatoria($event)">
                         <mat-option value="1">NO PUBLICADO</mat-option>
                         <mat-option value="2">PUBLICADO</mat-option>
                         <mat-option value="0">CERRADO</mat-option>
                     </mat-select>
+                </mat-form-field>
+                <mat-form-field appearance="outline" class="mff-reduc col-sm-12 col-12">
+                    <mat-label>Duracion(dias)</mat-label>
+                    <input matInput type="number" autocomplete="off" formControlName="duracion"
+                        (blur)="calcularFechaCulmina()">
+                </mat-form-field>
+                <mat-form-field appearance="outline" class="mff-reduc col-sm-6 col-6">
+                    <mat-label>Fecha Inicio </mat-label>
+                    <input matInput type="date" formControlName="fecha">
+                </mat-form-field>
+                <mat-form-field appearance="outline" class="mff-reduc col-sm-6 col-6">
+                    <mat-label>Fecha Culmina </mat-label>
+                    <input matInput type="date" formControlName="fecha_culmina">
                 </mat-form-field>
 
             </div>
@@ -1252,10 +1317,16 @@
                     <input matInput type="number" autocomplete="off" maxlength="10" formControlName="vacantes"
                         [min]="0">
                 </mat-form-field>
-                <mat-form-field appearance="outline" class="mff-reduc col-sm-12 col-12">
+                <!-- <mat-form-field appearance="outline" class="mff-reduc col-sm-12 col-12">
                     <mat-label>Requerimiento</mat-label>
                     <input matInput type="text" autocomplete="off" maxlength="255" formControlName="requerimiento"
                         [maxLength]="255">
+                </mat-form-field> -->
+                <mat-form-field appearance="outline" class="mff-reduc col-sm-12 col-12">
+                    <mat-label>Requerimiento</mat-label>
+                    <textarea matInput autocomplete="off" maxlength="255" formControlName="requerimiento"
+                        [maxLength]="255" rows="4">
+                    </textarea>
                 </mat-form-field>
                 <mat-form-field appearance="outline" class="mff-reduc col-sm-12 col-12">
                     <mat-label>Remuneracion</mat-label>
@@ -1385,10 +1456,10 @@
                     <input matInput type="text" autocomplete="off" maxlength="255" formControlName="evaluador"
                         [maxLength]="150">
                 </mat-form-field>
-                <mat-form-field appearance="outline" class="mff-reduc col-sm-6 col-12" *ngIf="calificar">
+                <!-- <mat-form-field appearance="outline" class="mff-reduc col-sm-6 col-12" *ngIf="calificar">
                     <mat-label>Fecha</mat-label>
                     <input matInput type="date" formControlName="fecha">
-                </mat-form-field>
+                </mat-form-field> -->
 
 
 
@@ -1401,10 +1472,11 @@
 
                 <mat-form-field appearance="outline" class="mff-reduc col-sm-6 col-12 " *ngIf="calificar">
                     <mat-label>Entrevista</mat-label>
-                    <mat-select formControlName="entrevista">
+                    <mat-select formControlName="entrevista" (valueChange)="cambioValorEntrevista()">
                         <mat-option value="PROGRAMADO">Programado</mat-option>
                         <mat-option value="RECHAZADO">Rechazado</mat-option>
                         <mat-option value="APROBADO">Aprobado</mat-option>
+                        <mat-option value="CONTRATADO">Contratado</mat-option>
                     </mat-select>
                 </mat-form-field>
 
@@ -1536,6 +1608,242 @@
             <button type="button" class="btn btn-sm btn-outline-secondary ripple me-2" (click)="descargarQR()"
                 [disabled]="!qrData">
                 <i class="fas fa-download me-1"></i> Descargar
+            </button>
+        </div>
+    </div>
+</app-modal-basic>
+
+<app-modal-basic #modalPostulanteUsuario [dialogClass]="'modal-xl modalgrande2'">
+    <div class="app-modal-header">
+        <h4 class="modal-title tit-modal1"><b>Datos Postulantes Aprobados</b></h4>
+        <button type="button" class="close basic-close" (click)="cerrarModalPostUsu()">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+
+    <div class="app-modal-body d-flex flex-column" style="height: calc(100vh - 10rem);">
+
+        <!-- Sección de búsqueda -->
+        <div class="mb-3">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="input-group">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text bg-white">
+                                <i class="fa fa-search text-muted"></i>
+                            </span>
+                        </div>
+                        <input type="text" class="form-control" placeholder="Buscar por DNI, área, cargo o nombre..."
+                            [(ngModel)]="terminoBusqueda" aria-label="Buscar postulantes">
+                        <div class="input-group-append" *ngIf="terminoBusqueda">
+                            <button class="btn btn-outline-secondary btn-sm" type="button"
+                                (click)="terminoBusqueda = ''" title="Limpiar búsqueda">
+                                <i class="fa fa-times mr-0"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="mt-2">
+                        <span class="badge badge-light border">
+                            <i class="fa fa-filter mr-1"></i>
+                            Filtrando:
+                            <span class="font-weight-bold ml-1" *ngIf="terminoBusqueda">{{terminoBusqueda}}</span>
+                            <span class="text-muted ml-1" *ngIf="!terminoBusqueda">Sin filtros</span>
+                        </span>
+                        <span class="badge badge-info ml-2">
+                            {{ (postulAprobados |
+                            filtroTablaCol:terminoBusqueda:['dni','area_descripcion','cargo_descripcion','apellidos','nombres']).length
+                            }}
+                            de {{ postulAprobados.length }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabla con scroll (ocupa espacio disponible) -->
+        <div class="flex-grow-1" style="min-height: 0; overflow: hidden;">
+            <div class="table-responsive" style="height: 100%;">
+                <table class="table-bordered tab-10 w-100">
+                    <thead class="text-center" style="position: sticky; top: 0; background: white; z-index: 10;">
+                        <tr>
+                            <th appAnchocol [ancho]="150">Postulante</th>
+                            <th appAnchocol [ancho]="60">DNI</th>
+                            <th appAnchocol [ancho]="130">Area</th>
+                            <th appAnchocol [ancho]="120">Cargo</th>
+                            <th appAnchocol [ancho]="100">CV</th>
+                            <th appAnchocol [ancho]="80">Adicional</th>
+                            <th appAnchocol [ancho]="100">Progreso</th>
+                            <th appAnchocol [ancho]="40">Calidad</th>
+                            <th appAnchocol [ancho]="40"></th>
+                        </tr>
+                    </thead>
+
+                    <tbody class="text-center" style="overflow-y: auto;">
+                        <ng-container *ngIf="postulAprobados.length; else nodataPost">
+                            <tr *ngFor="let row of postulAprobados| filtroTablaCol:terminoBusqueda:['dni', 'area_descripcion', 'cargo_descripcion', 'apellidos', 'nombres']; let i = index"
+                                (click)="seleccionFilaPostApro(i)"
+                                [ngClass]="{'font-weight-bolder': !row.id_cargo, 'highlight': i == filPostAprobados}">
+                                <td>{{row.apellidos}} {{row.nombres}}</td>
+                                <td class="text-center">{{row.dni}}</td>
+                                <td class="text-center">{{row.area_descripcion}}</td>
+                                <td class="text-center">{{row.cargo_descripcion }}</td>
+                                <td class="text-center">
+                                    <a href="javascript:void(0)" *ngIf="row.cv"
+                                        class="d-flex align-items-center justify-content-center gap-1 p-1"
+                                        style="width: 60px; height: 30px; font-size: 12px; cursor: pointer;"
+                                        title="Abrir: {{row.cv}}" (click)="abrirEnlace(row.cv)">
+                                        <i class="icofont-external-link" style="font-size: 14px;"></i>
+                                        <span>Abrir</span>
+                                    </a>
+                                </td>
+                                <td class="text-center">
+                                    <ng-container *ngIf="row.adicional">
+                                        <i class="icofont-info-circle text-primary" style="cursor: pointer;"
+                                            [title]="row.adicional" data-bs-toggle="tooltip" data-bs-placement="top">
+                                        </i>
+                                    </ng-container>
+                                </td>
+                                <td class="text-center">
+                                    <div class="d-flex align-items-center gap-2"
+                                        *ngIf="row.progreso !== '' && row.progreso !== null && row.progreso !== undefined">
+                                        <div class="progress" style="height: 15px; width: 80px;">
+                                            <div class="progress-bar" role="progressbar" [style.width.%]="row.progreso"
+                                                [ngClass]="{
+                      'bg-danger': row.progreso < 30,
+                      'bg-warning': row.progreso >= 30 && row.progreso < 70,
+                      'bg-success': row.progreso >= 70
+                    }"></div>
+                                        </div>
+                                        <span class="small fw-bold">{{row.progreso}}%</span>
+                                    </div>
+                                </td>
+                                <td class="text-center">
+                                    <div class="d-flex align-items-center gap-1"
+                                        *ngIf="row.calidad !== '' && row.calidad !== null && row.calidad !== undefined">
+                                        <ng-container *ngFor="let star of [1,2,3,4,5]; let i = index">
+                                            <mat-icon class="material-icons-outlined" style="font-size: 18px;"
+                                                [class.text-warning]="i < row.calidad"
+                                                [class.text-muted]="i >= row.calidad">
+                                                {{ i < row.calidad ? 'star' : 'star_border' }} </mat-icon>
+                                        </ng-container>
+                                    </div>
+                                </td>
+                                <td class="text-center">
+                                    <button class="btn btn-info btn-mini btn-info" placement="top"
+                                        ngbTooltip="Seleccionar Usuario" container="body"
+                                        *ngIf="row.entrevista !== 'CALIFICADO'" (click)="cargarEnForm(row,i)"
+                                        (mouseup)="quitarfoco($event);">
+                                        <i class="fa fa-check icono-but"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        </ng-container>
+                        <ng-template #nodataPost>
+                            <tr>
+                                <td class="mat-cell text-center" colspan="9">
+                                    <label>No se encontraron resultados</label>
+                                </td>
+                            </tr>
+                        </ng-template>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Formulario fijo abajo -->
+        <div class="mt-3 pt-3 border-top" style="flex-shrink: 0;">
+            <form [formGroup]="formUsuarioPostulante">
+                <div class="row">
+
+                    <!-- Datos del Usuario -->
+                    <div class="col-md-6 pr-md-4 border-right">
+                        <h6 class="text-primary mb-3">
+                            <i class="fa fa-user mr-2"></i>Datos del Usuario
+                        </h6>
+                        <div class="row">
+                            <mat-form-field appearance="outline" class="mff-reduc col-md-6 col-12">
+                                <mat-label>Nombres</mat-label>
+                                <input matInput type="text" autocomplete="off" formControlName="nombres"
+                                    [maxLength]="150">
+                            </mat-form-field>
+                            <mat-form-field appearance="outline" class="mff-reduc col-md-6 col-12">
+                                <mat-label>Apellidos</mat-label>
+                                <input matInput type="text" autocomplete="off" formControlName="apellidos"
+                                    [maxLength]="150">
+                            </mat-form-field>
+                            <mat-form-field appearance="outline" class="mff-reduc col-md-6 col-12">
+                                <mat-label>DNI</mat-label>
+                                <input matInput type="text" autocomplete="off" formControlName="dni" [maxLength]="18">
+                            </mat-form-field>
+                            <mat-form-field appearance="outline" class="mff-reduc col-md-6 col-12">
+                                <mat-label>Teléfono</mat-label>
+                                <input matInput type="text" autocomplete="off" formControlName="telefono"
+                                    [maxLength]="15">
+                            </mat-form-field>
+                            <mat-form-field appearance="outline" class="mff-reduc col-md-12 col-12">
+                                <mat-label>Correo</mat-label>
+                                <input matInput type="text" autocomplete="off" formControlName="correo"
+                                    [maxLength]="100">
+                            </mat-form-field>
+                        </div>
+                    </div>
+
+                    <!-- Datos de Asignación -->
+                    <div class="col-md-6 pl-md-4">
+                        <h6 class="text-primary mb-3">
+                            <i class="fa fa-briefcase mr-2"></i>Datos de Asignación
+                        </h6>
+                        <div class="row">
+                            <mat-form-field appearance="outline" class="mff-reduc col-md-6 col-12">
+                                <mat-label>Area</mat-label>
+                                <select matNativeControl formControlName="id_area"
+                                    (change)="cambioSelectAreaPostUser($event.target.value)">
+                                    <option *ngFor="let area of areas" [value]="area.id_area">
+                                        {{area.descripcion}}
+                                    </option>
+                                </select>
+                            </mat-form-field>
+                            <mat-form-field appearance="outline" class="mff-reduc col-md-6 col-12">
+                                <mat-label>Cargo</mat-label>
+                                <select matNativeControl formControlName="id_cargo"
+                                    (change)="cambioCargoPostUser($event.target.value)">
+                                    <option *ngFor="let cargo of cargosFiltrados" [value]="cargo.id_cargo">
+                                        {{cargo.descripcion}}
+                                    </option>
+                                </select>
+                            </mat-form-field>
+                            <mat-form-field appearance="outline" class="mff-reduc col-md-6 col-12">
+                                <mat-label>Categoria Cargo</mat-label>
+                                <select matNativeControl formControlName="categoria">
+                                    <option *ngFor="let tipo of tiposFiltrados" [value]="tipo">
+                                        {{tipo}}
+                                    </option>
+                                </select>
+                            </mat-form-field>
+                            <mat-form-field appearance="outline" class="mff-reduc col-md-6 col-12">
+                                <mat-label>Fecha Asignación</mat-label>
+                                <input matInput type="date" formControlName="fecha_asignacion">
+                            </mat-form-field>
+                            <mat-form-field appearance="outline" class="mff-reduc col-md-6 col-12">
+                                <mat-label>Fecha Culminación</mat-label>
+                                <input matInput type="date" formControlName="fecha_culminacion">
+                            </mat-form-field>
+                        </div>
+                    </div>
+
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="app-modal-footer w-100">
+        <div class="row px-3 justify-content-between">
+
+            <button type="button" style="margin-right: 5px;" class="btn btn-sm btn-danger ripple"
+                (click)="cerrarModalPostUsu()">Cerrar</button>
+            <button type="button" style="margin-right: 5px;" class="btn btn-sm btn-success ripple"
+                (click)="agregarPostulante()">
+
+                Guardar
             </button>
         </div>
     </div>

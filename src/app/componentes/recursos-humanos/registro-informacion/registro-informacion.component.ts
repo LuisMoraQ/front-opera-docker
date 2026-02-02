@@ -59,6 +59,7 @@ export interface archivoimg {
 })
 export class RegistroInformacionComponent implements OnInit {
   mostrar_carga = false
+  @Input() nombreProyecto = null
   @ViewChildren('timeInput') timeInputs: QueryList<ElementRef>;
   dias = [
     "LUNES",
@@ -86,7 +87,7 @@ export class RegistroInformacionComponent implements OnInit {
   @ViewChild("modalQRAsignacion") modalQRAsignacion: ModalBasicComponent;
   @ViewChild('tinymce', { static: false }) public tinymce: TinymceComponent;
   @ViewChild('qrcanvas', { static: false }) qrCanvas!: ElementRef<HTMLCanvasElement>;
-
+  @ViewChild("modalPostulanteUsuario") modalPostulanteUsuario: ModalBasicComponent;
   id_usuario = null
   filSel = null
   filUsuario = null
@@ -117,7 +118,7 @@ export class RegistroInformacionComponent implements OnInit {
     apellidos: new UntypedFormControl('', [Validators.required]),
     dni: new UntypedFormControl('', [Validators.required]),
     telefono: new UntypedFormControl('', [Validators.required]),
-    correo: new UntypedFormControl('', [Validators.required]),
+    correo: new UntypedFormControl('', [Validators.email]),
     fecha_asignacion: new UntypedFormControl('', [Validators.required]),
     fecha_culminacion: new UntypedFormControl('', [Validators.required]),
     estado: new UntypedFormControl('',),
@@ -165,16 +166,24 @@ export class RegistroInformacionComponent implements OnInit {
 
   formConvocatoria = new UntypedFormGroup({
     id_convocatoria: new UntypedFormControl('', []),
+    nombre_proyecto: new UntypedFormControl('', [Validators.required]),
     nro_convocatoria: new UntypedFormControl('', [Validators.required]),
-    fecha: new UntypedFormControl('', [Validators.required]),
+    link_bases: new UntypedFormControl('', []),
+    fecha: new UntypedFormControl({ value: '', disabled: true }, []),
+    fecha_culmina: new UntypedFormControl({ value: '', disabled: true }, []),
+    duracion: new UntypedFormControl({ value: '', disabled: true }, [Validators.required]),
     modalidad: new UntypedFormControl('', [Validators.required]),
     descripcion: new UntypedFormControl('', [Validators.required]),
-    estado: new UntypedFormControl('', [])
+    estado: new UntypedFormControl('', [Validators.required])
   })
 
   get id_convocatoria(): UntypedFormControl { return this.formConvocatoria.get('id_convocatoria') as UntypedFormControl }
+  get nombre_proyecto(): UntypedFormControl { return this.formConvocatoria.get('nombre_proyecto') as UntypedFormControl }
   get nro_convocatoria(): UntypedFormControl { return this.formConvocatoria.get('nro_convocatoria') as UntypedFormControl }
+  get link_bases(): UntypedFormControl { return this.formConvocatoria.get('link_bases') as UntypedFormControl }
   get fechaConvocatoria(): UntypedFormControl { return this.formConvocatoria.get('fecha') as UntypedFormControl }
+  get fecha_culmina_convocatoria(): UntypedFormControl { return this.formConvocatoria.get('fecha_culmina') as UntypedFormControl }
+  get duracionConvocatoria(): UntypedFormControl { return this.formConvocatoria.get('duracion') as UntypedFormControl }
   get modalidad(): UntypedFormControl { return this.formConvocatoria.get('modalidad') as UntypedFormControl }
   get descripcionConvocatoria(): UntypedFormControl { return this.formConvocatoria.get('descripcion') as UntypedFormControl }
   get estadoConvocatoria(): UntypedFormControl { return this.formConvocatoria.get('estado') as UntypedFormControl }
@@ -299,6 +308,37 @@ export class RegistroInformacionComponent implements OnInit {
     'Categoria t4',
     'Categoria t5'
   ]
+
+  formUsuarioPostulante = new UntypedFormGroup({
+    nombres: new UntypedFormControl('', [Validators.required]),
+    apellidos: new UntypedFormControl('', [Validators.required]),
+    dni: new UntypedFormControl('', [Validators.required]),
+    telefono: new UntypedFormControl('', [Validators.required]),
+    correo: new UntypedFormControl('', [Validators.email]),
+    fecha_asignacion: new UntypedFormControl('', [Validators.required]),
+    fecha_culminacion: new UntypedFormControl('', [Validators.required]),
+    estado: new UntypedFormControl('', []),
+    id_area: new UntypedFormControl('', []),
+    id_cargo: new UntypedFormControl('', []),
+    categoria: new UntypedFormControl('', [Validators.required]),
+  })
+
+  get nombres_up(): UntypedFormControl { return this.formUsuarioPostulante.get('nombres') as UntypedFormControl }
+  get apellidos_up(): UntypedFormControl { return this.formUsuarioPostulante.get('apellidos') as UntypedFormControl }
+  get dni_up(): UntypedFormControl { return this.formUsuarioPostulante.get('dni') as UntypedFormControl }
+  get telefono_up(): UntypedFormControl { return this.formUsuarioPostulante.get('telefono') as UntypedFormControl }
+  get correo_up(): UntypedFormControl { return this.formUsuarioPostulante.get('correo') as UntypedFormControl }
+  get fecha_asignacion_up(): UntypedFormControl { return this.formUsuarioPostulante.get('fecha_asignacion') as UntypedFormControl }
+  get fecha_culminacion_up(): UntypedFormControl { return this.formUsuarioPostulante.get('fecha_culminacion') as UntypedFormControl }
+  get estado_up(): UntypedFormControl { return this.formUsuarioPostulante.get('estado') as UntypedFormControl }
+  get area_up(): UntypedFormControl { return this.formUsuarioPostulante.get('id_area') as UntypedFormControl }
+  get cargo_up(): UntypedFormControl { return this.formUsuarioPostulante.get('id_cargo') as UntypedFormControl }
+  get categoria_up(): UntypedFormControl { return this.formUsuarioPostulante.get('categoria') as UntypedFormControl }
+
+  paso = 1
+  filPostAprobados = null
+  postulAprobados = []
+  terminoBusqueda = ''
   constructor(private presuservice: PresupuestosService,
     private sanitizer: DomSanitizer,
     private encriptadorService: EncriptadorService,
@@ -323,6 +363,9 @@ export class RegistroInformacionComponent implements OnInit {
 
   async onNavChange(e) {
     this.mostrar_carga_todo = true
+    this.filSel = null
+    this.basicContent = null
+    this.bloquear = true
     if (e.nextId == 2) {
       this.tablaAsignaciones = []
       this.filUsuario = null
@@ -343,7 +386,7 @@ export class RegistroInformacionComponent implements OnInit {
       if (!this.areaSelecHorarios && this.areas.length) {
         this.areaSelecHorarios = this.areas[0].id_area
         await this.listarHorarioYFeriadosArea()
-        
+
       }
     }
     this.mostrar_carga_todo = false
@@ -382,6 +425,7 @@ export class RegistroInformacionComponent implements OnInit {
       }
       // const existe = this.tablaPresInd.find(ele => ele.indice == filaArea.indice)
       const existe = null
+      let k = 1
       for (const element of arraygrupo) {
         const obj: DetalleAgrupamientoCargo = {
           abreviatura: element?.abreviatura,
@@ -398,7 +442,7 @@ export class RegistroInformacionComponent implements OnInit {
           id_cargo: element?.id_cargo,
           habilitado: element?.habilitado == 1 || element?.habilitado == '1' ? true : false,
           texto: element?.texto ? element.texto : '',
-          item: j
+          item: element.id_cargo ? k : j
         }
         this.tablaCargos.push(obj)
       }
@@ -475,7 +519,104 @@ export class RegistroInformacionComponent implements OnInit {
 
   abrirModal2() {
     this.formUsuario.reset()
+    this.filUsuario = null
     this.modalUsuario.show()
+  }
+
+  async abrirModalPostulUsuario() {
+    try {
+      this.mostrar_carga_todo = true
+      this.filPostAprobados = null
+      this.postulAprobados = []
+      this.formUsuarioPostulante.reset()
+      this.formUsuarioPostulante.disable()
+      this.modalPostulanteUsuario.show()
+      const obj = {
+        id_proyecto: this.idProyecto,
+        id_convocatoria: null,
+        entrevista: 'APROBADO'
+      }
+      const resp = await this.recursosHumanosService.postulantesPorEstadoConvocatoria(obj)
+      const resp2 = await this.recursosHumanosService.listarCargosPorArea({ id_proyecto: this.idProyecto })
+      this.areas = resp2[0]
+      this.cargos = resp2[1]
+      if (resp?.length) {
+        this.postulAprobados = resp
+      }
+      this.mostrar_carga_todo = false
+    } catch (error) {
+      console.log(error)
+      this.mostrar_carga_todo = false
+      SwalService.error()
+    }
+
+  }
+
+  async cargarEnForm(row, i) {
+    try {
+      this.mostrar_carga_todo = true
+      this.formUsuarioPostulante.disable()
+      this.formUsuarioPostulante.reset()
+      const obj = {
+        id_proyecto: row.id_proyecto,
+        dni: row.dni
+      }
+      const resp = await this.recursosHumanosService.verificarDniUsuario(obj)
+      if (resp?.length) {
+        this.dni_up.setErrors({ incorrect: true })
+        this.toaster.error(
+          'USUARIO YA REGISTRADO CON ESTADO ACTIVO, CAMBIAR REGISTRO DE USUARIO ( ' + resp[0].nombres + ' ' + resp[0].apellidos + ' ) A INACTIVO PARA PODER AGREGAR NUEVO REGISTRO DE USUARIO',
+          'Error',
+          {
+            closeButton: false,
+            positionClass: 'toast-bottom-right',
+            timeOut: 6000,
+          }
+        );
+      } else {
+        this.toaster.info('Usuario disponible', '',
+          {
+            closeButton: false,
+            positionClass: 'toast-bottom-right',
+            timeOut: 3000,
+          })
+        this.telefono_up.enable()
+        this.correo_up.enable()
+        this.categoria_up.enable()
+        this.fecha_asignacion_up.enable()
+        this.fecha_culminacion_up.enable()
+        this.area_up.setValue(row.id_area)
+        await this.cambioSelectAreaPostUser(null)
+        this.cargo_up.setValue(row.id_cargo)
+        await this.cambioCargoPostUser(null)
+        this.formUsuarioPostulante.patchValue({
+          nombres: row.nombres,
+          apellidos: row.apellidos,
+          dni: row.dni,
+          telefono: row.telefono,
+          correo: row.correo,
+          fecha_asignacion: null,
+          fecha_culminacion: null,
+          estado: row.estado,
+          id_area: row.id_area,
+          id_cargo: row.id_cargo,
+          categoria: null,
+        })
+      }
+
+
+      this.mostrar_carga_todo = false
+
+
+    } catch (error) {
+      console.log(error)
+      this.mostrar_carga_todo = false
+      SwalService.error()
+    }
+  }
+
+  cerrarModalPostUsu() {
+    this.modalPostulanteUsuario.hide()
   }
 
   async agregarCargo() {
@@ -782,6 +923,7 @@ export class RegistroInformacionComponent implements OnInit {
       }
       const resp = await this.recursosHumanosService.actualizarCargoArea(obj)
       if (resp[0]) {
+        this.tablaCargos[this.filSel].texto = obj.texto
         this.toaster.success(
           'Se actualizo correctamente',
           'Correcto',
@@ -1407,7 +1549,7 @@ export class RegistroInformacionComponent implements OnInit {
       if (this.formUsuario.invalid) {
         this.formUsuario.markAllAsTouched()
         this.toaster.error(
-          'Formulario incompleto',
+          'Formulario incompleto o datos no validos',
           'Error',
           {
             closeButton: false,
@@ -1418,31 +1560,50 @@ export class RegistroInformacionComponent implements OnInit {
         return
       }
       this.mostrar_carga_todo = true
-      const row = this.tablaUsuarios[this.filUsuario]
-      const obj = {
+      const obj2 = {
         id_proyecto: this.idProyecto,
-        nombres: this.nombres.value,
-        apellidos: this.apellidos.value,
-        dni: this.dni.value,
-        telefono: this.telefono.value,
-        correo: this.correo.value,
-        fecha_asignacion: this.fecha_asignacion.value,
-        fecha_culminacion: this.fecha_culminacion.value,
-        estado: 1,
+        dni: this.dni.value
       }
-      const response = await this.recursosHumanosService.guardarUsuarioRecursosHumanos(obj)
-      if (response) {
-        this.cerrarModal2()
-        this.toaster.success(
-          'Se guardo correctamente',
-          'Correcto',
+      const resp = await this.recursosHumanosService.verificarDniUsuario(obj2)
+      if (resp?.length) {
+        this.dni.setErrors({ incorrect: true })
+        this.toaster.error(
+          'USUARIO YA REGISTRADO CON ESTADO ACTIVO, CAMBIAR REGISTRO DE USUARIO ( ' + resp[0].nombres + ' ' + resp[0].apellidos + ' ) A INACTIVO PARA PODER AGREGAR NUEVO REGISTRO DE USUARIO',
+          'Error',
           {
             closeButton: false,
             positionClass: 'toast-bottom-right',
-            timeOut: 4000,
+            timeOut: 6000,
           }
         );
-        await this.generarTablaUsuarios()
+      } else {
+
+        const row = this.tablaUsuarios[this.filUsuario]
+        const obj = {
+          id_proyecto: this.idProyecto,
+          nombres: this.nombres.value,
+          apellidos: this.apellidos.value,
+          dni: this.dni.value,
+          telefono: this.telefono.value,
+          correo: this.correo.value,
+          fecha_asignacion: this.fecha_asignacion.value,
+          fecha_culminacion: this.fecha_culminacion.value,
+          estado: 1,
+        }
+        const response = await this.recursosHumanosService.guardarUsuarioRecursosHumanos(obj)
+        if (response) {
+          this.cerrarModal2()
+          this.toaster.success(
+            'Se guardo correctamente',
+            'Correcto',
+            {
+              closeButton: false,
+              positionClass: 'toast-bottom-right',
+              timeOut: 4000,
+            }
+          );
+          await this.generarTablaUsuarios()
+        }
       }
       this.mostrar_carga_todo = false
     } catch (error) {
@@ -1458,7 +1619,7 @@ export class RegistroInformacionComponent implements OnInit {
       if (this.formUsuario.invalid) {
         this.formUsuario.markAllAsTouched()
         this.toaster.error(
-          'Formulario incompleto',
+          'Formulario incompleto o datos no validos',
           'Error',
           {
             closeButton: false,
@@ -1468,26 +1629,20 @@ export class RegistroInformacionComponent implements OnInit {
         );
         return
       }
-      const fi = moment(this.fecha_asignacion.value).format('YYYY-MM-DD')
-      const ff = moment(this.fecha_culminacion.value).format('YYYY-MM-DD')
-
-      let valido = true
-      for (const element of this.tablaAsignaciones) {
-        const feini = moment(element.fecha_inicio).format('YYYY-MM-DD')
-        const fefin = moment(element.fecha_fin).format('YYYY-MM-DD')
-
-        if (fi > feini || fi > fefin) {
-          valido = false
-          break
-        }
-        if (ff < fefin || ff < feini) {
-          valido = false
-          break
-        }
+      this.mostrar_carga_todo = true
+      const obj2 = {
+        id_proyecto: this.idProyecto,
+        dni: this.dni.value
       }
-      if (!valido) {
+      const resp = await this.recursosHumanosService.verificarDniUsuario(obj2)
+      // console.log('actualizar', resp)
+      // console.log('resp[0]?.dni', resp[0]?.dni, this.dni.value)
+      const usuarioSelec = this.tablaUsuarios[this.filUsuario]
+      if (resp.length && resp[0]?.id_usuario !== usuarioSelec.id_usuario) {
+        this.dni.setErrors({ incorrect: true })
+        this.mostrar_carga_todo = false
         this.toaster.error(
-          'Existen Asignaciones fuera del margen de fechas, elimine o edite las asignaciones fuera del margen de la fecha a actualizar',
+          'USUARIO YA REGISTRADO CON ESTADO ACTIVO, CAMBIAR REGISTRO DE USUARIO ( ' + resp[0].nombres + ' ' + resp[0].apellidos + ' ) A INACTIVO PARA PODER AGREGAR NUEVO REGISTRO DE USUARIO',
           'Error',
           {
             closeButton: false,
@@ -1495,47 +1650,80 @@ export class RegistroInformacionComponent implements OnInit {
             timeOut: 6000,
           }
         );
-        return
-      }
-      this.mostrar_carga_todo = true
-      const row = this.tablaUsuarios[this.filUsuario]
-      const obj = {
-        id_usuario: row.id_usuario,
-        id_proyecto: row.id_proyecto,
-        nombres: this.nombres.value,
-        apellidos: this.apellidos.value,
-        dni: this.dni.value,
-        telefono: this.telefono.value,
-        correo: this.correo.value,
-        fecha_asignacion: this.fecha_asignacion.value.split('T')[0],
-        fecha_culminacion: this.fecha_culminacion.value.split('T')[0],
-        estado: this.estado.value ? 1 : 0,
-      }
-      const response = await this.recursosHumanosService.actualizarUsuarioRecursosHumanos(obj)
-      if (response[0]) {
-        this.cerrarModal2()
-        this.tablaUsuarios[this.filUsuario].nombres = obj.nombres
-        this.tablaUsuarios[this.filUsuario].apellidos = obj.apellidos
-        this.tablaUsuarios[this.filUsuario].dni = obj.dni
-        this.tablaUsuarios[this.filUsuario].telefono = obj.telefono
-        this.tablaUsuarios[this.filUsuario].correo = obj.correo
-        this.tablaUsuarios[this.filUsuario].fecha_asignacion = obj.fecha_asignacion
-        this.tablaUsuarios[this.filUsuario].fecha_culminacion = obj.fecha_culminacion
-        this.tablaUsuarios[this.filUsuario].estado = obj.estado == 1 ? true : false
-        this.mostrar_carga_todo = false
-        this.toaster.success(
-          'Se actualizó correctamente',
-          'Correcto',
-          {
-            closeButton: false,
-            positionClass: 'toast-bottom-right',
-            timeOut: 4000,
-          }
-        );
 
       } else {
-        SwalService.error()
-        this.mostrar_carga_todo = false
+
+
+        const fi = moment(this.fecha_asignacion.value).format('YYYY-MM-DD')
+        const ff = moment(this.fecha_culminacion.value).format('YYYY-MM-DD')
+
+        let valido = true
+        for (const element of this.tablaAsignaciones) {
+          const feini = moment(element.fecha_inicio).format('YYYY-MM-DD')
+          const fefin = moment(element.fecha_fin).format('YYYY-MM-DD')
+
+          if (fi > feini || fi > fefin) {
+            valido = false
+            break
+          }
+          if (ff < fefin || ff < feini) {
+            valido = false
+            break
+          }
+        }
+        if (!valido) {
+          this.mostrar_carga_todo = false
+          this.toaster.error(
+            'Existen Asignaciones fuera del margen de fechas, elimine o edite las asignaciones fuera del margen de la fecha a actualizar',
+            'Error',
+            {
+              closeButton: false,
+              positionClass: 'toast-bottom-right',
+              timeOut: 6000,
+            }
+          );
+          return
+        }
+        // this.mostrar_carga_todo = true
+        const row = this.tablaUsuarios[this.filUsuario]
+        const obj = {
+          id_usuario: row.id_usuario,
+          id_proyecto: row.id_proyecto,
+          nombres: this.nombres.value,
+          apellidos: this.apellidos.value,
+          dni: this.dni.value,
+          telefono: this.telefono.value,
+          correo: this.correo.value,
+          fecha_asignacion: this.fecha_asignacion.value.split('T')[0],
+          fecha_culminacion: this.fecha_culminacion.value.split('T')[0],
+          estado: this.estado.value ? 1 : 0,
+        }
+        const response = await this.recursosHumanosService.actualizarUsuarioRecursosHumanos(obj)
+        if (response[0]) {
+          this.cerrarModal2()
+          this.tablaUsuarios[this.filUsuario].nombres = obj.nombres
+          this.tablaUsuarios[this.filUsuario].apellidos = obj.apellidos
+          this.tablaUsuarios[this.filUsuario].dni = obj.dni
+          this.tablaUsuarios[this.filUsuario].telefono = obj.telefono
+          this.tablaUsuarios[this.filUsuario].correo = obj.correo
+          this.tablaUsuarios[this.filUsuario].fecha_asignacion = obj.fecha_asignacion
+          this.tablaUsuarios[this.filUsuario].fecha_culminacion = obj.fecha_culminacion
+          this.tablaUsuarios[this.filUsuario].estado = obj.estado == 1 ? true : false
+          this.mostrar_carga_todo = false
+          this.toaster.success(
+            'Se actualizó correctamente',
+            'Correcto',
+            {
+              closeButton: false,
+              positionClass: 'toast-bottom-right',
+              timeOut: 4000,
+            }
+          );
+
+        } else {
+          SwalService.error()
+          this.mostrar_carga_todo = false
+        }
       }
     } catch (error) {
       this.mostrar_carga_todo = false
@@ -1549,6 +1737,7 @@ export class RegistroInformacionComponent implements OnInit {
     this.modalQRAsignacion.hide()
     this.qrData = ''
   }
+
   async generarQRAsignacion(row, i) {
     this.qrData = ''
     const user = this.tablaUsuarios[this.filUsuario]
@@ -1862,23 +2051,32 @@ export class RegistroInformacionComponent implements OnInit {
   async openModalConvocatoria(row?) {
     this.mostrar_carga_todo = true
     this.formConvocatoria.reset()
-    // await this.listarAreasYCargos()
-
     if (row) {
-      // this.cargosFiltrados = this.cargos.filter(ele => Number(ele.id_area) == Number(row.id_area))
       const fecha = row.fecha
         ? row.fecha.split('T')[0]
         : null;
+      const fechaC = row.fecha_culmina
+        ? row.fecha_culmina.split('T')[0]
+        : null;
       this.formConvocatoria.patchValue({
         id_convocatoria: row.id_convocatoria,
+        nombre_proyecto: row.nombre_proyecto ? row.nombre_proyecto : this.nombreProyecto,
         nro_convocatoria: row.nro_convocatoria,
+        link_bases: row.link_bases,
         fecha: fecha,
+        fecha_culmina: fechaC,
         modalidad: row.modalidad,
-        // cargos: row.cargos ? row.cargos.split('|').map(item => Number(item)) : null,
-        // id_area: row.id_area,
+        duracion: row.duracion,
         descripcion: row.descripcion,
         estado: row.estado.toString()
       })
+      if (this.estadoConvocatoria.value == '2') {
+        this.duracionConvocatoria.enable()
+      } else {
+        this.duracionConvocatoria.disable()
+      }
+    } else {
+      this.nombre_proyecto.setValue(this.nombreProyecto)
     }
     this.modalConvocatoria.show()
     this.mostrar_carga_todo = false
@@ -1886,6 +2084,48 @@ export class RegistroInformacionComponent implements OnInit {
 
   cerrarModalConvocatoria() {
     this.modalConvocatoria.hide()
+  }
+
+  cambioEstadoConvocatoria(valorSeleccionado: string) {
+    // console.log('cambioEstadoConvocatoria', valorSeleccionado);
+
+    if (valorSeleccionado === '2') { // PUBLICADO
+      // Habilitar duración
+      this.duracionConvocatoria?.enable();
+
+      // Establecer fecha actual
+      const fechaActual = new Date();
+      const fechaFormateada = fechaActual.toISOString().split('T')[0];
+      this.fechaConvocatoria.setValue(fechaFormateada);
+      this.duracionConvocatoria.enable();
+
+      // Si ya hay duración, calcular fecha culmina
+      this.calcularFechaCulmina();
+
+    } else { // NO PUBLICADO o CERRADO
+      // Deshabilitar duración
+      this.duracionConvocatoria?.disable();
+      // Limpiar y deshabilitar fechas
+    }
+  }
+
+  calcularFechaCulmina() {
+    const fecha = this.fechaConvocatoria?.value;
+    const duracion = this.duracionConvocatoria?.value;
+
+    if (fecha && duracion && !isNaN(duracion) && duracion > 0) {
+      const fechaInicio = new Date(fecha);
+      const fechaCulmina = new Date(fechaInicio);
+      fechaCulmina.setDate(fechaInicio.getDate() + parseInt(duracion));
+
+      const fechaFormateada = fechaCulmina.toISOString().split('T')[0];
+      this.fecha_culmina_convocatoria?.setValue(fechaFormateada);
+      // this.fecha_culmina_convocatoria?.enable();
+    } else {
+      // Si no hay duración válida, usar la misma fecha
+      this.fecha_culmina_convocatoria?.setValue(fecha || '');
+      // this.fecha_culmina_convocatoria?.enable();
+    }
   }
 
   async agregarConvocatoria() {
@@ -1909,12 +2149,15 @@ export class RegistroInformacionComponent implements OnInit {
       // const existe = this.tablaCargos.find(ele=> ele.)
       this.mostrar_carga_todo = true
       const obj = {
-        id_proyecto: this.idProyecto,
+        id_proyecto: this.idProyecto, // ya es número
+        nombre_proyecto: this.nombre_proyecto.value,
         nro_convocatoria: this.nro_convocatoria.value,
+        link_bases: this.link_bases.value,
         fecha: this.fechaConvocatoria.value,
+        duracion: parseInt(this.duracionConvocatoria.value) || 0, // convertir a número
         modalidad: this.modalidad.value,
         descripcion: this.descripcionConvocatoria.value,
-        estado: 1
+        estado: parseInt(this.estadoConvocatoria.value) || 0 // convertir a número
       }
       const resp = await this.recursosHumanosService.guardarConvocatoriaRecursosHumanos(obj)
       await this.listarConvocatorias()
@@ -1944,15 +2187,22 @@ export class RegistroInformacionComponent implements OnInit {
 
   async listarConvocatorias() {
     try {
-      // this.filConv = null
-      // this.filDetalle = null
-      // this.filPostulante = null
+
       this.tablaConvocatorias = []
       this.mostrar_carga_todo = true
       const obj = {
         id_proyecto: this.idProyecto
       }
       const resp = await this.recursosHumanosService.listarConvocatoriasRecursosHumanos(obj)
+      for (const element of resp) {
+        if (!element.duracion) {
+          element.fecha_culmina = element.fecha
+        } else {
+          const fecha = new Date(element.fecha);
+          fecha.setDate(fecha.getDate() + element.duracion);
+          element.fecha_culmina = fecha.toISOString()
+        }
+      }
       // this.tablaConvocatorias = []
       // this.detalleConvocatoria = []
       // this.tablaPostulantes
@@ -1972,12 +2222,26 @@ export class RegistroInformacionComponent implements OnInit {
   cambioSelectAreaAsignacion(select) {
     this.cargosFiltrados = this.cargos.filter(ele => Number(ele.id_area) == Number(this.id_area_asignacion.value))
     this.id_cargo_asignacion.reset()
+    // this.id_cargo_asignacion.setValue(null)
     this.tipo_cargo.reset()
+    // this.tipo_cargo.setValue(null)
     if (!this.id_area_asignacion.value) {
-      this.tipo_cargo.disable()
+        this.tipo_cargo.disable()
       this.id_cargo_asignacion.disable()
     } else {
       this.id_cargo_asignacion.enable()
+    }
+  }
+
+  cambioSelectAreaPostUser(select) {
+    this.cargosFiltrados = this.cargos.filter(ele => Number(ele.id_area) == Number(this.area_up.value))
+    this.cargo_up.reset()
+    this.categoria_up.reset()
+    if (!this.id_area_asignacion.value) {
+      this.categoria_up.disable()
+      this.cargo_up.disable()
+    } else {
+      this.cargo_up.enable()
     }
   }
 
@@ -1999,8 +2263,24 @@ export class RegistroInformacionComponent implements OnInit {
     } else {
       this.tipo_cargo.disable()
     }
+  }
 
-
+  cambioCargoPostUser(value) {
+    this.categoria_up.reset()
+    if (this.cargo_up.value) {
+      this.categoria_up.enable()
+      const cargo = this.cargosFiltrados.find(ele => this.cargo_up.value == ele.id_cargo)
+      let tiposBuscar = ['categoria_t1', 'categoria_t2', 'categoria_t3', 'categoria_t4', 'categoria_t5']
+      let categoria = 'categoria_t1'
+      for (const element of tiposBuscar) {
+        if (cargo[element] == 1) {
+          categoria = element
+        }
+      }
+      this.tiposFiltrados = this.tipos_cargos.filter(ele => Number(ele.charAt(ele.length - 1)) <= Number(categoria.charAt(categoria.length - 1)))
+    } else {
+      this.categoria_up.disable()
+    }
   }
 
   getCategorias(row: any): string[] {
@@ -2063,8 +2343,11 @@ export class RegistroInformacionComponent implements OnInit {
       const obj = {
         id_convocatoria: this.id_convocatoria.value,
         id_proyecto: row.id_proyecto,
+        nombre_proyecto: this.nombre_proyecto.value,
         nro_convocatoria: this.nro_convocatoria.value,
+        link_bases: this.link_bases.value,
         fecha: this.fechaConvocatoria.value,
+        duracion: this.duracionConvocatoria.value,
         modalidad: this.modalidad.value,
         descripcion: this.descripcionConvocatoria.value,
         estado: this.estadoConvocatoria.value
@@ -2441,7 +2724,7 @@ export class RegistroInformacionComponent implements OnInit {
         evaluador: this.evaluador.value ? this.evaluador.value : '',
         id_area: area,
         id_cargo: cargo,
-        cv: this.cv.value,
+        cv: this.cv.value ? this.cv.value : null,
         entrevista: this.entrevista.value ? this.entrevista.value : '',
         telefono: this.telefono_postulante.value,
         correo: this.correo_postulante.value,
@@ -2505,7 +2788,7 @@ export class RegistroInformacionComponent implements OnInit {
         evaluador: '',
         id_area: split[0],
         id_cargo: split[1],
-        cv: this.cv.value,
+        cv: this.cv.value ? this.cv.value : null,
         entrevista: '',
         telefono: this.telefono_postulante.value,
         correo: this.correo_postulante.value,
@@ -3113,5 +3396,129 @@ export class RegistroInformacionComponent implements OnInit {
       console.error('URL inválida:', url, error);
       this.toaster.error('Enlace inválido', 'No se puede abrir el enlace');
     }
+  }
+
+  seleccionFilaPostApro(i) {
+    this.filPostAprobados = i
+  }
+
+  async agregarPostulante() {
+    try {
+      if (!this.dni_up.value) {
+        return
+      }
+      if (this.formUsuarioPostulante.invalid) {
+        this.formUsuarioPostulante.markAllAsTouched()
+        this.mostrar_carga_todo = false
+        this.toaster.error(
+          'Formulario incompleto o datos no validos',
+          'Error',
+          {
+            closeButton: false,
+            positionClass: 'toast-bottom-right',
+            timeOut: 4000,
+          }
+        );
+        return
+      }
+      if (this.fecha_asignacion_up.value > this.fecha_culminacion_up.value) {
+        this.fecha_asignacion_up.setErrors({ incorrect: true })
+        this.fecha_culminacion_up.setErrors({ incorrect: true })
+        this.toaster.error(
+          `Las fecha inicio no puede ser mayor a la fecha fin`,
+          'Error en fechas',
+          {
+            closeButton: false,
+            positionClass: 'toast-bottom-right',
+            timeOut: 5000,
+          }
+        );
+        return;
+      }
+      const sw = await SwalService.confirm('Esta seguro?', 'Se cambiara el estado de el postulante a estado contratado , se creara el usuario y la asignacion')
+      if (sw.isConfirmed) {
+        this.mostrar_carga_todo = true
+        const usuario = {
+          id_proyecto: this.idProyecto,
+          nombres: this.nombres_up.value,
+          apellidos: this.apellidos_up.value,
+          dni: this.dni_up.value,
+          telefono: this.telefono_up.value,
+          correo: this.correo_up.value,
+          fecha_asignacion: this.fecha_asignacion_up.value,
+          fecha_culminacion: this.fecha_culminacion_up.value,
+          estado: 1,
+        }
+        const respUser = await this.recursosHumanosService.guardarUsuarioRecursosHumanos(usuario)
+        if (respUser[0].id_usuario) {
+          const asignacion = {
+            id_proyecto: this.idProyecto,
+            id_usuario: respUser[0].id_usuario,
+            id_area: this.area_up.value,
+            id_cargo: this.cargo_up.value,
+            tipo_cargo: Number(this.categoria_up.value.charAt(this.categoria_up.value.length - 1)),
+            fecha_inicio: this.fecha_asignacion_up.value,
+            fecha_fin: this.fecha_culminacion_up.value,
+            estado: 1,
+          }
+          const response = await this.recursosHumanosService.guardarAsignacionUsuario(asignacion)
+          if (response) {
+            const dataPostulante = this.postulAprobados[this.filPostAprobados]
+            const fecha = dataPostulante.fecha
+              ? dataPostulante.fecha.split('T')[0]
+              : null;
+            const obj = {
+              id_postulante: dataPostulante.id_postulante,
+              id_proyecto: dataPostulante.id_proyecto,
+              id_convocatoria: dataPostulante.id_convocatoria,
+              nombres: dataPostulante.nombres,
+              apellidos: dataPostulante.apellidos,
+              fecha: fecha,
+              evaluador: dataPostulante.evaluador,
+              id_area: dataPostulante.id_area,
+              id_cargo: dataPostulante.id_cargo,
+              cv: dataPostulante.cv,
+              entrevista: 'CONTRATADO',
+              telefono: dataPostulante.telefono,
+              correo: dataPostulante.correo,
+              progreso: dataPostulante.progreso,
+              calidad: dataPostulante.calidad,
+              adicional: dataPostulante.adicional,
+              dni: dataPostulante.dni
+            }
+            const resp = await this.recursosHumanosService.actualizarPostulanteConvocatoria(obj)
+            this.postulAprobados.splice(this.filPostAprobados, 1)
+            this.filPostAprobados = null
+            this.formUsuarioPostulante.reset()
+            this.formUsuarioPostulante.disable()
+            // this.cerrarModalPostUsu()
+            this.toaster.success(
+              'Se guardo correctamente',
+              'Correcto',
+              {
+                closeButton: false,
+                positionClass: 'toast-bottom-right',
+                timeOut: 4000,
+              }
+            );
+            this.tablaAsignaciones = []
+            this.filUsuario = null
+            this.filAsignacion = null
+            await this.generarTablaUsuarios()
+          }
+        }
+        this.mostrar_carga_todo = false
+      }
+    } catch (error) {
+      console.log(error)
+      SwalService.error()
+      this.mostrar_carga_todo = false
+    }
+  }
+
+  cambioValorEntrevista() {
+    const fechaActual = new Date();
+    const fechaFormateada = fechaActual.toISOString().split('T')[0];
+    this.fecha_postulante.setValue(fechaFormateada)
   }
 }

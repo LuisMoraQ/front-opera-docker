@@ -3,7 +3,7 @@ import { environment } from 'src/environments/environment';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { EncriptadorService } from './encriptador.service';
 import { catchError, map } from 'rxjs/operators'
-import { throwError } from 'rxjs'
+import { Observable, throwError } from 'rxjs'
 
 @Injectable({
   providedIn: 'root'
@@ -1272,6 +1272,23 @@ export class PrincipalService {
       catchError(err => throwError(err))
     ).toPromise()
   }
-
-
+  obtenerImagenProyecto(nombreImagen: string): Observable<Blob> {
+    const url = `${this.enviUrl}/api/proyectos/imagen-proyecto/${nombreImagen}`;
+    return this.http.get(url, { responseType: 'blob' });
+  }
+  obtenerImagenProyecto2(nombreImagen: string): Promise<Blob> {
+    const url = `${this.enviUrl}/api/proyectos/imagen-proyecto/${nombreImagen}`;
+    return this.http.get(url, { responseType: 'blob' }).pipe(
+      map(blob => {
+        if (!blob || blob.size === 0) {
+          throw new Error('Imagen vacía o no encontrada');
+        }
+        return blob;
+      }),
+      catchError(err => {
+        console.error('Error al obtener imagen:', err);
+        return throwError(err);
+      })
+    ).toPromise();
+  }
 }

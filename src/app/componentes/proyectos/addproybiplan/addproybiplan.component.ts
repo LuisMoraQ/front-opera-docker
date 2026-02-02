@@ -71,6 +71,10 @@ export class AddproybiplanComponent implements OnInit {
     plazo: new UntypedFormControl('', [Validators.required]),
     fecha_inicio: new UntypedFormControl('', [Validators.required]),
     fecha_culmina: new UntypedFormControl('', [Validators.required]),
+    nombre_empresa: new UntypedFormControl('', []),
+    ruc_empresa: new UntypedFormControl('', []),
+    direccion_empresa: new UntypedFormControl('', []),
+    imagen_empresa: new UntypedFormControl('', []),
   })
 
   get descripcion(): UntypedFormControl { return this.formProyecto.get('descripcion') as UntypedFormControl }
@@ -91,7 +95,14 @@ export class AddproybiplanComponent implements OnInit {
   get otrodepartamento(): UntypedFormControl { return this.formProyecto.get('otrodepartamento') as UntypedFormControl }
   get otrodistrito(): UntypedFormControl { return this.formProyecto.get('otrodistrito') as UntypedFormControl }
   get otraprovincia(): UntypedFormControl { return this.formProyecto.get('otraprovincia') as UntypedFormControl }
+  get nombre_empresa(): UntypedFormControl { return this.formProyecto.get('nombre_empresa') as UntypedFormControl }
+  get ruc_empresa(): UntypedFormControl { return this.formProyecto.get('ruc_empresa') as UntypedFormControl }
+  get direccion_empresa(): UntypedFormControl { return this.formProyecto.get('direccion_empresa') as UntypedFormControl }
+  get imagen_empresa(): UntypedFormControl { return this.formProyecto.get('imagen_empresa') as UntypedFormControl }
 
+
+  imagenSeleccionada: File | null = null;
+  imagenPreview: string | null = null;
   constructor(
     private modal: NgbActiveModal,
     private toaster: ToastrService,
@@ -260,9 +271,17 @@ export class AddproybiplanComponent implements OnInit {
           'fuente': 1,
           //'desplaza': false,
           //'difidas': 0,
-          'id_principal': null,//asignar id que corresponde
+          'id_principal': null,//asignar id que corresponde,
+          'nombre_empresa': this.nombre_empresa.value,
+          'ruc_empresa': this.ruc_empresa.value,
+          'direccion_empresa': this.direccion_empresa.value,
+          'imagen_empresa': this.imagen_empresa.value,
         });
         console.time('timetemp')
+        console.log('nombre_empresa', this.nombre_empresa.value)
+        console.log('ruc_empresa', this.ruc_empresa.value)
+        console.log('direccion_empresa', this.direccion_empresa.value)
+        console.log('imagen_empresa', this.imagen_empresa.value)
         let resp = await this.principalService.AgregarProyBiplan(body);
         console.timeEnd('timetemp')
         this.mostrar_carga_todo = false;
@@ -475,5 +494,44 @@ export class AddproybiplanComponent implements OnInit {
       id_usuario: this.valorEliminar?.id_usuario
     }
     const res = await this.principalService.eliminarCodigoComp(obj)
+  }
+
+  onFileSelected(event: any): void {
+    const file: File = event.target.files[0];
+
+    if (file) {
+      // Validar tamaño (5MB máximo)
+      const maxSize = 5 * 1024 * 1024; // 5MB
+      if (file.size > maxSize) {
+        this.toaster.error('La imagen debe ser menor a 5MB', 'Error');
+        return;
+      }
+
+      // Validar tipo de archivo
+      const tiposPermitidos = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+      if (!tiposPermitidos.includes(file.type)) {
+        this.toaster.error('Formato no permitido. Use JPG, PNG, GIF o WEBP', 'Error');
+        return;
+      }
+
+      this.imagenSeleccionada = file;
+
+      // Crear vista previa
+      const reader = new FileReader();
+      reader.onload = (e: any) => {
+        this.imagenPreview = e.target.result;
+        this.imagen_empresa?.setValue(e.target.result);
+      
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+
+  eliminarImagen(): void {
+    this.imagenSeleccionada = null;
+    this.imagenPreview = null;
+    // También puedes limpiar el input file
+    const fileInput = document.querySelector('#fileInput') as HTMLInputElement;
+    if (fileInput) fileInput.value = '';
   }
 }

@@ -1,11 +1,11 @@
-<main class="portada">
+<!-- <main class="portada">
     <div class="main-content full-width">
         <div class="image-container">
             <div class="container">
                 <div class="overlay">
                     <div class="container-fluid pt-2" style="background-color:rgba(255, 255, 255, 1)">
 
-                        <!-- Botones de navegación superior -->
+                        
                         <div class="d-flex justify-content-between align-items-center ">
                             <div>
                                 <button *ngIf="vistaActual !== 'lista'" class="btn btn-outline-primary btn-sm"
@@ -23,38 +23,33 @@
                                 </div>
                             </div>
 
-                            <div><!-- Espacio para alinear --></div>
+                            <div></div>
                         </div>
 
-                        <!-- VISTA 1: Lista de Convocatorias -->
                         <div class="convocatorias-container" *ngIf="vistaActual === 'lista'">
-                            <!-- Sección de Cards de Convocatorias -->
                             <div class="convocatorias-container mt-4">
                                 <div class="row justify-content-center" *ngIf="convocatorias.length > 0">
                                     <div class="col-lg-4 col-md-6 col-sm-12 mb-4" *ngFor="let item of convocatorias">
                                         <div class="convocatoria-card">
-                                            <!-- Encabezado de la card -->
                                             <div class="card-header">
                                                 <h3 class="convocatoria-titulo">
-                                                    {{item.proyecto.descripcion | uppercase}}
+                                                    {{item.convocatoria.nombre_proyecto | uppercase}}
                                                 </h3>
                                                 <div class="d-flex justify-content-between align-items-center mt-2">
                                                     <span class="convocatoria-codigo">
                                                         Convocatoria: {{item.convocatoria.nro_convocatoria}}
                                                     </span>
                                                     <span class="badge" [ngClass]="{
-                                            'badge-success': getEstadoConvocatoria(item) === 'abierta',
-                                            'badge-warning': getEstadoConvocatoria(item) === 'proxima',
-                                            'badge-danger': getEstadoConvocatoria(item) === 'cerrada'
-                                        }">
+                'badge-success': getEstadoConvocatoria(item) === 'Vigente',
+                'badge-warning': getEstadoConvocatoria(item) === 'proxima',
+                'badge-danger': getEstadoConvocatoria(item) === 'cerrada'
+              }">
                                                         {{getEstadoConvocatoria(item) | uppercase}}
                                                     </span>
                                                 </div>
                                             </div>
 
-                                            <!-- Cuerpo de la card -->
                                             <div class="card-body">
-                                                <!-- Modalidad -->
                                                 <div class="info-item">
                                                     <i class="icofont-briefcase-alt"></i>
                                                     <div class="info-content">
@@ -64,18 +59,20 @@
                                                     </div>
                                                 </div>
 
-                                                <!-- Fecha de convocatoria -->
                                                 <div class="info-item">
                                                     <i class="icofont-calendar"></i>
                                                     <div class="info-content">
-                                                        <span class="info-label">FECHA CONVOCATORIA:</span>
+                                                        <span class="info-label">PERIODO DE POSTULACIÓN:</span>
                                                         <span class="info-value">
-                                                            {{item.convocatoria.fecha | date:'dd/MM/yyyy'}}
+                                                            {{item.convocatoria.fecha | date:'dd/MM/yyyy'}} -
+                                                            {{getFechaFinConvocatoria(item)}}
+                                                            <small
+                                                                class="text-muted d-block">({{item.convocatoria.duracion}}
+                                                                día(s))</small>
                                                         </span>
                                                     </div>
                                                 </div>
 
-                                                <!-- Duración del proyecto -->
                                                 <div class="info-item">
                                                     <i class="icofont-clock-time"></i>
                                                     <div class="info-content">
@@ -87,18 +84,15 @@
                                                     </div>
                                                 </div>
 
-                                                <!-- Áreas disponibles -->
-                                                <div class="info-item">
+                                                <div class="info-item" *ngIf="debeMostrarArea(item)">
                                                     <i class="icofont-briefcase"></i>
                                                     <div class="info-content">
-                                                        <span class="info-label">ÁREAS:</span>
-                                                        <span class="info-value">
-                                                            {{getAreasUnicas(item.detalles)}}
-                                                        </span>
+                                                        <span class="info-label">ÁREA:</span>
+                                                        <span class="info-value">{{getAreaConvocatoria(item) |
+                                                            uppercase}}</span>
                                                     </div>
                                                 </div>
 
-                                                <!-- Cargos disponibles -->
                                                 <div class="info-item">
                                                     <i class="icofont-users"></i>
                                                     <div class="info-content">
@@ -109,7 +103,6 @@
                                                     </div>
                                                 </div>
 
-                                                <!-- Total vacantes -->
                                                 <div class="info-item">
                                                     <i class="icofont-ui-user-group"></i>
                                                     <div class="info-content">
@@ -121,7 +114,6 @@
                                                 </div>
                                             </div>
 
-                                            <!-- Pie de la card con botón -->
                                             <div class="card-footer">
                                                 <button class="btn-postular" (click)="verDetalleConvocatoria(item)"
                                                     [disabled]="getEstadoConvocatoria(item) === 'cerrada'">
@@ -141,7 +133,6 @@
                                     </div>
                                 </div>
 
-                                <!-- Mensaje si no hay convocatorias -->
                                 <div class="no-convocatorias text-center py-5" *ngIf="convocatorias.length === 0">
                                     <i class="icofont-files icofont-3x text-muted"></i>
                                     <h4 class="mt-3">No hay convocatorias disponibles</h4>
@@ -150,7 +141,6 @@
                             </div>
                         </div>
 
-                        <!-- VISTA 2: Detalle de Convocatoria -->
                         <div class="detalle-convocatoria" *ngIf="vistaActual === 'detalle'">
                             <div class="card">
                                 <div class="card-header bg-primary text-white">
@@ -160,7 +150,6 @@
                                     </h4>
                                 </div>
                                 <div class="card-body">
-                                    <!-- Información del Proyecto -->
                                     <div class="row mb-4">
                                         <div class="col-md-6">
                                             <h5 class="text-primary border-bottom pb-2">
@@ -181,16 +170,35 @@
                                             </h5>
                                             <p><strong>N° Convocatoria:</strong>
                                                 {{convocatoriaSeleccionada?.convocatoria?.nro_convocatoria}}</p>
-                                            <p><strong>Fecha:</strong> {{convocatoriaSeleccionada?.convocatoria?.fecha |
-                                                date:'dd/MM/yyyy'}}</p>
+                                            <p><strong>Período de postulación:</strong>
+                                                {{convocatoriaSeleccionada?.convocatoria?.fecha | date:'dd/MM/yyyy'}} -
+                                                {{getFechaFinConvocatoria(convocatoriaSeleccionada)}}
+                                                <small
+                                                    class="text-muted">({{convocatoriaSeleccionada?.convocatoria?.duracion}}
+                                                    día(s))</small>
+                                            </p>
                                             <p><strong>Modalidad:</strong>
                                                 {{convocatoriaSeleccionada?.convocatoria?.modalidad}}</p>
                                             <p><strong>Descripción:</strong>
                                                 {{convocatoriaSeleccionada?.convocatoria?.descripcion}}</p>
+
+                                            <div *ngIf="convocatoriaSeleccionada?.convocatoria?.link_bases">
+                                                <strong>Documentos:</strong>
+                                                <div class="mt-2">
+                                                    <a [href]="convocatoriaSeleccionada.convocatoria.link_bases"
+                                                        target="_blank" class="btn btn-outline-primary btn-sm">
+                                                        <i class="icofont-download me-1"></i>
+                                                        Ver Bases de la Convocatoria
+                                                    </a>
+                                                    <small class="text-muted d-block mt-1">
+                                                        <i class="icofont-info-circle"></i> Documento oficial de la
+                                                        convocatoria
+                                                    </small>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
 
-                                    <!-- Lista de Puestos -->
                                     <h5 class="text-primary border-bottom pb-2 mb-3">
                                         <i class="icofont-users me-2"></i>Puestos Disponibles
                                     </h5>
@@ -224,6 +232,14 @@
                                                                 <p class="mb-0" *ngIf="detalle.ciudad">
                                                                     <strong>Ciudad:</strong> {{detalle.ciudad}}
                                                                 </p>
+
+                                                                <div class="mt-2" *ngIf="detalle.link_documento">
+                                                                    <a [href]="detalle.link_documento" target="_blank"
+                                                                        class="btn btn-outline-secondary btn-sm">
+                                                                        <i class="icofont-file-text me-1"></i>
+                                                                        Ver Documento del Cargo
+                                                                    </a>
+                                                                </div>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -246,7 +262,6 @@
                             </div>
                         </div>
 
-                        <!-- VISTA 3: Formulario de Postulación -->
                         <div class="formulario-postulacion" *ngIf="vistaActual === 'formulario'">
                             <div class="card">
                                 <div class="card-header bg-success text-white">
@@ -256,7 +271,6 @@
                                     </h4>
                                 </div>
                                 <div class="card-body">
-                                    <!-- Información resumen -->
                                     <div class="alert alert-info mb-4">
                                         <h6><i class="icofont-info-circle me-2"></i>Información del Puesto</h6>
                                         <div class="row mt-2">
@@ -279,7 +293,6 @@
                                         </div>
                                     </div>
 
-                                    <!-- Formulario de postulación -->
                                     <form [formGroup]="formPostulacion">
                                         <div class="row">
                                             <div class="col-md-6 mb-3">
@@ -356,8 +369,7 @@
                                                 </div>
                                             </div>
 
-                                            <!-- Campo opcional para experiencia -->
-                                            <div class="col-md-6 mb-3" *ngIf="false"> <!-- Desactivado temporalmente -->
+                                            <div class="col-md-6 mb-3" *ngIf="false"> 
                                                 <label class="form-label">Experiencia (años)</label>
                                                 <input type="number" class="form-control" formControlName="experiencia">
                                             </div>
@@ -418,7 +430,6 @@
                                         </div>
                                     </form>
 
-                                    <!-- Resumen de errores al enviar -->
                                     <div class="alert alert-danger mt-3"
                                         *ngIf="mostrarErrores && formPostulacion.invalid">
                                         <h6><i class="icofont-warning"></i> Por favor corrige los siguientes errores:
@@ -449,6 +460,799 @@
                                             <li *ngIf="formPostulacion.get('link_cv')?.errors?.['pattern']">• Ingrese
                                                 una URL válida (https://...)</li>
                                         </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="social">
+            <p>Biplan el Software que te hace ser mas eficiente en la elaboración de tus proyectos.</p>
+            <div class="redes">
+                <a style="margin-left:40px" href="https://www.facebook.com/profile.php?id=61568538622639"
+                    target="_blank"> <i class="icofont-facebook"></i></a>
+                <a href="https://www.youtube.com/@biplan.Costos-Presupuestos" target="_blank"><i
+                        class="icofont-youtube-play"></i></a>
+                <a href="https://www.instagram.com/biplan.pe/" target="_blank"><i class="icofont-instagram"></i></a>
+                <a href="https://www.tiktok.com/@eduarvq?_t=8rLJe8ro1Sh&_r=1" target="_blank" aria-label="TikTok"><i
+                        class="icofont-tiktok"></i></a>
+                <a href="https://wa.me/+51986566443" target="_blank" aria-label="WhatsApp"><i
+                        class="icofont-brand-whatsapp"></i></a>
+                <a href="https://linkedin.com" target="_blank" aria-label="LinkedIn"><i class="icofont-linkedin"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</main>
+
+<app-cargando [bloquearTodo]="true" *ngIf="mostrar_carga_todo"></app-cargando> -->
+
+<main class="portada">
+    <div class="main-content full-width">
+        <div class="image-container">
+            <div class="container">
+                <div class="overlay">
+                    <div class="container-fluid pt-2" style="background-color:rgba(255, 255, 255, 1)">
+
+                        <!-- Botones de navegación superior -->
+                        <div class="d-flex justify-content-between align-items-center ">
+                            <div>
+                                <button *ngIf="vistaActual !== 'lista'" class="btn btn-outline-primary btn-sm"
+                                    (click)="regresar()">
+                                    <i class="icofont-arrow-left"></i> Regresar
+                                </button>
+                            </div>
+
+                            <div class="titulo-elegante">
+                                <div class="marco-titulo">
+                                    <h2 class="text-center mb-0">
+                                        <span class="texto-gradiente">{{tituloVista}}</span>
+                                    </h2>
+                                    <div class="subrayado"></div>
+                                </div>
+                            </div>
+
+                            <div><!-- Espacio para alinear --></div>
+                        </div>
+
+                        <!-- VISTA 1: Lista de Convocatorias -->
+                        <div class="convocatorias-container" *ngIf="vistaActual === 'lista'">
+
+                            <!-- FILTROS DE BÚSQUEDA -->
+                            <div class="card shadow-sm mb-4 border-0"
+                                style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);">
+                                <div class="card-body" style="padding: 0.5rem;">
+                                    <h5 class="mb-3 text-primary">
+                                        <i class="icofont-filter me-2"></i>Filtrar Convocatorias
+                                    </h5>
+                                    <div class="row g-3">
+                                        <!-- Filtro 1: Año -->
+                                        <div class="col-md-3">
+                                            <label class="form-label fw-bold mr-1">Año </label>
+                                            <select class="form-select form-select-sm" [(ngModel)]="filtroAnio">
+                                                <option value="todos">Todos</option>
+                                                <option *ngFor="let anio of listaAnios" [value]="anio.anio">
+                                                    {{anio.anio}}</option>
+                                            </select>
+                                        </div>
+
+                                        <!-- Filtro 2: Mes -->
+                                        <div class="col-md-3">
+                                            <label class="form-label fw-bold mr-1">Mes</label>
+                                            <select class="form-select form-select-sm" [(ngModel)]="filtroMes">
+                                                <option value="todos">Todos</option>
+                                                <option *ngFor="let mes of listaMeses; let i = index" [value]="i+1">
+                                                    {{mes}}
+                                                </option>
+                                            </select>
+                                        </div>
+
+                                        <!-- Filtro 3: Estado -->
+                                        <div class="col-md-3">
+                                            <label class="form-label fw-bold mr-1">Estado</label>
+                                            <select class="form-select form-select-sm"
+                                                [(ngModel)]="filtroEstadoConvocatoria">
+                                                <option value="todos">Todas</option> <!-- Cambiado de "0" a "todos" -->
+                                                <option value="0">Cerradas</option>
+                                                <option value="2">Activas</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <button class="btn btn-primary btn-sm" (click)="cargarConvocatorias()">
+                                                <i class="icofont-search me-1"></i> Buscar
+                                            </button>
+                                        </div>
+                                    </div>
+
+
+                                </div>
+                            </div>
+
+                            <!-- Sección de Cards de Convocatorias con Scroll -->
+                            <div class="convocatorias-grid-container">
+                                <div *ngIf="convocatoriasFiltradas.length > 0">
+
+
+                                    <div class="convocatorias-scroll-container">
+                                        <div class="row" style="padding-top: 2px;">
+                                            <div class=" col-6 mb-4" *ngFor="let item of convocatoriasFiltradas">
+                                                <div class="convocatoria-card d-flex flex-column h-100">
+                                                    <div class="card-header-convocatoria">
+                                                        <div class="d-flex">
+                                                            <!-- Lado izquierdo: Imagen de la empresa -->
+                                                            <div class="empresa-imagen-container">
+                                                                <div class="empresa-logo-wrapper">
+                                                                    <img [src]="item.proyecto?.imagen_empresa_64"
+                                                                        [alt]="item.proyecto?.nombre_empresa || 'Empresa'"
+                                                                        class="empresa-logo-img"
+                                                                        (error)="onImageError($event)" loading="lazy">
+                                                                    <div class="spinner-imagen"
+                                                                        *ngIf="item.proyecto?._cargandoImagen">
+                                                                        <div class="spinner-border spinner-border-sm"
+                                                                            role="status">
+                                                                            <span class="sr-only">Cargando...</span>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+
+                                                            <!-- Lado derecho: Información de empresa y proyecto -->
+                                                            <div class="empresa-info-container flex-grow-1 ms-3">
+                                                                <!-- Nombre de la empresa con ellipsis -->
+                                                                <div class="empresa-nombre-linea">
+                                                                    <h4 class="empresa-nombre text-truncate mb-1"
+                                                                        [title]="item.proyecto?.nombre_empresa || ''">
+                                                                        {{item.proyecto?.nombre_empresa || 'Nombre no
+                                                                        disponible'}}
+                                                                    </h4>
+                                                                </div>
+
+                                                                <!-- RUC de la empresa -->
+                                                                <div class="empresa-ruc-linea">
+                                                                    <small class="empresa-ruc text-muted">
+                                                                        <i class="icofont-id-card me-1"></i>
+                                                                        RUC: {{item.proyecto?.ruc_empresa || 'No
+                                                                        disponible'}}
+                                                                    </small>
+                                                                </div>
+
+                                                                <!-- Nombre del proyecto -->
+                                                                <div class="proyecto-nombre-linea mt-2">
+                                                                    <h5 class="proyecto-nombre text-truncate mb-0"
+                                                                        [title]="item.convocatoria?.nombre_proyecto || ''">
+                                                                        <i
+                                                                            class="icofont-briefcase me-1 text-primary"></i>
+                                                                        {{item.convocatoria?.nombre_proyecto ||
+                                                                        'Proyecto sin nombre'}}
+                                                                    </h5>
+                                                                </div>
+
+
+                                                            </div>
+
+                                                            <!-- Lado derecho: Badge de estado -->
+                                                            <div class="estado-badge-container ms-2">
+                                                                <span class="badge-estado-convocatoria"
+                                                                    [ngClass]="getBadgeClass(item)">
+                                                                    {{getEstadoConvocatoria(item) | uppercase}}
+                                                                </span>
+
+
+                                                                <!-- Número de convocatoria (opcional, debajo del nombre del proyecto) -->
+                                                                <div class="convocatoria-codigo-linea">
+                                                                    <small class="convocatoria-codigo text-muted">
+                                                                        <i class="icofont-hashtag me-1"></i>
+                                                                        Convocatoria:
+                                                                        {{item.convocatoria?.nro_convocatoria || 'N/A'}}
+                                                                    </small>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <!--
+                                                    <div class="card-body">
+                                                        <div class="info-item">
+                                                            <i class="icofont-briefcase-alt"></i>
+                                                            <div class="info-content">
+                                                                <span class="info-label">MODALIDAD:</span>
+                                                                <span class="info-value">{{item.convocatoria.modalidad |
+                                                                    uppercase}}</span>
+                                                            </div>
+                                                        </div>
+
+                                                        <div class="info-item">
+                                                            <i class="icofont-calendar"></i>
+                                                            <div class="info-content">
+                                                                <span class="info-label">POSTULACIÓN:</span>
+                                                                <span class="info-value">
+                                                                    {{item.convocatoria.fecha | date:'dd/MM/yyyy'}} -
+                                                                    {{getFechaFinConvocatoria(item)}}
+                                                                    <small class="text-muted d-block">
+                                                                        ({{item.convocatoria.duracion}}
+                                                                        día{{item.convocatoria.duracion > 1 ? 's' :
+                                                                        ''}})
+                                                                    </small>
+                                                                </span>
+                                                            </div>
+                                                        </div>
+
+                                                        <div class="info-item">
+                                                            <i class="icofont-clock-time"></i>
+                                                            <div class="info-content">
+                                                                <span class="info-label">PROYECTO:</span>
+                                                                <span class="info-value">
+                                                                    {{item.proyecto.fecha_inicio | date:'dd/MM/yyyy'}} -
+                                                                    {{item.proyecto.fecha_fin | date:'dd/MM/yyyy'}}
+                                                                </span>
+                                                            </div>
+                                                        </div>
+
+                                                        <div class="info-item" *ngIf="debeMostrarArea(item)">
+                                                            <i class="icofont-briefcase"></i>
+                                                            <div class="info-content">
+                                                                <span class="info-label">ÁREA:</span>
+                                                                <span class="info-value">{{getAreaConvocatoria(item) |
+                                                                    uppercase}}</span>
+                                                            </div>
+                                                        </div>
+
+                                                        <div class="info-item"
+                                                            *ngIf="item.detalles && item.detalles.length > 0">
+                                                            <i class="icofont-users"></i>
+                                                            <div class="info-content">
+                                                                <span class="info-label">CARGOS:</span>
+                                                                <div class="cargos-lista mt-1">
+                                                                    <div *ngFor="let detalle of item.detalles"
+                                                                        class="cargo-item mb-1">
+                                                                        <span
+                                                                            class="cargo-nombre">{{detalle.cargo_descripcion}}</span>
+                                                                        <span
+                                                                            class="badge bg-info ml-1 prel">{{detalle.vacantes}}</span>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                        <div class="info-item">
+                                                            <i class="icofont-ui-user-group"></i>
+                                                            <div class="info-content">
+                                                                <span class="info-label">TOTAL VACANTES:</span>
+                                                                <span class="info-value total-vacantes">
+                                                                    {{getTotalVacantes(item.detalles)}}
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="card-footer">
+                                                        <button class="btn-postular"
+                                                            (click)="verDetalleConvocatoria(item)"
+                                                            [disabled]="getEstadoConvocatoria(item) === 'cerrada'">
+                                                            <span *ngIf="getEstadoConvocatoria(item) !== 'cerrada'">
+                                                                <i class="icofont-eye me-1"></i> VER DETALLES
+                                                            </span>
+                                                            <span *ngIf="getEstadoConvocatoria(item) === 'cerrada'">
+                                                                <i class="icofont-lock me-1"></i> CONVOCATORIA CERRADA
+                                                            </span>
+                                                        </button>
+                                                        <div class="mt-2 text-center">
+                                                            <small class="text-muted">
+                                                                <i class="icofont-clock-time me-1"></i>
+                                                                {{getDiasRestantes(item)}} día{{getDiasRestantes(item)
+                                                                !== 1 ? 's' : ''}} restante{{getDiasRestantes(item) !==
+                                                                1 ? 's' : ''}}
+                                                            </small>
+                                                        </div>
+                                                    </div> -->
+                                                    <div class="card-body-contenido">
+                                                        <!-- Contenido principal en 2 columnas -->
+                                                        <div class="contenido-columnas">
+                                                            <!-- Columna izquierda -->
+                                                            <div class="columna-izquierda">
+                                                                <!-- Modalidad -->
+                                                                <div class="info-item-compacta">
+                                                                    <i class="icofont-briefcase-alt icono-info"></i>
+                                                                    <div class="contenido-info">
+                                                                        <div class="etiqueta-info">MODALIDAD</div>
+                                                                        <div class="valor-info">
+                                                                            {{item.convocatoria.modalidad | uppercase}}
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+
+                                                                <!-- Postulación -->
+                                                                <div class="info-item-compacta">
+                                                                    <i class="icofont-calendar icono-info"></i>
+                                                                    <div class="contenido-info">
+                                                                        <div class="etiqueta-info">POSTULACIÓN</div>
+                                                                        <div class="valor-info">
+                                                                            {{item.convocatoria.fecha |
+                                                                            date:'dd/MM/yyyy'}} -
+                                                                            {{getFechaFinConvocatoria(item)}}
+                                                                            <div class="duracion-info">
+                                                                                ({{item.convocatoria.duracion}}
+                                                                                día{{item.convocatoria.duracion > 1 ?
+                                                                                's' : ''}})
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+
+                                                                <!-- Proyecto -->
+                                                                <div class="info-item-compacta">
+                                                                    <i class="icofont-clock-time icono-info"></i>
+                                                                    <div class="contenido-info">
+                                                                        <div class="etiqueta-info">PROYECTO</div>
+                                                                        <div class="valor-info">
+                                                                            {{item.proyecto.fecha_inicio |
+                                                                            date:'dd/MM/yyyy'}} -
+                                                                            {{item.proyecto.fecha_fin |
+                                                                            date:'dd/MM/yyyy'}}
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+
+                                                            <!-- Columna derecha -->
+                                                            <div class="columna-derecha">
+                                                                <!-- Área (si aplica) -->
+                                                                <div class="info-item-compacta"
+                                                                    *ngIf="debeMostrarArea(item)">
+                                                                    <i class="icofont-briefcase icono-info"></i>
+                                                                    <div class="contenido-info">
+                                                                        <div class="etiqueta-info">ÁREA</div>
+                                                                        <div class="valor-info">
+                                                                            {{getAreaConvocatoria(item) | uppercase}}
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+
+                                                                <!-- Total vacantes -->
+                                                                <div class="info-item-compacta">
+                                                                    <i class="icofont-ui-user-group icono-info"></i>
+                                                                    <div class="contenido-info">
+                                                                        <div class="etiqueta-info">TOTAL VACANTES</div>
+                                                                        <div class="valor-info total-vacantes-numero">
+                                                                            {{getTotalVacantes(item.detalles)}}
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+
+                                                                <!-- Cargos (si existen) -->
+                                                                <div class="info-item-compacta"
+                                                                    *ngIf="item.detalles && item.detalles.length > 0">
+                                                                    <i class="icofont-users icono-info"></i>
+                                                                    <div class="contenido-info">
+                                                                        <div class="etiqueta-info">CARGOS DISPONIBLES
+                                                                        </div>
+                                                                        <div class="cargos-minilista">
+                                                                            <span
+                                                                                *ngFor="let detalle of item.detalles | slice:0:3"
+                                                                                class="badge-cargo">
+                                                                                {{detalle.cargo_descripcion}} <span
+                                                                                    class="vacantes-count">({{detalle.vacantes}})</span>
+                                                                            </span>
+                                                                            <span *ngIf="item.detalles.length > 3"
+                                                                                class="mas-cargos">
+                                                                                +{{item.detalles.length - 3}} más
+                                                                            </span>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                        <!-- Línea inferior con botón y días restantes -->
+                                                        <div class="linea-inferior">
+                                                            <!-- Días restantes -->
+                                                            <div class="dias-restantes-info">
+                                                                <i class="icofont-clock-time me-1"></i>
+                                                                <span class="texto-dias">
+                                                                    {{getDiasRestantes(item)}}
+                                                                    día{{getDiasRestantes(item) !== 1 ? 's' : ''}}
+                                                                    restante{{getDiasRestantes(item) !== 1 ? 's' : ''}}
+                                                                </span>
+                                                            </div>
+
+                                                            <!-- Botón de ver detalles -->
+                                                            <div class="boton-contenedor">
+                                                                <button class="btn-ver-detalles"
+                                                                    (click)="verDetalleConvocatoria(item)"
+                                                                    [disabled]="getEstadoConvocatoria(item) === 'cerrada'"
+                                                                    [ngClass]="{'btn-cerrado': getEstadoConvocatoria(item) === 'cerrada'}">
+                                                                    <span
+                                                                        *ngIf="getEstadoConvocatoria(item) !== 'cerrada'">
+                                                                        <i class="icofont-eye me-1"></i> VER DETALLES
+                                                                    </span>
+                                                                    <span
+                                                                        *ngIf="getEstadoConvocatoria(item) === 'cerrada'">
+                                                                        <i class="icofont-lock me-1"></i> CERRADA
+                                                                    </span>
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="no-convocatorias text-center py-5"
+                                    *ngIf="convocatoriasFiltradas.length === 0 && convocatorias.length > 0">
+                                    <div class="empty-state">
+                                        <i class="icofont-search icofont-3x text-muted mb-3"></i>
+                                        <h4 class="mt-3 text-muted">No se encontraron convocatorias</h4>
+                                        <p class="text-muted">No hay resultados para los filtros aplicados</p>
+                                        <button class="btn btn-outline-primary btn-sm mt-2" (click)="limpiarFiltros()">
+                                            <i class="icofont-refresh me-1"></i> Limpiar Filtros
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="no-convocatorias text-center py-5" *ngIf="convocatorias.length === 0">
+                                    <i class="icofont-files icofont-3x text-muted"></i>
+                                    <h4 class="mt-3">No hay convocatorias disponibles</h4>
+                                    <p class="text-muted">Pronto publicaremos nuevas oportunidades</p>
+                                </div>
+                            </div>
+
+
+
+                        </div>
+
+                        <!-- VISTA 2: Detalle de Convocatoria -->
+                        <div class="detalle-convocatoria" *ngIf="vistaActual === 'detalle'">
+                            <div class="card">
+                                <div class="card-header bg-primary text-white">
+                                    <h4 class="mb-0">
+                                        <i class="icofont-briefcase me-2"></i>
+                                        {{convocatoriaSeleccionada?.proyecto?.descripcion}}
+                                    </h4>
+                                </div>
+                                <div class="card-body">
+                                    <!-- Información del Proyecto -->
+                                    <div class="row mb-4">
+                                        <div class="col-md-6">
+                                            <h5 class="text-primary border-bottom pb-2">
+                                                <i class="icofont-building-alt me-2"></i>Información del Proyecto
+                                            </h5>
+                                            <p><strong>Descripción:</strong>
+                                                {{convocatoriaSeleccionada?.proyecto?.descripcion}}</p>
+                                            <p><strong>Fecha inicio:</strong>
+                                                {{convocatoriaSeleccionada?.proyecto?.fecha_inicio |
+                                                date:'dd/MM/yyyy'}}
+                                            </p>
+                                            <p><strong>Fecha fin:</strong>
+                                                {{convocatoriaSeleccionada?.proyecto?.fecha_fin |
+                                                date:'dd/MM/yyyy'}}
+                                            </p>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <h5 class="text-primary border-bottom pb-2">
+                                                <i class="icofont-file-alt me-2"></i>Información de Convocatoria
+                                            </h5>
+                                            <p><strong>N° Convocatoria:</strong>
+                                                {{convocatoriaSeleccionada?.convocatoria?.nro_convocatoria}}</p>
+                                            <p><strong>Período de postulación:</strong>
+                                                {{convocatoriaSeleccionada?.convocatoria?.fecha |
+                                                date:'dd/MM/yyyy'}} -
+                                                {{getFechaFinConvocatoria(convocatoriaSeleccionada)}}
+                                                <small
+                                                    class="text-muted">({{convocatoriaSeleccionada?.convocatoria?.duracion}}
+                                                    día(s))</small>
+                                            </p>
+                                            <p><strong>Modalidad:</strong>
+                                                {{convocatoriaSeleccionada?.convocatoria?.modalidad}}</p>
+                                            <p><strong>Descripción:</strong>
+                                                {{convocatoriaSeleccionada?.convocatoria?.descripcion}}</p>
+
+                                            <!-- Botón para ver bases - SOLO SI EXISTE LINK -->
+                                            <div *ngIf="convocatoriaSeleccionada?.convocatoria?.link_bases">
+                                                <strong>Documentos:</strong>
+                                                <div class="mt-2">
+                                                    <a [href]="convocatoriaSeleccionada.convocatoria.link_bases"
+                                                        target="_blank" class="btn btn-outline-primary btn-sm">
+                                                        <i class="icofont-download me-1"></i>
+                                                        Ver Bases de la Convocatoria
+                                                    </a>
+                                                    <small class="text-muted d-block mt-1">
+                                                        <i class="icofont-info-circle"></i> Documento oficial de la
+                                                        convocatoria
+                                                    </small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Lista de Puestos -->
+                                    <h5 class="text-primary border-bottom pb-2 mb-3"
+                                        *ngIf="convocatoriaSeleccionada?.detalles?.length > 0">
+                                        <i class="icofont-users ml-2"></i>Puestos Disponibles
+                                    </h5>
+
+                                    <div class="row">
+                                        <div class="col-12"
+                                            *ngFor="let detalle of convocatoriaSeleccionada?.detalles; let i = index">
+                                            <div class="puesto-card mb-3 p-3 border rounded hover-shadow">
+                                                <div class="row align-items-center">
+                                                    <div class="col-md-8">
+                                                        <h6 class="text-primary">
+                                                            <i class="icofont-user-alt-3 me-2"></i>
+                                                            {{detalle.cargo_descripcion}}
+                                                        </h6>
+                                                        <div class="row mt-2">
+                                                            <div class="col-sm-6">
+                                                                <p class="mb-1"><strong>Área:</strong>
+                                                                    {{detalle.area_descripcion}}</p>
+                                                                <p class="mb-1"><strong>Vacantes:</strong>
+                                                                    <span
+                                                                        class="badge bg-info prel">{{detalle.vacantes}}</span>
+                                                                </p>
+                                                            </div>
+                                                            <div class="col-sm-6">
+                                                                <p class="mb-1"><strong>Requerimientos:</strong>
+                                                                    {{detalle.requerimiento}}</p>
+                                                                <p class="mb-1"><strong>Remuneración:</strong>
+                                                                    <span class="text-success fw-bold">S/
+                                                                        {{detalle.remuneracion | number}}</span>
+                                                                </p>
+                                                                <p class="mb-0" *ngIf="detalle.ciudad">
+                                                                    <strong>Ciudad:</strong> {{detalle.ciudad}}
+                                                                </p>
+
+                                                                <!-- Botón para ver documento del cargo - SOLO SI EXISTE LINK -->
+                                                                <div class="mt-2" *ngIf="detalle.link_documento">
+                                                                    <a [href]="detalle.link_documento" target="_blank"
+                                                                        class="btn btn-outline-secondary btn-sm">
+                                                                        <i class="icofont-file-text me-1"></i>
+                                                                        Ver Documento del Cargo
+                                                                    </a>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-4 text-end">
+                                                        <button class="btn btn-primary btn-postular-detalle"
+                                                            (click)="irAFormularioPostulacion(detalle)"
+                                                            [disabled]="getEstadoConvocatoria(convocatoriaSeleccionada) === 'cerrada'">
+                                                            <i class="icofont-paper-plane me-2"></i>POSTULAR
+                                                        </button>
+                                                        <div class="mt-2">
+                                                            <small class="text-muted">
+                                                                Código: DET-{{detalle.id_detalle}}
+                                                            </small>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- VISTA 3: Formulario de Postulación -->
+                        <div class="formulario-postulacion" *ngIf="vistaActual === 'formulario'">
+                            <div class="formulario-postulacion" *ngIf="vistaActual === 'formulario'">
+                                <div class="card">
+                                    <div class="card-header bg-success text-white">
+                                        <h4 class="mb-0">
+                                            <i class="icofont-paper-plane me-2"></i>
+                                            Postulación: {{detalleSeleccionado?.cargo_descripcion}}
+                                        </h4>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="alert alert-info mb-4">
+                                            <h6><i class="icofont-info-circle me-2"></i>Información del Puesto</h6>
+                                            <div class="row mt-2">
+                                                <div class="col-md-6">
+                                                    <p class="mb-1"><strong>Proyecto:</strong>
+                                                        {{convocatoriaSeleccionada?.proyecto?.descripcion}}</p>
+                                                    <p class="mb-1"><strong>Cargo:</strong>
+                                                        {{detalleSeleccionado?.cargo_descripcion}}</p>
+                                                    <p class="mb-1"><strong>Área:</strong>
+                                                        {{detalleSeleccionado?.area_descripcion}}</p>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <p class="mb-1"><strong>Remuneración:</strong> S/
+                                                        {{detalleSeleccionado?.remuneracion | number}}</p>
+                                                    <p class="mb-1"><strong>Vacantes:</strong>
+                                                        {{detalleSeleccionado?.vacantes}}</p>
+                                                    <p class="mb-1"><strong>Convocatoria:</strong>
+                                                        {{convocatoriaSeleccionada?.convocatoria?.nro_convocatoria}}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <form [formGroup]="formPostulacion">
+                                            <div class="row">
+                                                <div class="col-md-6 mb-3">
+                                                    <label class="form-label">Nombres Completos *</label>
+                                                    <input type="text" class="form-control" formControlName="nombres"
+                                                        [class.is-invalid]="formPostulacion.get('nombres')?.invalid && formPostulacion.get('nombres')?.touched">
+                                                    <div class="invalid-feedback"
+                                                        *ngIf="formPostulacion.get('nombres')?.errors?.['required'] && formPostulacion.get('nombres')?.touched">
+                                                        Los nombres son requeridos
+                                                    </div>
+                                                    <div class="invalid-feedback"
+                                                        *ngIf="formPostulacion.get('nombres')?.errors?.['minlength'] && formPostulacion.get('nombres')?.touched">
+                                                        Los nombres deben tener al menos 3 caracteres
+                                                    </div>
+                                                </div>
+
+                                                <div class="col-md-6 mb-3">
+                                                    <label class="form-label">Apellidos Completos *</label>
+                                                    <input type="text" class="form-control" formControlName="apellidos"
+                                                        [class.is-invalid]="formPostulacion.get('apellidos')?.invalid && formPostulacion.get('apellidos')?.touched">
+                                                    <div class="invalid-feedback"
+                                                        *ngIf="formPostulacion.get('apellidos')?.errors?.['required'] && formPostulacion.get('apellidos')?.touched">
+                                                        Los apellidos son requeridos
+                                                    </div>
+                                                    <div class="invalid-feedback"
+                                                        *ngIf="formPostulacion.get('apellidos')?.errors?.['minlength'] && formPostulacion.get('apellidos')?.touched">
+                                                        Los apellidos deben tener al menos 3 caracteres
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="row">
+                                                <div class="col-md-6 mb-3">
+                                                    <label class="form-label">DNI *</label>
+                                                    <input type="text" class="form-control" formControlName="dni"
+                                                        [class.is-invalid]="formPostulacion.get('dni')?.invalid && formPostulacion.get('dni')?.touched">
+                                                    <div class="invalid-feedback"
+                                                        *ngIf="formPostulacion.get('dni')?.errors?.['required'] && formPostulacion.get('dni')?.touched">
+                                                        El DNI es requerido
+                                                    </div>
+                                                    <div class="invalid-feedback"
+                                                        *ngIf="formPostulacion.get('dni')?.errors?.['pattern'] && formPostulacion.get('dni')?.touched">
+                                                        Ingrese un DNI válido (8 dígitos)
+                                                    </div>
+                                                </div>
+
+                                                <div class="col-md-6 mb-3">
+                                                    <label class="form-label">Correo Electrónico *</label>
+                                                    <input type="email" class="form-control" formControlName="email"
+                                                        [class.is-invalid]="formPostulacion.get('email')?.invalid && formPostulacion.get('email')?.touched">
+                                                    <div class="invalid-feedback"
+                                                        *ngIf="formPostulacion.get('email')?.errors?.['required'] && formPostulacion.get('email')?.touched">
+                                                        El correo electrónico es requerido
+                                                    </div>
+                                                    <div class="invalid-feedback"
+                                                        *ngIf="formPostulacion.get('email')?.errors?.['email'] && formPostulacion.get('email')?.touched">
+                                                        Ingrese un correo electrónico válido
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="row">
+                                                <div class="col-md-6 mb-3">
+                                                    <label class="form-label">Teléfono *</label>
+                                                    <input type="text" class="form-control" formControlName="telefono"
+                                                        [class.is-invalid]="formPostulacion.get('telefono')?.invalid && formPostulacion.get('telefono')?.touched">
+                                                    <div class="invalid-feedback"
+                                                        *ngIf="formPostulacion.get('telefono')?.errors?.['required'] && formPostulacion.get('telefono')?.touched">
+                                                        El teléfono es requerido
+                                                    </div>
+                                                    <div class="invalid-feedback"
+                                                        *ngIf="formPostulacion.get('telefono')?.errors?.['pattern'] && formPostulacion.get('telefono')?.touched">
+                                                        Ingrese un número de teléfono válido (9 dígitos)
+                                                    </div>
+                                                </div>
+
+                                                <div class="col-md-6 mb-3" *ngIf="false">
+                                                    <label class="form-label">Experiencia (años)</label>
+                                                    <input type="number" class="form-control"
+                                                        formControlName="experiencia">
+                                                </div>
+                                            </div>
+
+                                            <div class="mb-3">
+                                                <label class="form-label">Enlace a tu CV/Portafolio *</label>
+                                                <div class="input-group">
+                                                    <span class="input-group-text">
+                                                        <i class="icofont-link"></i>
+                                                    </span>
+                                                    <input type="url" class="form-control" formControlName="link_cv"
+                                                        [class.is-invalid]="formPostulacion.get('link_cv')?.invalid && formPostulacion.get('link_cv')?.touched"
+                                                        placeholder="https://drive.google.com/... o https://linkedin.com/in/...">
+                                                </div>
+                                                <div class="invalid-feedback"
+                                                    *ngIf="formPostulacion.get('link_cv')?.errors?.['required'] && formPostulacion.get('link_cv')?.touched">
+                                                    El enlace al CV/Portafolio es requerido
+                                                </div>
+                                                <div class="invalid-feedback"
+                                                    *ngIf="formPostulacion.get('link_cv')?.errors?.['pattern'] && formPostulacion.get('link_cv')?.touched">
+                                                    Ingrese una URL válida (https://...)
+                                                </div>
+                                                <div class="form-text">
+                                                    <small class="text-muted">
+                                                        <i class="icofont-info-circle"></i>
+                                                        Enlace a tu CV, portafolio, LinkedIn o plataforma similar
+                                                    </small>
+                                                </div>
+                                            </div>
+
+                                            <div class="mb-3">
+                                                <label class="form-label">Mensaje adicional</label>
+                                                <textarea class="form-control" rows="3" formControlName="mensaje"
+                                                    maxlength="500"
+                                                    placeholder="Escribe un mensaje adicional (máximo 500 caracteres)..."></textarea>
+                                                <div class="d-flex justify-content-between mt-1">
+                                                    <small class="text-muted">
+                                                        Caracteres: {{formPostulacion.get('mensaje')?.value?.length
+                                                        ||
+                                                        0}}/500
+                                                    </small>
+                                                    <small class="text-muted"
+                                                        *ngIf="formPostulacion.get('mensaje')?.value?.length === 500">
+                                                        <i class="icofont-warning"></i> Límite alcanzado
+                                                    </small>
+                                                </div>
+                                            </div>
+
+                                            <div class="d-flex justify-content-between mt-4">
+                                                <button type="button" class="btn btn-outline-secondary"
+                                                    (click)="regresar()">
+                                                    <i class="icofont-arrow-left"></i> Cancelar
+                                                </button>
+                                                <button type="button" class="btn btn-success"
+                                                    (click)="enviarPostulacion()" [disabled]="formPostulacion.invalid">
+                                                    <i class="icofont-paper-plane me-2"></i> Enviar Postulación
+                                                </button>
+                                            </div>
+                                        </form>
+
+                                        <div class="alert alert-danger mt-3"
+                                            *ngIf="mostrarErrores && formPostulacion.invalid">
+                                            <h6><i class="icofont-warning"></i> Por favor corrige los siguientes
+                                                errores:
+                                            </h6>
+                                            <ul class="mb-0">
+                                                <li *ngIf="formPostulacion.get('nombres')?.errors?.['required']">•
+                                                    Los
+                                                    nombres son requeridos</li>
+                                                <li *ngIf="formPostulacion.get('nombres')?.errors?.['minlength']">•
+                                                    Los
+                                                    nombres deben tener al menos 3 caracteres</li>
+                                                <li *ngIf="formPostulacion.get('apellidos')?.errors?.['required']">•
+                                                    Los
+                                                    apellidos son requeridos</li>
+                                                <li *ngIf="formPostulacion.get('apellidos')?.errors?.['minlength']">
+                                                    •
+                                                    Los
+                                                    apellidos deben tener al menos 3 caracteres</li>
+                                                <li *ngIf="formPostulacion.get('dni')?.errors?.['required']">• El
+                                                    DNI es
+                                                    requerido</li>
+                                                <li *ngIf="formPostulacion.get('dni')?.errors?.['pattern']">• El DNI
+                                                    debe
+                                                    tener 8 dígitos</li>
+                                                <li *ngIf="formPostulacion.get('email')?.errors?.['required']">• El
+                                                    correo
+                                                    electrónico es requerido</li>
+                                                <li *ngIf="formPostulacion.get('email')?.errors?.['email']">•
+                                                    Ingrese un
+                                                    correo electrónico válido</li>
+                                                <li *ngIf="formPostulacion.get('telefono')?.errors?.['required']">•
+                                                    El
+                                                    teléfono es requerido</li>
+                                                <li *ngIf="formPostulacion.get('telefono')?.errors?.['pattern']">•
+                                                    Ingrese
+                                                    un número de teléfono válido (9 dígitos)</li>
+                                                <li *ngIf="formPostulacion.get('link_cv')?.errors?.['required']">•
+                                                    El
+                                                    enlace
+                                                    al CV/Portafolio es requerido</li>
+                                                <li *ngIf="formPostulacion.get('link_cv')?.errors?.['pattern']">•
+                                                    Ingrese
+                                                    una URL válida (https://...)</li>
+                                            </ul>
+                                        </div>
                                     </div>
                                 </div>
                             </div>

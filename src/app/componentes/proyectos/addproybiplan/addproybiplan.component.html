@@ -1,53 +1,56 @@
 <div class="modal-dialog-scrollable modal-lg">
-  <div class="modal-content">
-      <div class="app-modal-header modal-header">
-          <h4 class="modal-title tit-modal1">Importar Proyecto de BIPLAN - Presupuestos</h4>
-          <button type="button" class="close basic-close" (click)="closeModal()">
-              <span aria-hidden="true" class="mt-2">&times;</span>
-          </button>
-      </div>
-      <div class="modal-body">
-        <ng-container *ngIf="tvista==0">
-          <form [formGroup]="formBuscar">
-            <div class="row">
-              <div class="col-sm-6 col-12">
-                  <mat-form-field appearance="outline" class="mff-reduc " style="width: calc(100% - 36px);">
-                      <mat-label>Codigo del Proyecto <span class="text-danger"> * </span></mat-label>
-                      <input matInput type="text" autocomplete="off" formControlName="codigo" [maxLength]="150" (keyup.enter)="BuscarProy()">
-                  </mat-form-field>&nbsp;
-                  <button type="button" class="btn btn-mini btn-primary" style="margin-top: -4px;" ngbTooltip="Buscar Proyecto" container="body" (click)="BuscarProy()">
-                      <i class="fa fa-search icono-but"></i>
-                  </button>
-                </div>
-            </div>
-          </form>
-          <form [formGroup]="formProyecto">
-            <div class="row ">
-                <mat-form-field appearance="outline" class="mff-reduc col-sm-12 col-12">
-                    <mat-label>Descripción <span class="text-danger"> * </span></mat-label>
-                    <!-- <input matInput type="text" autocomplete="off" formControlName="descripcion" [maxLength]="500"> -->
-                    <textarea matInput autocomplete="off" class="mayuscula" maxlength="500" formControlName="descripcion"></textarea>
-                </mat-form-field>
-                <mat-form-field appearance="outline" class="mff-reduc col-sm-6 col-12">
-                    <mat-label>Clasificación <span class="text-danger"> * </span></mat-label>
-                    <select matNativeControl formControlName="id_clasificacion">
-                        <option value="">--Seleccionar--</option>
-                        <option *ngFor="let clasificacion of clasificaciones"
-                            [value]="clasificacion.id_clasificacion">
-                            {{clasificacion.descripcion}}
-                        </option>
-                    </select>
-                </mat-form-field>
-                <mat-form-field appearance="outline" class="mff-reduc col-sm-6 col-12">
-                    <mat-label>Modalidad <span class="text-danger"> * </span></mat-label>
-                    <select matNativeControl formControlName="modalidad">
-                        <option value="">--Seleccionar--</option>
-                        <option *ngFor="let modalidad of modalidades" [value]="modalidad.id">
-                            {{modalidad.nombre}}
-                        </option>
-                    </select>
-                </mat-form-field>
-                <!-- <div class="col-sm-6 col-12">
+    <div class="modal-content">
+        <div class="app-modal-header modal-header">
+            <h4 class="modal-title tit-modal1">Importar Proyecto de BIPLAN - Presupuestos</h4>
+            <button type="button" class="close basic-close" (click)="closeModal()">
+                <span aria-hidden="true" class="mt-2">&times;</span>
+            </button>
+        </div>
+        <div class="modal-body">
+            <ng-container *ngIf="tvista==0">
+                <form [formGroup]="formBuscar">
+                    <div class="row">
+                        <div class="col-sm-6 col-12">
+                            <mat-form-field appearance="outline" class="mff-reduc " style="width: calc(100% - 36px);">
+                                <mat-label>Codigo del Proyecto <span class="text-danger"> * </span></mat-label>
+                                <input matInput type="text" autocomplete="off" formControlName="codigo"
+                                    [maxLength]="150" (keyup.enter)="BuscarProy()">
+                            </mat-form-field>&nbsp;
+                            <button type="button" class="btn btn-mini btn-primary" style="margin-top: -4px;"
+                                ngbTooltip="Buscar Proyecto" container="body" (click)="BuscarProy()">
+                                <i class="fa fa-search icono-but"></i>
+                            </button>
+                        </div>
+                    </div>
+                </form>
+                <form [formGroup]="formProyecto">
+                    <div class="row ">
+                        <mat-form-field appearance="outline" class="mff-reduc col-sm-12 col-12">
+                            <mat-label>Descripción <span class="text-danger"> * </span></mat-label>
+                            <!-- <input matInput type="text" autocomplete="off" formControlName="descripcion" [maxLength]="500"> -->
+                            <textarea matInput autocomplete="off" class="mayuscula" maxlength="500"
+                                formControlName="descripcion"></textarea>
+                        </mat-form-field>
+                        <mat-form-field appearance="outline" class="mff-reduc col-sm-6 col-12">
+                            <mat-label>Clasificación <span class="text-danger"> * </span></mat-label>
+                            <select matNativeControl formControlName="id_clasificacion">
+                                <option value="">--Seleccionar--</option>
+                                <option *ngFor="let clasificacion of clasificaciones"
+                                    [value]="clasificacion.id_clasificacion">
+                                    {{clasificacion.descripcion}}
+                                </option>
+                            </select>
+                        </mat-form-field>
+                        <mat-form-field appearance="outline" class="mff-reduc col-sm-6 col-12">
+                            <mat-label>Modalidad <span class="text-danger"> * </span></mat-label>
+                            <select matNativeControl formControlName="modalidad">
+                                <option value="">--Seleccionar--</option>
+                                <option *ngFor="let modalidad of modalidades" [value]="modalidad.id">
+                                    {{modalidad.nombre}}
+                                </option>
+                            </select>
+                        </mat-form-field>
+                        <!-- <div class="col-sm-6 col-12">
                     <mat-form-field appearance="outline" class="mff-reduc " style="width: calc(100% - 36px);">
                         <mat-label>Grupo <span class="text-danger"> * </span></mat-label>
                         <select matNativeControl formControlName="id_grupo">
@@ -61,172 +64,223 @@
                         <i class="fa fa-plus icono-but"></i>
                     </button>
                 </div> -->
-                <mat-form-field appearance="outline" class="mff-reduc col-sm-6 col-12">
-                    <mat-label>Estado <span class="text-danger"> * </span></mat-label>
-                    <select matNativeControl formControlName="estado">
-                        <option value="">--Seleccionar--</option>
-                        <option *ngFor="let estado of estados" [value]="estado.id">
-                            {{estado.nombre}}
-                        </option>
-                    </select>
-                </mat-form-field>
-                <mat-form-field appearance="outline" class="mff-reduc col-sm-6 col-12">
-                  <mat-label>País</mat-label>
-                  <select matNativeControl formControlName="cod_pais" (change)="CambiarPais($event.target.value)">
-                      <option value="">--Seleccionar--</option>
-                      <option *ngFor="let pais of paises" [value]="pais.cod_pais">
-                          {{pais.pais}}
-                      </option>
-                  </select>
-              </mat-form-field>
-              <mat-form-field appearance="outline" class="mff-reduc col-sm-6 col-12">
-                  <mat-label>Moneda</mat-label>
-                  <select matNativeControl formControlName="moneda">
-                      <option value="">--Seleccionar--</option>
-                      <option *ngFor="let moneda of monedas" [value]="moneda.id_moneda">
-                          {{moneda.moneda}}
-                      </option>
-                  </select>
-              </mat-form-field>
-              <ng-container *ngIf="!OtroPais; else visual1">
-                <mat-form-field appearance="outline" class="mff-reduc col-sm-6 col-12">
-                    <mat-label>Departamento</mat-label>
-                    <select matNativeControl formControlName="departamento"
-                        (change)="listarProvincias($event.target.value)">
-                        <option value="">--Seleccionar--</option>
-                        <option *ngFor="let departamento of departamentos" [value]="departamento.id_depart">
-                            {{departamento.DEPARTAMENTO}}
-                        </option>
-                    </select>
-                </mat-form-field>
-                <mat-form-field appearance="outline" class="mff-reduc col-sm-6 col-12">
-                    <mat-label>Provincia </mat-label>
-                    <select matNativeControl formControlName="provincia"
-                        (change)="listarDistritos($event.target.value)">
-                        <option value="">--Seleccionar--</option>
-                        <option *ngFor="let provincia of provincias" [value]="provincia.id_prov">
-                            {{provincia.PROVINCIA}}
-                        </option>
-                    </select>
-                </mat-form-field>
-                <mat-form-field appearance="outline" class="mff-reduc col-sm-6 col-12">
-                    <mat-label>Distrito</mat-label>
-                    <select matNativeControl formControlName="distrito">
-                        <option value="">--Seleccionar--</option>
-                        <option *ngFor="let distrito of distritos" [value]="distrito.id_distr">
-                            {{distrito.DISTRITO}}
-                        </option>
-                    </select>
-                </mat-form-field>
-              </ng-container>
-              <ng-template #visual1>
-                <mat-form-field appearance="outline"
-                class="mff-reduc my-form-field col-sm-6 col-12"
-                [floatLabel]="permiso ? 'always' : 'auto'"
-                [ngClass]="{'mat-form-field-disa': permiso}">
-                <mat-label>Ubicacion Principal</mat-label>
-                <input matInput type="text" autocomplete="off"
-                  formControlName="otrodepartamento" [maxLength]="100">
-                </mat-form-field>
-                <mat-form-field appearance="outline"
-                class="mff-reduc my-form-field col-sm-6 col-12"
-                [floatLabel]="permiso ? 'always' : 'auto'"
-                [ngClass]="{'mat-form-field-disa': permiso}">
-                <mat-label>Ubicacion Secundaria</mat-label>
-                <input matInput type="text" autocomplete="off"
-                  formControlName="otraprovincia" [maxLength]="100">
-                </mat-form-field>
-                <mat-form-field appearance="outline"
-                class="mff-reduc my-form-field col-sm-6 col-12"
-                [floatLabel]="permiso ? 'always' : 'auto'"
-                [ngClass]="{'mat-form-field-disa': permiso}">
-                <mat-label>Ubicacion Proyecto</mat-label>
-                <input matInput type="text" autocomplete="off"
-                  formControlName="otrodistrito" [maxLength]="100">
-                </mat-form-field>
-            </ng-template>
-                <mat-form-field appearance="outline" class="mff-reduc col-sm-6 col-12">
-                    <mat-label>Dirección</mat-label>
-                    <input matInput type="text" autocomplete="off" formControlName="direccion" [maxLength]="150">
-                </mat-form-field>
-                <mat-form-field appearance="outline" class="mff-reduc col-sm-6 col-12">
-                    <mat-label>Fecha Elaboración</mat-label>
-                    <input matInput type="date" formControlName="fecha_elaboracion">
-                </mat-form-field>
-                <mat-form-field appearance="outline" class="mff-reduc col-sm-6 col-12">
-                    <mat-label>Plazo(Dias)</mat-label>
-                    <input matInput type="text" autocomplete="off" formControlName="plazo" 
-                    [textMask]="{mask: this.formsService.maskTelefono}" maxlength="5"><!-- (keyup)="TeclaCalcFin($event)" (blur)="CalculaFechaFin(0)"  -->
-                </mat-form-field>
-                <div class="col-sm-6 col-12">
-                    <mat-form-field appearance="outline" class="mff-reduc" style="width: calc(100% - 40px);">
-                        <mat-label>Fecha Inicio</mat-label>
-                        <input matInput type="date" formControlName="fecha_inicio"><!-- (keyup)="TeclaCalcFin($event)" (blur)="CalculaFechaFin(1)" -->
-                    </mat-form-field>
-                    &nbsp;
-                    <!-- <button *ngIf="!calculandofecha" type="button"  style="margin-top: -4px;" class="btn btn-mini btn-info"  ngbTooltip="Calcular Fecha Culminación" (click)="CalculaFechaFin()">
+                        <mat-form-field appearance="outline" class="mff-reduc col-sm-6 col-12">
+                            <mat-label>Estado <span class="text-danger"> * </span></mat-label>
+                            <select matNativeControl formControlName="estado">
+                                <option value="">--Seleccionar--</option>
+                                <option *ngFor="let estado of estados" [value]="estado.id">
+                                    {{estado.nombre}}
+                                </option>
+                            </select>
+                        </mat-form-field>
+                        <mat-form-field appearance="outline" class="mff-reduc col-sm-6 col-12">
+                            <mat-label>País</mat-label>
+                            <select matNativeControl formControlName="cod_pais"
+                                (change)="CambiarPais($event.target.value)">
+                                <option value="">--Seleccionar--</option>
+                                <option *ngFor="let pais of paises" [value]="pais.cod_pais">
+                                    {{pais.pais}}
+                                </option>
+                            </select>
+                        </mat-form-field>
+                        <mat-form-field appearance="outline" class="mff-reduc col-sm-6 col-12">
+                            <mat-label>Moneda</mat-label>
+                            <select matNativeControl formControlName="moneda">
+                                <option value="">--Seleccionar--</option>
+                                <option *ngFor="let moneda of monedas" [value]="moneda.id_moneda">
+                                    {{moneda.moneda}}
+                                </option>
+                            </select>
+                        </mat-form-field>
+                        <ng-container *ngIf="!OtroPais; else visual1">
+                            <mat-form-field appearance="outline" class="mff-reduc col-sm-6 col-12">
+                                <mat-label>Departamento</mat-label>
+                                <select matNativeControl formControlName="departamento"
+                                    (change)="listarProvincias($event.target.value)">
+                                    <option value="">--Seleccionar--</option>
+                                    <option *ngFor="let departamento of departamentos" [value]="departamento.id_depart">
+                                        {{departamento.DEPARTAMENTO}}
+                                    </option>
+                                </select>
+                            </mat-form-field>
+                            <mat-form-field appearance="outline" class="mff-reduc col-sm-6 col-12">
+                                <mat-label>Provincia </mat-label>
+                                <select matNativeControl formControlName="provincia"
+                                    (change)="listarDistritos($event.target.value)">
+                                    <option value="">--Seleccionar--</option>
+                                    <option *ngFor="let provincia of provincias" [value]="provincia.id_prov">
+                                        {{provincia.PROVINCIA}}
+                                    </option>
+                                </select>
+                            </mat-form-field>
+                            <mat-form-field appearance="outline" class="mff-reduc col-sm-6 col-12">
+                                <mat-label>Distrito</mat-label>
+                                <select matNativeControl formControlName="distrito">
+                                    <option value="">--Seleccionar--</option>
+                                    <option *ngFor="let distrito of distritos" [value]="distrito.id_distr">
+                                        {{distrito.DISTRITO}}
+                                    </option>
+                                </select>
+                            </mat-form-field>
+                        </ng-container>
+                        <ng-template #visual1>
+                            <mat-form-field appearance="outline" class="mff-reduc my-form-field col-sm-6 col-12"
+                                [floatLabel]="permiso ? 'always' : 'auto'" [ngClass]="{'mat-form-field-disa': permiso}">
+                                <mat-label>Ubicacion Principal</mat-label>
+                                <input matInput type="text" autocomplete="off" formControlName="otrodepartamento"
+                                    [maxLength]="100">
+                            </mat-form-field>
+                            <mat-form-field appearance="outline" class="mff-reduc my-form-field col-sm-6 col-12"
+                                [floatLabel]="permiso ? 'always' : 'auto'" [ngClass]="{'mat-form-field-disa': permiso}">
+                                <mat-label>Ubicacion Secundaria</mat-label>
+                                <input matInput type="text" autocomplete="off" formControlName="otraprovincia"
+                                    [maxLength]="100">
+                            </mat-form-field>
+                            <mat-form-field appearance="outline" class="mff-reduc my-form-field col-sm-6 col-12"
+                                [floatLabel]="permiso ? 'always' : 'auto'" [ngClass]="{'mat-form-field-disa': permiso}">
+                                <mat-label>Ubicacion Proyecto</mat-label>
+                                <input matInput type="text" autocomplete="off" formControlName="otrodistrito"
+                                    [maxLength]="100">
+                            </mat-form-field>
+                        </ng-template>
+                        <mat-form-field appearance="outline" class="mff-reduc col-sm-6 col-12">
+                            <mat-label>Dirección</mat-label>
+                            <input matInput type="text" autocomplete="off" formControlName="direccion"
+                                [maxLength]="150">
+                        </mat-form-field>
+                        <mat-form-field appearance="outline" class="mff-reduc col-sm-6 col-12">
+                            <mat-label>Fecha Elaboración</mat-label>
+                            <input matInput type="date" formControlName="fecha_elaboracion">
+                        </mat-form-field>
+                        <mat-form-field appearance="outline" class="mff-reduc col-sm-6 col-12">
+                            <mat-label>Plazo(Dias)</mat-label>
+                            <input matInput type="text" autocomplete="off" formControlName="plazo"
+                                [textMask]="{mask: this.formsService.maskTelefono}"
+                                maxlength="5"><!-- (keyup)="TeclaCalcFin($event)" (blur)="CalculaFechaFin(0)"  -->
+                        </mat-form-field>
+                        <div class="col-sm-6 col-12">
+                            <mat-form-field appearance="outline" class="mff-reduc" style="width: calc(100% - 40px);">
+                                <mat-label>Fecha Inicio</mat-label>
+                                <input matInput type="date"
+                                    formControlName="fecha_inicio"><!-- (keyup)="TeclaCalcFin($event)" (blur)="CalculaFechaFin(1)" -->
+                            </mat-form-field>
+                            &nbsp;
+                            <!-- <button *ngIf="!calculandofecha" type="button"  style="margin-top: -4px;" class="btn btn-mini btn-info"  ngbTooltip="Calcular Fecha Culminación" (click)="CalculaFechaFin()">
                         <i class="icofont icofont-ui-play icono-but"></i>
                     </button> -->
-                    <i *ngIf="calculandofecha" class="fa fa-spinner fa-pulse fa-lg fa-fw"></i>
-                    <span class="sr-only">Loading...</span>
-                </div>
-                <mat-form-field appearance="outline" class="mff-reduc col-sm-6 col-12">
-                    <mat-label>Fecha Culminación</mat-label>
-                    <input matInput type="date" formControlName="fecha_culmina"><!-- (keyup)="TeclaCalcFin($event)" (blur)="CalculaFechaFin(2)" -->
-                </mat-form-field>
-            </div>
-        </form>
-        </ng-container>
-        <ng-container *ngIf="tvista==1">
-          <div class="borde-div col-12">
-            <div class="col text-center">
-                <h4 class="tit-modal1">Seleccionar Opciones a Duplicar</h4>
-            </div>
-            <form [formGroup]="formAgrupacion">
-            <div class="row col-12 pr-0 ml-lg-1">
-              <div class="col-12" style="display: flex;justify-content: center;">
-                <div class="tabla-limp" style="margin-bottom: 2px;padding-bottom: 8px;">
-                  <table class="table-bordered tab-9">
-                      <thead class="text-center">
-                          <tr class="headsticky header-custom">
-                            <th appAnchocol [ancho]="225" [detalle]="true">
-                              Elementos
-                            </th>
-                            <!-- <th *ngIf="opcion!='duplica'" appAnchocol [ancho]="75">Visual</th> -->
-                            <th appAnchocol [ancho]="75">Duplicar</th>
-                          </tr>
-                      </thead>
-                      <tbody class="text-center">
-                        <tr *ngFor="let row of datacomp;let i = index;">
-                            <td *ngIf="row.mostrar==1" class="text-left" appAnchocol [ancho]="225" [detalle]="true">
-                              {{row.nombres}}
-                            </td>
-                            <!-- <td *ngIf="row.mostrar==1 && opcion!='duplica'" appAnchocol [ancho]="75">
+                            <i *ngIf="calculandofecha" class="fa fa-spinner fa-pulse fa-lg fa-fw"></i>
+                            <span class="sr-only">Loading...</span>
+                        </div>
+                        <mat-form-field appearance="outline" class="mff-reduc col-sm-6 col-12">
+                            <mat-label>Fecha Culminación aaa</mat-label>
+                            <input matInput type="date"
+                                formControlName="fecha_culmina"><!-- (keyup)="TeclaCalcFin($event)" (blur)="CalculaFechaFin(2)" -->
+                        </mat-form-field>
+                        <mat-form-field appearance="outline" class="mff-reduc col-sm-6 col-12">
+                            <mat-label>Nombre empresa</mat-label>
+                            <input matInput type="text" autocomplete="off" formControlName="nombre_empresa">
+                        </mat-form-field>
+                        <mat-form-field appearance="outline" class="mff-reduc col-sm-6 col-12">
+                            <mat-label>Ruc empresa</mat-label>
+                            <input matInput type="text" autocomplete="off" formControlName="ruc_empresa">
+                        </mat-form-field>
+                        <mat-form-field appearance="outline" class="mff-reduc col-sm-6 col-12">
+                            <mat-label>Direccion empresa</mat-label>
+                            <input matInput type="text" autocomplete="off" formControlName="direccion_empresa">
+                        </mat-form-field>
+                        <div class="form-group mff-reduc col-sm-6 col-12">
+                            <label class="form-label">Logo Empresa</label>
+
+                            <div class="d-flex align-items-center">
+                                <button type="button" mat-stroked-button color="primary" (click)="fileInput.click()"
+                                    class="me-2">
+                                    <i class="icofont-folder-open me-1"></i> Seleccionar Imagen
+                                </button>
+
+                                <input type="file" (change)="onFileSelected($event)" #fileInput accept="image/*" hidden>
+
+                                <span *ngIf="!imagenSeleccionada" class="text-muted">
+                                    No hay archivo seleccionado
+                                </span>
+                                <span *ngIf="imagenSeleccionada" class="text-success">
+                                    <i class="icofont-check-circled me-1"></i>
+                                    {{imagenSeleccionada.name}}
+                                </span>
+                            </div>
+
+                            <small class="form-text text-muted">Formatos: JPG, PNG (Máx. 5MB)</small>
+
+                          
+                        </div>
+
+                        <!-- Vista previa de la imagen -->
+                        <div class="col-sm-6 col-12" *ngIf="imagenPreview">
+                            <div class="mt-2">
+                                <p class="mb-2"><strong>Vista previa:</strong></p>
+                                <img [src]="imagenPreview" alt="Vista previa" class="img-thumbnail"
+                                    style="max-width: 200px; max-height: 150px;">
+                                <button type="button" class="btn btn-sm btn-outline-danger ms-2"
+                                    (click)="eliminarImagen()">
+                                    <i class="icofont-trash"></i> Eliminar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </ng-container>
+            <ng-container *ngIf="tvista==1">
+                <div class="borde-div col-12">
+                    <div class="col text-center">
+                        <h4 class="tit-modal1">Seleccionar Opciones a Duplicar</h4>
+                    </div>
+                    <form [formGroup]="formAgrupacion">
+                        <div class="row col-12 pr-0 ml-lg-1">
+                            <div class="col-12" style="display: flex;justify-content: center;">
+                                <div class="tabla-limp" style="margin-bottom: 2px;padding-bottom: 8px;">
+                                    <table class="table-bordered tab-9">
+                                        <thead class="text-center">
+                                            <tr class="headsticky header-custom">
+                                                <th appAnchocol [ancho]="225" [detalle]="true">
+                                                    Elementos
+                                                </th>
+                                                <!-- <th *ngIf="opcion!='duplica'" appAnchocol [ancho]="75">Visual</th> -->
+                                                <th appAnchocol [ancho]="75">Duplicar</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="text-center">
+                                            <tr *ngFor="let row of datacomp;let i = index;">
+                                                <td *ngIf="row.mostrar==1" class="text-left" appAnchocol [ancho]="225"
+                                                    [detalle]="true">
+                                                    {{row.nombres}}
+                                                </td>
+                                                <!-- <td *ngIf="row.mostrar==1 && opcion!='duplica'" appAnchocol [ancho]="75">
                               <mat-checkbox class="checktabla" [checked]="row.visual==0?false:true" (change)="$event ? cambioselt1(row) : null"></mat-checkbox>
                             </td> -->
-                            <td *ngIf="row.mostrar==1" appAnchocol [ancho]="75">
-                              <mat-checkbox *ngIf="row.permite!=2" class="checktabla" [checked]="row.permite==0?false:true" (change)="$event ? cambioselt2(row) : null"></mat-checkbox>
-                            </td>
-                        </tr>
-                      </tbody>
-                  </table>
+                                                <td *ngIf="row.mostrar==1" appAnchocol [ancho]="75">
+                                                    <mat-checkbox *ngIf="row.permite!=2" class="checktabla"
+                                                        [checked]="row.permite==0?false:true"
+                                                        (change)="$event ? cambioselt2(row) : null"></mat-checkbox>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
                 </div>
-              </div>
-            </div>
-          </form>
-          </div>
-        </ng-container>
-      </div>
-      <div class="app-modal-footer modal-footer justify-content-between">
-          <button *ngIf="tvista==0" type="button" class="btn btn-danger btn-sm" (click)="closeModal('cancelar')"><i
-            class="fa fa-times"></i>Cerrar</button>
-          <!-- <button *ngIf="tvista==0" type="button" class="btn btn-info btn-sm" (click)="Siguiente()"><i
+            </ng-container>
+        </div>
+        <div class="app-modal-footer modal-footer justify-content-between">
+            <button *ngIf="tvista==0" type="button" class="btn btn-danger btn-sm" (click)="closeModal('cancelar')"><i
+                    class="fa fa-times"></i>Cerrar</button>
+            <!-- <button *ngIf="tvista==0" type="button" class="btn btn-info btn-sm" (click)="Siguiente()"><i
             class="icofont icofont-arrow-right"></i>Siguiente</button> -->
-          <!-- <button *ngIf="tvista==1" type="button" class="btn btn-info btn-sm" (click)="Regresar()"><i
+            <!-- <button *ngIf="tvista==1" type="button" class="btn btn-info btn-sm" (click)="Regresar()"><i
             class="icofont icofont-arrow-left"></i>Regresar</button> -->
-            <button  type="button" class="btn btn-success btn-sm" (click)="Duplicaproy()"><i
-            class="fa fa-check"></i>Importar</button><!-- *ngIf="tvista==1" -->
-      </div>
-  </div>
+            <button type="button" class="btn btn-success btn-sm" (click)="Duplicaproy()"><i
+                    class="fa fa-check"></i>Importar</button><!-- *ngIf="tvista==1" -->
+        </div>
+    </div>
 </div>
 <app-cargando [bloquearTodo]="true" *ngIf="mostrar_carga_todo"></app-cargando>

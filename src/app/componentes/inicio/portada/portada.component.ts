@@ -1,4 +1,4 @@
-import { Component, OnInit,HostListener,Input,ViewChild} from '@angular/core';
+import { Component, OnInit, HostListener, Input, ViewChild } from '@angular/core';
 import { Router, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
 
@@ -22,17 +22,17 @@ export class PortadaComponent implements OnInit {
     this.menuActive = false;
   }
 
-  constructor(private router: Router ) {
-  
+  constructor(private router: Router) {
+
   }
 
-  isSidebarHidden=false
+  isSidebarHidden = false
   async ngOnInit() {
     this.router.events
-    .pipe(filter(event => event instanceof NavigationEnd))
-    .subscribe((event: NavigationEnd) => {
-      this.updateSelectedSection(event.url);
-    });
+      .pipe(filter(event => event instanceof NavigationEnd))
+      .subscribe((event: NavigationEnd) => {
+        this.updateSelectedSection(event.url);
+      });
   }
   updateSelectedSection(url: string) {
     switch (url) {
@@ -56,6 +56,10 @@ export class PortadaComponent implements OnInit {
         this.selectedSection = 'section5';
         this.menuActive = false;
         break;
+      case '/convocatorias':
+        this.selectedSection = 'section6';
+        this.menuActive = false;
+        break;
       default:
         this.selectedSection = '';
         break;
@@ -64,7 +68,7 @@ export class PortadaComponent implements OnInit {
 
   toggleMenu() {
     this.menuActive = !this.menuActive;
-    this.isSidebarHidden = !this.isSidebarHidden; 
+    this.isSidebarHidden = !this.isSidebarHidden;
   }
 
 }

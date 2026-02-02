@@ -41,6 +41,7 @@ import { AddImgUrlComponent } from './add-img-url/add-img-url.component';
 import { MatInputModule } from '@angular/material/input';
 import { MatRadioModule } from '@angular/material/radio';
 import { FormsModule } from '@angular/forms';
+import { FiltroTablaColPipe } from './elements/filtro-tabla-col.pipe';
 
 const DEFAULT_PERFECT_SCROLLBAR_CONFIG: PerfectScrollbarConfigInterface = {
   suppressScrollX: true
@@ -93,7 +94,8 @@ const DEFAULT_PERFECT_SCROLLBAR_CONFIG: PerfectScrollbarConfigInterface = {
     FiltroAcuPipe,
     PeriodoHoraPipe,
     NombreProyectoPipe,
-    AgrupamientoPipe
+    AgrupamientoPipe,
+    FiltroTablaColPipe
   ],
   declarations: [
     ToggleFullScreenDirective,
@@ -127,7 +129,8 @@ const DEFAULT_PERFECT_SCROLLBAR_CONFIG: PerfectScrollbarConfigInterface = {
     NombreProyectoPipe,
     AgrupamientoPipe,
     OfflinepageComponent,
-    AddImgUrlComponent
+    AddImgUrlComponent,
+    FiltroTablaColPipe
   ],
   providers: [
     {
