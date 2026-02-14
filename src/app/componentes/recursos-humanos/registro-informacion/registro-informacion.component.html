@@ -1307,6 +1307,7 @@
                 <mat-form-field appearance="outline" class="mff-reduc col-12 alto-35 mt-3">
                     <mat-label>Cargo</mat-label>
                     <select matNativeControl formControlName="id_cargo">
+                         <option [ngValue]="null">-- Seleccione cargo --</option>
                         <option *ngFor="let cargo of cargosFiltrados" [value]="cargo.id_cargo">
                             {{cargo.descripcion}}
                         </option>
@@ -1807,6 +1808,7 @@
                                 <mat-label>Cargo</mat-label>
                                 <select matNativeControl formControlName="id_cargo"
                                     (change)="cambioCargoPostUser($event.target.value)">
+                                     <option [ngValue]="null">-- Seleccione cargo --</option>
                                     <option *ngFor="let cargo of cargosFiltrados" [value]="cargo.id_cargo">
                                         {{cargo.descripcion}}
                                     </option>

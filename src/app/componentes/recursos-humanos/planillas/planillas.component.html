@@ -276,7 +276,7 @@
                     <thead class="text-center">
                         <tr [ngClass]="{'h-22': !calendarioFiltrado.length }">
                             <th rowspan="2" appAnchocol [ancho]="40"></th>
-                            <th rowspan="2" appAnchocol [ancho]="120" [detalle]="true">CARGO</th>
+                            <!-- <th rowspan="2" appAnchocol [ancho]="120" [detalle]="true">CARGO</th> -->
                             <th rowspan="2" appAnchocol [ancho]="150" [detalle]="true">USUARIO</th>
                             <ng-container *ngFor="let mes of calendarioFiltrado">
                                 <th [colSpan]="mes.colspan" class="mes-header">
@@ -318,7 +318,7 @@
                                 (click)="this.usuarioSeleccionado = row; filTabFil = i">
                                 <ng-container *ngIf="row.mostrar && row.asistenciaExistente">
                                     <ng-container *ngIf="!row.id_cargo && !row.id_usuario">
-                                        <td [colSpan]="calendarioFiltrado[0]?.colspan + 13" class="bg-area">
+                                        <td [colSpan]="calendarioFiltrado[0]?.colspan + 12" class="bg-area">
                                             <div style="margin-left: 40px;">
                                                 {{row.area}}
                                             </div>
@@ -326,7 +326,7 @@
                                         </td>
                                     </ng-container>
                                     <ng-container *ngIf="row.id_cargo && !row.id_usuario">
-                                        <td colspan="3" class="text-center">
+                                        <td colspan="2" class="text-center">
                                             <div class="font-weight-bold text-decoration-underline">{{row.cargo}}
                                             </div>
                                         </td>
@@ -353,7 +353,7 @@
                                     </ng-container>
                                     <ng-container *ngIf="row.id_usuario">
                                         <td class="text-center">{{row.nro_grupo}}</td>
-                                        <td>{{row.cargo}}</td>
+                                        <!-- <td>{{row.cargo}}</td> -->
                                         <!-- <td>
                                             <div class="d-flex justify-content-between align-items-center">
                                                 <span>{{row.descripcion_usuario || 'Sin nombre'}}</span>
@@ -396,21 +396,21 @@
                                                 </option>
                                             </select>
                                         </td>
-                                        <td class="text-center">{{row.dias_laborados }}</td>
-                                        <td class="text-center">{{row.dias_dominicales }}</td>
-                                        <td class="text-center">{{row.dias_feriados }}</td>
-                                        <td class="text-center">{{row.dias_tardanzas }}</td>
-                                        <td class="text-center">{{row.dias_permiso }}</td>
-                                        <td class="text-center">{{row.dias_faltados }}</td>
-                                        <td class="text-center">{{row.dias_otros}}</td>
+                                        <td class="text-center ">{{row.dias_laborados }}</td>
+                                        <td class="text-center ">{{row.dias_dominicales }}</td>
+                                        <td class="text-center ">{{row.dias_feriados }}</td>
+                                        <td class="text-center ">{{row.dias_tardanzas }}</td>
+                                        <td class="text-center ">{{row.dias_permiso }}</td>
+                                        <td class="text-center ">{{row.dias_faltados }}</td>
+                                        <td class="text-center ">{{row.dias_otros}}</td>
                                         <td>
-                                            <div class="w-100 d-flex justify-content-between">
+                                            <div class="w-100 d-flex justify-content-between ">
                                                 <div style="opacity: 0.6;">S/.</div>
                                                 <div>{{row.coste_dia | number:'0.2-2'}}</div>
                                             </div>
                                         </td>
                                         <td>
-                                            <div class="w-100 d-flex justify-content-between">
+                                            <div class="w-100 d-flex justify-content-between font-weight-bold">
                                                 <div style="opacity: 0.6;">S/.</div>
                                                 <div>
                                                     <ng-container *ngIf="!row.invalido">{{row.coste_mensual |
@@ -438,16 +438,16 @@
                     </tbody>
                     <tfoot class="sticky-footer-wrapper" *ngIf="tablaFiltrada.length">
                         <tr class="bg-light">
-                            <td colspan="3" class="text-center font-weight-bold">Total personal por dia</td>
+                            <td colspan="2" class="text-center font-weight-bold">Total personal por dia</td>
                             <!-- <td [colSpan]="calendarioFiltrado[0]?.colspan || 0"></td> -->
                             <ng-container *ngFor="let item of cantidadUsuariosDia">
-                                <td class="text-center">
+                                <td class="text-center font-weight-bold">
                                     {{item}}
                                 </td>
                             </ng-container>
                             <td colspan="8" class="text-center font-weight-bold">TOTAL GENERAL:</td>
                             <td class="font-weight-bold text-end">
-                                <div class="w-100 d-flex justify-content-between">
+                                <div class="w-100 d-flex justify-content-between text-primary">
                                     <div style="opacity: 0.6;">S/.</div>
                                     <div>{{totalMes | number:'0.2-2'}}</div>
                                 </div>

@@ -445,6 +445,7 @@ export class RegistroInformacionComponent implements OnInit {
           item: element.id_cargo ? k : j
         }
         this.tablaCargos.push(obj)
+        k++
       }
       j++
     }

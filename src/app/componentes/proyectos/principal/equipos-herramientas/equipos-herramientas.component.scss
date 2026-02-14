@@ -1,0 +1,19 @@
+.btn-custom-active {
+  color: #fafafa !important;
+  border-color: #6c757d !important;
+  background-color: #6c757d !important;
+}
+.h-contenedor {
+  height: calc(100dvh - 150px);
+}
+.h-filas {
+  display: grid;
+  grid-template-rows: 1fr 1fr;
+}
+.h-acciones {
+  height: 30px;
+}
+.btn-group-mini {
+  font-size: 13px !important;
+  display: flex;
+}

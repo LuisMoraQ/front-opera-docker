@@ -71,6 +71,7 @@ import { ProcuraModule } from '../procura/procura.module';
 import { MetradosModule } from '../metrados/metrados.module';
 import { AlmacenModule } from '../almacen/almacen.module';
 import { RecursosHumanosModule } from '../recursos-humanos/recursos-humanos.module';
+import { EquiposHerramientasComponent } from './principal/equipos-herramientas/equipos-herramientas.component';
 
 @NgModule({
   declarations: [
@@ -106,6 +107,7 @@ import { RecursosHumanosModule } from '../recursos-humanos/recursos-humanos.modu
     ConfproyimprComponent,
     DataProyectoComponent,
     AddproybiplanComponent,
+    EquiposHerramientasComponent,
     
   ],
   imports: [
