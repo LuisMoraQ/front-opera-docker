@@ -29,7 +29,7 @@ export class AgrupinsumosComponent implements OnInit {
   @Input() decproy: any;
   @Output() listarpri = new EventEmitter<any>();
   solover = false;
-  anchofoot3 = 404;
+  anchofoot3 = 429;
   mostrar_carga_todo = false;
   widthm1b2: number = 100;
   heighttmodal: number = 100;
@@ -139,7 +139,7 @@ export class AgrupinsumosComponent implements OnInit {
       this.solover = this.filareg.solover;
       let resto = this.solover ? 70 : 90;
       this.widthm1b2 = window.innerWidth / 2 - resto;
-      this.anchofoot3 = this.solover ? 372 : this.anchofoot3;
+      this.anchofoot3 = this.solover ? 397 : this.anchofoot3;
       this.heighttmodal = window.innerHeight - 165;
       let decimales = this.decproy;
       if (decimales?.toString().includes('|')) {

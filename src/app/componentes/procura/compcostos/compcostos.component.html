@@ -27,7 +27,8 @@
             <th appAnchocol [ancho]="74">Estado Solicitud</th>
             <th appAnchocol [ancho]="70">Fecha Solicitada</th>
             <th appAnchocol [ancho]="70">Fecha Atención</th>
-            <th appAnchocol [ancho]="70">Plazo Transcurrido</th>
+            <th appAnchocol [ancho]="70">Plazo de Atencíon</th>
+            <th appAnchocol [ancho]="70">Fecha Límite</th>
           </tr>
         </thead>
         <tbody>
@@ -75,12 +76,13 @@
               </td>
               <td appAnchocol [ancho]="70">{{row.fecha_sol}}</td>
               <td appAnchocol [ancho]="70">{{row.fecha_gana}}</td><!-- cambiar por fecha aprueba -->
-              <td appAnchocol [ancho]="70">{{row.plazot}}</td><!-- fecha atencion menos fecha solicitada? -->
+              <td appAnchocol [ancho]="70">{{row.plazo_gana}}</td><!-- fecha atencion menos fecha solicitada? -->
+              <td appAnchocol [ancho]="70">{{row.fechalim}}</td>
             </tr>
           </ng-container>
           <ng-container *ngIf="dataSource6.length<=0">
             <tr>
-              <td class="mat-cell text-center" colspan="12">
+              <td class="mat-cell text-center" colspan="13">
                   <label *ngIf="!buscando6">No se encontraron resultados</label>
                   <div *ngIf="buscando6" class="preloader3 loader-block">
                       <div class="circ1"></div>

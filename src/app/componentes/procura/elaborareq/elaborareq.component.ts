@@ -106,6 +106,9 @@ export class ElaborareqComponent implements OnInit {
   paddingscroll2=0
   preventscroll=false;
   fechaac:any;
+  vence1=false
+  vence2=false
+  vence3=false
 
   constructor(
     private _logisticaService:LogisticaService,
@@ -200,6 +203,7 @@ export class ElaborareqComponent implements OnInit {
       this.prov1=this.prov2=this.prov3=null;
       this.fila6_sel = ind;
       this.estadosel=this.dataSource6[this.fila6_sel].estado
+      this.vence1=this.vence2=this.vence3=false;
       //cargar contenido inferior
       let rowsel=this.dataSource6[this.fila6_sel]
       console.log(rowsel)
@@ -222,6 +226,18 @@ export class ElaborareqComponent implements OnInit {
           lugar:rowsel.lugar1,
           gana:rowsel.nroprov==1?true:false
         }
+        if(rowsel.fecha_sol1 && !rowsel.fecha_resp1){
+          let arrfe=rowsel.fecha_sol1.split('-')
+          let feac = new Date(Number(arrfe[2]),Number(arrfe[1])-1,Number(arrfe[0]));
+          feac.setHours(0, 0, 0,0);
+          let ffin=new Date()
+          ffin.setDate(feac.getDate()+Number(rowsel.plazo1))
+          ffin.setHours(0,0,0,0)
+          let fechahoy=this.fechaac
+          fechahoy.setHours(0,0,0,0)
+          if(ffin<fechahoy)
+            this.vence1=true
+        }
       }
       if(rowsel?.id_prov2){
         this.prov2={
@@ -241,6 +257,18 @@ export class ElaborareqComponent implements OnInit {
           validez:rowsel.duracionofer2,
           lugar:rowsel.lugar2,
           gana:rowsel.nroprov==2?true:false
+        }
+        if(rowsel.fecha_sol2 && !rowsel.fecha_resp2){
+          let arrfe=rowsel.fecha_sol2.split('-')
+          let feac = new Date(Number(arrfe[2]),Number(arrfe[1])-1,Number(arrfe[0]));
+          feac.setHours(0, 0, 0,0);
+          let ffin=new Date()
+          ffin.setDate(feac.getDate()+Number(rowsel.plazo2))
+          ffin.setHours(0,0,0,0)
+          let fechahoy=this.fechaac
+          fechahoy.setHours(0,0,0,0)
+          if(ffin<fechahoy)
+            this.vence2=false
         }
       }
       if(rowsel?.id_prov3){
@@ -262,9 +290,29 @@ export class ElaborareqComponent implements OnInit {
           lugar:rowsel.lugar3,
           gana:rowsel.nroprov==3?true:false
         }
+        if(rowsel.fecha_sol3 && !rowsel.fecha_resp3){
+          let arrfe=rowsel.fecha_sol3.split('-')
+          let feac = new Date(Number(arrfe[2]),Number(arrfe[1])-1,Number(arrfe[0]));
+          feac.setHours(0, 0, 0,0);
+          let ffin=new Date()
+          ffin.setDate(feac.getDate()+Number(rowsel.plazo3))
+          ffin.setHours(0,0,0,0)
+          let fechahoy=this.fechaac
+          fechahoy.setHours(0,0,0,0)
+          if(ffin<fechahoy)
+            this.vence3=false
+        }
       }
     }
     this.Vercoti(0);
+  }
+  CopiarUrl(nro:any){
+    let rowsel=this.dataSource6[this.fila6_sel]
+    let plazpas=nro==1?rowsel.plazo1:nro==2?rowsel.plazo2:nro==3?rowsel.plazo3:'';
+    let valsol=rowsel.id_proyecto+'!'+rowsel.id_registro+'!'+rowsel.idgrupo+'!'+nro+'!'+moment(this.fechaac).format('YYYY-MM-DD')+'!'+plazpas+'!'+nro;
+    let encrp=this.encriptadorService.encryptar(valsol)
+    let urlcop=this.enviUrl+'/externo/cotizacion/'+encrp;
+    SwalService.input2('Link para llenar la cotización:', urlcop)
   }
   async Enviarcorreo(nro:any){
     const res = await SwalService.inputNumber("Plazo de Vigencia de la Cotización:",'Enviar')
@@ -293,15 +341,29 @@ export class ElaborareqComponent implements OnInit {
       //id_proyecto,id_registro,id_grupo,nroprov,fecha,plazo,idprov
       let idprovpas=nro==1?rowsel.id_prov1:nro==2?rowsel.id_prov2:rowsel.id_prov3;
       let valsol=rowsel.id_proyecto+'!'+rowsel.id_registro+'!'+rowsel.idgrupo+'!'+nro+'!'+moment(this.fechaac).format('YYYY-MM-DD')+'!'+res.value+'!'+idprovpas;
+      let encrp=this.encriptadorService.encryptar(valsol)
       const respuesta =await this._logisticaService.AdquisolEnviarSol({id_proyecto:rowsel.id_proyecto,id_registro:rowsel.id_registro,idgrupo:rowsel.idgrupo,idfila:rowsel.idfila,
-        destinatario:filaope.correo,razon:filaope.razon,link:(this.enviUrl+'/externo/cotizacion/'+valsol),plazo:res.value, nroprov:nro});
+        destinatario:filaope.correo,razon:filaope.razon,link:(this.enviUrl+'/externo/cotizacion/'+encrp),plazo:res.value, nroprov:nro});
       if (respuesta?.id == "0") {
         SwalService.error('Advertencia', respuesta.mensaje);
       }
       else {
-        this.dataSource6[this.fila6_sel].fecha_sol1=filaope.fecha_sol
-        this.dataSource6[this.fila6_sel].plazo1=3
-        this.dataSource6[this.fila6_sel].estado=3
+        if(nro==1){
+          this.dataSource6[this.fila6_sel].fecha_sol1=filaope.fecha_sol
+          this.dataSource6[this.fila6_sel].plazo1=res.value
+          this.dataSource6[this.fila6_sel].estado=3
+        }
+        else if(nro==2){
+          this.dataSource6[this.fila6_sel].fecha_sol2=filaope.fecha_sol
+          this.dataSource6[this.fila6_sel].plazo2=res.value
+          this.dataSource6[this.fila6_sel].estado=3
+        }
+        else if(nro==3){
+          this.dataSource6[this.fila6_sel].fecha_sol3=filaope.fecha_sol
+          this.dataSource6[this.fila6_sel].plazo3=res.value
+          this.dataSource6[this.fila6_sel].estado=3
+        }
+        
         SwalService.success('Correcto',respuesta?.mensaje)
       }
       this.mostrar_carga_todo=false
@@ -516,7 +578,6 @@ export class ElaborareqComponent implements OnInit {
         this.dataSource6[this.fila6_sel].ruc3=filap.ruc
         this.dataSource6[this.fila6_sel].telefono3=filap.telefono
       }
-
       this.mostrar_carga_todo=false
     } else {
       this.toaster.error('Seleccione un proveedor para continuar.', 'Advertencia', {closeButton: false,positionClass: 'toast-bottom-right',timeOut: 5000})
@@ -665,5 +726,70 @@ export class ElaborareqComponent implements OnInit {
       this.mostrar_carga_todo = false;
       SwalService.error(err)
     }
+  }
+  async CancelaCoti(nro:any){
+    if(nro==1)
+      this.prov1=null;
+    else if(nro==2)
+      this.prov2=null;
+    else if(nro==3)
+      this.prov3=null;
+    //eliminar asignacion
+    let rowsel=this.dataSource6[this.fila6_sel]
+    let fsol1=nro==1?null:rowsel.fecha_sol1
+    let fsol2=nro==2?null:rowsel.fecha_sol2
+    let fsol3=nro==3?null:rowsel.fecha_sol3
+    let actuaestp=fsol1==null && fsol2==null && fsol3==null?1:0;
+    this.mostrar_carga_todo=true;
+    let resp=await this._logisticaService.AdquisolCancelaSol({id_proyecto:rowsel.id_proyecto,id_registro:rowsel.id_registro,idgrupo:rowsel.idgrupo,idfila:rowsel.idfila, nroprov:nro,actuaest:actuaestp});
+    if(resp?.length>0){
+      if(nro==1){
+        this.dataSource6[this.fila6_sel].actividad1=
+        this.dataSource6[this.fila6_sel].correo1=
+        this.dataSource6[this.fila6_sel].direccion1=
+        this.dataSource6[this.fila6_sel].id_prov1=
+        this.dataSource6[this.fila6_sel].razon1=
+        this.dataSource6[this.fila6_sel].representante1=
+        this.dataSource6[this.fila6_sel].ruc1=
+        this.dataSource6[this.fila6_sel].telefono1=
+        this.dataSource6[this.fila6_sel].fecha_sol1=
+        this.dataSource6[this.fila6_sel].plazo1=null;
+        this.vence1=false;
+      }
+      else if(nro==2){
+        this.dataSource6[this.fila6_sel].actividad2=
+        this.dataSource6[this.fila6_sel].correo2=
+        this.dataSource6[this.fila6_sel].direccion2=
+        this.dataSource6[this.fila6_sel].id_prov2=
+        this.dataSource6[this.fila6_sel].razon2=
+        this.dataSource6[this.fila6_sel].representante2=
+        this.dataSource6[this.fila6_sel].ruc2=
+        this.dataSource6[this.fila6_sel].telefono2=
+        this.dataSource6[this.fila6_sel].fecha_sol2=
+        this.dataSource6[this.fila6_sel].plazo2=null;
+        this.vence2=false;
+      }
+      else if(nro==3){
+        this.dataSource6[this.fila6_sel].actividad3=
+        this.dataSource6[this.fila6_sel].correo3=
+        this.dataSource6[this.fila6_sel].direccion3=
+        this.dataSource6[this.fila6_sel].id_prov3=
+        this.dataSource6[this.fila6_sel].razon3=
+        this.dataSource6[this.fila6_sel].representante3=
+        this.dataSource6[this.fila6_sel].ruc3=
+        this.dataSource6[this.fila6_sel].telefono3=
+        this.dataSource6[this.fila6_sel].fecha_sol3=
+        this.dataSource6[this.fila6_sel].plazo3=null;
+        this.vence3=false;
+      }
+      if(actuaestp){
+        this.dataSource6[this.fila6_sel].estado=1;
+      }
+      SwalService.success('Correcto',resp[0]?.mensaje)
+    }
+    else{
+      SwalService.error('Advertencia', resp[0].mensaje);
+    }
+    this.mostrar_carga_todo=false;
   }
 }

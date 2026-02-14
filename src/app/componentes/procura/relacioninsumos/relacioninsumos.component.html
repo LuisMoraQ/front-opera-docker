@@ -241,6 +241,7 @@
       </table>
     </div>
     <span *ngIf="estadoreg==1 || estadoreg==2" class="text-danger" style="font-size: 11px;">No se puede editar por ser un registro DEFINITIVO o en estado por VERIFICAR.</span>
+    <span *ngIf="solover && conreque" class="text-danger" style="font-size: 11px;">Ya existen Agrupaciones en fase de Requerimiento. Ya no se puede editar esta vista.</span>
   </div>
 </div>
 <app-cargando [bloquearTodo]="true" *ngIf="mostrar_carga_todo"></app-cargando>

@@ -29,6 +29,7 @@ export class CompcotizaComponent implements OnInit {
   iduser:any
   uidadmin:any
   rowver=null
+  indver=null
   puedecanc=-1//si es 1,2,3 es decir que se puede cancelar esa solicitud(solo muestra boton del aprobado)
 
   buscando=false
@@ -164,9 +165,9 @@ export class CompcotizaComponent implements OnInit {
       this.fila_sel = ind;
   }
 
-  VerProvs(row){
+  VerProvs(row,ind){
+    this.indver=ind
     this.rowver=row
-    console.log(this.rowver)
     this.presel=row.nroprov
     this.ruc1.setValue(row.ruc1)
     this.razon1.setValue(row.razon1)
@@ -175,8 +176,8 @@ export class CompcotizaComponent implements OnInit {
     this.direccion1.setValue(row.direccion1)
     this.actividad1.setValue(row.actividad1)
     this.contacto1.setValue(row.representante1)
-    this.fecha1.setValue(row.fecha_sol1)
-    this.plazo1.setValue(row.plazo1)
+    this.fecha1.setValue(this.presel==1 && this.rowver.estado==2?row.fecha_gana:row.fecha_sol1)
+    this.plazo1.setValue(this.presel==1 && this.rowver.estado==2?row.plazo_gana:row.plazo1)
     this.estado1.setValue(row.fecha_resp1?'Atendido':'Pendiente')
     this.razon2.setValue(row.razon2)
     this.ruc2.setValue(row.ruc2)
@@ -185,8 +186,8 @@ export class CompcotizaComponent implements OnInit {
     this.direccion2.setValue(row.direccion2)
     this.actividad2.setValue(row.actividad2)
     this.contacto2.setValue(row.representante2)
-    this.fecha2.setValue(row.fecha_sol2)
-    this.plazo2.setValue(row.plazo2)
+    this.fecha2.setValue(this.presel==2 && this.rowver.estado==2?row.fecha_gana:row.fecha_sol2)
+    this.plazo2.setValue(this.presel==2 && this.rowver.estado==2?row.plazo_gana:row.plazo2)
     this.estado2.setValue(row.fecha_resp2?'Atendido':'Pendiente')
     this.razon3.setValue(row.razon3)
     this.ruc3.setValue(row.ruc3)
@@ -195,8 +196,8 @@ export class CompcotizaComponent implements OnInit {
     this.direccion3.setValue(row.direccion3)
     this.actividad3.setValue(row.actividad3)
     this.contacto3.setValue(row.representante3)
-    this.fecha3.setValue(row.fecha_sol3)
-    this.plazo3.setValue(row.plazo3)
+    this.fecha3.setValue(this.presel==3 && this.rowver.estado==2?row.fecha_gana:row.fecha_sol3)
+    this.plazo3.setValue(this.presel==3 && this.rowver.estado==2?row.plazo_gana:row.plazo3)
     this.estado3.setValue(row.fecha_resp3?'Atendido':'Pendiente')
     //cargar condicionales de ver cancelar verificar fechas fecha_gana,plazo_gana
     // if(row.fecha_gana){
@@ -233,13 +234,14 @@ export class CompcotizaComponent implements OnInit {
   }
   async Cancelar(nroprov:any){
     try{
-      const sw = await SwalService.confirm('Estas seguro que desea Cancelar la Orden de Servicio?', '')
+      const sw = await SwalService.confirm('Estas seguro que desea Anular la Orden de Atención?', '')
       if (sw.isConfirmed) {
         this.mostrar_carga_todo=true;
         let res=await this._logisticaService.DesAprobarCotizacion({id_proyecto:this.id_proyecto,id_registro:this.rowver.id_registro,idgrupo:this.rowver.idgrupo,idfila:this.rowver.idfila});
         if(res.id==1)
         {
           await this.listar();
+          await this.VerProvs(this.dataSource[this.indver],this.indver)
           this.mostrar_carga_todo=false;
           await SwalService.success('Correcto',res.mensaje)
         }
@@ -293,6 +295,7 @@ export class CompcotizaComponent implements OnInit {
         if(res.id==1)
         {
           await this.listar();
+          await this.VerProvs(this.dataSource[this.indver],this.indver)
           this.mostrar_carga_todo=false;
           await SwalService.success('Correcto',res.mensaje)
         }

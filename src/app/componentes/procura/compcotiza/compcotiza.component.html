@@ -13,6 +13,7 @@
               <th colspan="1">Cotización N°01</th>
               <th colspan="1">Cotización N°03</th>
               <th appAnchocol [ancho]="50" rowspan="2">Precio Referencial INC/IGV</th>
+              <th appAnchocol [ancho]="79" rowspan="2">Estado</th>
             </tr>
             <tr class="headsticky2 header-custom" style="top:23px">
               <th appAnchocol [ancho]="60">PU</th>
@@ -55,13 +56,19 @@
                 </td>
                 <td appAnchocol [ancho]="60" class="text-right">
                   <ng-container *ngIf="row.orden==0">
-                    <button type="button" class="btn btn-mini3 btn-info" placement="top" ngbTooltip="Ver Proveedores" container="body" (click)="VerProvs(row)" style="margin-right: 2px;">
+                    <button type="button" class="btn btn-mini3 btn-info" placement="top" ngbTooltip="Ver Proveedores" container="body" (click)="VerProvs(row,indice)" style="margin-right: 2px;">
                       <i class="fa fa-search icono-but"></i>
                     </button>
                   </ng-container>
                   <ng-container *ngIf="row.orden!=0">
                     {{row.preciosol | number: mask_precio}}
                   </ng-container>
+                </td>
+                <td appAnchocol [ancho]="79" style="font-size: 12px !important;">
+                  <label *ngIf="row.estado==0" class="label label-est" style="background-color: 'darkorange';">Borrador</label>
+                  <label *ngIf="row.estado==2" class="label label-success label-est">Aprobado</label>
+                  <label *ngIf="row.estado==1" class="label label-info label-est">Requerimiento</label>
+                  <label *ngIf="row.estado==3" class="label label-primary label-est">Cotización</label>
                 </td>
               </tr>
             </ng-container>
@@ -112,11 +119,11 @@
                   <input matInput type="text" class="mayuscula" autocomplete="off" maxlength="20" formControlName="contacto1">
               </mat-form-field>
               <mat-form-field appearance="outline" class="mff-reduc my-form-field col-md-12 col-lg-6 col-12">
-                  <mat-label>Fecha Notificada</mat-label>
+                  <mat-label>{{presel==1 && rowver.estado==2?'Fecha Notificada Orden de Atención':'Fecha Notificada Cotización'}}</mat-label>
                   <input matInput type="text" class="mayuscula" autocomplete="off" maxlength="300" formControlName="fecha1">
               </mat-form-field>
               <mat-form-field appearance="outline" class="mff-reduc my-form-field col-md-12 col-lg-6 col-12">
-                  <mat-label>Plazo</mat-label>
+                  <mat-label>{{presel==1 && rowver.estado==2?'Plazo de Atención':'Plazo Programado'}}</mat-label>
                   <input matInput type="text" class="mayuscula" autocomplete="off" maxlength="20" formControlName="plazo1">
               </mat-form-field>
               <mat-form-field appearance="outline" class="mff-reduc my-form-field col-md-12 col-lg-6 col-12">
@@ -126,7 +133,7 @@
 
               <div *ngIf="estado1.value=='Atendido'" class="row px-3 justify-content-between d-flex w-100">
                 <button *ngIf="puedecanc==1" type="button" class="btn btn-danger btn-mini" (click)="Cancelar(1)"><i
-                  class="fa fa-times"></i>Cancelar</button>
+                  class="fa fa-times"></i>Anular Orden de Atención</button>
                 <span *ngIf="puedecanc!=1"></span>
                 <button *ngIf="rowver.estado==3" type="button" class="btn btn-success btn-mini" (click)="Aprobar(1)"><i
                   class="fa fa-check"></i>Aprobar</button>
@@ -163,11 +170,11 @@
                   <input matInput type="text" class="mayuscula" autocomplete="off" maxlength="20" formControlName="contacto2">
               </mat-form-field>
               <mat-form-field appearance="outline" class="mff-reduc my-form-field col-md-12 col-lg-6 col-12">
-                  <mat-label>Fecha Notificada</mat-label>
+                  <mat-label>{{presel==2 && rowver.estado==2?'Fecha Notificada Orden de Atención':'Fecha Notificada Cotización'}}</mat-label>
                   <input matInput type="text" class="mayuscula" autocomplete="off" maxlength="300" formControlName="fecha2">
               </mat-form-field>
               <mat-form-field appearance="outline" class="mff-reduc my-form-field col-md-12 col-lg-6 col-12">
-                  <mat-label>Plazo</mat-label>
+                  <mat-label>{{presel==2 && rowver.estado==2?'Plazo de Atención':'Plazo Programado'}}</mat-label>
                   <input matInput type="text" class="mayuscula" autocomplete="off" maxlength="20" formControlName="plazo2">
               </mat-form-field>
               <mat-form-field appearance="outline" class="mff-reduc my-form-field col-md-12 col-lg-6 col-12">
@@ -177,7 +184,7 @@
 
               <div *ngIf="estado2.value=='Atendido'" class="row px-3 justify-content-between d-flex w-100">
                 <button *ngIf="puedecanc==2" type="button" class="btn btn-danger btn-mini" (click)="Cancelar(2)"><i
-                  class="fa fa-times"></i>Cancelar</button>
+                  class="fa fa-times"></i>Anular Orden de Atención</button>
                 <span *ngIf="puedecanc!=2"></span>
                 <button *ngIf="rowver.estado==3" type="button" class="btn btn-success btn-mini" (click)="Aprobar(2)"><i
                   class="fa fa-check"></i>Aprobar</button>
@@ -214,11 +221,11 @@
                   <input matInput type="text" class="mayuscula" autocomplete="off" maxlength="20" formControlName="contacto3">
               </mat-form-field>
               <mat-form-field appearance="outline" class="mff-reduc my-form-field col-md-12 col-lg-6 col-12">
-                  <mat-label>Fecha Notificada</mat-label>
+                  <mat-label>{{presel==3 && rowver.estado==2?'Fecha Notificada Orden de Atención':'Fecha Notificada Cotización'}}</mat-label>
                   <input matInput type="text" class="mayuscula" autocomplete="off" maxlength="300" formControlName="fecha3">
               </mat-form-field>
               <mat-form-field appearance="outline" class="mff-reduc my-form-field col-md-12 col-lg-6 col-12">
-                  <mat-label>Plazo</mat-label>
+                  <mat-label>{{presel==3 && rowver.estado==2?'Plazo de Atención':'Plazo Programado'}}</mat-label>
                   <input matInput type="text" class="mayuscula" autocomplete="off" maxlength="20" formControlName="plazo3">
               </mat-form-field>
               <mat-form-field appearance="outline" class="mff-reduc my-form-field col-md-12 col-lg-6 col-12">
@@ -228,7 +235,7 @@
 
               <div *ngIf="estado3.value=='Atendido'" class="row px-3 justify-content-between d-flex w-100">
                 <button *ngIf="puedecanc==3" type="button" class="btn btn-danger btn-mini" (click)="Cancelar(3)"><i
-                  class="fa fa-times"></i>Cancelar</button>
+                  class="fa fa-times"></i>Anular Orden de Atención</button>
                 <span *ngIf="puedecanc!=3"></span>
                 <button *ngIf="rowver.estado==3" type="button" class="btn btn-success btn-mini" (click)="Aprobar(3)"><i
                   class="fa fa-check"></i>Aprobar</button>
@@ -239,4 +246,4 @@
     </div>
   </div>
 </div>
-
+<app-cargando [bloquearTodo]="true" *ngIf="mostrar_carga_todo"></app-cargando>

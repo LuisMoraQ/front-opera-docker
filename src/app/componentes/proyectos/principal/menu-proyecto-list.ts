@@ -49,40 +49,48 @@ export const itemsMenu = [
     },
     {
         "id": 7,
-        "name": "Movimiento Almacen",
+        "name": "Cotizaciones",
         "position": 7,
+        "icon": "fa fa-2x fa-building",
+        "imagen": "icmetra1.png",
+        "verImagen":true
+    },
+    {
+        "id": 8,
+        "name": "Movimiento Almacen",
+        "position": 8,
         "icon": "fa fa-2x fa-building",
         "imagen": "icformula1.png",
         "verImagen":true
     },
     {
-        "id": 8,
+        "id": 9,
         "name": "Equipos y Herramientas",
-        "position": 8,
+        "position": 9,
         "icon": "fa fa-2x fa-building",
         "imagen": "ictiempro1.png",
         "verImagen":true
     },
     {
-        "id": 9,
+        "id": 10,
         "name": "Recursos Humanos",
-        "position": 9,
+        "position": 10,
         "icon": "fa fa-2x fa-building",
         "imagen": "icprogra1.png",
         "verImagen":true
     },
     {
-        "id": 10,
+        "id": 11,
         "name": "Cuaderno de Obra",
-        "position": 10,
+        "position": 11,
         "icon": "fa fa-2x fa-building",
         "imagen": "icespe1.png",
         "verImagen":true
     } ,
     {
-        "id": 11,
+        "id": 12,
         "name": "Informes y Reportes",
-        "position": 11,
+        "position": 12,
         "icon": "fa fa-2x fa-building",
         "imagen": "icespe1.png",
         "verImagen":true

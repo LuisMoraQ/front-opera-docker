@@ -559,19 +559,22 @@
                               <app-panelprocura [tabproyecto]="tab"></app-panelprocura>
                             </ng-container>
                             <ng-container *ngIf="tab.get('menu_proyecto_seleccionado').value == 6">
+                              <app-panelelabreq [tabproyecto]="tab"></app-panelelabreq>
+                            </ng-container>
+                            <ng-container *ngIf="tab.get('menu_proyecto_seleccionado').value == 7">
                               <!-- <app-hoja-metrados [tabproyecto]="tab"></app-hoja-metrados> -->
                               <app-panelalmc [tabproyecto]="tab"></app-panelalmc>
                             </ng-container>
-                            <ng-container *ngIf="tab.get('menu_proyecto_seleccionado').value == 7">
+                            <ng-container *ngIf="tab.get('menu_proyecto_seleccionado').value == 8">
                               <app-formula-polinomica [idProyecto]="tab.get('id_proyecto').value"
                                 [tabproyecto]="tab"></app-formula-polinomica>
                             </ng-container>
-                            <ng-container *ngIf="tab.get('menu_proyecto_seleccionado').value == 8">
+                            <ng-container *ngIf="tab.get('menu_proyecto_seleccionado').value == 9">
                               <app-panel-recursos-humanos [idProyecto]="tab.get('id_proyecto').value"
                                 [tabproyecto]="tab" [ocultarMenu]="ocultarMenu"
                                 [nombreProyecto]="tab.get('nombre_proyecto').value"></app-panel-recursos-humanos>
                             </ng-container>
-                            <ng-container *ngIf="tab.get('menu_proyecto_seleccionado').value == 9">
+                            <ng-container *ngIf="tab.get('menu_proyecto_seleccionado').value == 10">
                               <!-- <app-panel-recursos-humanos [idProyecto]="tab.get('id_proyecto').value" [tabproyecto]="tab"
                                 [ocultarMenu]="ocultarMenu"
                                 [nombreProyecto]="tab.get('nombre_proyecto').value"></app-panel-recursos-humanos> -->
@@ -581,7 +584,7 @@
                                 [tabproyecto]="tab">
                               </app-especificaciones-tecnicas>
                             </ng-container> -->
-                            <ng-container *ngIf="tab.get('menu_proyecto_seleccionado').value ==10">
+                            <ng-container *ngIf="tab.get('menu_proyecto_seleccionado').value ==11">
                               <app-informes-reportes [tabproyecto]="tab"></app-informes-reportes>
                             </ng-container>
                           </app-card>

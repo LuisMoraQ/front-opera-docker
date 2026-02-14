@@ -118,7 +118,7 @@ export class PanelprocuraComponent implements OnInit {
 
   async ngOnInit() {
     this.mostrar_carga=true;
-    this.scrollbut=document.body.clientWidth <= 1398?true:false;
+    this.scrollbut=document.body.clientWidth <= 900?true:false;
     let id_user = await this.encriptadorService.recuperarlocalstory('idusuario');//deberia ser el id_usuario del creador del proyecto(usuarios secundarios)
     const datoaccs = await this.principalService.ConfgsAsignaUserProy({id_proyecto: this.id_proyecto,id_usuario:id_user});
     if(datoaccs?.length>0){
@@ -173,7 +173,7 @@ export class PanelprocuraComponent implements OnInit {
   @HostListener('window:resize', ['$event'])
   onResize(event) {
     //resize a las tablas
-    this.scrollbut=document.body.clientWidth <= 1398?true:false;
+    this.scrollbut=document.body.clientWidth <= 900?true:false;
   }
   leftDivBut(){
     var face1 = document.getElementById('divbut');
@@ -294,6 +294,7 @@ export class PanelprocuraComponent implements OnInit {
   }
   async ListarAdquisiciones(){
     this.buscando1=true;
+    this.dataSource1=[]
     let res= await this._logisticaService.ListarAdquisicionesProy({id_proyecto:this.id_proyecto});
     this.buscando1=false;
     this.dataSource1=res;
@@ -330,6 +331,7 @@ export class PanelprocuraComponent implements OnInit {
     let totalpresu=Number(this.costopresu);
     let totaluti=Number(this.tot_util1);
     let totalasig=Number(this.tot_asig1);
+    console.log(totalpresu,totaluti,totalasig)
     if(totalasig>=totalpresu){
       this.toaster.error('El presupesto asignado no puede ser mayor al presupuesto del proyecto.', 'Advertencia', { closeButton: false,positionClass: 'toast-bottom-right',timeOut: 5000 });
     }

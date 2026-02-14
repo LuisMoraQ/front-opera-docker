@@ -87,14 +87,11 @@ export class CompcostosComponent implements OnInit {
           row.variacion=this.formService.redondeo(varia,2);
           //fecha ate - fecha sol
           if(row.fecha_gana){
-            let arr1=row.fecha_sol.split('-')
-            let fechaana1=new Date(moment(arr1[2]+'-'+arr1[1]+'-'+arr1[0]).format('YYYY-MM-DD')+' 09:00:00');
-            let fechaa = moment(fechaana1);
-            arr1=row.fecha_gana.split('-')
-            let fechana=new Date(moment(arr1[2]+'-'+arr1[1]+'-'+arr1[0]).format('YYYY-MM-DD')+' 09:00:00');
-            let fechab = moment(fechana);
-            let difdias=(fechab.diff(fechaa, 'days'));
-            row.plazot=difdias;
+            let arrfe=row.fecha_gana.split('-')
+            let feac = new Date(Number(arrfe[2]),Number(arrfe[1])-1,Number(arrfe[0]));
+            feac.setHours(9, 0, 0,0);
+            feac.setDate(feac.getDate()+Number(row.plazo_gana))
+            row.fechalim=moment(feac).format('DD-MM-YYYY');
           }
         }
         else

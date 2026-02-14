@@ -229,6 +229,58 @@ export class SwalService {
       allowOutsideClick: () => !Swal.isLoading()
     })
   }
+  static async input2(title: string, value?) {
+    let color = '#f3f3f3'
+    let letra = '#545454'
+    let configsuser = localStorage.getItem('configtema');
+    if (configsuser) {
+      const colorTema = configsuser.split('|')
+      if (colorTema[0] == 'dark') {
+        color = '#4c626d'
+        letra = '#ffff'
+      }
+    }
+    
+    const { value: inputValue } = await Swal.fire({
+      title,
+      input: 'text',
+      background: color,
+      color: letra,
+      inputAttributes: {
+        autocapitalize: 'off',
+        readonly: 'readonly', // Hacer el input de solo lectura (opcional)
+      },
+      inputValue: value,
+      showCancelButton: false,
+      confirmButtonText: 'Copiar código',
+      showLoaderOnConfirm: false,
+      preConfirm: async () => {
+        try {
+          await navigator.clipboard.writeText(value);
+          return true;
+        } catch (err) {
+          Swal.showValidationMessage('Error al copiar: ' + err);
+          return false;
+        }
+      },
+      allowOutsideClick: true
+    });
+
+    // Mostrar mensaje de éxito
+    if (inputValue) {
+      Swal.fire({
+        icon: 'success',
+        title: '¡Copiado!',
+        text: 'El código ha sido copiado al portapapeles',
+        background: color,
+        color: letra,
+        timer: 1500,
+        showConfirmButton: false
+      });
+    }
+    
+    return inputValue;
+  }
 
   static inputNumber(title: string = 'OBSERVACIÓN',okbuttom:string='Ok') {
     return Swal.fire({

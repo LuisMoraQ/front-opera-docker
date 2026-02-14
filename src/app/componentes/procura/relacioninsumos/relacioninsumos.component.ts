@@ -19,6 +19,7 @@ export class RelacioninsumosComponent implements OnInit {
   heightins: number=100;
   oculceros1=false
   solover=false
+  conreque=false
   estadoreg=0;
   //deteccion cambios
   bfaltactder=false;
@@ -111,6 +112,14 @@ export class RelacioninsumosComponent implements OnInit {
         if(res?.length>0){
           this.existedisgre=res[2].length>0?true:false;
           this.tablaagru=res[1]
+          //revisar si no hay estado requerimiento u otros para no habilitar solo ver
+          for(let row of this.tablaagru){
+            if(row.estado!=0){
+              this.solover=true;
+              this.conreque=true;
+              break;
+            }
+          }
         }
         else{
           this.existedisgre=false;
