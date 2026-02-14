@@ -565,11 +565,10 @@
                               <!-- <app-hoja-metrados [tabproyecto]="tab"></app-hoja-metrados> -->
                               <app-panelalmc [tabproyecto]="tab"></app-panelalmc>
                             </ng-container>
-                            <ng-container *ngIf="tab.get('menu_proyecto_seleccionado').value == 7">
+                            <ng-container *ngIf="tab.get('menu_proyecto_seleccionado').value == 8">
                               <!-- <app-formula-polinomica [idProyecto]="tab.get('id_proyecto').value"
                                 [tabproyecto]="tab"></app-formula-polinomica> -->
-                              <app-equipos-herramientas [tabproyecto]="tab"></app-equipos-herramientas>
-
+                                <app-equipos-herramientas [tabproyecto]="tab"></app-equipos-herramientas>
                             </ng-container>
                             <ng-container *ngIf="tab.get('menu_proyecto_seleccionado').value == 9">
                               <app-panel-recursos-humanos [idProyecto]="tab.get('id_proyecto').value"
