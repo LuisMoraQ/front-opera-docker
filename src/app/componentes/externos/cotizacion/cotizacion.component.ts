@@ -3,10 +3,10 @@ import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import {Router} from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
+import { EncriptadorService } from 'src/app/servicios/encriptador.service';
 import { FormsService } from 'src/app/servicios/forms.service';
 import { LogisticaService } from 'src/app/servicios/logistica.service';
 import { SwalService } from 'src/app/servicios/swal.service';
-import * as moment from 'moment';
 
 @Component({
   selector: 'app-cotizacion',
@@ -21,6 +21,7 @@ export class CotizacionComponent implements OnInit {
   idgrupo
   nroprov
   idprov
+  fechaac:any;
 
   dec_precio=2;
   mask_precio='0.2';
@@ -69,6 +70,7 @@ export class CotizacionComponent implements OnInit {
     private toaster: ToastrService,
     private changeDetector: ChangeDetectorRef,
     private router: Router,
+    private encriptadorService: EncriptadorService,
   ) {
     this.route.params.subscribe(params=>{
       this.keyrou=params['key']
@@ -78,9 +80,9 @@ export class CotizacionComponent implements OnInit {
   async ngOnInit() {
     try{
       console.log(this.keyrou)
-      if(this.keyrou!='' && this.keyrou.includes('!')){
-        let arrpara=this.keyrou.split('!');
-        console.log(arrpara)
+      let desenc=this.encriptadorService.desencryptar(this.keyrou)
+      if(desenc!='' && desenc.includes('!')){
+        let arrpara=desenc.split('!');
         if(arrpara.length==7){
           this.id_proyecto=arrpara[0]
           this.id_registro=arrpara[1]
@@ -96,7 +98,15 @@ export class CotizacionComponent implements OnInit {
           let ffin=new Date()
           ffin.setDate(feac.getDate()+Number(plazolim))
           ffin.setHours(0,0,0,0)
-          let fechahoy=new Date()
+          //hora
+          let resfec = await this.encriptadorService.FechaActualBack();
+          if (resfec.id == 1) {
+            this.fechaac = new Date(resfec.mensaje);
+          }
+          else{
+            this.fechaac=new Date();
+          }
+          let fechahoy=this.fechaac
           fechahoy.setHours(0,0,0,0)
           if(fechahoy>=feac && fechahoy<=ffin){
             this.mostrar_carga_todo=true;
@@ -118,7 +128,7 @@ export class CotizacionComponent implements OnInit {
             }
           }
           else{
-            this.SalirVista('La solicitud ya no esta disponible.');
+            //this.SalirVista('La solicitud ya no esta disponible.');
           }
         }
         else{

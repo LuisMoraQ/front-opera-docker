@@ -139,7 +139,7 @@
             <th appAnchocol [ancho]="185" [detalle]="true">Descripción</th>
             <th appAnchocol [ancho]="48">Fecha</th>
             <th appAnchocol [ancho]="49">Agrupamiento de Insumo</th>
-            <th appAnchocol [ancho]="50">Estado</th>
+            <th appAnchocol [ancho]="75">Estado</th>
             <th appAnchocol [ancho]="80">Monto Programado</th>
             <th appAnchocol [ancho]="80">Monto Solicitado</th>
             <th appAnchocol [ancho]="40">%</th>
@@ -175,7 +175,7 @@
                 <span *ngIf="row.complemento==0">{{row.id_comple}}</span>
                 <span *ngIf="row.complemento==1" style="color: red;">{{row.id_comple}}</span>
               </td>
-              <td appAnchocol [ancho]="50" style="font-size: 12px !important;">
+              <td appAnchocol [ancho]="75" style="font-size: 12px !important;">
                 <label *ngIf="row.estado==0" class="label label-est" style="background-color: 'darkorange';">Borrador</label>
                 <label *ngIf="row.estado==2" class="label label-success label-est">Aprobado</label>
                 <label *ngIf="row.estado==1" class="label label-info label-est">Requerimiento</label>

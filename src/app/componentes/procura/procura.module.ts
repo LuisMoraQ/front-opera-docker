@@ -30,6 +30,7 @@ import { ElaborareqComponent } from './elaborareq/elaborareq.component';
 import { CompcotizaComponent } from './compcotiza/compcotiza.component';
 import { CompcostosComponent } from './compcostos/compcostos.component';
 import { SegcontrolComponent } from './segcontrol/segcontrol.component';
+import { PanelelabreqComponent } from './panelelabreq/panelelabreq.component';
 
 
 @NgModule({
@@ -43,7 +44,8 @@ import { SegcontrolComponent } from './segcontrol/segcontrol.component';
     ElaborareqComponent,
     CompcotizaComponent,
     CompcostosComponent,
-    SegcontrolComponent
+    SegcontrolComponent,
+    PanelelabreqComponent
   ],
   imports: [
     CommonModule,
@@ -68,6 +70,6 @@ import { SegcontrolComponent } from './segcontrol/segcontrol.component';
     PintarfilapreModule,
     MinmaxnumModule,
   ],
-  exports: [ PanelprocuraComponent,InformesReportesComponent ]
+  exports: [ PanelprocuraComponent,InformesReportesComponent,PanelelabreqComponent ]
 })
 export class ProcuraModule { }

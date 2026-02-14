@@ -207,7 +207,7 @@ export class CompatinsumosComponent implements OnInit {
       face2.scrollLeft = face3.scrollLeft;
     }catch(ex){}
   }
-  cambindicesel6(ind:any,row:any){
+  cambindicesel6(ind:any,row:any,busca=false){
     // if(ind==this.fila6_sel)
     // {
     //   this.fila6_sel=-1;
@@ -221,7 +221,7 @@ export class CompatinsumosComponent implements OnInit {
     //   this.dataSource7=[];
     // }
     // else{
-    if(ind!=this.fila6_sel){
+    if(ind!=this.fila6_sel || busca){
       this.fila6_sel=ind;
       //this.indfila6_sel=row.indice;
       this.tab6idgrsel=row.idgrupo;
@@ -265,10 +265,10 @@ export class CompatinsumosComponent implements OnInit {
     }
     if(this.dataSource8.length>0){
       this.dataSource8.sort(function (a, b) {
-        if (Number(a.idgrupo.split('-')[1]) > Number(b.idgrupo.split('-')[1])) {
+        if (Number(a.idgrupo) > Number(b.idgrupo)) {
           return 1;
         }
-        if (Number(a.idgrupo.split('-')[1]) < Number(b.idgrupo.split('-')[1])) {
+        if (Number(a.idgrupo) < Number(b.idgrupo)) {
           return -1;
         }
         if (Number(a.orden??0) > Number(b.orden??0)) {
@@ -1266,6 +1266,7 @@ export class CompatinsumosComponent implements OnInit {
           this.DatosDisgre[i].accion=this.DatosDisgre[i].accion!=1?2:1
         }
       }
+      this.cambindicesel6(ind,this.dataSource6[ind],true)
       this.mostrar_carga_todo=false;
       this.bcambiost8=true;
     }

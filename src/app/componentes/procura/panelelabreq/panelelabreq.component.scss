@@ -1,0 +1,31 @@
+.btn-custom-active {
+    color: #fafafa !important;
+    border-color: #6c757d !important;
+    background-color: #6c757d !important;
+}
+.btn-menu-top{
+    width: 125px;
+    height: 42px;
+}
+.btn-menu-top2{
+    width: 154px;
+    height: 42px;
+}
+.height-t1{
+    height: calc(100vh - 580px) !important;
+    min-height: 190px;
+}
+.icscrol-l{
+    font-size: 24px;
+    position: absolute;
+    left: 32px;
+    top:17px;
+    cursor: pointer;
+}
+.icscrol-r{
+    font-size: 24px;
+    position: absolute;
+    right: 2px;
+    top:17px;
+    cursor: pointer;
+}

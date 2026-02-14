@@ -80,7 +80,7 @@
                 <td appAnchocol [ancho]="105"></td>
                 <td appAnchocol [ancho]="26"></td>
                 <td appAnchocol [ancho]="160" [detalle]="true">Razon Social</td>
-                <td appAnchocol [ancho]="75">Whatsapp</td>
+                <td appAnchocol [ancho]="80">Whatsapp</td>
                 <td appAnchocol [ancho]="160">Correo Electrónico</td>
                 <td appAnchocol [ancho]="26"></td>
                 <td appAnchocol [ancho]="80">Fecha Enviada</td>
@@ -99,12 +99,20 @@
                   </ng-container>
                 </td>
                 <td appAnchocol [ancho]="160" [detalle]="true"><p class="spanborder">{{prov1?.razon}}</p></td>
-                <td appAnchocol [ancho]="75"><p class="spanborder">{{prov1?.telefono}}</p></td>
+                <td appAnchocol [ancho]="80"><p class="spanborder">{{prov1?.telefono}}</p></td>
                 <td appAnchocol [ancho]="160"><p class="spanborder">{{prov1?.correo}}</p></td>
-                <td appAnchocol [ancho]="26">
-                  <ng-container *ngIf="fila6_sel>=0 && (estadosel==1 || estadosel==3)">
+                <td appAnchocol [ancho]="50">
+                  <ng-container *ngIf="fila6_sel>=0 && (estadosel==1 || estadosel==3) && !vence1">
                     <button type="button" class="btn btn-mini3 btn-info" placement="top" ngbTooltip="Enviar a Correo" container="body" (click)="Enviarcorreo(1)" style="margin-right: 2px;" [disabled]="prov1==null || prov1?.fecha_sol!=null">
                       <i class="fa fa-send icono-but"></i>
+                    </button>
+                    <button *ngIf="!prov1?.fecha_resp && prov1?.fecha_sol" type="button" class="btn btn-mini3 btn-primary" placement="top" ngbTooltip="Copiar Link de Cotización" container="body" (click)="CopiarUrl(1)" style="margin-right: 2px;" ><!-- [disabled]="prov1==null || prov1?.fecha_sol!=null" -->
+                      <i class="icofont icofont-link icono-but"></i>
+                    </button>
+                  </ng-container>
+                  <ng-container *ngIf="fila6_sel>=0 && (estadosel==1 || estadosel==3) && vence1">
+                    <button type="button" class="btn btn-mini3 btn-danger" placement="top" ngbTooltip="La solicitud vencio. Haga clic para Cancelar y la Cotización." container="body" (click)="CancelaCoti(1)" style="margin-right: 2px;">
+                      <i class="fa fa-remove icono-but"></i>
                     </button>
                   </ng-container>
                 </td>
@@ -112,7 +120,7 @@
               </tr>
               <tr>
                 <td appAnchocol [ancho]="105">Proveedor 02:</td>
-                <td appAnchocol [ancho]="26">
+                <td appAnchocol [ancho]="50">
                   <ng-container *ngIf="fila6_sel>=0 && (estadosel==1 || estadosel==3)">
                     <button *ngIf="!prov2" type="button" class="btn btn-mini3 btn-primary" placement="top" ngbTooltip="Seleccionar Proveedor" container="body" (click)="Addprov(2)" style="margin-right: 2px;">
                       <i class="fa fa-plus icono-but"></i>
@@ -126,10 +134,18 @@
                 <td appAnchocol [ancho]="160" [detalle]="true"><p class="spanborder">{{prov2?.razon}}</p></td>
                 <td appAnchocol [ancho]="75"><p class="spanborder">{{prov2?.telefono}}</p></td>
                 <td appAnchocol [ancho]="160"><p class="spanborder">{{prov2?.correo}}</p></td>
-                <td appAnchocol [ancho]="26">
-                  <ng-container *ngIf="fila6_sel>=0 && (estadosel==1 || estadosel==3)">
+                <td appAnchocol [ancho]="50">
+                  <ng-container *ngIf="fila6_sel>=0 && (estadosel==1 || estadosel==3) && !vence2">
                     <button type="button" class="btn btn-mini3 btn-info" placement="top" ngbTooltip="Enviar a Correo" container="body" (click)="Enviarcorreo(2)" style="margin-right: 2px;" [disabled]="prov2==null || prov2?.fecha_sol!=null">
                       <i class="fa fa-send icono-but"></i>
+                    </button>
+                    <button *ngIf="!prov2?.fecha_resp && prov2?.fecha_sol" type="button" class="btn btn-mini3 btn-primary" placement="top" ngbTooltip="Copiar Link de Cotización" container="body" (click)="CopiarUrl(2)" style="margin-right: 2px;" ><!-- [disabled]="prov1==null || prov1?.fecha_sol!=null" -->
+                      <i class="icofont icofont-link icono-but"></i>
+                    </button>
+                  </ng-container>
+                  <ng-container *ngIf="fila6_sel>=0 && (estadosel==1 || estadosel==3) && vence2">
+                    <button type="button" class="btn btn-mini3 btn-danger" placement="top" ngbTooltip="La solicitud vencio. Haga clic para Cancelar y la Cotización." container="body" (click)="CancelaCoti(2)" style="margin-right: 2px;">
+                      <i class="fa fa-remove icono-but"></i>
                     </button>
                   </ng-container>
                 </td>
@@ -137,7 +153,7 @@
               </tr>
               <tr>
                 <td appAnchocol [ancho]="105">Proveedor 03:</td>
-                <td appAnchocol [ancho]="26">
+                <td appAnchocol [ancho]="50">
                   <ng-container *ngIf="fila6_sel>=0 && (estadosel==1 || estadosel==3)">
                     <button *ngIf="!prov3" type="button" class="btn btn-mini3 btn-primary" placement="top" ngbTooltip="Seleccionar Proveedor" container="body" (click)="Addprov(3)" style="margin-right: 2px;">
                       <i class="fa fa-plus icono-but"></i>
@@ -151,10 +167,18 @@
                 <td appAnchocol [ancho]="160" [detalle]="true"><p class="spanborder">{{prov3?.razon}}</p></td>
                 <td appAnchocol [ancho]="75"><p class="spanborder">{{prov3?.telefono}}</p></td>
                 <td appAnchocol [ancho]="160"><p class="spanborder">{{prov3?.correo}}</p></td>
-                <td appAnchocol [ancho]="26">
-                  <ng-container *ngIf="fila6_sel>=0 && (estadosel==1 || estadosel==3)">
+                <td appAnchocol [ancho]="50">
+                  <ng-container *ngIf="fila6_sel>=0 && (estadosel==1 || estadosel==3) && !vence3">
                     <button type="button" class="btn btn-mini3 btn-info" placement="top" ngbTooltip="Enviar a Correo" container="body" (click)="Enviarcorreo(3)" style="margin-right: 2px;" [disabled]="prov3==null || prov3?.fecha_sol!=null">
                       <i class="fa fa-send icono-but"></i>
+                    </button>
+                    <button *ngIf="!prov3?.fecha_resp && prov3?.fecha_sol" type="button" class="btn btn-mini3 btn-primary" placement="top" ngbTooltip="Copiar Link de Cotización" container="body" (click)="CopiarUrl(3)" style="margin-right: 2px;" ><!-- [disabled]="prov1==null || prov1?.fecha_sol!=null" -->
+                      <i class="icofont icofont-link icono-but"></i>
+                    </button>
+                  </ng-container>
+                  <ng-container *ngIf="fila6_sel>=0 && (estadosel==1 || estadosel==3) && vence3">
+                    <button type="button" class="btn btn-mini3 btn-danger" placement="top" ngbTooltip="La solicitud vencio. Haga clic para Cancelar y la Cotización." container="body" (click)="CancelaCoti(3)" style="margin-right: 2px;">
+                      <i class="fa fa-remove icono-but"></i>
                     </button>
                   </ng-container>
                 </td>
@@ -203,7 +227,7 @@
                       <label for="switch-p-1" class="cr"></label>
                     </div>
                   </ng-container>
-                  <ng-container *ngIf="fila6_sel>=0 && estadosel==2 && prov1.gana">
+                  <ng-container *ngIf="fila6_sel>=0 && estadosel==2 && prov1?.gana">
                     <div  *ngIf="prov1.fecha_resp" class="switch switch-primary d-inline">
                       <input type="checkbox" id="switch-p-1" [(ngModel)]='prov1.gana' disabled>
                       <label for="switch-p-1" class="cr"></label>
@@ -231,7 +255,7 @@
                       <label for="switch-p-2" class="cr"></label>
                     </div>
                   </ng-container>
-                  <ng-container *ngIf="fila6_sel>=0 && estadosel==2 && prov2.gana">
+                  <ng-container *ngIf="fila6_sel>=0 && estadosel==2 && prov2?.gana">
                     <div *ngIf="prov2.fecha_resp" class="switch switch-primary d-inline">
                       <input type="checkbox" id="switch-p-2" [(ngModel)]='prov2.gana' disabled>
                       <label for="switch-p-2" class="cr"></label>
@@ -259,7 +283,7 @@
                       <label for="switch-p-3" class="cr"></label>
                     </div>
                   </ng-container>
-                  <ng-container *ngIf="fila6_sel>=0 && estadosel==2 && prov3.gana">
+                  <ng-container *ngIf="fila6_sel>=0 && estadosel==2 && prov3?.gana">
                     <div *ngIf="prov3.fecha_resp" class="switch switch-primary d-inline">
                       <input type="checkbox" id="switch-p-3" [(ngModel)]='prov3.gana' disabled>
                       <label for="switch-p-3" class="cr"></label>
@@ -276,8 +300,11 @@
       <form [formGroup]="formSoli">
         <!-- Title and Description -->
         <div class="form-header text-center">
+            <!-- <img [src]="imagenPreview" alt="Vista previa" class="img-thumbnail"
+                      style="max-width: 200px; max-height: 150px;"> -->
             <h2 class="form-title" *ngIf="!fechagana">Solicitud de Cotización</h2>
             <h2 class="form-title" *ngIf="fechagana">Orden de Atención OC-{{nroorden}}</h2>
+            <!-- AGREGAR OTROS DATOS DEL REPORTE -->
         </div>
         <div class="row mx-0">
           <mat-form-field appearance="outline" class="mff-reduc my-form-field col-sm-6 col-12">

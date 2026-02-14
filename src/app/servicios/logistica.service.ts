@@ -414,6 +414,15 @@ export class LogisticaService {
       catchError(err => throwError(err))
     ).toPromise()
   }
+  AdquisolCancelaSol(params = {}): Promise<any> {
+    const url = this.enviUrl + '/api/logistica/cancelarSolicitud';
+    return this.http.post<any>(url, this.Cargafrmdata(params)).pipe(
+      map(res => {
+        return res
+      }),
+      catchError(err => throwError(err))
+    ).toPromise()
+  }
   ListarInsDisgregaCoti(params = {}): Promise<any> {
     const url = this.enviUrl + '/api/logistica/listarInsdisgreCoti';
     return this.http.post<any>(url, this.Cargafrmdata(params)).pipe(
