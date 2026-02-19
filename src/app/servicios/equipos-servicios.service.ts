@@ -77,4 +77,89 @@ export class EquiposServiciosService {
       catchError(err => throwError(err))
     ).toPromise()
   }
+
+  obtenerCalendarioProyecto(params = {}): Promise<any> {
+    let formData: FormData = new FormData();
+    Object.entries(params).forEach(([key, value]) => {
+      formData.append(key, value as string);
+    });
+    const url = this.enviUrl + '/api/equiposservicios/obtenerCalendarioProyecto';
+    return this.http.post<any>(url, formData).pipe(
+      map(res => {
+        if (!res) {
+          throw new Error
+        }
+        return res
+      }),
+      catchError(err => throwError(err))
+    ).toPromise()
+  }
+
+  guardarDesagregadoEquipo(params = {}): Promise<any> {
+    let formData: FormData = new FormData();
+    Object.entries(params).forEach(([key, value]) => {
+      formData.append(key, value as string);
+    });
+    const url = this.enviUrl + '/api/equiposservicios/guardarDesagregadoEquipo';
+    return this.http.post<any>(url, formData).pipe(
+      map(res => {
+        if (!res) {
+          throw new Error
+        }
+        return res
+      }),
+      catchError(err => throwError(err))
+    ).toPromise()
+  }
+
+  actualizarDesagregadoEquipo(params = {}): Promise<any> {
+    let formData: FormData = new FormData();
+    Object.entries(params).forEach(([key, value]) => {
+      formData.append(key, value as string);
+    });
+    const url = this.enviUrl + '/api/equiposservicios/actualizarDesagregadoEquipo';
+    return this.http.post<any>(url, formData).pipe(
+      map(res => {
+        if (!res) {
+          throw new Error
+        }
+        return res
+      }),
+      catchError(err => throwError(err))
+    ).toPromise()
+  }
+
+  eliminarDesagregadoEquipo(params = {}): Promise<any> {
+    let formData: FormData = new FormData();
+    Object.entries(params).forEach(([key, value]) => {
+      formData.append(key, value as string);
+    });
+    const url = this.enviUrl + '/api/equiposservicios/eliminarDesagregadoEquipo';
+    return this.http.post<any>(url, formData).pipe(
+      map(res => {
+        if (!res) {
+          throw new Error
+        }
+        return res
+      }),
+      catchError(err => throwError(err))
+    ).toPromise()
+  }
+
+  listarDesagregadoEquipo(params = {}): Promise<any> {
+    let formData: FormData = new FormData();
+    Object.entries(params).forEach(([key, value]) => {
+      formData.append(key, value as string);
+    });
+    const url = this.enviUrl + '/api/equiposservicios/listarDesagregadoEquipo';
+    return this.http.post<any>(url, formData).pipe(
+      map(res => {
+        if (!res) {
+          throw new Error
+        }
+        return res
+      }),
+      catchError(err => throwError(err))
+    ).toPromise()
+  }
 }

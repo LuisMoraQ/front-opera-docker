@@ -1,5 +1,6 @@
+import { plantilla } from './../hoja-metrados/modal-metrado-excel/plantilla';
 import { Component, Input, OnInit, ViewChild } from '@angular/core';
-import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
+import { FormArray, FormBuilder, FormGroup, UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
 import * as moment from 'moment';
 import { ToastrService } from 'ngx-toastr';
 import { EquiposServiciosService } from 'src/app/servicios/equipos-servicios.service';
@@ -46,8 +47,18 @@ export class EquiposHerramientasComponent implements OnInit {
   filSelRegAct = null
   filSelReq = null
   tablaServicios = []
+  tablaServiciosCompleto = []
   filSelServ = null
   id_registro = null
+  calendario = []
+  mesSeleccionado = null
+  calendarioFiltrado = null
+  grupoSeleccionado = ''
+  tablaPlanilla = []
+  celdaSel = [null, null];
+  registroForm!: FormGroup;
+  fechaActual = new Date();
+
   @Input() set tabproyecto(value: any) {
     this.id_proyecto = value.get('id_proyecto').value;
     const aspectosGen = value.get('aspectos_generales') as UntypedFormGroup;
@@ -96,7 +107,52 @@ export class EquiposHerramientasComponent implements OnInit {
   get indrep_equipo(): UntypedFormControl { return this.formEquipo.get('indrep') as UntypedFormControl }
   get fila_requerimiento(): UntypedFormControl { return this.formEquipo.get('fila_requerimiento') as UntypedFormControl }
 
-  constructor(private _logisticaService: LogisticaService, private toaster: ToastrService, public formService: FormsService, private equiposServiciosService: EquiposServiciosService) { }
+
+  formDesagregado = new UntypedFormGroup({
+    ordenServicio: new UntypedFormControl('', []),
+    proveedor: new UntypedFormControl('', []),
+    telefono: new UntypedFormControl('', []),
+    correo: new UntypedFormControl('', []),
+    coste_unitario: new UntypedFormControl('', []),
+    unidad: new UntypedFormControl('', []),
+    tiempo_programado: new UntypedFormControl('', []),
+    tiempo_utilizado: new UntypedFormControl('', []),
+    saldo_utilizar: new UntypedFormControl('', []),
+    tiempos: new FormArray([]),
+    horas_dia: new UntypedFormControl('', []),
+    coste_dia: new UntypedFormControl('', []),
+    observaciones: new UntypedFormControl('', [])
+  })
+  get ordenServicio(): UntypedFormControl { return this.formDesagregado.get('ordenServicio') as UntypedFormControl }
+  get proveedor(): UntypedFormControl { return this.formDesagregado.get('proveedor') as UntypedFormControl }
+  get telefono(): UntypedFormControl { return this.formDesagregado.get('telefono') as UntypedFormControl }
+  get correo(): UntypedFormControl { return this.formDesagregado.get('correo') as UntypedFormControl }
+  get coste_unitario(): UntypedFormControl { return this.formDesagregado.get('coste_unitario') as UntypedFormControl }
+  get unidad(): UntypedFormControl { return this.formDesagregado.get('unidad') as UntypedFormControl }
+  get tiempo_programado(): UntypedFormControl { return this.formDesagregado.get('tiempo_programado') as UntypedFormControl }
+  get tiempo_utilizado(): UntypedFormControl { return this.formDesagregado.get('tiempo_utilizado') as UntypedFormControl }
+  get saldo_utilizar(): UntypedFormControl { return this.formDesagregado.get('saldo_utilizar') as UntypedFormControl }
+  get horas_dia(): UntypedFormControl { return this.formDesagregado.get('horas_dia') as UntypedFormControl }
+  get coste_dia(): UntypedFormControl { return this.formDesagregado.get('coste_dia') as UntypedFormControl }
+  get observaciones(): UntypedFormControl { return this.formDesagregado.get('observaciones') as UntypedFormControl }
+  get tiempos(): FormArray {
+    return this.formDesagregado.get('tiempos') as FormArray;
+  }
+  get tiempoTotal(): string {
+    let totalMinutos = 0;
+    this.tiempos.controls.forEach(control => {
+      const tiempo = control.get('tiempo')?.value;
+      if (tiempo) {
+        const [horas, minutos] = tiempo.split(':').map(Number);
+        totalMinutos += (horas * 60) + minutos;
+      }
+    });
+
+    const horas = Math.floor(totalMinutos / 60);
+    const minutos = totalMinutos % 60;
+    return `${horas.toString().padStart(2, '0')}:${minutos.toString().padStart(2, '0')}`;
+  }
+  constructor(private fb: FormBuilder, private _logisticaService: LogisticaService, private toaster: ToastrService, public formService: FormsService, private equiposServiciosService: EquiposServiciosService) { }
 
   async ngOnInit() {
     try {
@@ -105,6 +161,7 @@ export class EquiposHerramientasComponent implements OnInit {
       this.reqCompletos = []
       this.tablaRequerimientos = []
       this.tablaServicios = []
+      this.tablaServiciosCompleto = []
       let res = await this._logisticaService.ListarAdquisicionesProy({ id_proyecto: this.id_proyecto });
       this.buscando6 = false;
       console.log('res', res)
@@ -115,9 +172,12 @@ export class EquiposHerramientasComponent implements OnInit {
         console.log('res2', res2)
         console.log('trt', res2)
         this.tablaRegActividades = res2[0].filter(ele => ele.idfila == 0)
+        console.log('this.tablaRegActividades', this.tablaRegActividades)
+        this.grupoSeleccionado = ''
         this.reqCompletos = res2[1]
         await this.listarEquiposServicios()
         await this.calcularTotales()
+
       }
       else {
         // this.toaster.error('No se pudo cargar la información.', 'Advertencia', { closeButton: false, positionClass: 'toast-bottom-right', timeOut: 5000 });
@@ -134,8 +194,9 @@ export class EquiposHerramientasComponent implements OnInit {
       id_proyecto: this.id_proyecto,
       id_registro: this.id_registro
     }
+    console.log('obj', obj)
     const response = await this.equiposServiciosService.listarEquipoServicio(obj)
-
+    console.log('response', response)
     if (response.length) {
       response.forEach(element => {
         if (element.index_grupo !== 0) {
@@ -143,7 +204,8 @@ export class EquiposHerramientasComponent implements OnInit {
 
         }
       });
-      this.tablaServicios = response
+      this.tablaServiciosCompleto = response
+      console.log('this.tablaServiciosCompleto', this.tablaServiciosCompleto)
     }
   }
 
@@ -157,13 +219,16 @@ export class EquiposHerramientasComponent implements OnInit {
     if (i !== this.filSelRegAct) {
       this.mostrar_carga_todo = true
       this.filSelRegAct = i
+      this.filSelServ = null
+      this.filSelReq = null
       this.tablaRequerimientos = this.reqCompletos.filter(ele => row.idgrupo == ele.idgrupo)
-      console.log('tablaRequerimientos', this.tablaRequerimientos)
+      this.tablaServicios = this.tablaServiciosCompleto.filter(ele => Number(ele.id_grupo) == Number(row.idgrupo))
       await this.calcularTotales()
       this.mostrar_carga_todo = false
     }
 
   }
+
   selTablaReq(row, i) {
     this.filSelReq = i
   }
@@ -177,8 +242,102 @@ export class EquiposHerramientasComponent implements OnInit {
     element.target.parentElement.blur();
   }
 
-  cambioVista(ind: any) {
+  async cambioVista(ind: any) {
     this.subvista = ind;
+    if (this.subvista == 2) {
+      this.mostrar_carga_todo = true
+      const resp = await this.equiposServiciosService.obtenerCalendarioProyecto({ id_proyecto: this.id_proyecto, meses_adicionales: 5 })
+      if (resp.calendario_por_meses?.length) {
+        this.calendario = resp.calendario_por_meses
+        this.mesSeleccionado = 0
+        this.calendarioFiltrado = this.calendario[this.mesSeleccionado]
+        this.celdaSel = [null, null]
+        this.formDesagregado.disable()
+        this.formDesagregado.get('tiempos')?.disable();
+        this.grupoSeleccionado = ''
+        await this.filtrarPlanillaEquiposServicios()
+        await this.listarDesagregadosEquipos()
+
+      }
+      this.mostrar_carga_todo = false
+    }
+  }
+
+  async listarDesagregadosEquipos() {
+    try {
+      const resp = await this.equiposServiciosService.listarDesagregadoEquipo({ id_proyecto: this.id_proyecto })
+      console.log('resp', resp)
+    } catch (error) {
+      console.log(error)
+      SwalService.error()
+    }
+
+  }
+
+  filtrarPlanillaEquiposServicios() {
+
+    this.mostrar_carga_todo = true
+    const desagregado = []
+    setTimeout(() => {
+      this.tablaPlanilla = []
+      let nuevaTabla = []
+      let tablaServicios = []
+      if (this.grupoSeleccionado !== '') {
+        const row = this.tablaRegActividades[this.grupoSeleccionado]
+        tablaServicios = this.tablaServiciosCompleto.filter(ele => Number(ele.id_grupo) == Number(row.idgrupo))
+        this.tablaPlanilla = tablaServicios.filter(ele => ele.index_grupo !== 0)
+      } else {
+
+        for (const element of this.tablaRegActividades) {
+          let j = 0
+          const filtrados = this.tablaServiciosCompleto.filter(ele => Number(ele.id_grupo) == Number(element.idgrupo) && ele.index_grupo !== 0)
+          const grupo = {
+            "id_equipo": null,
+            "id_proyecto": null,
+            "id_registro": null,
+            "id_grupo": null,
+            "id_fila": null,
+            "ind_rep": null,
+            "index_array": null,
+            "index_grupo": null,
+            "descripcion": element.descripcion,
+            "placa": null,
+            "fecha_solicitud": null,
+            "cantidad": null,
+            "precio_unitario": null,
+            "estado": null,
+            "unidad": null,
+            "tipo_registro": null,
+            "tipo": null,
+            "fecha_creacion": null,
+            planilla: [],
+            cabecera: true,
+            item: j
+          }
+          nuevaTabla.push(grupo)
+          for (const element of filtrados) {
+            j++
+            element.cabecera = false
+
+            const planilla = this.calendarioFiltrado?.dias.map(ele => {
+              const encontrado = desagregado.find(reg => reg.fecha == ele.fecha && reg.id_equipo == element.id_equipo)
+              return encontrado ? encontrado : null
+            })
+            element.planilla = planilla
+            element.item = j
+          }
+          nuevaTabla = nuevaTabla.concat(filtrados)
+        }
+        this.tablaPlanilla = nuevaTabla
+      }
+      console.log('tablaPlanilla', this.tablaPlanilla)
+      this.mostrar_carga_todo = false
+    }, 50);
+
+  }
+
+  cambioMes() {
+    this.calendarioFiltrado = this.calendario[this.mesSeleccionado]
   }
 
   async agregarServicio() {
@@ -199,8 +358,7 @@ export class EquiposHerramientasComponent implements OnInit {
       this.mostrar_carga_todo = true
       const gruposExistententes = this.tablaServicios.filter(ele => ele.index_grupo == 0)
       const filaRegAct = this.tablaRegActividades[this.filSelRegAct]
-      console.log('gruposExistententes', gruposExistententes)
-      console.log('filaRegAct', filaRegAct)
+
       const servicio: servicio = {
         cantidad: null,
         descripcion: this.descripcion_servicio.value,
@@ -223,9 +381,7 @@ export class EquiposHerramientasComponent implements OnInit {
         tipo: null,
         tipo_registro: null
       }
-      console.log('servicio', servicio)
       const response = await this.equiposServiciosService.guardarEquipoServicio(servicio)
-      console.log('response', response)
       if (response[0]?.id_equipo) {
         servicio.id_equipo = response[0]?.id_equipo
         this.tablaServicios.push(servicio)
@@ -261,10 +417,8 @@ export class EquiposHerramientasComponent implements OnInit {
       const fechaCulminacion = row.fecha_solicitud
         ? row.fecha_solicitud.split('T')[0]
         : null;
-      console.log('arbru', row)
-      console.log('his.tablaRequerimientos', this.tablaRequerimientos)
+
       const filaReq = this.tablaRequerimientos.find((ele: servicio) => Number(ele.id_registro) == Number(row.id_registro) && Number(ele.id_grupo) == Number(row.id_grupo) && Number(ele.id_fila) == Number(row.id_fila) && Number(ele.ind_rep == row.ind_rep))
-      console.log('filaReq', filaReq)
       this.formEquipo.patchValue({
         id_equipo: row.id_equipo,
         descripcion: row.descripcion,
@@ -281,7 +435,6 @@ export class EquiposHerramientasComponent implements OnInit {
 
   async agregarEquipo() {
     try {
-      console.log('this.formEquipo', this.formEquipo.value)
       if (this.formEquipo.invalid) {
         this.formEquipo.markAllAsTouched()
         this.toaster.error(
@@ -298,7 +451,6 @@ export class EquiposHerramientasComponent implements OnInit {
       this.mostrar_carga_todo = true
       const gruposExistententes = this.tablaServicios.filter(ele => ele.index_grupo == 0)
       const filaServicio = this.tablaServicios[this.filSelServ]
-      console.log('filaServicio', filaServicio)
       let index = null
       let j = 1
       if (this.filSelServ < this.tablaServicios.length + 1) {
@@ -326,14 +478,13 @@ export class EquiposHerramientasComponent implements OnInit {
         parcial: this.cantidad_equipo.value * this.precio_unitario_equipo.value,
         placa: this.placa_equipo.value,
         precio_unitario: this.precio_unitario_equipo.value,
-        unidad: null,
+        unidad: filaServicio.unidad,
         id_equipo: null,
         index_array: index == null ? this.tablaServicios.length : index,
         id_proyecto: this.id_proyecto,
         tipo: null,
         tipo_registro: null
       }
-      console.log('equipo', equipo)
       const response = await this.equiposServiciosService.guardarEquipoServicio(equipo)
       if (response[0]?.id_equipo) {
         equipo.id_equipo = response[0]?.id_equipo
@@ -348,7 +499,6 @@ export class EquiposHerramientasComponent implements OnInit {
         SwalService.error()
       }
       this.mostrar_carga_todo = false
-      console.log('tablaServicios', this.tablaServicios)
     } catch (error) {
       this.mostrar_carga_todo = false
       SwalService.error()
@@ -400,6 +550,151 @@ export class EquiposHerramientasComponent implements OnInit {
       } else {
         acumuladoGrupo += element.parcial
       }
+    }
+  }
+
+  seleccionCelda(i, j) {
+
+    if (this.celdaSel[0] !== i || this.celdaSel[1] !== j) {
+      this.celdaSel = [i, j]
+      this.formDesagregado.reset()
+      while (this.tiempos.value.length) {
+        this.tiempos.removeAt(0);
+      }
+      this.observaciones.enable()
+      const data = this.tablaPlanilla[i].planilla[j]
+
+    }
+  }
+
+  // Agregar nuevo tiempo
+  agregarTiempo() {
+    const tiempoForm = new UntypedFormGroup({
+      inicio: new UntypedFormControl('', []),
+      fin: new UntypedFormControl('', []),
+      tiempo: new UntypedFormControl({ value: 0, disabled: true }, []) // 👈 Valor inicial 0 minutos
+    });
+
+    this.tiempos.push(tiempoForm);
+    this.actualizarTiempoUtilizado();
+  }
+
+  // Eliminar tiempo
+  eliminarTiempo(index: number) {
+    this.tiempos.removeAt(index);
+    this.actualizarTiempoUtilizado();
+  }
+
+  // Calcular tiempo en minutos
+  calcularTiempo(index: number) {
+    const tiempoControl = this.tiempos.at(index) as UntypedFormGroup;
+
+    const inicio = tiempoControl.get('inicio')?.value;
+    const fin = tiempoControl.get('fin')?.value;
+
+    // Limpiar error previo
+    tiempoControl.setErrors(null);
+
+    // Si falta alguno de los dos campos, tiempo = 0 minutos
+    if (!inicio || !fin) {
+      tiempoControl.get('tiempo')?.setValue(0);
+      this.actualizarTiempoUtilizado();
+      return;
+    }
+
+    // Validar formato de hora (HH:MM)
+    const tiempoRegex = /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/;
+    if (!tiempoRegex.test(inicio) || !tiempoRegex.test(fin)) {
+      tiempoControl.get('tiempo')?.setValue(0);
+      this.actualizarTiempoUtilizado();
+      return;
+    }
+
+    const [horaInicio, minInicio] = inicio.split(':').map(Number);
+    const [horaFin, minFin] = fin.split(':').map(Number);
+
+    const minutosInicio = horaInicio * 60 + minInicio;
+    let minutosFin = horaFin * 60 + minFin;
+
+    // Validar que inicio no sea mayor que fin
+    if (minutosInicio > minutosFin) {
+      tiempoControl.setErrors({ inicioMayor: true });
+      tiempoControl.get('tiempo')?.setValue(0);
+      this.actualizarTiempoUtilizado();
+      return;
+    }
+
+    // Calcular tiempo en minutos
+    const diferenciaMinutos = minutosFin - minutosInicio;
+
+    // Guardar directamente los minutos
+    tiempoControl.get('tiempo')?.setValue(diferenciaMinutos);
+
+    this.actualizarTiempoUtilizado();
+  }
+
+  // Actualizar tiempo utilizado (suma de minutos)
+  actualizarTiempoUtilizado() {
+    let totalMinutos = 0;
+
+    this.tiempos.controls.forEach(control => {
+      const tiempoControl = control as UntypedFormGroup;
+      const minutos = tiempoControl.get('tiempo')?.value || 0;
+      totalMinutos += minutos;
+    });
+
+    // Guardar el total en minutos
+    this.tiempo_utilizado.setValue(totalMinutos);
+    this.calcularSaldo();
+  }
+
+  // Calcular saldo (en minutos)
+  calcularSaldo() {
+    // Obtener tiempo programado (convertir a minutos)
+    let minutosProg = 0;
+    const progValue = this.tiempo_programado.value;
+
+    if (progValue) {
+      if (typeof progValue === 'string' && progValue.includes(':')) {
+        // Si viene en formato HH:MM
+        const [horas, minutos] = progValue.split(':').map(Number);
+        minutosProg = (horas * 60) + (minutos || 0);
+      } else {
+        // Si es número (horas) o string numérico
+        minutosProg = Math.round(parseFloat(progValue.toString()) * 60);
+      }
+    }
+
+    // Obtener tiempo utilizado (ya está en minutos)
+    const minutosUtil = this.tiempo_utilizado.value || 0;
+
+    const saldoMinutos = minutosProg - minutosUtil;
+
+    // Guardar saldo en minutos
+    this.saldo_utilizar.setValue(saldoMinutos);
+  }
+
+  guardarCambiosDesagregado() {
+    try {
+      console.log('this.form', this.formDesagregado.value)
+      console.log('this.formDesagregado', this.formDesagregado.getRawValue())
+      const data = this.formDesagregado.getRawValue()
+      const horas_detalle_Array = data.tiempos.map(ele => { return ele.inicio + '|' + ele.fin })
+      const horas_detalle = horas_detalle_Array.join('/')
+      const row = this.tablaPlanilla[this.celdaSel[0]]
+      const obj = {
+        id_proyecto: this.id_proyecto,
+        id_equipo: data.ordenServicio,
+        fecha: '',
+        id_proveedor: row.id_proveedor,
+        horas_dia: data.horas_dia,
+        costo_dia: data.coste_dia,
+        horas_detalle: horas_detalle,
+        observaciones: data.observaciones,
+      }
+    } catch (error) {
+      console.log(error)
+      SwalService.error()
     }
   }
 }

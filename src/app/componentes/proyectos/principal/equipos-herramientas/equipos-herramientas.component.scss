@@ -17,3 +17,29 @@
   font-size: 13px !important;
   display: flex;
 }
+.tabla-plantilla {
+  height: calc(100dvh - 33rem);
+}
+
+.contenedor-desagregado {
+  height: 18rem;
+  border: 1px solid #6c757d;
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.fw-bold {
+  font-weight: 600;
+  font-size: 0.9rem;
+  margin-bottom: 2px;
+}
+
+.form-control-sm,
+.form-select-sm {
+  font-size: 0.85rem;
+  padding: 0.25rem 0.5rem;
+}
+
+.bg-secondary {
+  background-color: #6c757d;
+}
