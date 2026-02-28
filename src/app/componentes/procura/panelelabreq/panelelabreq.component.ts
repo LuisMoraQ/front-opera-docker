@@ -28,6 +28,9 @@ export class PanelelabreqComponent implements OnInit {
   decima
   solover
   simbolo
+  imagenp
+  nombrep
+  rucp
 
   @Input() set tabproyecto(value: any) {
     this.id_proyecto = value.get('id_proyecto').value;
@@ -41,13 +44,16 @@ export class PanelelabreqComponent implements OnInit {
     this.solover=value.get('solover').value;
     //this.moneda=datosproy.get('moneda').value.toString()=='0'?'S/':'$';
     this.simbolo=datosrec.value.simbolo
+    this.imagenp=datosrec.value.imagen_empresa
+    this.nombrep=datosrec.value.nombre_empresa
+    this.rucp=datosrec.value.ruc_empresa
   }
 
   decpasa:any
   dec_parcial=2;
   mask_parcial='0.2';
   filareg:any
-
+  
   dataSource1=[]
   fila1_sel=-1
   buscando1=false
@@ -136,6 +142,9 @@ export class PanelelabreqComponent implements OnInit {
   cambioVista(ind:any){
     //condicionar si selecciono una fila?
     if(this.filareg){
+      this.filareg.imagen=this.imagenp
+      this.filareg.nomemp=this.nombrep
+      this.filareg.rucemp=this.rucp
       this.subvista=ind;
     }
     else{

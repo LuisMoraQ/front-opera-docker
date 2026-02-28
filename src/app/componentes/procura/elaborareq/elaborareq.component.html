@@ -9,6 +9,7 @@
                 <th appAnchocol [ancho]="72">Agrupamiento</th>
                 <th appAnchocol [ancho]="30">Item</th>
                 <th appAnchocol [ancho]="300" [detalle]="true">Insumos del Expediente Tecnico Agrupados</th>
+                <th appAnchocol [ancho]="114">Tipo de Contratación</th>
                 <th appAnchocol [ancho]="70">Costo Requerimiento</th>
                 <th appAnchocol [ancho]="75">Estado Solicitud</th>
                 <!-- <th appAnchocol [ancho]="70">Check</th>
@@ -29,6 +30,7 @@
                     </span> -->
                     {{row.descripcion}}
                   </td>
+                  <td appAnchocol [ancho]="114">{{row.tipocontra=='1'?'MATERIALES':row.tipocontra=='2'?'EQUIPOS Y SERVICIOS':row.tipocontra=='3'?'MANO DE OBRA':row.tipocontra=='3'?'OTROS':''}}</td>
                   <td appAnchocol [ancho]="70">
                     <span class="float-left">{{simbolo}}</span>
                     <span class="float-right">{{row.reqsol | number: mask_parcial}}</span>
@@ -300,11 +302,16 @@
       <form [formGroup]="formSoli">
         <!-- Title and Description -->
         <div class="form-header text-center">
-            <!-- <img [src]="imagenPreview" alt="Vista previa" class="img-thumbnail"
-                      style="max-width: 200px; max-height: 150px;"> -->
-            <h2 class="form-title" *ngIf="!fechagana">Solicitud de Cotización</h2>
-            <h2 class="form-title" *ngIf="fechagana">Orden de Atención OC-{{nroorden}}</h2>
-            <!-- AGREGAR OTROS DATOS DEL REPORTE -->
+          <div class="row mx-0">
+            <div class="col-sm-4 col-12" *ngIf="imagenPreview">
+              <img [src]="imagenPreview" alt="Vista previa" class="imgempr"><!--  style="max-width: 200px; max-height: 150px;" -->
+            </div>
+            <div class="col-sm-8 col-12 d-flex" style="align-items: center;">
+              <h2 class="form-title">{{nomempresa}}</h2>
+            </div>
+          </div>
+          <h3 class="form-title" *ngIf="!fechagana">Solicitud de Cotización</h3>
+          <h3 class="form-title" *ngIf="fechagana">Orden de Atención OC-{{nroorden}}</h3>
         </div>
         <div class="row mx-0">
           <mat-form-field appearance="outline" class="mff-reduc my-form-field col-sm-6 col-12">

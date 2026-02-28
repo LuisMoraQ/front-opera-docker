@@ -30,7 +30,7 @@ body {
 /* Top image styling */
 .form-image {
     //margin-bottom: 3rem; /* mb-12 */
-    width: 50%;
+    width: 40%;
     border-radius: 0.5rem;
 }
 
@@ -137,4 +137,14 @@ th.sticky-col{
     position: sticky;
     left: 0;
     z-index: 1;
+}
+.imgempr{
+  max-width: 100%;
+  max-height: 90px;
+}
+h3{
+    font-size: 1.2rem !important;
+}
+h1{
+    font-size: 1.6rem !important;
 }

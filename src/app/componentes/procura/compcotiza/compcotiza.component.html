@@ -5,12 +5,16 @@
         <table class="table-bordered tab-9">
           <thead>
             <tr class="headsticky header-custom">
-              <th appAnchocol [ancho]="48" rowspan="2">N°</th>
+              <th appAnchocol [ancho]="48" rowspan="2">
+                N°<br>
+                <i class="fa fa-toggle-down" style="cursor:pointer;font-size: 14px;" placement="bottom" ngbTooltip="Expandir Todo" container="body" (click)="mostrarTodo5()"></i>&nbsp;
+                <i class="fa fa-toggle-up" style="cursor:pointer;font-size: 14px;" placement="bottom" ngbTooltip="Contraer Todo" container="body" (click)="ocultarTodo5()"></i>
+              </th>
               <th appAnchocol [ancho]="200" [detalle]="true" rowspan="2">Descripción</th>
               <th appAnchocol [ancho]="35" rowspan="2">Und</th>
               <th appAnchocol [ancho]="60" rowspan="2">Cantidad</th>
               <th colspan="1">Cotización N°01</th>
-              <th colspan="1">Cotización N°01</th>
+              <th colspan="1">Cotización N°02</th>
               <th colspan="1">Cotización N°03</th>
               <th appAnchocol [ancho]="50" rowspan="2">Precio Referencial INC/IGV</th>
               <th appAnchocol [ancho]="79" rowspan="2">Estado</th>

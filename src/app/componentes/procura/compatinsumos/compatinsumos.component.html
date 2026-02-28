@@ -19,6 +19,7 @@
             <th appAnchocol [ancho]="72">Agrupamiento</th>
             <th appAnchocol [ancho]="30">Item</th>
             <th appAnchocol [ancho]="300" [detalle]="true">Insumos del Expediente Tecnico Agrupados</th>
+            <th appAnchocol [ancho]="114">Tipo de Contratación</th>
             <th appAnchocol [ancho]="94">Lugar de Entrega</th>
             <th appAnchocol [ancho]="70">Fecha Programada</th>
             <th appAnchocol [ancho]="75">Estado</th>
@@ -44,6 +45,7 @@
                 </span> -->
                 {{row.descripcion}}
               </td>
+              <td appAnchocol [ancho]="114">{{row.tipocontra=='1'?'MATERIALES':row.tipocontra=='2'?'EQUIPOS Y SERVICIOS':row.tipocontra=='3'?'MANO DE OBRA':row.tipocontra=='3'?'OTROS':''}}</td>
               <td appAnchocol [ancho]="94">{{row.entrega=='1'?'Almacen Central':row.entrega=='2'?'Almacen de Obra':''}}</td>
               <td appAnchocol [ancho]="70">{{row.fecha}}</td>
               <td appAnchocol [ancho]="75">

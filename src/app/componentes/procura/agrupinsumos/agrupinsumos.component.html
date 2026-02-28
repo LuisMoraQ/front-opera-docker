@@ -135,8 +135,9 @@
             <th *ngIf="!solover" appAnchocol [ancho]="32">N°</th>
             <th appAnchocol [ancho]="40">Item<br>
               <i class="fa fa-toggle-down" style="cursor:pointer;font-size: 14px;" placement="bottom" ngbTooltip="Expandir Todo" container="body" (click)="mostrarTodo5()"></i>&nbsp;
-              <i class="fa fa-toggle-up" style="color:red; cursor:pointer;font-size: 14px;" placement="bottom" ngbTooltip="Contraer Todo" container="body" (click)="ocultarTodo5()"></i></th>
+              <i class="fa fa-toggle-up" style="cursor:pointer;font-size: 14px;" placement="bottom" ngbTooltip="Contraer Todo" container="body" (click)="ocultarTodo5()"></i></th>
             <th appAnchocol [ancho]="185" [detalle]="true">Descripción</th>
+            <th appAnchocol [ancho]="80">Tipo de Contratación</th>
             <th appAnchocol [ancho]="48">Fecha</th>
             <th appAnchocol [ancho]="49">Agrupamiento de Insumo</th>
             <th appAnchocol [ancho]="75">Estado</th>
@@ -170,6 +171,7 @@
                 </span>
                 <input *ngIf="row.indice==null && row.editar==1" type="text" class="formcontrol w-100 d-flex" style="height: 20px;" value="{{row.descripcion}}" appAutoFocus (keyup)="presenter3($event,row)" (blur)="caneditarcelda3($event.target.value,row)">
               </td>
+              <td appAnchocol [ancho]="80">{{row.tipocontra=='1'?'MATERIALES':row.tipocontra=='2'?'EQUIPOS Y SERVICIOS':row.tipocontra=='3'?'MANO DE OBRA':row.tipocontra=='3'?'OTROS':''}}</td>
               <td appAnchocol [ancho]="48">{{row.fecha}}</td>
               <td appAnchocol [ancho]="49">
                 <span *ngIf="row.complemento==0">{{row.id_comple}}</span>
@@ -282,6 +284,16 @@
               El plazo es obligatorio.
           </mat-error> -->
         </mat-form-field>
+        <mat-form-field class="mff-reduc col-12 col-sm-8 col-md-6" appearance="outline">
+          <mat-label>Tipo de Contratación</mat-label>
+          <select matNativeControl formControlName="tipocontra">
+            <option value="" selected>--Seleccionar</option>
+            <option value="1" selected>MATERIALES</option>
+            <option value="2" selected>EQUIPOS Y SERVICIOS</option>
+            <option value="3" selected>MANO DE OBRA</option>
+            <option value="4" selected>OTROS</option>
+          </select>
+        </mat-form-field>
       </div>
     </form>
   </div>
@@ -345,6 +357,16 @@
                   <mat-error *ngIf="Plazob?.hasError('max')">
                       El plazo no puede ser mayor a 5000.
                   </mat-error>
+              </mat-form-field>
+              <mat-form-field class="mff-reduc col-12 col-sm-8 col-md-6" appearance="outline">
+                <mat-label>Tipo de Contratación</mat-label>
+                  <select matNativeControl formControlName="tipocontrab">
+                    <option value="" selected>--Seleccionar</option>
+                    <option value="1" selected>MATERIALES</option>
+                    <option value="2" selected>EQUIPOS Y SERVICIOS</option>
+                    <option value="3" selected>MANO DE OBRA</option>
+                    <option value="3" selected>OTROS</option>
+                  </select>
               </mat-form-field>
             </div>
         </form>

@@ -1,14 +1,22 @@
 <div class="main-container">
     <div class="form-wrapper">
-      <div class="imgcont">
+      <div *ngIf="!imagenPreview" class="imgcont">
         <img src="https://ucarecdn.com/8280195b-127b-4a46-9a6f-2910f9576521/changerequest.png"
             alt="Change Request Form Illustration"
             class="form-image"/>
       </div>
+      <div *ngIf="imagenPreview" class="row mx-0">
+        <div class="col-sm-3 col-12 d-flex" style="justify-content: center;" *ngIf="imagenPreview">
+          <img [src]="imagenPreview" alt="Vista previa" class="imgempr"><!--  style="max-width: 200px; max-height: 150px;" -->
+        </div>
+        <div class="col-sm-9 col-12 d-flex text-center" style="align-items: center;">
+          <h1 class="form-title">{{nomempresa}}</h1>
+        </div>
+      </div>
         <form [formGroup]="formSoli">
           <!-- Title and Description -->
           <div class="form-header">
-              <h2 class="form-title">Solicitud de Cotización</h2>
+              <h3 class="form-title">Solicitud de Cotización</h3>
               <p class="form-description">
                 Proporcione los detalles de la solicitud de Cotización. Todos los campos obligatorios están marcados con *.
               </p>

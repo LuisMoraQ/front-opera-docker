@@ -7,6 +7,7 @@ import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { FormsService } from 'src/app/servicios/forms.service';
 import { SwalService } from 'src/app/servicios/swal.service';
 import * as moment from 'moment';
+import { PrincipalService } from 'src/app/servicios/principal.service';
 
 @Component({
   selector: 'app-elaborareq',
@@ -109,12 +110,15 @@ export class ElaborareqComponent implements OnInit {
   vence1=false
   vence2=false
   vence3=false
+  imagenPreview
+  nomempresa
 
   constructor(
     private _logisticaService:LogisticaService,
     private toaster: ToastrService,
     private encriptadorService: EncriptadorService,
     public formService: FormsService,
+    private principalService: PrincipalService,
   ) { }
 
   async ngOnInit() {
@@ -135,6 +139,20 @@ export class ElaborareqComponent implements OnInit {
       this.dec_parcial=arrdec[2];
       this.mask_parcial='0.'+arrdec[2];
       this.mask_cant='0.'+arrdec[3];
+    }
+    console.log(this.filareg)
+    this.nomempresa=this.filareg.nomemp
+    if(this.filareg.imagen){
+      this.principalService.obtenerImagenProyecto(this.filareg.imagen).subscribe(
+        (blob: Blob) => {
+          const reader = new FileReader();
+          reader.onload = (e: any) => {
+            this.imagenPreview = e.target.result;
+          };
+          reader.readAsDataURL(blob);
+        },
+        error => console.error('Error al cargar imagen:', error)
+      );
     }
     //listar datos
     this.buscando6=true;
@@ -309,8 +327,12 @@ export class ElaborareqComponent implements OnInit {
   CopiarUrl(nro:any){
     let rowsel=this.dataSource6[this.fila6_sel]
     let plazpas=nro==1?rowsel.plazo1:nro==2?rowsel.plazo2:nro==3?rowsel.plazo3:'';
-    let valsol=rowsel.id_proyecto+'!'+rowsel.id_registro+'!'+rowsel.idgrupo+'!'+nro+'!'+moment(this.fechaac).format('YYYY-MM-DD')+'!'+plazpas+'!'+nro;
-    let encrp=this.encriptadorService.encryptar(valsol)
+    let fechanro=nro==1?rowsel.fecha_sol1:nro==2?rowsel.fecha_sol2:nro==3?rowsel.fecha_sol3:'';
+    let arrfechasol=fechanro.split('-')
+    let idprovpas=nro==1?rowsel.id_prov1:nro==2?rowsel.id_prov2:rowsel.id_prov3;
+    let valsol=rowsel.id_proyecto+'!'+rowsel.id_registro+'!'+rowsel.idgrupo+'!'+nro+'!'+arrfechasol[2]+'-'+arrfechasol[1]+'-'+arrfechasol[0]+'!'+plazpas+'!'+idprovpas;
+    //let encrp=this.encriptadorService.encryptar(valsol)
+    let encrp=valsol
     let urlcop=this.enviUrl+'/externo/cotizacion/'+encrp;
     SwalService.input2('Link para llenar la cotización:', urlcop)
   }
@@ -341,9 +363,10 @@ export class ElaborareqComponent implements OnInit {
       //id_proyecto,id_registro,id_grupo,nroprov,fecha,plazo,idprov
       let idprovpas=nro==1?rowsel.id_prov1:nro==2?rowsel.id_prov2:rowsel.id_prov3;
       let valsol=rowsel.id_proyecto+'!'+rowsel.id_registro+'!'+rowsel.idgrupo+'!'+nro+'!'+moment(this.fechaac).format('YYYY-MM-DD')+'!'+res.value+'!'+idprovpas;
-      let encrp=this.encriptadorService.encryptar(valsol)
+      //let encrp=this.encriptadorService.encryptar(valsol)
+      let encrp=valsol
       const respuesta =await this._logisticaService.AdquisolEnviarSol({id_proyecto:rowsel.id_proyecto,id_registro:rowsel.id_registro,idgrupo:rowsel.idgrupo,idfila:rowsel.idfila,
-        destinatario:filaope.correo,razon:filaope.razon,link:(this.enviUrl+'/externo/cotizacion/'+encrp),plazo:res.value, nroprov:nro});
+        destinatario:filaope.correo,razon:filaope.razon,link:(this.enviUrl+'/externo/cotizacion/'+encrp),plazo:res.value, nroprov:nro,agrupacion:rowsel.descripcion,nomempresa:this.filareg.nomemp});
       if (respuesta?.id == "0") {
         SwalService.error('Advertencia', respuesta.mensaje);
       }

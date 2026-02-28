@@ -76,19 +76,13 @@ export class AgrupinsumosComponent implements OnInit {
       Validators.min(1),
       Validators.max(5000),
     ]),
+    tipocontra: new FormControl('', [Validators.required]),
   });
-  get Iditem12a(): FormControl {
-    return this.Frmmostrar12a.get('Iditem12a') as FormControl;
-  }
-  get Descgru12a(): FormControl {
-    return this.Frmmostrar12a.get('Descgru12a') as FormControl;
-  }
-  get Lugar(): FormControl {
-    return this.Frmmostrar12a.get('Lugar') as FormControl;
-  }
-  get Plazo(): FormControl {
-    return this.Frmmostrar12a.get('Plazo') as FormControl;
-  }
+  get Iditem12a(): FormControl { return this.Frmmostrar12a.get('Iditem12a') as FormControl; }
+  get Descgru12a(): FormControl { return this.Frmmostrar12a.get('Descgru12a') as FormControl; }
+  get Lugar(): FormControl { return this.Frmmostrar12a.get('Lugar') as FormControl; }
+  get Plazo(): FormControl { return this.Frmmostrar12a.get('Plazo') as FormControl;}
+  get tipocontra(): FormControl { return this.Frmmostrar12a.get('tipocontra') as FormControl; }
 
   @ViewChild('modalmostrar12b') modalmostrar12b: ModalBasicComponent;
   Frmmostrar12b = new FormGroup({
@@ -99,28 +93,16 @@ export class AgrupinsumosComponent implements OnInit {
     Descgru12b: new FormControl('', Validators.required),
     Lugar: new FormControl('', Validators.required),
     Plazo: new FormControl('1', Validators.required),
+    tipocontrab: new FormControl('', [Validators.required]),
   });
-  get Iditemsel12b(): FormControl {
-    return this.Frmmostrar12b.get('Iditemsel12b') as FormControl;
-  }
-  get Idcomsel12b(): FormControl {
-    return this.Frmmostrar12b.get('Idcomsel12b') as FormControl;
-  }
-  get Descgrusel12b(): FormControl {
-    return this.Frmmostrar12b.get('Descgrusel12b') as FormControl;
-  }
-  get Iditem12b(): FormControl {
-    return this.Frmmostrar12b.get('Iditem12b') as FormControl;
-  }
-  get Descgru12b(): FormControl {
-    return this.Frmmostrar12b.get('Descgru12b') as FormControl;
-  }
-  get Lugarb(): FormControl {
-    return this.Frmmostrar12b.get('Lugar') as FormControl;
-  }
-  get Plazob(): FormControl {
-    return this.Frmmostrar12b.get('Plazo') as FormControl;
-  }
+  get Iditemsel12b(): FormControl { return this.Frmmostrar12b.get('Iditemsel12b') as FormControl; }
+  get Idcomsel12b(): FormControl { return this.Frmmostrar12b.get('Idcomsel12b') as FormControl; }
+  get Descgrusel12b(): FormControl { return this.Frmmostrar12b.get('Descgrusel12b') as FormControl; }
+  get Iditem12b(): FormControl { return this.Frmmostrar12b.get('Iditem12b') as FormControl; }
+  get Descgru12b(): FormControl { return this.Frmmostrar12b.get('Descgru12b') as FormControl; }
+  get Lugarb(): FormControl { return this.Frmmostrar12b.get('Lugar') as FormControl; }
+  get Plazob(): FormControl { return this.Frmmostrar12b.get('Plazo') as FormControl; }
+  get tipocontrab(): FormControl { return this.Frmmostrar12b.get('tipocontrab') as FormControl; }
 
   constructor(
     private _logisticaService: LogisticaService,
@@ -453,6 +435,7 @@ export class AgrupinsumosComponent implements OnInit {
     this.Descgru12a.setValue('');
     this.Lugar.setValue('');
     this.Plazo.setValue(1);
+    this.tipocontra.setValue('1')
     this.modalmostrar12a.show();
   }
   cerrarModalmostrar12a() {
@@ -533,6 +516,7 @@ export class AgrupinsumosComponent implements OnInit {
         mostrar: 1,
         icomost: 1,
         editar: 0,
+        tipocontra:this.tipocontra.value,
         accion:1//insertar
       };
       this.dataSource5.push(ejm);
@@ -791,13 +775,16 @@ export class AgrupinsumosComponent implements OnInit {
     let idcomgru = '';
     let entrega = '';
     let complemento = 0;
+    let tipoaux='1'
     for (let j = 0; j < totfilas; j++) {
       if (this.dataSource5[j].seleccion == 1 && this.dataSource5[j].indice == null) {
+        console.log(this.dataSource5[j])
         idgrupo = this.dataSource5[j].nomgrupo;
         nomgrupo = this.dataSource5[j].descripcion;
         idcomgru = this.dataSource5[j].id_comple;
         entrega = this.dataSource5[j].entrega;
         complemento = this.dataSource5[j].complemento;
+        tipoaux=this.dataSource5[j].tipocontra;
       }
     }
     if (idgrupo != '') {
@@ -837,6 +824,8 @@ export class AgrupinsumosComponent implements OnInit {
         this.Iditem12b.setValue(nomite);
         this.Descgru12b.setValue('');
         this.Lugarb.setValue(entrega);
+        this.tipocontrab.disable();
+        this.tipocontrab.setValue(tipoaux);
         this.modalmostrar12b.show();
       } else {
         this.toaster.error(
@@ -915,6 +904,7 @@ export class AgrupinsumosComponent implements OnInit {
         mostrar: 1,
         icomost: 1,
         editar: 0,
+        tipocontra:this.tipocontrab.value,
         accion:1//insertar
       };
       this.dataSource5.push(ejm);
@@ -953,6 +943,7 @@ export class AgrupinsumosComponent implements OnInit {
             mostrar: 1,
             icomost: row.icomost,
             editar: 0,
+            tipocontra:null,
             accion:1//insertar
           }; //todo se asigna igual
           this.dataSource5.push(ejm);
@@ -1595,10 +1586,9 @@ export class AgrupinsumosComponent implements OnInit {
     }
   }
   editarcelda3(row: any) {
-    if (row.estado == 1) {
-      return;
+    if (row.estado == 0) {
+      row.editar = 1;
     }
-    row.editar = 1;
   }
   caneditarcelda3(valor: any, row: any) {
     if (row.descripcion != valor) {

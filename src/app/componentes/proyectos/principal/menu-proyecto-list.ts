@@ -49,7 +49,7 @@ export const itemsMenu = [
     },
     {
         "id": 7,
-        "name": "Cotizaciones",
+        "name": "Abastecimiento",
         "position": 7,
         "icon": "fa fa-2x fa-building",
         "imagen": "icmetra1.png",

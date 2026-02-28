@@ -6,6 +6,7 @@ import { ToastrService } from 'ngx-toastr';
 import { EncriptadorService } from 'src/app/servicios/encriptador.service';
 import { FormsService } from 'src/app/servicios/forms.service';
 import { LogisticaService } from 'src/app/servicios/logistica.service';
+import { PrincipalService } from 'src/app/servicios/principal.service';
 import { SwalService } from 'src/app/servicios/swal.service';
 
 @Component({
@@ -30,6 +31,10 @@ export class CotizacionComponent implements OnInit {
   dec_cant=4;
   mask_cant='0.4';
   simbolo='S/'
+
+  dataproy=[]
+  imagenPreview
+  nomempresa
 
   dataprov=[]
   dataSource2=[]
@@ -71,6 +76,7 @@ export class CotizacionComponent implements OnInit {
     private changeDetector: ChangeDetectorRef,
     private router: Router,
     private encriptadorService: EncriptadorService,
+    private principalService: PrincipalService,
   ) {
     this.route.params.subscribe(params=>{
       this.keyrou=params['key']
@@ -80,7 +86,9 @@ export class CotizacionComponent implements OnInit {
   async ngOnInit() {
     try{
       console.log(this.keyrou)
-      let desenc=this.encriptadorService.desencryptar(this.keyrou)
+      //let desenc=this.encriptadorService.desencryptar(this.keyrou)
+      let desenc=this.keyrou
+      console.log(desenc)
       if(desenc!='' && desenc.includes('!')){
         let arrpara=desenc.split('!');
         if(arrpara.length==7){
@@ -91,6 +99,7 @@ export class CotizacionComponent implements OnInit {
           let sfecha=arrpara[4]
           let plazolim=arrpara[5]
           this.idprov=arrpara[6]
+          console.log(sfecha)
           //condicionar fecha
           let arrfe=sfecha.split('-')
           let feac = new Date(Number(arrfe[0]),Number(arrfe[1])-1,Number(arrfe[2]));
@@ -108,23 +117,40 @@ export class CotizacionComponent implements OnInit {
           }
           let fechahoy=this.fechaac
           fechahoy.setHours(0,0,0,0)
+          console.log(fechahoy,feac,ffin)
           if(fechahoy>=feac && fechahoy<=ffin){
             this.mostrar_carga_todo=true;
             //Listar todos los datos
             let tablaaux=await this._logisticaService.ListarInsDisgregaCoti({id_proyecto:this.id_proyecto,id_registro:this.id_registro,idgrupo:this.idgrupo,nroprov:this.nroprov});
             //condicionar si respuesta tiene 2 tablas
-            if(tablaaux.length==2){
+            if(tablaaux.length==3){
               this.dataprov=tablaaux[0]
               if(this.dataprov[0].fecha_resp){
                 this.SalirVista('La cotizacion ya fue enviada.');
               }
               this.dataSource2 = tablaaux[1];
+              this.dataproy=tablaaux[2]
+              if(this.dataproy.length>0){
+                if(this.dataproy[0].imagen_empresa){
+                  this.principalService.obtenerImagenProyecto(this.dataproy[0].imagen_empresa).subscribe(
+                    (blob: Blob) => {
+                      const reader = new FileReader();
+                      reader.onload = (e: any) => {
+                        this.imagenPreview = e.target.result;
+                      };
+                      reader.readAsDataURL(blob);
+                    },
+                    error => console.error('Error al cargar imagen:', error)
+                  );
+                }
+                this.nomempresa=this.dataproy[0].nombre_empresa
+              }
               this.CargaDatos();
               this.mostrar_carga_todo=false;
             }
             else{//no cargar la pagina
               this.mostrar_carga_todo=false;
-              this.SalirVista();
+              //this.SalirVista();
             }
           }
           else{
@@ -132,14 +158,14 @@ export class CotizacionComponent implements OnInit {
           }
         }
         else{
-          this.SalirVista();
+          //this.SalirVista();
         }
       }
       else{
-        this.SalirVista();
+        //this.SalirVista();
       }
     }catch(e){
-      this.SalirVista();
+      //this.SalirVista();
     }
   }
   @HostListener('window:resize', ['$event'])
@@ -209,7 +235,6 @@ export class CotizacionComponent implements OnInit {
         this.telefono.disable()
         this.correo.disable()
         this.contacto.disable()
-
         this.formSoli.markAllAsTouched();
       }
       else{
