@@ -1,4 +1,4 @@
-import { Component, OnInit, Input, ViewChild } from '@angular/core';
+import { Component, OnInit, Input, ViewChild,HostListener } from '@angular/core';
 import { FormArray, FormControl, FormGroup, Validators } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
 import { EncriptadorService } from 'src/app/servicios/encriptador.service';
@@ -81,6 +81,7 @@ export class PanelalmcComponent implements OnInit {
   ) { }
 
   async ngOnInit() {
+    this.scrollbut=document.body.clientWidth <= 1030?true:false;
     let id_user = await this._EncriptadorService.recuperarlocalstory('idusuario');
     const datoaccs = await this.principalService.ConfgsAsignaUserProy({id_proyecto: this.id_proyecto,id_usuario:id_user});
     if(datoaccs?.length>0){//accesos para usuarios secundarios
@@ -101,6 +102,11 @@ export class PanelalmcComponent implements OnInit {
     }
     await this.Listar1();
   }
+  @HostListener('window:resize', ['$event'])
+    onResize(event) {
+      //resize a las tablas
+      this.scrollbut=document.body.clientWidth <= 1030?true:false;
+    }
   leftDivBut(){
     var face1 = document.getElementById('divbut');
     face1.scrollLeft+=15;

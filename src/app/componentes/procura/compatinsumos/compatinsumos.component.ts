@@ -313,10 +313,9 @@ export class CompatinsumosComponent implements OnInit {
     //validar que no exista en t8 antes de agregar
     if(indgrupo==-1){//no existe entonces se puede agregar directo
       let ejm={id_proyecto:this.id_proyecto,id_registro:this.id_reg,idgrupo:idgru,idfila:this.dataSource7[ind].idfila,indrep:0,orden:this.UltOrden(),indice:this.dataSource7[ind].indice,id_filadetalle:this.dataSource7[ind].id_filadetalle,
-        num_det:this.dataSource7[ind].num_det,codigo:this.dataSource7[ind].codigo,descripcion:this.dataSource7[ind].descripcion,unidad:this.dataSource7[ind].unidad,
-        cantidad:this.dataSource7[ind].operador=='%'?1:this.dataSource7[ind].cantidad,
+        num_det:this.dataSource7[ind].num_det,codigo:this.dataSource7[ind].codigo,descripcion:this.dataSource7[ind].descripcion,unidad:this.dataSource7[ind].unidad,cantidad:this.dataSource7[ind].operador=='%'?1:this.dataSource7[ind].cantidad,
         precio:this.dataSource7[ind].operador=='%'?this.dataSource7[ind].parcial:this.dataSource7[ind].precio,parcial:this.dataSource7[ind].parcial,
-        operador:this.dataSource7[ind].operador,acumulado:this.dataSource7[ind].parcial,proceso:'',princi:1,estado:0,ingreso:0,salida:0,fecha_sol:null,mostrar:1,icomost:1,editar:0,editar2:0,accion:1};
+        operador:this.dataSource7[ind].operador,acumulado:this.dataSource7[ind].parcial,proceso:'',princi:1,estado:0,tipocontra:this.dataSource7[ind].tipocontra,ingreso:0,salida:0,fecha_sol:null,mostrar:1,icomost:1,editar:0,editar2:0,accion:1};
       this.dataSource8.push(ejm);
       this.bcambiost8=true;
       //agregar tambien a data
@@ -367,7 +366,6 @@ export class CompatinsumosComponent implements OnInit {
     catch(error){
     }
   }
-
   cambindicesel8(ind:any){
     if(ind==this.fila8_sel)
     {
@@ -457,7 +455,7 @@ export class CompatinsumosComponent implements OnInit {
         let sald=(((parc1-(difer))/parc1)*100);
         this.dataSource6[i].saldo=sald<0?'0.00':this.formService.redondeo(sald,2);
         this.dataSource6[i].accion=1
-        for(let row1 of this.dataSource7){
+        for(let row1 of this.dataSource7){//datasource7 solo visual
           if(row1.idgrupo==this.dataSource6[i].idgrupo && row1.idfila==this.dataSource6[i].idfila){
             row1.saldo=sald<0?'0.00':this.formService.redondeo(sald,2);
             break;
@@ -480,7 +478,6 @@ export class CompatinsumosComponent implements OnInit {
     this.cargartabla8mostrar(this.idcomple);
     this.bcambiost8=true;
   }
-
   agregarinsumo(ind:any){
     this.ind_disgrega=ind;
     if(ind!=-1){
@@ -503,7 +500,7 @@ export class CompatinsumosComponent implements OnInit {
           let ejm={id_proyecto:this.id_proyecto,id_registro:this.id_reg,idgrupo:idgru,idfila:this.dataSource8[i].idfila,indrep:this.dataSource8[i].indrep,orden:this.dataSource8[i].orden,
             indice:this.dataSource8[i].indice,id_filadetalle:this.dataSource8[i].id_filadetalle,num_det:this.dataSource8[i].num_det,codigo:this.dataSource8[i].codigo,descripcion:this.dataSource8[i].descripcion,
             unidad:this.dataSource8[i].unidad,cantidad:this.dataSource8[i].cantidad,precio:this.dataSource8[i].precio,parcial:this.dataSource8[i].parcial,operador:this.dataSource8[i].operador,
-            acumulado:this.dataSource8[i].acumulado,proceso:this.dataSource8[i].proceso,princi:this.dataSource8[i].princi,estado:this.dataSource8[i].estado,ingreso:this.dataSource8[i].ingreso,
+            acumulado:this.dataSource8[i].acumulado,proceso:this.dataSource8[i].proceso,princi:this.dataSource8[i].princi,estado:this.dataSource8[i].estado,tipocontra:this.dataSource8[i].tipocontra,ingreso:this.dataSource8[i].ingreso,
             salida:this.dataSource8[i].salida,fecha_sol:this.dataSource8[i].fecha_sol,mostrar:this.dataSource8[i].mostrar,icomost:this.dataSource8[i].icomost,existe:1};//existe se usa?
           this.dataSource8aux.push(ejm);
           this.calcfoottab8aux();
@@ -539,7 +536,7 @@ export class CompatinsumosComponent implements OnInit {
         let ejm={id_proyecto:this.id_proyecto,id_registro:this.id_reg,idgrupo:idgru,idfila:this.dataSource7[this.ind_disgrega].idfila,indrep:null,orden:null,
             indice:this.dataSource7[this.ind_disgrega].indice,id_filadetalle:this.dataSource7[this.ind_disgrega].id_filadetalle,num_det:this.dataSource7[this.ind_disgrega].num_det,codigo:idinsum,descripcion:insumo,
             unidad:unid,cantidad:cantidad,precio:precio,parcial:parcial,operador:this.dataSource7[this.ind_disgrega].operador,
-            acumulado:null,proceso:'',princi:0,estado:0,ingreso:0,salida:0,fecha_sol:null,mostrar:1,icomost:1,existe:0};
+            acumulado:null,proceso:'',princi:0,estado:0,tipocontra:this.dataSource7[this.ind_disgrega].tipocontra,ingreso:0,salida:0,fecha_sol:null,mostrar:1,icomost:1,existe:0};
         this.dataSource8aux.push(ejm);
         this.calcfoottab8aux();
       }
@@ -575,9 +572,7 @@ export class CompatinsumosComponent implements OnInit {
   }
   presenterPrec(event:any){
     if(event.keyCode.toString()=="13")
-    {
       event.target.blur();
-    }
   }
   //modal mostrra 13b
   buscarinsumo(){
@@ -604,12 +599,9 @@ export class CompatinsumosComponent implements OnInit {
   }
   cambindicesel8aux(ind:any){
     if(ind==this.fila8_selaux)
-    {
       this.fila8_selaux=-1;
-    }
-    else{
+    else
       this.fila8_selaux=ind;
-    }
   }
   quitarfilat8aux(ind:any){
     this.dataSource8aux.splice(ind,1);
@@ -789,7 +781,7 @@ export class CompatinsumosComponent implements OnInit {
           //agregar a tabla 8 e datosdisg
           let ejm={id_proyecto:this.id_proyecto,id_registro:this.id_reg,idgrupo:idgru,idfila:this.dataSource7[this.ind_disgrega].idfila,indrep:0,orden:this.UltOrden(),indice:this.dataSource7[this.ind_disgrega].indice,id_filadetalle:this.dataSource7[this.ind_disgrega].id_filadetalle,
             num_det:this.dataSource7[this.ind_disgrega].num_det,codigo:this.dataSource7[this.ind_disgrega].codigo,descripcion:insumo,unidad:unid,cantidad:cantidad,
-            precio:precio,parcial:parcial,operador:this.dataSource7[this.ind_disgrega].operador,acumulado:parcial,proceso:'',princi:1,estado:0,ingreso:0,salida:0,fecha_sol:null,icomost:1,mostrar:1,editar:0,editar2:0,accion:1};
+            precio:precio,parcial:parcial,operador:this.dataSource7[this.ind_disgrega].operador,acumulado:parcial,proceso:'',princi:1,estado:0,tipocontra:this.dataSource7[this.ind_disgrega].tipocontra,ingreso:0,salida:0,fecha_sol:null,icomost:1,mostrar:1,editar:0,editar2:0,accion:1};
           this.dataSource8.splice(indgrupo+1,0,ejm);
           //agregar tambien a data
           this.DatosDisgre.push(JSON.parse(JSON.stringify(ejm)))
@@ -827,7 +819,7 @@ export class CompatinsumosComponent implements OnInit {
 
           let ejm={id_proyecto:this.id_proyecto,id_registro:this.id_reg,idgrupo:idgru,idfila:this.dataSource7[this.ind_disgrega].idfila,indrep:nrorep,orden:this.dataSource8[indgrupo].orden,indice:this.dataSource7[this.ind_disgrega].indice,id_filadetalle:this.dataSource7[this.ind_disgrega].id_filadetalle,
             num_det:this.dataSource7[this.ind_disgrega].num_det,codigo:this.dataSource7[this.ind_disgrega].codigo,descripcion:insumo,unidad:unid,cantidad:cantidad,
-            precio:precio,parcial:parcial,operador:this.dataSource7[this.ind_disgrega].operador,acumulado:null,proceso:'',princi:0,estado:0,ingreso:0,salida:0,fecha_sol:null,icomost:1,mostrar:1,editar:0,editar2:0,accion:1};
+            precio:precio,parcial:parcial,operador:this.dataSource7[this.ind_disgrega].operador,acumulado:null,proceso:'',princi:0,estado:0,tipocontra:this.dataSource7[this.ind_disgrega].tipocontra,ingreso:0,salida:0,fecha_sol:null,icomost:1,mostrar:1,editar:0,editar2:0,accion:1};
           this.dataSource8.splice(indgrupo+1,0,ejm);
           //agregar tambien a data
           this.DatosDisgre.push(JSON.parse(JSON.stringify(ejm)))

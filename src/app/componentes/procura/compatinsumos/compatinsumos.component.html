@@ -45,7 +45,7 @@
                 </span> -->
                 {{row.descripcion}}
               </td>
-              <td appAnchocol [ancho]="114">{{row.tipocontra=='1'?'MATERIALES':row.tipocontra=='2'?'EQUIPOS Y SERVICIOS':row.tipocontra=='3'?'MANO DE OBRA':row.tipocontra=='3'?'OTROS':''}}</td>
+              <td appAnchocol [ancho]="114">{{row.tipocontra=='1'?'MATERIALES':row.tipocontra=='2'?'EQUIPOS Y SERVICIOS':row.tipocontra=='3'?'MANO DE OBRA':row.tipocontra=='4'?'OTROS':''}}</td>
               <td appAnchocol [ancho]="94">{{row.entrega=='1'?'Almacen Central':row.entrega=='2'?'Almacen de Obra':''}}</td>
               <td appAnchocol [ancho]="70">{{row.fecha}}</td>
               <td appAnchocol [ancho]="75">
@@ -79,7 +79,7 @@
           </ng-container>
           <ng-container *ngIf="dataSource6.length<=0">
             <tr>
-              <td class="mat-cell text-center" colspan="12">
+              <td class="mat-cell text-center" colspan="13">
                   <label *ngIf="!buscando6">No se encontraron resultados</label>
                   <div *ngIf="buscando6" class="preloader3 loader-block">
                       <div class="circ1"></div>

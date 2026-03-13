@@ -1,0 +1,40 @@
+.label-est{
+  font-size: 9px;padding-left: 2px; padding-right: 2px; margin-right: 2px !important;
+  width: 69px;
+}
+.label-est2{
+  font-size: 9px;padding-left: 2px; padding-right: 2px; margin-right: 2px !important;
+  width: 50px;
+}
+.conten-tab{
+  overflow: auto;
+}
+.tabelabreq{
+  text-align: center;
+  td{
+    font-size: 12px;
+    p{
+      font-size: 12px;
+      padding-top: 1px;
+    }
+  }
+  td:first-of-type{
+    font-weight: 800;
+  }
+}
+.spanborder{
+  border: 2px solid rgba(0,0,0,0.32);
+  border-radius: 4px;
+  width: 100%;
+  margin: 0px;
+  min-height: 22px;
+}
+
+.h4blue{
+  background-color: #448aff; 
+  color: white; 
+  border-radius: 4px; 
+  padding-left: 4px; 
+  margin-top: 5px !important;
+  margin-bottom:2px !important;
+}

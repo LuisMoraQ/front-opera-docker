@@ -1,7 +1,7 @@
 <div id="divbut" style="width: calc(100% - 58px);margin-left:44px" class="hidescroll m-b-10">
   <span *ngIf="scrollbut" class="icscrol-l" (click)="rigthDivBut()"><i class="icofont icofont-caret-left icono-but"></i></span>
-  <div class="row" style="width: 805px;margin-right: 0px;margin-left: 0px;">
-    <button class="btn btn-sm btn-outline-secondary btn-menu-top" type="button" (mouseup)="quitarfoco($event)"
+  <div class="row" style="width: 841px;margin-right: 0px;margin-left: 0px;">
+    <button class="btn btn-sm btn-outline-secondary btn-menu-top2" type="button" (mouseup)="quitarfoco($event)"
     (click)="cambioVista(1)" style="padding: 4px 8px" [ngClass]="{ 'btn-custom-active': subvista == 1 }">
       <i class="fa fa-list"></i> RESUMEN MOV. ALMACEN
     </button>
@@ -12,6 +12,18 @@
     <button class="btn btn-sm btn-outline-secondary btn-menu-top" type="button" (mouseup)="quitarfoco($event)"
       style="padding: 4px 8px" (click)="cambioVista(3)" [ngClass]="{ 'btn-custom-active': subvista == 3 }">
       <i class="fa fa-list"></i> REGISTRO DE SALIDA DE MATERIALES
+    </button>
+    <button class="btn btn-sm btn-outline-secondary btn-menu-top2" type="button" (mouseup)="quitarfoco($event)"
+      style="padding: 4px 8px" (click)="cambioVista(4)" [ngClass]="{ 'btn-custom-active': subvista == 4 }">
+      <i class="fa fa-list"></i> REGISTRO DE ESTADO
+    </button>
+    <button class="btn btn-sm btn-outline-secondary btn-menu-top" type="button" (mouseup)="quitarfoco($event)"
+      style="padding: 4px 8px" (click)="cambioVista(5)" [ngClass]="{ 'btn-custom-active': subvista == 5 }">
+      <i class="fa fa-list"></i> REPORTE VALORIZADO ALMACEN
+    </button>
+    <button class="btn btn-sm btn-outline-secondary btn-menu-top2" type="button" (mouseup)="quitarfoco($event)"
+      style="padding: 4px 8px" (click)="cambioVista(6)" [ngClass]="{ 'btn-custom-active': subvista == 6 }">
+      <i class="fa fa-list"></i> REPORTE DIARIO ALMACEN
     </button>
   </div>
   <span *ngIf="scrollbut" class="icscrol-r" (click)="leftDivBut()"><i class="icofont icofont-caret-right icono-but"></i></span>
@@ -152,6 +164,15 @@
 </div>
 <div *ngIf="subvista==3">
   <app-almcsalida [filareg]="filareg" [decproy]="decpasa" [datospro]="datospro" (listarpri)="ListarExterno($event)"></app-almcsalida>
+</div>
+<div *ngIf="subvista==4">
+  <app-almcpanelestado [filareg]="filareg" [decproy]="decpasa" [datospro]="datospro" (listarpri)="ListarExterno($event)"></app-almcpanelestado>
+</div>
+<div *ngIf="subvista==5">
+  <app-almcrepvalorizado [filareg]="filareg" [decproy]="decpasa" [datospro]="datospro" (listarpri)="ListarExterno($event)"></app-almcrepvalorizado>
+</div>
+<div *ngIf="subvista==6">
+  <app-almcrepdiario [filareg]="filareg" [decproy]="decpasa" [datospro]="datospro" (listarpri)="ListarExterno($event)"></app-almcrepdiario>
 </div>
 
 <app-modal-basic #modalagre0 [dialogClass]="'modal-lg'">

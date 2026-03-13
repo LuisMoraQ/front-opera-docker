@@ -37,6 +37,7 @@ export class ElaborareqComponent implements OnInit {
   buscando6=false;
   fila6_sel=-1
   estadosel=0
+  tipocontra=0
   detalledisgre=[]
 
   prov1
@@ -123,7 +124,6 @@ export class ElaborareqComponent implements OnInit {
 
   async ngOnInit() {
     this.enviUrl = window.location.origin;
-    console.log(this.enviUrl)
     this.formSoli.disable();
     this.iduser = this.encriptadorService.recuperarlocalstory('idusuario');
     this.uidadmin = this.encriptadorService.recuperarlocalstory('id_admin');
@@ -140,7 +140,6 @@ export class ElaborareqComponent implements OnInit {
       this.mask_parcial='0.'+arrdec[2];
       this.mask_cant='0.'+arrdec[3];
     }
-    console.log(this.filareg)
     this.nomempresa=this.filareg.nomemp
     if(this.filareg.imagen){
       this.principalService.obtenerImagenProyecto(this.filareg.imagen).subscribe(
@@ -165,12 +164,10 @@ export class ElaborareqComponent implements OnInit {
     }
     let res=await this._logisticaService.ListarAgruadquisol({id_proyecto:this.id_proyecto,id_registro:this.id_reg,id_usuario:this.uidadmin});
     this.buscando6=false;
-    console.log(res)
     if(res?.length>0){
       this.dataSource6=res[0]
       this.detalledisgre=res[1]
       this.ordenart6()
-      console.log(this.dataSource6)
     }
     else{
       this.toaster.error('No se pudo cargar la información.', 'Advertencia', { closeButton: false,positionClass: 'toast-bottom-right',timeOut: 5000 });
@@ -221,10 +218,10 @@ export class ElaborareqComponent implements OnInit {
       this.prov1=this.prov2=this.prov3=null;
       this.fila6_sel = ind;
       this.estadosel=this.dataSource6[this.fila6_sel].estado
+      this.tipocontra=this.dataSource6[this.fila6_sel].tipocontra
       this.vence1=this.vence2=this.vence3=false;
       //cargar contenido inferior
       let rowsel=this.dataSource6[this.fila6_sel]
-      console.log(rowsel)
       if(rowsel?.id_prov1){
         this.prov1={
           id_prov:rowsel.id_prov1,
@@ -331,8 +328,8 @@ export class ElaborareqComponent implements OnInit {
     let arrfechasol=fechanro.split('-')
     let idprovpas=nro==1?rowsel.id_prov1:nro==2?rowsel.id_prov2:rowsel.id_prov3;
     let valsol=rowsel.id_proyecto+'!'+rowsel.id_registro+'!'+rowsel.idgrupo+'!'+nro+'!'+arrfechasol[2]+'-'+arrfechasol[1]+'-'+arrfechasol[0]+'!'+plazpas+'!'+idprovpas;
-    //let encrp=this.encriptadorService.encryptar(valsol)
-    let encrp=valsol
+    let encrp=this.encriptadorService.encode64(valsol)
+    // let encrp=valsol
     let urlcop=this.enviUrl+'/externo/cotizacion/'+encrp;
     SwalService.input2('Link para llenar la cotización:', urlcop)
   }
@@ -354,7 +351,6 @@ export class ElaborareqComponent implements OnInit {
     }
     let filaope=nro==1?this.prov1:nro==2?this.prov2:nro==3?this.prov3:null;
     if(filaope){
-      console.log(filaope)
       let hoy = new Date();
       filaope.fecha_sol=moment(hoy).format('DD-MM-YYYY');
       // cuantos dias de vigencia habra?
@@ -363,8 +359,8 @@ export class ElaborareqComponent implements OnInit {
       //id_proyecto,id_registro,id_grupo,nroprov,fecha,plazo,idprov
       let idprovpas=nro==1?rowsel.id_prov1:nro==2?rowsel.id_prov2:rowsel.id_prov3;
       let valsol=rowsel.id_proyecto+'!'+rowsel.id_registro+'!'+rowsel.idgrupo+'!'+nro+'!'+moment(this.fechaac).format('YYYY-MM-DD')+'!'+res.value+'!'+idprovpas;
-      //let encrp=this.encriptadorService.encryptar(valsol)
-      let encrp=valsol
+      let encrp=this.encriptadorService.encode64(valsol)
+      // let encrp=valsol
       const respuesta =await this._logisticaService.AdquisolEnviarSol({id_proyecto:rowsel.id_proyecto,id_registro:rowsel.id_registro,idgrupo:rowsel.idgrupo,idfila:rowsel.idfila,
         destinatario:filaope.correo,razon:filaope.razon,link:(this.enviUrl+'/externo/cotizacion/'+encrp),plazo:res.value, nroprov:nro,agrupacion:rowsel.descripcion,nomempresa:this.filareg.nomemp});
       if (respuesta?.id == "0") {
@@ -412,7 +408,6 @@ export class ElaborareqComponent implements OnInit {
       //cargar tabla
       this.datasol=[]
       let rowsel=this.dataSource6[this.fila6_sel]
-      console.log(this.fechagana)
       if(rowsel.nroprov==nro){
         this.fechagana=rowsel.fecha_gana
         this.nroorden=rowsel.nro_orden
@@ -488,7 +483,6 @@ export class ElaborareqComponent implements OnInit {
   //proveedores
   async Addprov(nro:any){
     this.provsel=nro;
-    console.log(this.dataSource6[this.fila6_sel])
     this.modalListaProv.show();
     await this.listarProveedores()
   }
@@ -542,7 +536,6 @@ export class ElaborareqComponent implements OnInit {
   async seleccionarprov(row=null){
     if (this.fila_sel>=0 || row) {
       let filap=row??this.dataProv[this.fila_sel];
-      console.log(filap)
       let provasig={
         id_prov:filap.id_prov,
         ruc:filap.ruc,
@@ -568,7 +561,6 @@ export class ElaborareqComponent implements OnInit {
       //guardar asignacion
       this.mostrar_carga_todo=true;
       let rowsel=this.dataSource6[this.fila6_sel]
-      console.log(this.dataSource6[this.fila6_sel])
       await this._logisticaService.AdquisolAsignaProv({id_proyecto:rowsel.id_proyecto,id_registro:rowsel.id_registro,idgrupo:rowsel.idgrupo,idfila:rowsel.idfila,idprov:filap.id_prov, nroprov:this.provsel});
       //asignar valores a la fila
       if(this.provsel==1){

@@ -1203,11 +1203,13 @@ export class AlmcsalidaComponent implements OnInit {
     } else if (event.keyCode.toString() == '13') {
       event.target.blur();
     } else if (event.keyCode.toString() == '40') {
+      event.target.blur();
       this.dataSource5[ind].editar = 0;
       if (ind + 1 < this.dataSource5.length) {
         this.dataSource5[ind + 1].editar = 1;
       }
     } else if (event.keyCode.toString() == '38') {
+      event.target.blur();
       this.dataSource5[ind].editar = 0;
       if (ind - 1 >= 0) {
         this.dataSource5[ind - 1].editar = 1;

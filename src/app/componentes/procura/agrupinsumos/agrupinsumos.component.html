@@ -171,7 +171,12 @@
                 </span>
                 <input *ngIf="row.indice==null && row.editar==1" type="text" class="formcontrol w-100 d-flex" style="height: 20px;" value="{{row.descripcion}}" appAutoFocus (keyup)="presenter3($event,row)" (blur)="caneditarcelda3($event.target.value,row)">
               </td>
-              <td appAnchocol [ancho]="80">{{row.tipocontra=='1'?'MATERIALES':row.tipocontra=='2'?'EQUIPOS Y SERVICIOS':row.tipocontra=='3'?'MANO DE OBRA':row.tipocontra=='3'?'OTROS':''}}</td>
+              <td appAnchocol [ancho]="80">
+                <div *ngIf="row.indice==null" class="d-flex" style="justify-content: space-evenly;">
+                  {{row.tipocontra=='1'?'MATERIALES':row.tipocontra=='2'?'EQUIPOS Y SERVICIOS':row.tipocontra=='3'?'MANO DE OBRA':row.tipocontra=='4'?'OTROS':''}}
+                  <i *ngIf="row.indice==null && row.estado==0 && !solover" class="fa fa-pencil" style="cursor: pointer;" ngbTooltip="Cambiar Tipo" container="body" (click)="CambiarTipcon(indice)"></i>
+                </div>
+              </td>
               <td appAnchocol [ancho]="48">{{row.fecha}}</td>
               <td appAnchocol [ancho]="49">
                 <span *ngIf="row.complemento==0">{{row.id_comple}}</span>
@@ -365,7 +370,7 @@
                     <option value="1" selected>MATERIALES</option>
                     <option value="2" selected>EQUIPOS Y SERVICIOS</option>
                     <option value="3" selected>MANO DE OBRA</option>
-                    <option value="3" selected>OTROS</option>
+                    <option value="4" selected>OTROS</option>
                   </select>
               </mat-form-field>
             </div>

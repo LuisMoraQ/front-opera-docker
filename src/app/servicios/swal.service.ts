@@ -379,7 +379,7 @@ export class SwalService {
       inputValidator: (value) => {
         return new Promise((resolve) => {
           if (value) {
-            resolve(value)
+            resolve()
           } else {
             resolve('Seleccione una opcion)')
           }

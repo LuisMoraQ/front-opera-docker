@@ -30,7 +30,7 @@
                     </span> -->
                     {{row.descripcion}}
                   </td>
-                  <td appAnchocol [ancho]="114">{{row.tipocontra=='1'?'MATERIALES':row.tipocontra=='2'?'EQUIPOS Y SERVICIOS':row.tipocontra=='3'?'MANO DE OBRA':row.tipocontra=='3'?'OTROS':''}}</td>
+                  <td appAnchocol [ancho]="114">{{row.tipocontra=='1'?'MATERIALES':row.tipocontra=='2'?'EQUIPOS Y SERVICIOS':row.tipocontra=='3'?'MANO DE OBRA':row.tipocontra=='4'?'OTROS':''}}</td>
                   <td appAnchocol [ancho]="70">
                     <span class="float-left">{{simbolo}}</span>
                     <span class="float-right">{{row.reqsol | number: mask_parcial}}</span>
@@ -90,7 +90,7 @@
               <tr>
                 <td appAnchocol [ancho]="105">Proveedor 01:</td>
                 <td appAnchocol [ancho]="26">
-                  <ng-container *ngIf="fila6_sel>=0 && (estadosel==1 || estadosel==3)">
+                  <ng-container *ngIf="fila6_sel>=0 && (estadosel==1 || estadosel==3) && (tipocontra==1 || tipocontra==2)">
                     <button *ngIf="!prov1" type="button" class="btn btn-mini3 btn-primary" placement="top" ngbTooltip="Seleccionar Proveedor" container="body" (click)="Addprov(1)" style="margin-right: 2px;">
                       <i class="fa fa-plus icono-but"></i>
                     </button>
@@ -104,7 +104,7 @@
                 <td appAnchocol [ancho]="80"><p class="spanborder">{{prov1?.telefono}}</p></td>
                 <td appAnchocol [ancho]="160"><p class="spanborder">{{prov1?.correo}}</p></td>
                 <td appAnchocol [ancho]="50">
-                  <ng-container *ngIf="fila6_sel>=0 && (estadosel==1 || estadosel==3) && !vence1">
+                  <ng-container *ngIf="fila6_sel>=0 && (estadosel==1 || estadosel==3) && !vence1 && (tipocontra==1 || tipocontra==2)">
                     <button type="button" class="btn btn-mini3 btn-info" placement="top" ngbTooltip="Enviar a Correo" container="body" (click)="Enviarcorreo(1)" style="margin-right: 2px;" [disabled]="prov1==null || prov1?.fecha_sol!=null">
                       <i class="fa fa-send icono-but"></i>
                     </button>
@@ -112,7 +112,7 @@
                       <i class="icofont icofont-link icono-but"></i>
                     </button>
                   </ng-container>
-                  <ng-container *ngIf="fila6_sel>=0 && (estadosel==1 || estadosel==3) && vence1">
+                  <ng-container *ngIf="fila6_sel>=0 && (estadosel==1 || estadosel==3) && vence1 && (tipocontra==1 || tipocontra==2)">
                     <button type="button" class="btn btn-mini3 btn-danger" placement="top" ngbTooltip="La solicitud vencio. Haga clic para Cancelar y la Cotización." container="body" (click)="CancelaCoti(1)" style="margin-right: 2px;">
                       <i class="fa fa-remove icono-but"></i>
                     </button>
@@ -123,7 +123,7 @@
               <tr>
                 <td appAnchocol [ancho]="105">Proveedor 02:</td>
                 <td appAnchocol [ancho]="50">
-                  <ng-container *ngIf="fila6_sel>=0 && (estadosel==1 || estadosel==3)">
+                  <ng-container *ngIf="fila6_sel>=0 && (estadosel==1 || estadosel==3) && (tipocontra==1 || tipocontra==2)">
                     <button *ngIf="!prov2" type="button" class="btn btn-mini3 btn-primary" placement="top" ngbTooltip="Seleccionar Proveedor" container="body" (click)="Addprov(2)" style="margin-right: 2px;">
                       <i class="fa fa-plus icono-but"></i>
                     </button>
@@ -137,7 +137,7 @@
                 <td appAnchocol [ancho]="75"><p class="spanborder">{{prov2?.telefono}}</p></td>
                 <td appAnchocol [ancho]="160"><p class="spanborder">{{prov2?.correo}}</p></td>
                 <td appAnchocol [ancho]="50">
-                  <ng-container *ngIf="fila6_sel>=0 && (estadosel==1 || estadosel==3) && !vence2">
+                  <ng-container *ngIf="fila6_sel>=0 && (estadosel==1 || estadosel==3) && !vence2 && (tipocontra==1 || tipocontra==2)">
                     <button type="button" class="btn btn-mini3 btn-info" placement="top" ngbTooltip="Enviar a Correo" container="body" (click)="Enviarcorreo(2)" style="margin-right: 2px;" [disabled]="prov2==null || prov2?.fecha_sol!=null">
                       <i class="fa fa-send icono-but"></i>
                     </button>
@@ -145,7 +145,7 @@
                       <i class="icofont icofont-link icono-but"></i>
                     </button>
                   </ng-container>
-                  <ng-container *ngIf="fila6_sel>=0 && (estadosel==1 || estadosel==3) && vence2">
+                  <ng-container *ngIf="fila6_sel>=0 && (estadosel==1 || estadosel==3) && vence2 && (tipocontra==1 || tipocontra==2)">
                     <button type="button" class="btn btn-mini3 btn-danger" placement="top" ngbTooltip="La solicitud vencio. Haga clic para Cancelar y la Cotización." container="body" (click)="CancelaCoti(2)" style="margin-right: 2px;">
                       <i class="fa fa-remove icono-but"></i>
                     </button>
@@ -156,7 +156,7 @@
               <tr>
                 <td appAnchocol [ancho]="105">Proveedor 03:</td>
                 <td appAnchocol [ancho]="50">
-                  <ng-container *ngIf="fila6_sel>=0 && (estadosel==1 || estadosel==3)">
+                  <ng-container *ngIf="fila6_sel>=0 && (estadosel==1 || estadosel==3) && (tipocontra==1 || tipocontra==2)">
                     <button *ngIf="!prov3" type="button" class="btn btn-mini3 btn-primary" placement="top" ngbTooltip="Seleccionar Proveedor" container="body" (click)="Addprov(3)" style="margin-right: 2px;">
                       <i class="fa fa-plus icono-but"></i>
                     </button>
@@ -170,7 +170,7 @@
                 <td appAnchocol [ancho]="75"><p class="spanborder">{{prov3?.telefono}}</p></td>
                 <td appAnchocol [ancho]="160"><p class="spanborder">{{prov3?.correo}}</p></td>
                 <td appAnchocol [ancho]="50">
-                  <ng-container *ngIf="fila6_sel>=0 && (estadosel==1 || estadosel==3) && !vence3">
+                  <ng-container *ngIf="fila6_sel>=0 && (estadosel==1 || estadosel==3) && !vence3 && (tipocontra==1 || tipocontra==2)">
                     <button type="button" class="btn btn-mini3 btn-info" placement="top" ngbTooltip="Enviar a Correo" container="body" (click)="Enviarcorreo(3)" style="margin-right: 2px;" [disabled]="prov3==null || prov3?.fecha_sol!=null">
                       <i class="fa fa-send icono-but"></i>
                     </button>
@@ -178,7 +178,7 @@
                       <i class="icofont icofont-link icono-but"></i>
                     </button>
                   </ng-container>
-                  <ng-container *ngIf="fila6_sel>=0 && (estadosel==1 || estadosel==3) && vence3">
+                  <ng-container *ngIf="fila6_sel>=0 && (estadosel==1 || estadosel==3) && vence3 && (tipocontra==1 || tipocontra==2)">
                     <button type="button" class="btn btn-mini3 btn-danger" placement="top" ngbTooltip="La solicitud vencio. Haga clic para Cancelar y la Cotización." container="body" (click)="CancelaCoti(3)" style="margin-right: 2px;">
                       <i class="fa fa-remove icono-but"></i>
                     </button>
@@ -216,7 +216,7 @@
                 <td appAnchocol [ancho]="145"><p class="spanborder">{{prov1?.plazo_ate==null?'':prov1.plazo_ate+' DIAS CALENDARIO'}}</p></td>
                 <td appAnchocol [ancho]="105"><p class="spanborder">{{prov1?.validez==null?'':prov1.validez+'DIAS'}}</p></td>
                 <td appAnchocol [ancho]="26">
-                  <ng-container *ngIf="fila6_sel>=0">
+                  <ng-container *ngIf="fila6_sel>=0 && (estadosel!=0) && (tipocontra==1 || tipocontra==2)">
                     <button type="button" class="btn btn-mini3 btn-info" placement="top" ngbTooltip="Ver Cotización" container="body" (click)="Vercoti(1)" style="margin-right: 2px;">
                       <i class="fa fa-search icono-but"></i>
                     </button>
@@ -244,7 +244,7 @@
                 <td appAnchocol [ancho]="145"><p class="spanborder">{{prov2?.plazo_ate==null?'':prov2.plazo_ate+' DIAS CALENDARIO'}}</p></td>
                 <td appAnchocol [ancho]="105"><p class="spanborder">{{prov2?.validez==null?'':prov2.validez+'DIAS'}}</p></td>
                 <td appAnchocol [ancho]="26">
-                  <ng-container *ngIf="fila6_sel>=0">
+                  <ng-container *ngIf="fila6_sel>=0 && (estadosel!=0) && (tipocontra==1 || tipocontra==2)">
                     <button type="button" class="btn btn-mini3 btn-info" placement="top" ngbTooltip="Ver Cotización" container="body" (click)="Vercoti(2)" style="margin-right: 2px;">
                       <i class="fa fa-search icono-but"></i>
                     </button>
@@ -272,7 +272,7 @@
                 <td appAnchocol [ancho]="145"><p class="spanborder">{{prov3?.plazo_ate==null?'':prov3.plazo_ate+' DIAS CALENDARIO'}} </p></td>
                 <td appAnchocol [ancho]="105"><p class="spanborder">{{prov3?.validez==null?'':prov3.validez+'DIAS' }}</p></td>
                 <td appAnchocol [ancho]="26">
-                  <ng-container *ngIf="fila6_sel>=0"><!--  && (estadosel==1 || estadosel==3) -->
+                  <ng-container *ngIf="fila6_sel>=0 && (estadosel!=0) && (tipocontra==1 || tipocontra==2)"><!--  && (estadosel==1 || estadosel==3) -->
                     <button type="button" class="btn btn-mini3 btn-info" placement="top" ngbTooltip="Ver Cotización" container="body" (click)="Vercoti(3)" style="margin-right: 2px;">
                       <i class="fa fa-search icono-but"></i>
                     </button>

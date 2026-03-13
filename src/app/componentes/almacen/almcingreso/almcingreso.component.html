@@ -9,12 +9,13 @@
           <tr class="headsticky header-custom">
             <th rowspan="2" appAnchocol [ancho]="25">N°</th>
             <th colspan="2">Emisión Requerimiento</th>
-            <th colspan="7">Ejecución del Requerimiento</th>
+            <th colspan="8">Ejecución del Requerimiento</th>
             <th rowspan="2" appAnchocol [ancho]="48">Estado</th>
           </tr>
           <tr class="headsticky2 header-custom" style="top:23px">
             <th appAnchocol [ancho]="35">N° Req</th>
             <th appAnchocol [ancho]="200" [detalle]="true">Detalle del Requerimiento</th>
+            <th appAnchocol [ancho]="75">Estado Solicitud</th>
             <th appAnchocol [ancho]="35">OC/OS</th>
             <th appAnchocol [ancho]="30">Tipo Gasto</th>
             <th appAnchocol [ancho]="40">N° Orden</th>
@@ -31,7 +32,7 @@
                 {{indice+1}}
               </td>
               <td appAnchocol [ancho]="35"> 
-                {{row.idgrupo}}
+                {{row.nomgrupo}}
               </td>
               <td appAnchocol [ancho]="200" [detalle]="true" class="celdasalto text-left"> 
                 <span class="span-container" placement="top" ngbTooltip="{{row.descripcion}}" container="body">
@@ -40,12 +41,18 @@
                   </span>
                 </span>
               </td>
+              <td appAnchocol [ancho]="75">
+                <label *ngIf="row.estado==0" class="label label-est" style="background-color: 'darkorange';">Borrador</label>
+                <label *ngIf="row.estado==1" class="label label-info label-est">Requerimiento</label>
+                <label *ngIf="row.estado==3" class="label label-primary label-est">Cotización</label>
+                <label *ngIf="row.estado==2" class="label label-success label-est">Orden Atención</label>
+              </td>
               <td appAnchocol [ancho]="35"></td>
               <td appAnchocol [ancho]="30">CD</td>
-              <td appAnchocol [ancho]="40"></td>
+              <td appAnchocol [ancho]="40">{{row.nro_orden?'OC-'+row.nro_orden:''}}</td>
               <td appAnchocol [ancho]="50">{{row.entrega=='1'?'Almacen Central':'Almacen de Obra'}}</td>
-              <td appAnchocol [ancho]="54">{{row.fecha_sol}}</td>
-              <td appAnchocol [ancho]="40">{{row.plazo_ate}}</td>
+              <td appAnchocol [ancho]="54">{{row.fecha_gana}}</td>
+              <td appAnchocol [ancho]="40">{{row.plazo_gana}}</td>
               <td appAnchocol [ancho]="54">{{row.fecha_max}}</td>
               <td appAnchocol [ancho]="48">
                 <label *ngIf="row.estingreso==0" class="label spanest" style="background-color: 'darkorange';">Pendiente</label>
@@ -56,7 +63,7 @@
           </ng-container>
           <ng-container *ngIf="dataSource2.length<=0">
             <tr>
-              <td class="mat-cell text-center" colspan="11">
+              <td class="mat-cell text-center" colspan="12">
                   <label *ngIf="!buscando2">No se encontraron resultados</label>
                   <div *ngIf="buscando2" class="preloader3 loader-block">
                       <div class="circ1"></div>
@@ -107,12 +114,12 @@
                 </span>
               </td>
               <td appAnchocol [ancho]="52">
-                <span class="float-left">{{simbolo}}</span>
-                <span class="float-right">{{row.precio | number: mask_precio}}</span>
+                <span *ngIf="row.preciosol" class="float-left">{{simbolo}}</span>
+                <span class="float-right">{{row.preciosol | number: mask_precio}}</span>
               </td>
               <td appAnchocol [ancho]="74">
-                <span class="float-left">{{simbolo}}</span>
-                <span class="float-right">{{row.parcial | number: mask_parcial}}</span>
+                <span *ngIf="row.parcialsol" class="float-left">{{simbolo}}</span>
+                <span class="float-right">{{row.parcialsol | number: mask_parcial}}</span>
               </td>
               <td appAnchocol [ancho]="52">
                   {{row.ingreso | number: mask_cant}}
@@ -379,11 +386,11 @@
                   </td>
                   <td appAnchocol [ancho]="52">
                     <span class="float-left">{{simbolo}}</span>
-                    <span class="float-right">{{row.precio | number: mask_precio}}</span>
+                    <span class="float-right">{{row.preciosol | number: mask_precio}}</span>
                   </td>
                   <td appAnchocol [ancho]="74">
                     <span class="float-left">{{simbolo}}</span>
-                    <span class="float-right">{{row.parcial | number: mask_parcial}}</span>
+                    <span class="float-right">{{row.parcialsol | number: mask_parcial}}</span>
                   </td>
                   <td appAnchocol [ancho]="52">
                       {{row.ingreso | number: mask_cant}}

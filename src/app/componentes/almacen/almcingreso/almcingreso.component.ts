@@ -161,7 +161,7 @@ export class AlmcingresoComponent implements OnInit {
     val1 = this.filareg.fechafin.split('-');
     this.fechamax = val1[2] + '-' + val1[1] + '-' + val1[0];
     //listar datos
-    await this.listar1();
+    await this.listar1(1);
   }
   @HostListener('window:resize', ['$event'])
   onResize(event) {
@@ -291,14 +291,10 @@ export class AlmcingresoComponent implements OnInit {
       face2.scrollLeft = face3.scrollLeft;
     } catch (ex) {}
   }
-  async listar1() {
+  async listar1(idacc=null) {
+    console.log(idacc)
     this.buscando2 = true;
-    let res = await this._logisticaService.ListarMovalmcobraDet({
-      id_proyecto: this.id_proyecto,
-      fechaini: this.filareg.fechaini,
-      fechafin: this.filareg.fechafin,
-      iding: this.id_reg,
-    }); //iding idregmov
+    let res = await this._logisticaService.ListarMovalmcobraDet({id_proyecto: this.id_proyecto,fechaini: this.filareg.fechaini,fechafin: this.filareg.fechafin,iding: this.id_reg }); //iding idregmov
     console.log(res);
     this.buscando2 = false;
     if (res?.length > 0) {
@@ -322,11 +318,7 @@ export class AlmcingresoComponent implements OnInit {
       //agregar input fecha al agregar una nota de ingreso o salida?
       //tambien agregar fecha a las agrupaciones de las adquicisiones, lo que importa es la fecha de aprobacion, agregar fecha al hacer eso?
     } else {
-      this.toaster.error('No se pudo cargar la información.', 'Advertencia', {
-        closeButton: false,
-        positionClass: 'toast-bottom-right',
-        timeOut: 5000,
-      });
+      this.toaster.error('No se pudo cargar la información.', 'Advertencia', { closeButton: false,positionClass: 'toast-bottom-right',timeOut: 5000 });
     }
     this.tab4total = 0;
     this.tab3totalcant = 0;
@@ -413,53 +405,23 @@ export class AlmcingresoComponent implements OnInit {
             this.tab3auxtotalparc = this.tab3totalparc;
             this.tab3auxtotalsal = this.tab3totalsal;
 
-            let res = await this._logisticaService.UltNroIngAlmcobra({
-              id_proyecto: this.id_proyecto,
-            });
+            let res = await this._logisticaService.UltNroIngAlmcobra({ id_proyecto: this.id_proyecto });
             if (res.length > 0) {
               this.nroingreso = res[0].ultimo;
             }
             this.modalIngreso1.show();
             this.mostrar_carga_todo = false;
           } else {
-            this.toaster.error(
-              'No hay saldo para agregar Notas de Ingreso.',
-              'Advertencia',
-              {
-                closeButton: false,
-                positionClass: 'toast-bottom-right',
-                timeOut: 5000,
-              }
-            );
+            this.toaster.error('No hay saldo para agregar Notas de Ingreso.','Advertencia',{closeButton: false,positionClass: 'toast-bottom-right',timeOut: 5000});
           }
         } else {
-          this.toaster.error('Seleccione un Requerimiento.', 'Advertencia', {
-            closeButton: false,
-            positionClass: 'toast-bottom-right',
-            timeOut: 5000,
-          });
+          this.toaster.error('Seleccione un Requerimiento.', 'Advertencia', {closeButton: false,positionClass: 'toast-bottom-right',timeOut: 5000});
         }
       } else {
-        this.toaster.error(
-          'No se puede modificar un requerimiento con estado CONFORME.',
-          'Advertencia',
-          {
-            closeButton: false,
-            positionClass: 'toast-bottom-right',
-            timeOut: 5000,
-          }
-        );
+        this.toaster.error('No se puede modificar un requerimiento con estado CONFORME.','Advertencia',{closeButton: false,positionClass: 'toast-bottom-right',timeOut: 5000});
       }
     } else {
-      this.toaster.error(
-        'Seleccione una fila de Requerimientos.',
-        'Advertencia',
-        {
-          closeButton: false,
-          positionClass: 'toast-bottom-right',
-          timeOut: 5000,
-        }
-      );
+      this.toaster.error('Seleccione una fila de Requerimientos.','Advertencia',{closeButton: false,positionClass: 'toast-bottom-right',timeOut: 5000});
     }
   }
   OpenModalEditarIng1() {
@@ -521,7 +483,7 @@ export class AlmcingresoComponent implements OnInit {
                 cantidad: this.dataSource4[i].cantidad,
                 precio: this.dataSource4[i].precio,
                 parcial: this.dataSource4[i].parcial,
-                indice3: indicepri,
+                indice3: indicepri,//falta fecha,estado
                 editar: 0,
               };
               this.dataSource5.push(ejm);
@@ -531,37 +493,13 @@ export class AlmcingresoComponent implements OnInit {
           this.mostrar_carga_todo = false;
           this.modalIngreso1.show();
         } else {
-          this.toaster.error(
-            'Seleccione una Nota de Ingreso para Editar.',
-            'Advertencia',
-            {
-              closeButton: false,
-              positionClass: 'toast-bottom-right',
-              timeOut: 5000,
-            }
-          );
+          this.toaster.error('Seleccione una Nota de Ingreso para Editar.','Advertencia',{closeButton: false,positionClass: 'toast-bottom-right',timeOut: 5000});
         }
       } else {
-        this.toaster.error(
-          'Seleccione una Nota de Ingreso para Editar.',
-          'Advertencia',
-          {
-            closeButton: false,
-            positionClass: 'toast-bottom-right',
-            timeOut: 5000,
-          }
-        );
+        this.toaster.error('Seleccione una Nota de Ingreso para Editar.','Advertencia',{closeButton: false,positionClass: 'toast-bottom-right',timeOut: 5000});
       }
     } else {
-      this.toaster.error(
-        'No se puede modificar un requerimiento con estado CONFORME.',
-        'Advertencia',
-        {
-          closeButton: false,
-          positionClass: 'toast-bottom-right',
-          timeOut: 5000,
-        }
-      );
+      this.toaster.error('No se puede modificar un requerimiento con estado CONFORME.','Advertencia',{closeButton: false,positionClass: 'toast-bottom-right',timeOut: 5000});
     }
   }
   async EliminarIng1() {
@@ -571,17 +509,8 @@ export class AlmcingresoComponent implements OnInit {
         if (this.fila4_sel >= 0) {
           let tipofila = this.dataSource4[this.fila4_sel].unidad == '' ? 1 : 0;
           if (tipofila == 1) {
-            let nomdetalle =
-              this.dataSource4[this.fila4_sel].descripcion +
-              ' N° ' +
-              this.dataSource4[this.fila4_sel].nroingreso;
-            let mensj =
-              'Se eliminarán todos los datos del registro : ' +
-              nomdetalle.substring(
-                0,
-                nomdetalle.length > 80 ? 80 : nomdetalle.length
-              ) +
-              (nomdetalle.length > 80 ? '...' : '');
+            let nomdetalle = this.dataSource4[this.fila4_sel].descripcion +' N° ' + this.dataSource4[this.fila4_sel].nroingreso;
+            let mensj = 'Se eliminarán todos los datos del registro : '+ nomdetalle.substring(0,nomdetalle.length > 80 ? 80 : nomdetalle.length) +(nomdetalle.length > 80 ? '...' : '');
             const sw = await SwalService.confirm('Estas seguro?', null, mensj);
             if (sw.isConfirmed) {
               this.mostrar_carga_todo = true;
@@ -594,12 +523,9 @@ export class AlmcingresoComponent implements OnInit {
                 ) {
                   for (let j = 0; this.dataSource3.length; j++) {
                     if (
-                      this.dataSource3[j].id_registro ==
-                        this.dataSource4[i].id_registro &&
-                      this.dataSource3[j].idgrupo ==
-                        this.dataSource4[i].idgrupo &&
-                      this.dataSource3[j].idfila ==
-                        this.dataSource4[i].idfila &&
+                      this.dataSource3[j].id_registro == this.dataSource4[i].id_registro &&
+                      this.dataSource3[j].idgrupo == this.dataSource4[i].idgrupo &&
+                      this.dataSource3[j].idfila == this.dataSource4[i].idfila &&
                       this.dataSource3[j].indrep == this.dataSource4[i].indrep
                     ) {
                       let ingresoact = Number(this.dataSource3[j].ingreso);
@@ -625,28 +551,18 @@ export class AlmcingresoComponent implements OnInit {
                   ) {
                     for (let j = 0; this.dataSource3.length; j++) {
                       if (
-                        this.dataSource3[j].id_registro ==
-                          this.dataSource4[i].id_registro &&
-                        this.dataSource3[j].idgrupo ==
-                          this.dataSource4[i].idgrupo &&
-                        this.dataSource3[j].idfila ==
-                          this.dataSource4[i].idfila &&
+                        this.dataSource3[j].id_registro == this.dataSource4[i].id_registro &&
+                        this.dataSource3[j].idgrupo == this.dataSource4[i].idgrupo &&
+                        this.dataSource3[j].idfila == this.dataSource4[i].idfila &&
                         this.dataSource3[j].indrep == this.dataSource4[i].indrep
                       ) {
                         let ingresoact = Number(this.dataSource3[j].ingreso);
                         let agregaing = Number(this.dataSource4[i].cantidad);
                         ingresoact -= agregaing;
-                        this.dataSource3[j].ingreso = this.formService.redondeo(
-                          ingresoact,
-                          this.dec_cant
-                        );
+                        this.dataSource3[j].ingreso = this.formService.redondeo(ingresoact,this.dec_cant);
                         let cantfil = Number(this.dataSource3[j].cantidad);
-                        this.dataSource3[j].saldo = this.formService.redondeo(
-                          cantfil - ingresoact,
-                          this.dec_cant
-                        );
-                        this.dataSource3[j].indicador =
-                          cantfil - ingresoact > 0 ? 0 : 1;
+                        this.dataSource3[j].saldo = this.formService.redondeo(cantfil - ingresoact,this.dec_cant);
+                        this.dataSource3[j].indicador = cantfil - ingresoact > 0 ? 0 : 1;
                         aux2.push(this.dataSource3[j]);
                         break;
                       }
@@ -674,88 +590,41 @@ export class AlmcingresoComponent implements OnInit {
                   estadosal: estadosal,
                   datos1: tabla1,
                 });
-                let res = await this._logisticaService.EliminarNotaIngAlmcObra(
-                  body
-                ); //iding idregmov
+                let res = await this._logisticaService.EliminarNotaIngAlmcObra(body); //iding idregmov
                 if (res?.id == '1') {
                   this.fila4_sel = -1;
-                  await this.listar1();
+                  await this.listar1(2);
                   await this.cambindicesel2(this.fila2_sel, true);
                   this.mostrar_carga_todo = false;
                   this.listarpri.emit('1');
                   SwalService.success('Correcto', res.mensaje);
                 } else {
                   this.mostrar_carga_todo = false;
-                  SwalService.error(
-                    'Advertencia',
-                    res
-                      ? res.mensaje
-                      : 'Ocurrio una excepcion al momento de guardar.'
-                  );
+                  SwalService.error('Advertencia',res? res.mensaje: 'Ocurrio una excepcion al momento de guardar.');
                 }
               } else {
                 this.mostrar_carga_todo = false;
-                this.toaster.error(
-                  'No puede continuar porque se generará saldos negativos en salidas.',
-                  'Advertencia',
-                  {
-                    closeButton: false,
-                    positionClass: 'toast-bottom-right',
-                    timeOut: 5000,
-                  }
-                );
+                this.toaster.error('No puede continuar porque se generará saldos negativos en salidas.','Advertencia',{closeButton: false,positionClass: 'toast-bottom-right',timeOut: 5000});
               }
             }
           } else {
-            this.toaster.error(
-              'Seleccione una Nota de Ingreso.',
-              'Advertencia',
-              {
-                closeButton: false,
-                positionClass: 'toast-bottom-right',
-                timeOut: 5000,
-              }
-            );
+            this.toaster.error('Seleccione una Nota de Ingreso.','Advertencia',{closeButton: false,positionClass: 'toast-bottom-right',timeOut: 5000});
           }
         } else {
-          this.toaster.error(
-            'Seleccione una Nota de Ingreso para Eliminar.',
-            'Advertencia',
-            {
-              closeButton: false,
-              positionClass: 'toast-bottom-right',
-              timeOut: 5000,
-            }
-          );
+          this.toaster.error('Seleccione una Nota de Ingreso para Eliminar.','Advertencia',{closeButton: false,positionClass: 'toast-bottom-right',timeOut: 5000,});
         }
       } else {
-        this.toaster.error(
-          'No se puede modificar un requerimiento con estado CONFORME.',
-          'Advertencia',
-          {
-            closeButton: false,
-            positionClass: 'toast-bottom-right',
-            timeOut: 5000,
-          }
-        );
+        this.toaster.error('No se puede modificar un requerimiento con estado CONFORME.','Advertencia',{closeButton: false,positionClass: 'toast-bottom-right',timeOut: 5000});
       }
     } catch (e) {
       console.log(e);
       this.mostrar_carga_todo = false;
-      this.toaster.error('No se puedo realizar la operación.', 'Advertencia', {
-        closeButton: false,
-        positionClass: 'toast-bottom-right',
-        timeOut: 5000,
-      });
+      this.toaster.error('No se puedo realizar la operación.', 'Advertencia', {closeButton: false,positionClass: 'toast-bottom-right',timeOut: 5000});
     }
   }
   async cerrarModalIngreso1() {
     if (this.bcambiost5) {
-      const sw = await SwalService.confirm(
-        'Desea Guardar los cambios?',
-        '',
-        ''
-      );
+      const sw = await SwalService.confirm('Desea Guardar los cambios?','','');
       if (sw.isConfirmed) {
         this.guardarModalIngreso1();
       } else {
@@ -792,15 +661,7 @@ export class AlmcingresoComponent implements OnInit {
           if (!this.editaing) {
             const fecha = new Date(this.fechaSal);
             if (isNaN(fecha.getTime())) {
-              this.toaster.error(
-                'La Fecha de Salida asignada no es valida.',
-                'Advertencia',
-                {
-                  closeButton: false,
-                  positionClass: 'toast-bottom-right',
-                  timeOut: 5000,
-                }
-              );
+              this.toaster.error('La Fecha de Salida asignada no es valida.','Advertencia',{closeButton: false,positionClass: 'toast-bottom-right',timeOut: 5000});
               return;
             }
             let aux = [];
@@ -850,9 +711,7 @@ export class AlmcingresoComponent implements OnInit {
                   // this.dataSource3b[i].indicador=(ingresot3-salidat3b)>0?0:1;
                 }
                 suma3 += Number(this.dataSource3aux[i].saldo); //cantidad-ingreso
-                sald3b +=
-                  Number(this.dataSource3aux[i].ingreso) -
-                  Number(this.dataSource3aux[i].salida); //ingreso-salida
+                sald3b += (Number(this.dataSource3aux[i].ingreso) - Number(this.dataSource3aux[i].salida)); //ingreso-salida
               }
               let estadoing = suma3 > 0 ? 0 : 1;
               let estadosal = sald3b > 0 ? 0 : 1;
@@ -870,11 +729,9 @@ export class AlmcingresoComponent implements OnInit {
                 datos1: tabla1,
                 datos2: tabla2,
               });
-              let res = await this._logisticaService.GuardarIngresoAlmcobra(
-                body
-              ); //iding idregmov
+              let res = await this._logisticaService.GuardarIngresoAlmcobra(body); //iding idregmov
               if (res?.id == '1') {
-                await this.listar1();
+                await this.listar1(3);
                 //cargar los elementos seleccionados
                 await this.cambindicesel2(this.fila2_sel, true);
                 this.mostrar_carga_todo = false;
@@ -884,23 +741,10 @@ export class AlmcingresoComponent implements OnInit {
                 SwalService.success('Correcto', res.mensaje);
               } else {
                 this.mostrar_carga_todo = false;
-                SwalService.error(
-                  'Advertencia',
-                  res
-                    ? res.mensaje
-                    : 'Ocurrio una excepcion al momento de guardar.'
-                );
+                SwalService.error('Advertencia',res ? res.mensaje: 'Ocurrio una excepcion al momento de guardar.');
               }
             } else {
-              this.toaster.error(
-                'Existen registros con cantidad 0. Quitar de la tabla si no cambia de cantidad.',
-                'Advertencia',
-                {
-                  closeButton: false,
-                  positionClass: 'toast-bottom-right',
-                  timeOut: 5000,
-                }
-              );
+              this.toaster.error('Existen registros con cantidad 0. Quitar de la tabla si no cambia de cantidad.','Advertencia',{closeButton: false,positionClass: 'toast-bottom-right',timeOut: 5000});
             }
           } else {
             let aux2 = [];
@@ -941,9 +785,7 @@ export class AlmcingresoComponent implements OnInit {
                     // this.dataSource3b[i].indicador=(ingresot3-salidat3b)>0?0:1;
                   }
                   suma3 += Number(this.dataSource3aux[i].saldo); //cantidad-ingreso
-                  sald3b +=
-                    Number(this.dataSource3aux[i].ingreso) -
-                    Number(this.dataSource3aux[i].salida); //ingreso-salida
+                  sald3b += (Number(this.dataSource3aux[i].ingreso) - Number(this.dataSource3aux[i].salida)); //ingreso-salida
                 }
                 let estadoing = suma3 > 0 ? 0 : 1;
                 let estadosal = sald3b > 0 ? 0 : 1;
@@ -963,11 +805,9 @@ export class AlmcingresoComponent implements OnInit {
                   datos1: tabla1,
                   datos2: tabla2,
                 });
-                let res = await this._logisticaService.EditarIngresoAmlcobra(
-                  body
-                ); //iding idregmov
+                let res = await this._logisticaService.EditarIngresoAmlcobra(body); //iding idregmov
                 if (res?.id == '1') {
-                  await this.listar1();
+                  await this.listar1(4);
                   //cargar los elementos seleccionados
                   await this.cambindicesel2(this.fila2_sel, true);
                   this.mostrar_carga_todo = false;
@@ -977,59 +817,26 @@ export class AlmcingresoComponent implements OnInit {
                   SwalService.success('Correcto', res.mensaje);
                 } else {
                   this.mostrar_carga_todo = false;
-                  SwalService.error(
-                    'Advertencia',
-                    res
-                      ? res.mensaje
-                      : 'Ocurrio una excepcion al momento de guardar.'
-                  );
+                  SwalService.error('Advertencia',res ? res.mensaje : 'Ocurrio una excepcion al momento de guardar.');
                 }
               } else {
                 this.mostrar_carga_todo = false;
-                this.toaster.error(
-                  'No puede continuar porque se generará saldos negativos en salidas.',
-                  'Advertencia',
-                  {
-                    closeButton: false,
-                    positionClass: 'toast-bottom-right',
-                    timeOut: 5000,
-                  }
-                );
+                this.toaster.error('No puede continuar porque se generará saldos negativos en salidas.','Advertencia',{closeButton: false,positionClass: 'toast-bottom-right',timeOut: 5000});
               }
             } else {
-              this.toaster.error(
-                'Existen registros con cantidad 0. Quitar de la tabla si no cambia de cantidad.',
-                'Advertencia',
-                {
-                  closeButton: false,
-                  positionClass: 'toast-bottom-right',
-                  timeOut: 5000,
-                }
-              );
+              this.toaster.error('Existen registros con cantidad 0. Quitar de la tabla si no cambia de cantidad.','Advertencia',{closeButton: false,positionClass: 'toast-bottom-right',timeOut: 5000});
             }
           }
         } else {
-          this.toaster.error('No hay cambios para guardar.', 'Advertencia', {
-            closeButton: false,
-            positionClass: 'toast-bottom-right',
-            timeOut: 5000,
-          });
+          this.toaster.error('No hay cambios para guardar.', 'Advertencia', {closeButton: false,positionClass: 'toast-bottom-right',timeOut: 5000});
         }
       } else {
-        this.toaster.error('No hay detalles para guardar.', 'Advertencia', {
-          closeButton: false,
-          positionClass: 'toast-bottom-right',
-          timeOut: 5000,
-        });
+        this.toaster.error('No hay detalles para guardar.', 'Advertencia', {closeButton: false,positionClass: 'toast-bottom-right',timeOut: 5000});
       }
     } catch (e) {
       console.log(e);
       this.mostrar_carga_todo = false;
-      this.toaster.error('No se pudo realizar la operación.', 'Advertencia', {
-        closeButton: false,
-        positionClass: 'toast-bottom-right',
-        timeOut: 5000,
-      });
+      this.toaster.error('No se pudo realizar la operación.', 'Advertencia', {closeButton: false,positionClass: 'toast-bottom-right',timeOut: 5000});
     }
   }
   cambindicesel3aux(ind: any) {
@@ -1047,18 +854,12 @@ export class AlmcingresoComponent implements OnInit {
     let cont = 0;
     let ultiding = 0;
     for (let row of this.dataSource5) {
-      ultiding =
-        Number(row.idingreso) > ultiding ? Number(row.idingreso) : ultiding;
+      ultiding = Number(row.idingreso) > ultiding ? Number(row.idingreso) : ultiding;
     }
     for (let i = 0; i < this.dataSource3aux.length; i++) {
-      if (
-        this.dataSource3aux[i].seleccion == 1 &&
-        Number(this.dataSource3aux[i].saldo) > 0
-      ) {
+      if (this.dataSource3aux[i].seleccion == 1 && Number(this.dataSource3aux[i].saldo) > 0 ) {
         cont++;
-        let parc =
-          Number(this.dataSource3aux[i].saldo) *
-          Number(this.dataSource3aux[i].precio);
+        let parc = Number(this.dataSource3aux[i].saldo) * Number(this.dataSource3aux[i].preciosol);
         let ejm = {
           id_proyecto: this.id_proyecto,
           idregmov: this.id_reg,
@@ -1072,7 +873,7 @@ export class AlmcingresoComponent implements OnInit {
           descripcion: this.dataSource3aux[i].descripcion,
           unidad: this.dataSource3aux[i].unidad,
           cantidad: this.dataSource3aux[i].saldo,
-          precio: this.dataSource3aux[i].precio,
+          precio: this.dataSource3aux[i].preciosol,
           parcial: this.formService.redondeo(parc, this.dec_parcial),
           indice3: i,
           editar: 0,
@@ -1082,15 +883,9 @@ export class AlmcingresoComponent implements OnInit {
         this.dataSource3aux[i].seleccion = 2; //cambiar en la vista source4.data
         let cantagre = Number(this.dataSource3aux[i].saldo);
         let ingresot3 = Number(this.dataSource3aux[i].ingreso);
-        this.dataSource3aux[i].ingreso = this.formService.redondeo(
-          ingresot3 + cantagre,
-          this.dec_cant
-        );
+        this.dataSource3aux[i].ingreso = this.formService.redondeo(ingresot3 + cantagre,this.dec_cant);
         let valcant = Number(this.dataSource3aux[i].cantidad);
-        this.dataSource3aux[i].saldo = this.formService.redondeo(
-          valcant - (ingresot3 + cantagre),
-          this.dec_cant
-        );
+        this.dataSource3aux[i].saldo = this.formService.redondeo(valcant - (ingresot3 + cantagre),this.dec_cant);
         if (valcant - (ingresot3 + cantagre) > 0) {
           this.dataSource3aux[i].indicador = 0;
         } else {
@@ -1103,15 +898,7 @@ export class AlmcingresoComponent implements OnInit {
     }
     this.tott5 = this.formService.redondeo(totagrins, this.dec_parcial);
     if (cont < 1) {
-      this.toaster.error(
-        'Seleccione los insumos para agregar al grupo.',
-        'Advertencia',
-        {
-          closeButton: false,
-          positionClass: 'toast-bottom-right',
-          timeOut: 5000,
-        }
-      );
+      this.toaster.error('Seleccione los insumos para agregar al grupo.','Advertencia',{closeButton: false,positionClass: 'toast-bottom-right',timeOut: 5000});
     }
   }
   TotalSaldo(data: any) {
@@ -1234,31 +1021,15 @@ export class AlmcingresoComponent implements OnInit {
       if (valor != actual) {
         let montotot = this.tott5;
         montotot = montotot - pactual;
-        montotot = montotot + valor * aprecio;
-        this.dataSource5[ind].cantidad = this.formService.redondeo(
-          Number(valor),
-          this.dec_cant
-        );
-        this.dataSource5[ind].parcial = this.formService.redondeo(
-          valor * aprecio,
-          this.dec_parcial
-        );
+        montotot = montotot + (valor * aprecio);
+        this.dataSource5[ind].cantidad = this.formService.redondeo(Number(valor),this.dec_cant);
+        this.dataSource5[ind].parcial = this.formService.redondeo(valor * aprecio,this.dec_parcial);
         this.tott5 = this.formService.redondeo(montotot, this.dec_parcial);
-
         let difer = actual - valor;
-        let valingreso = Number(
-          this.dataSource3aux[this.dataSource5[ind].indice3].ingreso
-        );
-        let valcant = Number(
-          this.dataSource3aux[this.dataSource5[ind].indice3].cantidad
-        );
-        this.dataSource3aux[this.dataSource5[ind].indice3].ingreso =
-          this.formService.redondeo(valingreso - difer, this.dec_cant);
-        this.dataSource3aux[this.dataSource5[ind].indice3].saldo =
-          this.formService.redondeo(
-            valcant - (valingreso - difer),
-            this.dec_cant
-          );
+        let valingreso = Number(this.dataSource3aux[this.dataSource5[ind].indice3].ingreso);
+        let valcant = Number(this.dataSource3aux[this.dataSource5[ind].indice3].cantidad);
+        this.dataSource3aux[this.dataSource5[ind].indice3].ingreso =this.formService.redondeo(valingreso - difer, this.dec_cant);
+        this.dataSource3aux[this.dataSource5[ind].indice3].saldo =this.formService.redondeo(valcant - (valingreso - difer),this.dec_cant);
         if (valcant - (valingreso - difer) > 0) {
           this.dataSource3aux[this.dataSource5[ind].indice3].indicador = 0;
         } else {
@@ -1269,15 +1040,7 @@ export class AlmcingresoComponent implements OnInit {
         this.TotalSaldo(this.dataSource3aux);
       }
     } else {
-      this.toaster.error(
-        'La cantidad de ingreso es mayor al saldo del requerimiento.',
-        'Advertencia',
-        {
-          closeButton: false,
-          positionClass: 'toast-bottom-right',
-          timeOut: 5000,
-        }
-      );
+      this.toaster.error('La cantidad de ingreso es mayor al saldo del requerimiento.','Advertencia',{closeButton: false,positionClass: 'toast-bottom-right',timeOut: 5000});
     }
   }
   presenter1(event: any, ind: any) {
@@ -1287,11 +1050,13 @@ export class AlmcingresoComponent implements OnInit {
     } else if (event.keyCode.toString() == '13') {
       event.target.blur();
     } else if (event.keyCode.toString() == '40') {
+      event.target.blur();
       this.dataSource5[ind].editar = 0;
       if (ind + 1 < this.dataSource5.length) {
         this.dataSource5[ind + 1].editar = 1;
       }
     } else if (event.keyCode.toString() == '38') {
+      event.target.blur();
       this.dataSource5[ind].editar = 0;
       if (ind - 1 >= 0) {
         this.dataSource5[ind - 1].editar = 1;
@@ -1306,17 +1071,11 @@ export class AlmcingresoComponent implements OnInit {
     let ind3 = this.dataSource5[ind].indice3;
     this.dataSource3aux[ind3].seleccion = 0;
     let ingresot3 = Number(this.dataSource3aux[ind3].ingreso);
-    this.dataSource3aux[ind3].ingreso = this.formService.redondeo(
-      ingresot3 - cant,
-      this.dec_cant
-    );
+    this.dataSource3aux[ind3].ingreso = this.formService.redondeo(ingresot3 - cant,this.dec_cant);
     let valcant = Number(
       this.dataSource3aux[this.dataSource5[ind].indice3].cantidad
     );
-    this.dataSource3aux[ind3].saldo = this.formService.redondeo(
-      valcant - (ingresot3 - cant),
-      this.dec_cant
-    );
+    this.dataSource3aux[ind3].saldo = this.formService.redondeo(valcant - (ingresot3 - cant),this.dec_cant);
     if (valcant - (ingresot3 - cant) > 0) {
       this.dataSource3aux[this.dataSource5[ind].indice3].indicador = 0;
     } else {

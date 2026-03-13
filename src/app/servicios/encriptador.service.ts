@@ -94,4 +94,22 @@ export class EncriptadorService {
     const decompressed = LZString.decompressFromUTF16(ptexto);
     return decompressed;
   }
+
+  // Codificar: Texto -> Base64 URL Safe
+  encode64(data: string): string {
+    return btoa(data)
+      .replace(/\+/g, '-') // Reemplaza + por -
+      .replace(/\//g, '_') // Reemplaza / por _
+      .replace(/=+$/, ''); // Elimina el padding =
+  }
+
+  // Decodificar: Base64 URL Safe -> Texto
+  decode64(encoded: string): string {
+    // Reconstruir el padding si es necesario
+    let base64 = encoded.replace(/-/g, '+').replace(/_/g, '/');
+    while (base64.length % 4 !== 0) {
+      base64 += '=';
+    }
+    return atob(base64);
+  }
 }

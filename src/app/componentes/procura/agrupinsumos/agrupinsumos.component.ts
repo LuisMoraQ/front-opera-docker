@@ -570,10 +570,7 @@ export class AgrupinsumosComponent implements OnInit {
                   j = j - 1;
                   totfilas = totfilas - 1;
                   let tottem = Number(this.totalinsagru);
-                  this.totalinsagru = this.formService.redondeo(
-                    tottem - totelim,
-                    this.dec_parcial
-                  );
+                  this.totalinsagru = this.formService.redondeo(tottem - totelim,this.dec_parcial);
                 }
               } else {
                 if (this.dataSource5[j].seleccion == 1 && this.dataSource5[j].indice == null) {
@@ -666,12 +663,9 @@ export class AgrupinsumosComponent implements OnInit {
                       cambiarcom = true;
                       cambgrucom = 'A-' + (numgruant + 1);
                       for (let row of this.dataSource5) {
-                        if (
-                          row.id_comple == this.dataSource5[k].id_comple &&
-                          row.complemento == 1 &&
-                          row.unidad == ''
-                        ) {
+                        if (row.id_comple == this.dataSource5[k].id_comple && row.complemento == 1 && row.unidad == '') {
                           row.id_comple = cambgrucom;
+                          row.accion=row.accion!=1?2:1;
                         }
                       }
                       this.dataSource5[k].id_comple = cambgrucom;
@@ -684,12 +678,9 @@ export class AgrupinsumosComponent implements OnInit {
                       cambiarcom = true;
                       cambgrucom = 'A-1';
                       for (let row of this.dataSource5) {
-                        if (
-                          row.id_comple == this.dataSource5[k].id_comple &&
-                          row.complemento == 1 &&
-                          row.unidad == ''
-                        ) {
+                        if (row.id_comple == this.dataSource5[k].id_comple && row.complemento == 1 && row.unidad == '') {
                           row.id_comple = cambgrucom;
+                          row.accion=row.accion!=1?2:1;
                         }
                       }
                       this.dataSource5[k].id_comple = cambgrucom;
@@ -943,7 +934,7 @@ export class AgrupinsumosComponent implements OnInit {
             mostrar: 1,
             icomost: row.icomost,
             editar: 0,
-            tipocontra:null,
+            tipocontra:this.tipocontrab.value,
             accion:1//insertar
           }; //todo se asigna igual
           this.dataSource5.push(ejm);
@@ -970,6 +961,7 @@ export class AgrupinsumosComponent implements OnInit {
     let nropas = 0;
     let idfilmay = 0;
     let inddetfin = -1;
+    let tipocontrap=0;
     for (let j = 0; j < this.dataSource5.length; j++) {
       if (idgraux != '') {
         if (this.dataSource5[j].idgrupo != idgraux) {
@@ -983,6 +975,7 @@ export class AgrupinsumosComponent implements OnInit {
         complem = this.dataSource5[j].complemento;
         idgraux = this.dataSource5[j].idgrupo;
         idcomple = this.dataSource5[j].id_comple;
+        tipocontrap=this.dataSource5[j].tipocontra;
       } else if ((this.dataSource5[j].seleccion == 1 || this.dataSource5[j].seleccion == 2) && this.dataSource5[j].indice) {
         inddetfin = j;
         nropas = this.dataSource5[j].nro;
@@ -1027,6 +1020,7 @@ export class AgrupinsumosComponent implements OnInit {
                 reqsol: 0,
                 variacion: null,
                 estado: 0,
+                tipocontra:tipocontrap,
                 saldo: 100,
                 nomgrupo: nomgrup,
                 fecha: null,
@@ -1175,6 +1169,7 @@ export class AgrupinsumosComponent implements OnInit {
               reqsol: 0,
               variacion: null,
               estado: 0,
+              tipocontra:row.tipocontra,
               saldo: 100,
               nomgrupo: nomgrup,
               fecha: null,
@@ -1530,7 +1525,6 @@ export class AgrupinsumosComponent implements OnInit {
     } else if (this.dataSource5[ind].seleccion == 2) {
       this.dataSource5[ind].seleccion = 1;
     }
-    /* error  son 2 casos uno para grupo, otro para fila*/
     let rowsel = this.dataSource5[ind];
     if (rowsel.indice == null) {
       //grupo
@@ -1624,10 +1618,10 @@ export class AgrupinsumosComponent implements OnInit {
         console.log(this.data6Elimina)
         //verificar estado y parsar si se va a cambiar a 2
         let actestado = this.filareg.estado == 1 ? 1 : 0;
-        const datos1 = JSON.stringify(tabaux);
-        const datos2 = JSON.stringify(tabaux2);
-        const datos2a = JSON.stringify(this.data5Elimina);
-        const datos3 = JSON.stringify(this.data6Elimina);
+        const datos1 = JSON.stringify(tabaux);//tabla insumos
+        const datos2 = JSON.stringify(tabaux2);//tabla agrupacion editados
+        const datos2a = JSON.stringify(this.data5Elimina);//tabla agrupacion eliminados
+        const datos3 = JSON.stringify(this.data6Elimina);//tabla disgregados eliminados
         let objpasa = {
           id_proyecto: this.id_proyecto,
           id_registro: this.id_reg,
@@ -1801,5 +1795,43 @@ export class AgrupinsumosComponent implements OnInit {
     });
     modalRef.componentInstance.datos = datos;
     const result = await modalRef.result;
+  }
+  async CambiarTipcon(indice){
+    let options={
+      1: "MATERIALES",
+      2: "EQUIPOS Y SERVICIOS",
+      3: "MANO DE OBRA",
+      4: "OTROS"
+    }
+    const sw = await SwalService.select('Seleccione el Tipo de Contratación',options);
+    if(sw.isConfirmed){
+      if (this.dataSource5[indice].tipocontra != sw.value) {
+        if(this.dataSource5.length>250)
+          this.mostrar_carga_todo=true
+        // this.dataSource5[indice].tipocontra = sw.value;
+        // this.dataSource5[indice].accion=this.dataSource5[indice].accion!=1?2:1;
+        let complem=[]
+        //afecta a insumos, insumos disgrega
+        for(let row of this.dataSource5){
+          if(row.idgrupo==this.dataSource5[indice].idgrupo){
+            row.tipocontra=sw.value;
+            row.accion=row.accion!=1?2:1;
+          }
+          if(row.id_comple == this.dataSource5[indice].id_comple && row.complemento == 1 && row.unidad == ''){
+            complem.push(row.idgrupo)
+          }
+        }
+        // if(complem.length>0){//para complementos
+        //   for(let row of this.dataSource5){
+        //     if(complem.find(row.idgrupo)){
+        //       row.tipocontra=sw.value;
+        //       row.accion=row.accion!=1?2:1;
+        //     }
+        //   }
+        // }
+        this.bcambiost5 = true;
+        this.mostrar_carga_todo=false
+      }
+    }
   }
 }

@@ -85,10 +85,8 @@ export class CotizacionComponent implements OnInit {
 
   async ngOnInit() {
     try{
-      console.log(this.keyrou)
-      //let desenc=this.encriptadorService.desencryptar(this.keyrou)
-      let desenc=this.keyrou
-      console.log(desenc)
+      let desenc=this.encriptadorService.decode64(this.keyrou)
+      // let desenc=this.keyrou
       if(desenc!='' && desenc.includes('!')){
         let arrpara=desenc.split('!');
         if(arrpara.length==7){
@@ -99,7 +97,6 @@ export class CotizacionComponent implements OnInit {
           let sfecha=arrpara[4]
           let plazolim=arrpara[5]
           this.idprov=arrpara[6]
-          console.log(sfecha)
           //condicionar fecha
           let arrfe=sfecha.split('-')
           let feac = new Date(Number(arrfe[0]),Number(arrfe[1])-1,Number(arrfe[2]));
@@ -117,7 +114,6 @@ export class CotizacionComponent implements OnInit {
           }
           let fechahoy=this.fechaac
           fechahoy.setHours(0,0,0,0)
-          console.log(fechahoy,feac,ffin)
           if(fechahoy>=feac && fechahoy<=ffin){
             this.mostrar_carga_todo=true;
             //Listar todos los datos
@@ -293,7 +289,6 @@ export class CotizacionComponent implements OnInit {
     var actual=Number(this.dataSource2[ind].precio)
     var acantidad=Number(this.dataSource2[ind].cantidad);
     var pactual=Number(this.dataSource2[ind].parcial)
-    console.log(valor,actual)
     this.dataSource2[ind].editar2=0;
     if(valor!=actual){
       let nparc=this.formService.redondeo((valor*acantidad),this.dec_parcial);

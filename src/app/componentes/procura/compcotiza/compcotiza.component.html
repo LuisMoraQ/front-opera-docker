@@ -69,10 +69,10 @@
                   </ng-container>
                 </td>
                 <td appAnchocol [ancho]="79" style="font-size: 12px !important;">
-                  <label *ngIf="row.estado==0" class="label label-est" style="background-color: 'darkorange';">Borrador</label>
-                  <label *ngIf="row.estado==2" class="label label-success label-est">Aprobado</label>
-                  <label *ngIf="row.estado==1" class="label label-info label-est">Requerimiento</label>
-                  <label *ngIf="row.estado==3" class="label label-primary label-est">Cotización</label>
+                  <label *ngIf="row.estado==0 && row.idfila==0" class="label label-est" style="background-color: 'darkorange';">Borrador</label>
+                  <label *ngIf="row.estado==2 && row.idfila==0" class="label label-success label-est">Aprobado</label>
+                  <label *ngIf="row.estado==1 && row.idfila==0" class="label label-info label-est">Requerimiento</label>
+                  <label *ngIf="row.estado==3 && row.idfila==0" class="label label-primary label-est">Cotización</label>
                 </td>
               </tr>
             </ng-container>

@@ -23,13 +23,19 @@ import { AlmacenRoutingModule } from './almacen-routing.module';
 import { PanelalmcComponent } from './panelalmc/panelalmc.component';
 import { AlmcingresoComponent } from './almcingreso/almcingreso.component';
 import { AlmcsalidaComponent } from './almcsalida/almcsalida.component';
+import { AlmcpanelestadoComponent } from './almcpanelestado/almcpanelestado.component';
+import { AlmcrepvalorizadoComponent } from './almcrepvalorizado/almcrepvalorizado.component';
+import { AlmcrepdiarioComponent } from './almcrepdiario/almcrepdiario.component';
 
 
 @NgModule({
   declarations: [
     PanelalmcComponent,
     AlmcingresoComponent,
-    AlmcsalidaComponent
+    AlmcsalidaComponent,
+    AlmcpanelestadoComponent,
+    AlmcrepvalorizadoComponent,
+    AlmcrepdiarioComponent
   ],
   imports: [
     CommonModule,

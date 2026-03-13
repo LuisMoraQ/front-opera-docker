@@ -168,7 +168,6 @@ export class CompcotizaComponent implements OnInit {
     this.buscando=true;
     let res=await this._logisticaService.ListarAgruadquisol({id_proyecto:this.id_proyecto,id_registro:this.id_reg,id_usuario:this.uidadmin});
     this.buscando=false;
-    console.log(res)
     if(res?.length>0){
       let arraux=[...res[0],...res[1]]
       const arrfinal = [...arraux].sort((a, b) => {
@@ -179,9 +178,27 @@ export class CompcotizaComponent implements OnInit {
           return 1;
         }
       });
-      for(let row of arrfinal){
-        row.mostrar=1
-        row.icomost=1
+      let idact=''
+      for(let a=0;a<arrfinal.length;a++){
+        if(arrfinal[a].idfila==0)
+        {
+          if(!(arrfinal[a].tipocontra==1 || arrfinal[a].tipocontra==2)){
+            idact=arrfinal[a].idgrupo
+            arrfinal.splice(a,1);
+            a--;
+            continue
+          }
+        }
+        else{
+          if(arrfinal[a].idgrupo==idact){
+            arrfinal.splice(a,1);
+            a--;
+            continue
+          }
+        }
+
+        arrfinal[a].mostrar=1
+        arrfinal[a].icomost=1
       }
       this.dataSource=arrfinal
       //this.detalledisgre=res[1]
@@ -199,8 +216,6 @@ export class CompcotizaComponent implements OnInit {
   }
 
   VerProvs(row,ind){
-    console.log(row)
-    console.log(this.dataSource)
     this.indver=ind
     this.rowver=row
     this.presel=row.nroprov
@@ -295,6 +310,7 @@ export class CompcotizaComponent implements OnInit {
   async Aprobar(nroprov:any){
     // let docpdf=await this.crearReporte(nroprov)//comentar codigo para generar base 64, usar el open
     // console.log(docpdf)
+    // return
 
     try{
       const sw = await SwalService.confirm('Estas seguro que desea Aprobar la Orden de Servicio?', '')
@@ -332,6 +348,7 @@ export class CompcotizaComponent implements OnInit {
           //envio correo
           agrupacion:this.rowver.descripcion,
           nomempresa:this.filareg.nomemp,
+          idprov:nroprov==1?this.rowver.id_prov1:nroprov==2?this.rowver.id_prov2:this.rowver.id_prov3,
           razon:nroprov==1?this.rowver.razon1:nroprov==2?this.rowver.razon2:this.rowver.razon3,
           destinatario:nroprov==1?this.rowver.correo1:nroprov==2?this.rowver.correo2:this.rowver.correo3,
           docpasa:docpdf,
@@ -364,6 +381,7 @@ export class CompcotizaComponent implements OnInit {
       correo:nro==1?this.rowver.correo1:nro==2?this.rowver.correo2:nro==3?this.rowver.correo3:0,
       contacto:nro==1?this.rowver.representante1:nro==2?this.rowver.representante2:nro==3?this.rowver.representante3:0,
       lugar:nro==1?this.rowver.lugar1:nro==2?this.rowver.lugar2:nro==3?this.rowver.lugar3:0,
+      plazo:nro==1?this.rowver.plazo_ate1:nro==2?this.rowver.plazo_ate2:nro==3?this.rowver.plazo_ate3:0,
     }
     let tabla1=[]
     let totaltab=nro==1?this.rowver.monto1:nro==2?this.rowver.monto2:nro==3?this.rowver.monto3:0;
@@ -389,10 +407,9 @@ export class CompcotizaComponent implements OnInit {
         tabla1.push(filaadd);
       }
     }
-    console.log(tabla1)
     const docDefinition = this.docDefinitionA4(objdatos, tabla1,this.formService.redondeo(totaltab,this.dec_parcial).replace(/\d(?=(\d{3})+\.)/g, '$&,'));
-    console.log(docDefinition)
-    //pdfMake.createPdf(docDefinition).open();
+    // console.log(docDefinition)
+    // pdfMake.createPdf(docDefinition).open();
     const base64Data = await new Promise<string>((resolve) => {
       pdfMake.createPdf(docDefinition).getBase64((data) => {
         resolve(data);
@@ -444,7 +461,7 @@ export class CompcotizaComponent implements OnInit {
             this.createHeader(),
             this.createFormInfo(cabezera),
             this.createItemsTable(detalle,totaltab),
-            this.createFooter(cabezera.lugar??'')
+            this.createFooter(cabezera.lugar??'',cabezera.plazo??'')
           ],
           margin: [10, 10, 10, 10]
           /* table: {
@@ -488,41 +505,42 @@ export class CompcotizaComponent implements OnInit {
   createHeader() {
     let fhoy=moment(this.fechaac).format('YYYY-MM-DD')
     let arrfec=fhoy.split('-')
-    return {
-      columns: [
-        {
-          // Aquí iría el logo en base64. Por ahora un placeholder.
-          image: this.imagenPreview, width: 60, alignment: 'center'
-        },
-        {
-          stack: [
-            { text: this.nomempresa, style: 'mainTitle' },
+    let columnas=[]
+    if(this.imagenPreview){
+      columnas.push({ image: this.imagenPreview, width: 60, alignment: 'center' });
+    } else {
+      columnas.push({ text: '', width: 60 });
+    }
+    columnas.push({
+        stack: [
+          { text: this.nomempresa??'', style: 'mainTitle' },
+        ],
+        width: '*' 
+    })
+    columnas.push({
+      table: {
+        widths: [30, 30, 30],
+        body: [
+          [
+            { text: 'DIA', style: 'tableHeader' },
+            { text: 'MES', style: 'tableHeader' },
+            { text: 'AÑO', style: 'tableHeader' }
           ],
-          width: '*'
-        },
-        {
-          table: {
-            widths: [30, 30, 30],
-            body: [
-              [
-                { text: 'DIA', style: 'tableHeader' },
-                { text: 'MES', style: 'tableHeader' },
-                { text: 'AÑO', style: 'tableHeader' }
-              ],
-              [
-                {text:arrfec[2],alignment: 'center'}, 
-                {text:arrfec[1],alignment: 'center'}, 
-                {text:arrfec[0],alignment: 'center'}
-              ]
-            ]
-          },
-          layout: {
-            hLineColor: () => '#A0A0A0',
-            vLineColor: () => '#A0A0A0',
-          },
-          width:110
-        }
-      ]
+          [
+            {text:arrfec[2],alignment: 'center'}, 
+            {text:arrfec[1],alignment: 'center'}, 
+            {text:arrfec[0],alignment: 'center'}
+          ]
+        ]
+      },
+      layout: {
+        hLineColor: () => '#A0A0A0',
+        vLineColor: () => '#A0A0A0',
+      },
+      width:110
+    })
+    return {
+      columns:columnas
     };
   }
   createFormInfo(data: any) {
@@ -616,16 +634,25 @@ export class CompcotizaComponent implements OnInit {
       }
     };
   }
-  createFooter(lugar: string) {
+  createFooter(lugar: string,plazo:string) {
     return {
       stack: [
         {
           columns: [
           { text: 'LUGAR DE ENTREGA :', style: 'label', width: 110 },
           { text: lugar, style: 'value',width: '*' }
-        ]}
+          ],
+          margin:[0, 3, 0, 0]
+        },
+        {
+          columns: [
+          { text: 'PLAZO DE ATENCIÓN :', style: 'label', width: 110 },
+          { text: plazo +" DIAS", style: 'value',width: '*' }
+        ],
+          margin:[0, 3, 0, 0]
+        }
       ],
-      margin: [0, 10, 0, 0]
+      margin: [0, 5, 0, 0]
     };
   }
   mostrarTodo5() {

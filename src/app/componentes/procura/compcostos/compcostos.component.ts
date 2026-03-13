@@ -80,24 +80,27 @@ export class CompcostosComponent implements OnInit {
     console.log(res)
     if(res?.length>0){
       let taux=res[0]
-      for(let row of taux){
-        if(row.parcialsol){
-          let monreqsol=Number(row.reqsol)==0?1:Number(row.reqsol)
-          let varia=((Number(row.reqsol)-Number(row.parcialsol))/monreqsol)*100;
-          row.variacion=this.formService.redondeo(varia,2);
+      for(let a=0;a<taux.length;a++){
+        if(!(taux[a].tipocontra==1 || taux[a].tipocontra==2)){
+          taux.splice(a,1)
+          a--;
+          continue;
+        }
+        if(taux[a].parcialsol){
+          let monreqsol=Number(taux[a].reqsol)==0?1:Number(taux[a].reqsol)
+          let varia=((Number(taux[a].reqsol)-Number(taux[a].parcialsol))/monreqsol)*100;
+          taux[a].variacion=this.formService.redondeo(varia,2);
           //fecha ate - fecha sol
-          if(row.fecha_gana){
-            let arrfe=row.fecha_gana.split('-')
+          if(taux[a].fecha_gana){
+            let arrfe=taux[a].fecha_gana.split('-')
             let feac = new Date(Number(arrfe[2]),Number(arrfe[1])-1,Number(arrfe[0]));
             feac.setHours(9, 0, 0,0);
-            feac.setDate(feac.getDate()+Number(row.plazo_gana))
-            row.fechalim=moment(feac).format('DD-MM-YYYY');
+            feac.setDate(feac.getDate()+Number(taux[a].plazo_gana))
+            taux[a].fechalim=moment(feac).format('DD-MM-YYYY');
           }
         }
         else
-          row.variacion=null
-        //calcular totales de grupos
-        
+          taux[a].variacion=null
       }
       this.dataSource6=taux
       this.ordenart6()
