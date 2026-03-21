@@ -218,6 +218,24 @@ export class LogisticaService {
       catchError(err => throwError(err))
     ).toPromise()
   }
+  ListarMovalmcobraRepValo(params = {}): Promise<any> {
+    const url = this.enviUrl + '/api/almacen/listarMovalmcobraRepValo';
+    return this.http.post<any>(url, this.Cargafrmdata(params)).pipe(
+      map(res => {
+        return res
+      }),
+      catchError(err => throwError(err))
+    ).toPromise()
+  }
+  ListarMovalmcobraRepDiario(params = {}): Promise<any> {
+    const url = this.enviUrl + '/api/almacen/listarMovalmcobraRepDiario';
+    return this.http.post<any>(url, this.Cargafrmdata(params)).pipe(
+      map(res => {
+        return res
+      }),
+      catchError(err => throwError(err))
+    ).toPromise()
+  }
   EliminarMovalmcobra(params = {}): Promise<any> {
     const url = this.enviUrl + '/api/almacen/eliminarMovalmcobra';
     return this.http.post<any>(url, this.Cargafrmdata(params)).pipe(
@@ -470,6 +488,16 @@ export class LogisticaService {
   DesAprobarCotizacion(params = {}):any//ejemplo con json
   {
     const url = this.enviUrl + '/api/logistica/desaprobarCotizacion';
+    return this.http.post<any>(url, this.Cargafrmdata(params)).pipe(
+      map(res => {
+        return res
+      }),
+      catchError(err => throwError(err))
+    ).toPromise()
+  }
+  ActualizaEstOrdenAgru(params = {}):any//ejemplo con json
+  {
+    const url = this.enviUrl + '/api/logistica/actualizarEstOrdenAgru';
     return this.http.post<any>(url, this.Cargafrmdata(params)).pipe(
       map(res => {
         return res

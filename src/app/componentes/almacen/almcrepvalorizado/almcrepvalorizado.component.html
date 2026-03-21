@@ -1,22 +1,56 @@
 <div class="contenido-menu-responsive">
   <div class="contepri row mx-0 w-100">
     <div class="w-100 m-b-10 col-12" style="padding-left: 5px; padding-right: 5px;">
+      <div class="d-flex m-b-5" style="align-items: baseline;">
+        <div class="continpts m-r-10">
+          <label class="labelsobre"><b>Detalle de valorización</b></label>
+          <mat-form-field appearance="outline" class="mff-reduc mff-nopad mtop12">
+          <!-- <mat-label mat-label>Detalle de valorización</mat-label> -->
+          <select matNativeControl (change)="cambioDetsel($event.target.value)">
+            <option value="0">Completo</option>
+            <option value="1">Por Meses</option>
+          </select>
+        </mat-form-field>
+        </div>
+        <div class="continpts d-flex m-r-10">
+          <label class="labelsobre"><b>Rango de Visualización</b></label>
+          <input class="form-control inputmes mtop12 m-r-5" type="month" [(ngModel)]="minicio" [disabled]="completo">
+          <input class="form-control inputmes mtop12" type="month" [(ngModel)]="mfin" [disabled]="completo">
+        </div>
+        <button type="button" class="btn btn-success btn-sm" (click)="ActualizarRep()">
+          <i class="fa fa-check"></i>Actualizar
+        </button>
+      </div>
+      
       <div class="tabla-limp tablast m-b-10" [style.margin-bottom.px]="-paddingscroll2" id="tableBody" (scroll)="SyncScroll()" style="min-height: 150px;" [style.height.px]="heighttmodal1">
           <table class="table-bordered tab-10 minspacelet">
             <thead>
-              <tr class="header-custom">
-                <th appAnchocol [ancho]="30">ITEM</th>
-                <th appAnchocol [ancho]="200" [detalle]="true">DESCRIPCION</th>
-                <th appAnchocol [ancho]="35">UND</th>
-                <th appAnchocol [ancho]="90">CANT</th>
-                <th appAnchocol [ancho]="100">MARCA</th>
-                <th appAnchocol [ancho]="100">P.UNITARIO</th>
-                <th appAnchocol [ancho]="100">IMPORTE</th>
+              <tr class="headsticky header-custom">
+                <th rowspan="2" appAnchocol [ancho]="25">N°</th>
+                <th rowspan="2" appAnchocol [ancho]="200" [detalle]="true">REQUERIMIENTO</th>
+                <th rowspan="2" appAnchocol [ancho]="150">RAZON SOCIAL/PROVEEDOR</th>
+                <th rowspan="2" appAnchocol [ancho]="70">N° RUC</th>
+                <ng-container *ngFor="let row of arrmes;let indice=index;">
+                  <th colspan="2" >{{"MES "+(indice+1)+" : "+row.nommes}}</th>
+                </ng-container>
+
+                <th colspan="2">TOTAL</th>
+                <th rowspan="2" appAnchocol [ancho]="70">SALDO</th>
+              </tr>
+              <tr class="headsticky header-custom">
+                <!-- DINAMICO COLUMNAS -->
+                <ng-container *ngFor="let row of arrmes;">
+                  <th appAnchocol [ancho]="95">INGRESO</th>
+                  <th appAnchocol [ancho]="95">SALIDA</th>
+                </ng-container>
+
+                <th appAnchocol [ancho]="95">INGRESO</th>
+                <th appAnchocol [ancho]="95">SALIDA</th>
               </tr>
             </thead>
             <tbody>
               <ng-container *ngIf="dataSourcePri.length>0">
-                <tr *ngFor="let row of dataSourcePri;let indice=index;" (click)="cambindiceselSol(indice)" [ngClass]="{'highlight': filasol_sel == indice}" >
+                <tr *ngFor="let row of dataSourcePri;let indice=index;" (click)="cambindiceselSol(indice)" [ngClass]="{'highlight': fila_sel == indice}" >
                   <td appAnchocol [ancho]="30"> 
                     {{indice+1}}
                   </td>
@@ -27,30 +61,39 @@
                       </span>
                     </span>
                   </td>
-                  <td appAnchocol [ancho]="35">{{row.unidad}}</td>
+                  <td appAnchocol [ancho]="150">{{row.razon}}</td>
+                  <td appAnchocol [ancho]="70">{{row.ruc}}</td>
+                  <!-- DINAMICO COLUMNAS -->
+                  <ng-container *ngFor="let rowm of arrmes;let ind=index">
+                    <th appAnchocol [ancho]="95">
+                      <div *ngIf="row.dataing" class="float-right w-100">
+                        <span *ngIf="row.dataing[ind]" class="float-left">{{simbolo}}</span>
+                        <span class="float-right">{{row.dataing[ind] | number: mask_parcial}}</span>
+                      </div>
+                    </th>
+                    <th appAnchocol [ancho]="95">
+                      <div *ngIf="row.datasal" class="float-right w-100">
+                        <span *ngIf="row.datasal[ind]" class="float-left">{{simbolo}}</span>
+                        <span class="float-right">{{row.datasal[ind] | number: mask_parcial}}</span>
+                      </div>
+                    </th>
+                  </ng-container>
+                  
                   <td appAnchocol [ancho]="90" class="text-right">
-                      {{row.cantidad | number: mask_cant}}
-                  </td>
-                  <td appAnchocol [ancho]="100">
-                      <span  class="w-100 span-container" placement="top" ngbTooltip="{{row.marca}}" container="body" ><!-- *ngIf="row.editar==0" [ngStyle]="{'cursor': 'pointer' }"  (click)="editarcelda3(row)" -->
-                          <span class="span-ellipsis w-100 d-flex">
-                              <span>{{row.marca}}</span> 
-                          </span>
-                      </span>
-                      <!-- <input *ngIf="row.editar==1" type="text" class="formcontrol w-100 d-flex" style="height: 20px;" value="{{row.marca}}" appAutoFocus (keyup)="presenter3($event,indice)" (blur)="caneditarcelda3($event.target.value,row)"> -->
+                    <div class="float-right w-100">
+                      <span *ngIf="row.totingreso" class="float-left">{{simbolo}}</span>
+                      <span class="float-right">{{row.totingreso | number: mask_parcial}}</span>
+                    </div >
                   </td>
                   <td appAnchocol [ancho]="100" class="text-right">
-                      <div class="float-right w-100"><!-- *ngIf="row.editar2==0" (click)="editarcelda2(indice)" style="cursor: pointer;" -->
-                          <span class="float-left">{{simbolo}}</span>
-                          <span class="float-right">{{row.precio | number: mask_precio}}</span>
-                      </div >
-                      <!-- <input [textMask]="dec_precio == 4? formService.maskUsAmountDecimal4 : (dec_precio==3? formService.maskUsAmountDecimal3:formService.maskUsAmountDecimal2)" style="height: 20px;text-align: center;" 
-                      *ngIf="row.editar2==1" type="text" class="formcontrol w-100 d-flex" autocomplete="off"
-                      value="{{row.precio}}" appAutoFocus (keyup)="presenter2($event,indice)" (blur)="caneditarcelda2($event.target.value,indice)"> -->
+                    <div class="float-right w-100">
+                      <span *ngIf="row.totsalida" class="float-left">{{simbolo}}</span>
+                      <span class="float-right">{{row.totsalida | number: mask_parcial}}</span>
+                    </div >
                   </td>
                   <td appAnchocol [ancho]="100" class="text-right">
-                      <span class="float-left">{{simbolo}}</span>
-                      <span class="float-right">{{row.parcial | number: mask_parcial}}</span>
+                      <span *ngIf="row.totsaldo" class="float-left">{{simbolo}}</span>
+                      <span class="float-right">{{row.totsaldo | number: mask_parcial}}</span>
                   </td>
                 </tr>
               </ng-container>
@@ -74,9 +117,31 @@
           <table class="table-bordered tab-10" style="position: sticky; bottom: 1px;">
               <tfoot>
               <tr>
-                  <th style="min-width: 555px; max-width: 555px;width: calc(100% - 530px);">Total</th>
+                  <th style="min-width: 445px; max-width: 445px;">Total</th>
+                  <!-- dinamico -->
+                  <ng-container *ngFor="let rowm of arrmes;let ind=index">
+                    <th appAnchocol [ancho]="95">
+                      <div class="float-right w-100">
+                        <span *ngIf="rowm.toting" class="float-left">{{simbolo}}</span>
+                        <span class="float-right">{{rowm.toting | number: mask_parcial}}</span>
+                      </div>
+                    </th>
+                    <th appAnchocol [ancho]="95">
+                      <div class="float-right w-100">
+                        <span *ngIf="rowm.totsal" class="float-left">{{simbolo}}</span>
+                        <span class="float-right">{{rowm.totsal | number: mask_parcial}}</span>
+                      </div>
+                    </th>
+                  </ng-container>
+
                   <th appAnchocol [ancho]="100" class="text-right">
-                  {{rowtotal| number: mask_parcial}}
+                    {{totalingreso| number: mask_parcial}}
+                  </th>
+                  <th appAnchocol [ancho]="100" class="text-right">
+                    {{totalsalida| number: mask_parcial}}
+                  </th>
+                  <th appAnchocol [ancho]="100" class="text-right">
+                    {{totalsaldo| number: mask_parcial}}
                   </th>
               </tr>
               </tfoot>
