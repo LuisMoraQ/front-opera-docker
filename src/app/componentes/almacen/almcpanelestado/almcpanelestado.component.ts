@@ -2,6 +2,7 @@ import { Component, OnInit,Input,HostListener } from '@angular/core';
 import { ToastrService } from 'ngx-toastr';
 import { LogisticaService } from 'src/app/servicios/logistica.service';
 import * as moment from 'moment';
+import { SwalService } from './../../../servicios/swal.service';
 
 @Component({
   selector: 'app-almcpanelestado',
@@ -157,4 +158,18 @@ export class AlmcpanelestadoComponent implements OnInit {
     if (ind == this.filasol_sel) this.filasol_sel = -1;
     else this.filasol_sel = ind;
   }
+  async cambiarEstOrden(row:any){
+    this.mostrar_carga_todo=true;
+    let res = await this._logisticaService.ActualizaEstOrdenAgru({id_proyecto: this.id_proyecto,id_registro: row.id_registro,idgrupo: row.idgrupo,estorden: 1 }); //iding idregmov
+    if(res[0]?.id=="1")
+    {
+      this.mostrar_carga_todo=false;
+      SwalService.success('Correcto',res[0].mensaje);
+    }
+    else{
+      this.mostrar_carga_todo=false;
+      SwalService.error('Advertencia',"No se pudo realizar la operación.");
+    }
+  }
+  
 }

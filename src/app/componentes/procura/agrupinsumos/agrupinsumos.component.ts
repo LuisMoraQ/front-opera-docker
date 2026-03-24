@@ -1821,14 +1821,14 @@ export class AgrupinsumosComponent implements OnInit {
             complem.push(row.idgrupo)
           }
         }
-        // if(complem.length>0){//para complementos
-        //   for(let row of this.dataSource5){
-        //     if(complem.find(row.idgrupo)){
-        //       row.tipocontra=sw.value;
-        //       row.accion=row.accion!=1?2:1;
-        //     }
-        //   }
-        // }
+        if(complem.length>0){//para complementos
+          for(let row of this.dataSource5){
+            if(complem.find(row.idgrupo)){
+              row.tipocontra=sw.value;
+              row.accion=row.accion!=1?2:1;
+            }
+          }
+        }
         this.bcambiost5 = true;
         this.mostrar_carga_todo=false
       }

@@ -1,27 +1,68 @@
 <div class="contenido-menu-responsive">
   <div class="contepri row mx-0 w-100">
     <div class="w-100 m-b-10 col-12" style="padding-left: 5px; padding-right: 5px;">
-      <div class="tabla-limp" [style.height.px]="heighttmodal13">
+      <div class="d-flex m-b-5" style="align-items: baseline;">
+        <!-- <div class="continpts m-r-10">
+          <label class="labelsobre"><b>Detalle de valorización</b></label>
+          <mat-form-field appearance="outline" class="mff-reduc mff-nopad mtop12">
+            <select matNativeControl (change)="cambioDetsel($event.target.value)">
+              <option value="0">Completo</option>
+              <option value="1">Por Meses</option>
+            </select>
+          </mat-form-field>
+        </div> -->
+        <div class="continpts d-flex m-r-10">
+          <label class="labelsobre"><b>Mes de Visualización</b></label>
+          <input class="form-control inputmes mtop12 m-r-5" type="month" [(ngModel)]="minicio"><!--  [disabled]="completo" -->
+          <!-- <input class="form-control inputmes mtop12" type="month" [(ngModel)]="mfin" [disabled]="completo"> -->
+        </div>
+        <button type="button" class="btn btn-success btn-sm" (click)="ActualizarRep()">
+          <i class="fa fa-check"></i>Actualizar
+        </button>
+      </div>
+      <div class="tabla-limp tabla-limp-aux" [style.height.px]="heighttmodal1">
         <table mat-table class="table-bordered tab-9 minspacelet">
           <thead>
             <tr class="headsticky header-custom">
-              <th appAnchocol [ancho]="72">Agrupamiento</th>
-              <th appAnchocol [ancho]="30">Item</th>
-              <th appAnchocol [ancho]="300" [detalle]="true">Insumos del Expediente Tecnico Agrupados</th>
-              <th appAnchocol [ancho]="114">Tipo de Contratación</th>
-              <th appAnchocol [ancho]="70">Costo Requerimiento</th>
-              <th appAnchocol [ancho]="75">Estado Solicitud</th>
-              <!-- <th appAnchocol [ancho]="70">Check</th>
-              <th appAnchocol [ancho]="50">Estado</th> -->
+              <th rowspan="3" appAnchocol [ancho]="30">N°</th>
+              <th rowspan="3" appAnchocol [ancho]="300" [detalle]="true">Articulo</th>
+              <th colspan="2" rowspan="2">Documento</th>
+              <th rowspan="3" appAnchocol [ancho]="114">Und</th>
+              <th rowspan="3" appAnchocol [ancho]="90">P.U.</th>
+              <th colspan="2" rowspan="2">Saldo Mes Anterior</th>
+              <th rowspan="3" appAnchocol [ancho]="70">Ingreso/Salida</th>
+
+              <th *ngIf="arrmes.length==0">-</th>
+              <th *ngIf="arrmes.length>0" [attr.colspan]="arrmes.length">{{nombmes}}</th>
+              <th rowspan="3" appAnchocol [ancho]="114">Ingreso/Salida del Mes</th>
+              <th rowspan="3" appAnchocol [ancho]="114">Val. Total Entrada</th>
+              <th rowspan="3" appAnchocol [ancho]="114">Val. Total Salida</th>
+              <th rowspan="3" appAnchocol [ancho]="114">Val. Saldo</th>
+            </tr>
+            <tr class="headsticky header-custom stiktop2">
+              <th *ngIf="arrmes.length==0">-</th>
+              <ng-container *ngFor="let row of arrmes;">
+                <th appAnchocol [ancho]="20">{{row.dia}}</th>
+              </ng-container>
+            </tr>
+            <tr class="headsticky header-custom stiktop3">
+              <th appAnchocol [ancho]="35">Tipo</th>
+              <th appAnchocol [ancho]="35">N°</th>
+              <th appAnchocol [ancho]="90">Cantidad</th>
+              <th appAnchocol [ancho]="100">Parcial</th>
+
+              <th *ngIf="arrmes.length==0">-</th>
+              <ng-container *ngFor="let row of arrmes;">
+                <th appAnchocol [ancho]="20">{{row.nomdia}}</th>
+              </ng-container>
             </tr>
           </thead>
           <tbody>
-            <ng-container *ngIf="dataSource6.length>0">
-              <tr *ngFor="let row of dataSource6;let indice=index;" (click)="cambindicesel6(indice,row)" [ngClass]="{'highlight2': fila6_sel == indice,'filagrupo':row.complemento=='0'}" 
-              [hidden]="row.indice!=null">
-                <td appAnchocol [ancho]="72">{{row.id_comple}}</td>
-                <td appAnchocol [ancho]="30"> {{row.nomgrupo}}</td>
-                <td appAnchocol [ancho]="300" [detalle]="true" class="celdasalto text-left"> 
+            <ng-container *ngIf="dataSource.length>0">
+            <ng-container *ngFor="let row of dataSource;let indice=index;"><!-- [hidden]="row.mostrar==0" -->
+              <tr (click)="cambindicesel(indice)" [ngClass]="{'highlight': fila_sel == indice,'filagrupo':row.indice==null}">
+                <td rowspan="2" appAnchocol [ancho]="72">{{row.orden}}</td>
+                <td rowspan="2" appAnchocol [ancho]="300" [detalle]="true" class="celdasalto text-left"> 
                   <!-- <span class="span-container" placement="top" ngbTooltip="{{row.descripcion!=''?row.descripcion:row.nombre}}" container="body">
                     <span class="span-ellipsis w-100 d-flex">
                       <span>{{row.descripcion!=''?row.descripcion:row.nombre}}</span> 
@@ -29,30 +70,57 @@
                   </span> -->
                   {{row.descripcion}}
                 </td>
-                <td appAnchocol [ancho]="114">{{row.tipocontra=='1'?'MATERIALES':row.tipocontra=='2'?'EQUIPOS Y SERVICIOS':row.tipocontra=='3'?'MANO DE OBRA':row.tipocontra=='4'?'OTROS':''}}</td>
-                <td appAnchocol [ancho]="70">
+                <td rowspan="2" appAnchocol [ancho]="50">OC</td>
+                <td rowspan="2" appAnchocol [ancho]="50">{{row.nro_orden}}</td>
+                <td rowspan="2" appAnchocol [ancho]="50">{{row.unidad}}</td>
+                <td rowspan="2" appAnchocol [ancho]="70">
                   <span class="float-left">{{simbolo}}</span>
-                  <span class="float-right">{{row.reqsol | number: mask_parcial}}</span>
+                  <span class="float-right">{{row.preciosol | number: mask_precio}}</span>
                 </td>
-                <td appAnchocol [ancho]="75">
-                  <label *ngIf="row.estado==0" class="label label-est" style="background-color: 'darkorange';">Borrador</label>
-                  <label *ngIf="row.estado==1" class="label label-info label-est">Requerimiento</label>
-                  <label *ngIf="row.estado==3" class="label label-primary label-est">Cotización</label>
-                  <label *ngIf="row.estado==2" class="label label-success label-est">Orden Atención</label>
+                <td rowspan="2" appAnchocol [ancho]="70">
+                  <!-- <span class="float-left">{{simbolo}}</span>
+                  <span class="float-right">{{row.preciosol | number: mask_precio}}</span> -->
                 </td>
-                <!-- <td appAnchocol [ancho]="50">
-                  
+                <td rowspan="2" appAnchocol [ancho]="70">
+                  <!-- <span class="float-left">{{simbolo}}</span>
+                  <span class="float-right">{{row.preciosol | number: mask_precio}}</span> -->
                 </td>
-                <td appAnchocol [ancho]="130">
-                  
-                </td> -->
+                <td appAnchocol [ancho]="70">Ingreso</td>
+
+                <ng-container *ngFor="let row of arrmes;">
+                  <td appAnchocol [ancho]="20">{{row.dia}}</td>
+                </ng-container>
+
+                <td rowspan="2" appAnchocol [ancho]="70">
+                  <!-- <span class="float-left">{{simbolo}}</span>
+                  <span class="float-right">{{row.preciosol | number: mask_precio}}</span> -->
+                </td>
+                <td rowspan="2" appAnchocol [ancho]="70">
+                  <!-- <span class="float-left">{{simbolo}}</span>
+                  <span class="float-right">{{row.preciosol | number: mask_precio}}</span> -->
+                </td>
+                <td rowspan="2" appAnchocol [ancho]="70">
+                  <!-- <span class="float-left">{{simbolo}}</span>
+                  <span class="float-right">{{row.preciosol | number: mask_precio}}</span> -->
+                </td>
+                <td rowspan="2" appAnchocol [ancho]="70">
+                  <!-- <span class="float-left">{{simbolo}}</span>
+                  <span class="float-right">{{row.preciosol | number: mask_precio}}</span> -->
+                </td>
+              </tr>
+              <tr (click)="cambindicesel(indice)" [ngClass]="{'highlight': fila_sel == indice,'filagrupo':row.indice==null}">
+                <td appAnchocol [ancho]="70">Salida</td>
+                <ng-container *ngFor="let row of arrmes;">
+                  <td appAnchocol [ancho]="20">{{row.dia}}</td>
+                </ng-container>
               </tr>
             </ng-container>
-            <ng-container *ngIf="dataSource6.length<=0">
+            </ng-container>
+            <ng-container *ngIf="dataSource.length<=0">
               <tr>
                 <td class="mat-cell text-center" colspan="11">
-                    <label *ngIf="!buscando6">No se encontraron resultados</label>
-                    <div *ngIf="buscando6" class="preloader3 loader-block">
+                    <label *ngIf="!buscando">No se encontraron resultados</label>
+                    <div *ngIf="buscando" class="preloader3 loader-block">
                         <div class="circ1"></div>
                         <div class="circ2"></div>
                         <div class="circ3"></div>
