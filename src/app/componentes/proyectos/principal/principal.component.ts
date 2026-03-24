@@ -17,7 +17,7 @@ import { VariablesGlobalesService } from 'src/app/servicios/variables-globales.s
 import { ModalBasicComponent } from 'src/app/shared/modal-basic/modal-basic.component';
 import { paises, monedas, modalidades, estados } from '../principal/parametros-principal';
 import { AgrupacionProyectosComponent } from './../agrupacion-proyectos/agrupacion-proyectos.component';
-import { itemsMenu } from './menu-proyecto-list';
+import { menuAgrupado } from './menu-proyecto-list';
 import { ModalProyectoComponent } from './modal-proyecto/modal-proyecto.component';
 import { BusqTitSubtPresuComponent } from '../../presupuesto/busq-tit-subt-presu/busq-tit-subt-presu.component';
 import { ComparteproyComponent } from './comparteproy/comparteproy.component';
@@ -43,7 +43,7 @@ export class PrincipalComponent implements OnInit, OnDestroy {
   arrayTabs$: Subscription = new Subscription()
   accesproy$: Subscription = new Subscription()
   preventscroll = false;
-  itemsMenu = itemsMenu
+  menuSeccionado = menuAgrupado
   paises = paises
   monedas = monedas
   modalidades = modalidades

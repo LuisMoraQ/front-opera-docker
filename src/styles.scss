@@ -1129,8 +1129,8 @@ input[type="file"] {
 // }
 
 .contenido-menu {
-    width: calc(100% - 105px);
-    margin-left: 90px;
+    width: calc(100% - 215px);
+    margin-left: 205px;
 }
 
 .contenido-menu-oculto {
@@ -1185,7 +1185,7 @@ input[type="file"] {
 
 .item-activo,
 .menu-proyectos ul>li:hover>a {
-    height: 61px !important;
+    height: 45px !important;
     border-radius: 7px;
 }
 

@@ -20,7 +20,9 @@
 .tabla-plantilla {
   height: calc(100dvh - 33rem);
 }
-
+.tabla-plantilla-completo {
+  height: calc(100dvh - 13rem);
+}
 .contenedor-desagregado {
   height: 18rem;
   border: 1px solid #6c757d;
@@ -42,4 +44,137 @@
 
 .bg-secondary {
   background-color: #6c757d;
+}
+
+/* equipos-herramientas.component.css */
+
+/* Estilos para inputs y selects de 24px de alto */
+.input-24 {
+  height: 24px !important;
+  padding: 2px 6px !important;
+  font-size: 12px !important;
+  line-height: 1.2 !important;
+  min-height: 24px !important;
+}
+
+/* Para el texto plano (items no editables) */
+.texto-24 {
+  height: 24px !important;
+  padding: 2px 6px !important;
+  font-size: 12px !important;
+  line-height: 20px !important; /* 24px - padding */
+  display: inline-block;
+}
+
+/* Altura de fila uniforme */
+.fila-24 {
+  height: 32px !important; /* Un poco más que el input para dar espacio */
+  max-height: 32px !important;
+}
+
+.fila-24 td {
+  padding: 2px 4px !important;
+  vertical-align: middle !important;
+}
+
+/* Botón de 24px */
+.boton-24 {
+  height: 24px !important;
+  width: 24px !important;
+  padding: 0 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 12px !important;
+  line-height: 1 !important;
+}
+
+.boton-24 i {
+  font-size: 12px !important;
+}
+
+/* Celdas específicas */
+.celda-item {
+  width: 50px;
+}
+
+.celda-accion {
+  width: 40px;
+}
+
+/* Para los selects nativos */
+select.input-24 {
+  padding: 2px 20px 2px 6px !important; /* Espacio para la flecha */
+  background-position: right 4px center !important;
+}
+
+/* Para inputs type date */
+input[type="date"].input-24 {
+  padding: 2px 4px !important;
+}
+
+/* Ajustes para la tabla */
+.table.table-bordered td {
+  padding: 2px 4px !important;
+}
+
+/* Hover en filas */
+.fila-24:hover {
+  background-color: rgba(0, 0, 0, 0.02) !important;
+}
+
+/* Para el placeholder */
+.input-24::placeholder {
+  font-size: 11px;
+  color: #999;
+}
+
+/* Para cuando el input está deshabilitado */
+.input-24:disabled,
+.texto-24:disabled {
+  background-color: #f8f9fa;
+  cursor: not-allowed;
+}
+
+/* Ajustes para el texto de la fila vacía */
+.fila-24 .text-muted {
+  font-size: 12px;
+  line-height: 24px;
+}
+
+.highlight3 {
+  background-color: #f0f0f0 !important;
+}
+
+/* En tu archivo CSS o SCSS */
+.tabla-plantilla-completo {
+  position: relative;
+  max-height: 70vh; /* Ajusta según necesites */
+  overflow: auto;
+}
+
+.tabla-plantilla-completo table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.tabla-plantilla-completo thead tr th {
+  position: sticky;
+  top: 0;
+  background-color: #f8f9fa;
+  z-index: 10;
+}
+
+.tabla-plantilla-completo tfoot tr th,
+.tabla-plantilla-completo tfoot tr td {
+  position: sticky;
+  bottom: 0;
+  background-color: #f8f9fa;
+  z-index: 10;
+}
+
+/* Si quieres que el tfoot tenga sombra para destacar */
+.tabla-plantilla-completo tfoot {
+  box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
 }

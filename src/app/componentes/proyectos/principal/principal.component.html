@@ -504,12 +504,12 @@
                   <div class="page-body">
                     <div class="contenido-proyecto">
                       <div class="row ml-0">
-                        <div class="menu-proyectos" [style.height.px]="height + 115" *ngIf="!ocultarMenu">
+                        <!-- <div class="menu-proyectos" [style.height.px]="height + 115" *ngIf="!ocultarMenu">
                           <ul>
                             <ng-container *ngFor="let item of itemsMenu; let itemMenu = index">
                               <li
                                 *ngIf="(tab.get('menuver').value!= null && tab.get('menuver').value[itemMenu]==1) || tab.get('menuver').value== null"
-                                class="item-menu"><!-- arrmenuproy[itemMenu]==1 -->
+                                class="item-menu">
                                 <a [routerLinkActive]="['active']" class="item-menu-proyecto d-flex"
                                   [ngbTooltip]="item.name " container="body"
                                   [ngClass]="{'item-activo':tab.get('menu_proyecto_seleccionado').value == itemMenu}"
@@ -528,6 +528,33 @@
                               </li>
                             </ng-container>
                           </ul>
+                        </div> -->
+                        <div class="menu-proyectos-sidebar" [style.height.px]="height + 115" *ngIf="!ocultarMenu">
+
+                          <div *ngFor="let seccion of menuSeccionado" class="grupo-menu">
+                            <div class="seccion-header">{{ seccion.titulo }}</div>
+
+                            <nav class="seccion-nav">
+                              <ng-container *ngFor="let item of seccion.items">
+                                <a *ngIf="item && ((tab.get('menuver').value != null && tab.get('menuver').value[item.id - 1] == 1) || tab.get('menuver').value == null)"
+                                  class="menu-item-row d-flex align-items-center"
+                                  [ngClass]="{'item-activo': tab.get('menu_proyecto_seleccionado').value == (item.id - 1)}"
+                                  (click)="seleccionMenu(item.id - 1, tab.get('indice_tab').value)">
+
+                                  <div class="menu-icon-container">
+                                    <div *ngIf="item.verImagen && item.imagen; else soloIcono" class="menu-img-custom"
+                                      [style.background-image]="'url(../../../assets/img-menu/' + item.imagen +')'">
+                                    </div>
+                                    <ng-template #soloIcono>
+                                      <i class="{{item.icon}} icon-style"></i>
+                                    </ng-template>
+                                  </div>
+
+                                  <span class="menu-text-label">{{ item.name }}</span>
+                                </a>
+                              </ng-container>
+                            </nav>
+                          </div>
                         </div>
                         <div [style.height.px]="height + 100"
                           [ngClass]="{'contenido-menu': !ocultarMenu, 'contenido-menu-oculto': ocultarMenu}">
@@ -568,7 +595,7 @@
                             <ng-container *ngIf="tab.get('menu_proyecto_seleccionado').value == 8">
                               <!-- <app-formula-polinomica [idProyecto]="tab.get('id_proyecto').value"
                                 [tabproyecto]="tab"></app-formula-polinomica> -->
-                                <app-equipos-herramientas [tabproyecto]="tab"></app-equipos-herramientas>
+                              <app-equipos-herramientas [tabproyecto]="tab"></app-equipos-herramientas>
                             </ng-container>
                             <ng-container *ngIf="tab.get('menu_proyecto_seleccionado').value == 9">
                               <app-panel-recursos-humanos [idProyecto]="tab.get('id_proyecto').value"

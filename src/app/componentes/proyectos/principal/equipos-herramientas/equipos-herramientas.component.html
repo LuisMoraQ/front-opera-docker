@@ -30,7 +30,15 @@
 
       <!-- COLUMNA IZQUIERDA -->
       <div class="col-6 px-0 h-100">
+        <mat-form-field appearance="outline" class="mff-reduc col-12">
+          <mat-label>REGISTRO</mat-label>
+          <mat-select [(ngModel)]="id_registro" (ngModelChange)="this.cambioDataRegistro()">
+            <mat-option *ngFor="let registro of listaRegistros; let i=index" [value]="registro.id_registro">
+              {{registro.detalle}}
+            </mat-option>
 
+          </mat-select>
+        </mat-form-field>
         <div class="row h-100 m-0 d-flex flex-column">
 
           <div class="col-12 px-0 overflow-auto flex-fill">
@@ -43,13 +51,13 @@
                     <th colspan="1"></th>
                     <th colspan="5">Presupuesto</th>
                     <th colspan="2">Variacion Presupuestal</th>
-                    <th appAnchocol [ancho]="80" rowspan="2">Estado</th>
+                    <!-- <th appAnchocol [ancho]="80" rowspan="2">Estado</th> -->
                   </tr>
                   <tr>
 
                     <th appAnchocol [ancho]="200" [detalle]="true">Detalle Requerimiento</th>
                     <th appAnchocol [ancho]="35">Tipo Gasto</th>
-                    <th appAnchocol [ancho]="60">Grupo</th>
+                    <th appAnchocol [ancho]="60">Estado</th>
                     <th appAnchocol [ancho]="60">Exp.Tecnico</th>
                     <th appAnchocol [ancho]="78">Requerimiento</th>
                     <th appAnchocol [ancho]="42">Pres. Ejecutado</th>
@@ -62,21 +70,27 @@
                   <ng-container *ngIf="tablaRegActividades.length">
                     <tr *ngFor="let row of tablaRegActividades; let i = index" (click)="selTablaRegAct(row,i)"
                       [ngClass]="{'highlight':this.filSelRegAct == i}">
-                      <td>{{i+1}}</td>
+                      <td class="text-center">{{i+1}}</td>
                       <td>{{row.descripcion}}</td>
-                      <td>{{row.tipo}}</td>
-                      <td>{{row.grupo}}</td>
+                      <td class="text-center">{{row.tipo ? row.tipo: 'CD'}}</td>
+                      <td class="text-center">
+                        <label *ngIf="row.estado==0" class="label label-est"
+                          style="background-color: 'darkorange';">Borrador</label>
+                        <label *ngIf="row.estado==1" class="label label-info label-est">Requerimiento</label>
+                        <label *ngIf="row.estado==3" class="label label-primary label-est">Cotización</label>
+                        <label *ngIf="row.estado==2" class="label label-success label-est">Orden Atención</label>
+                      </td>
                       <td>
                         <div class="w-100 d-flex justify-content-between ">
                           <div style="opacity: 0.6;">S/.</div>
                           <div>{{row.parcial | number:'0.2-2'}}</div>
                         </div>
                       </td>
-                      <td>{{row.reqsol}}</td>
-                      <td>{{row.presEjecutado}}</td>
-                      <td>{{row.saldo}}</td>
-                      <td>{{row.porcentaje}}</td>
-                      <td>{{row.estado}}</td>
+                      <td>{{row.reqsol| number:'0.2-2'}}</td>
+                      <td>{{row.presupuestoEjecutado | number:'0.2-2'}}</td>
+                      <td>{{row.saldo | number:'0.2-2'}}</td>
+                      <td>{{row.porcentaje | number:'0.2-2'}}</td>
+                      <!-- <td>{{row.estado}}</td> -->
                     </tr>
                   </ng-container>
                 </tbody>
@@ -135,15 +149,34 @@
                           <div>{{row.parcial | number:'0.2-2'}}</div>
                         </div>
                       </td>
-                      <td class="text-center">{{row.cantidad_usada | number:'0.2-2'}}</td>
-                      <td>
-                        <div class="w-100 d-flex justify-content-between ">
-                          <div style="opacity: 0.6;">S/.</div>
-                          <div>{{row.precio_usada | number:'0.2-2'}}</div>
+                      <td class="text-center">
+                        <div
+                          *ngIf="row.parcial_usada !== 0 && (!row.cantidad_usada && row.cantidad_usada !== 0); else cantidadNormal">
+                          <i class="fa fa-minus text-danger"></i>
                         </div>
+                        <ng-template #cantidadNormal>
+                          {{row.cantidad_usada | number:'0.2-2'}}
+                        </ng-template>
                       </td>
+
                       <td>
-                        <div class="w-100 d-flex justify-content-between ">
+                        <div class="text-center"
+                          *ngIf="row.parcial_usada !== 0 && (!row.precio_usada && row.precio_usada !== 0); else precioNormal">
+                          <!-- <div class="w-100 d-flex justify-content-between"> -->
+                          <!-- <div style="opacity: 0.6;">S/.</div> -->
+                          <div><i class="fa fa-minus text-danger"></i></div>
+                          <!-- </div> -->
+                        </div>
+                        <ng-template #precioNormal>
+                          <div class="w-100 d-flex justify-content-between">
+                            <div style="opacity: 0.6;">S/.</div>
+                            <div>{{row.precio_usada | number:'0.2-2'}}</div>
+                          </div>
+                        </ng-template>
+                      </td>
+
+                      <td>
+                        <div class="w-100 d-flex justify-content-between">
                           <div style="opacity: 0.6;">S/.</div>
                           <div>{{row.parcial_usada | number:'0.2-2'}}</div>
                         </div>
@@ -157,10 +190,10 @@
                       </td>
                       <td class="text-center">
                         <!-- {{row.indicador}} -->
-                        <span class="badge bg-success pos-badge" style="padding-top: 4px;" *ngIf="row.saldo >=0">CON
-                          SALDO</span>
-                        <span class="badge bg-danger pos-badge" style="padding-top: 4px;" *ngIf="row.saldo <0">SIN
-                          SALDO</span>
+                        <span class="badge bg-success pos-badge" style="padding-top: 4px;"
+                          *ngIf="row.estado == 1">EJECUCION</span>
+                        <span class="badge bg-danger pos-badge" style="padding-top: 4px;"
+                          *ngIf="row.estado == 2">CULMINADO</span>
                       </td>
 
                     </tr>
@@ -182,18 +215,10 @@
           <div class="col-12  h-acciones d-flex ">
 
             <button class="btn btn-mini btn-group-mini btn-outline-primary" (click)="abrirModalServicio()"
-              *ngIf="filSelRegAct !== null">
+              *ngIf="filSelRegAct !== null && this.tablaRegActividades[this.filSelRegAct]?.estado == 2">
               <i class="fa fa-plus icono-but" aria-hidden="true"></i>SERVICIO
             </button>
-            <!-- <button class="btn btn-mini btn-group-mini btn-outline-primary">
-              <i class="fa fa-times icono-but" aria-hidden="true"></i>SERVICIO
-            </button>
-            <button class="btn btn-mini btn-group-mini btn-outline-primary" (click)="abrirModalEquipo()">
-              <i class="fa fa-plus icono-but" aria-hidden="true"></i>EQUIPO
-            </button>
-            <button class="btn btn-mini btn-group-mini btn-outline-primary">
-              <i class="fa fa-times icono-but" aria-hidden="true"></i>EQUIPO
-            </button> -->
+
           </div>
 
           <div class="col-12  overflow-auto">
@@ -204,7 +229,8 @@
                   <th appAnchocol [ancho]="200" [detalle]="true" rowspan="2">Descripcion servicio</th>
                   <th appAnchocol [ancho]="50" rowspan="2">Placa Serie</th>
                   <th appAnchocol [ancho]="80" rowspan="2"> Fecha Solicitada</th>
-                  <th appAnchocol [ancho]="50" rowspan="2">Unidad</th>
+                  <th appAnchocol [ancho]="50" rowspan="2">Tipo</th>
+                  <th appAnchocol [ancho]="50" rowspan="2">Cant Req.</th>
                   <th colspan="3"> Registro de equipo utilizado</th>
                   <th appAnchocol [ancho]="80" rowspan="2">Indicador</th>
                   <th appAnchocol [ancho]="50" rowspan="2" *ngIf="filSelRegAct !== null"></th>
@@ -219,19 +245,20 @@
                 </tr>
               </thead>
               <tbody>
-                <ng-container *ngIf="tablaServicios.length">
+                <ng-container *ngIf="tablaServicios.length; else notablaServicios">
                   <tr *ngFor="let row of tablaServicios; let i = index" (click)="selTablaServ(row,i)"
-                    [ngClass]="{'highlight':this.filSelServ == i, 'font-weight-bolder':row.index_grupo==0}">
+                    [ngClass]="{'highlight':this.filSelServ == i, 'font-weight-bolder':row.index_elemento==0}">
                     <td class="text-center">
-                      <ng-container *ngIf="row.index_grupo!==0">{{'E-'+ row.id_fila}}</ng-container>
+                      <ng-container *ngIf="row.index_elemento!==0">{{'E-'+ row.id_fila}}</ng-container>
                     </td>
                     <td>{{row.descripcion}}</td>
                     <td class="text-center">{{row.placa}}</td>
                     <td class="text-center">{{row.fecha_solicitud | date:'dd-MM-yyyy'}}</td>
-                    <td class="text-center">{{row.unidad}}</td>
+                    <td class="text-center">{{row.tipo}}</td>
                     <td class="text-center">{{row.cantidad | number:'0.2-2'}}</td>
+                    <td class="text-center">{{row.tiempo_registrado | number:'0.2-2'}}</td>
                     <td>
-                      <div class="w-100 d-flex justify-content-between " *ngIf="row.index_grupo!==0">
+                      <div class="w-100 d-flex justify-content-between " *ngIf="row.index_elemento!==0">
                         <div style="opacity: 0.6;">S/.</div>
                         <div>{{row.precio_unitario | number:'0.2-2'}}</div>
                       </div>
@@ -240,26 +267,47 @@
                     <td>
                       <div class="w-100 d-flex justify-content-between ">
                         <div style="opacity: 0.6;">S/.</div>
-                        <div>{{row.parcial | number:'0.2-2'}}</div>
+                        <div>{{row.total_registrado | number:'0.2-2'}}</div>
                       </div>
                     </td>
-                    <td class="text-center">{{row.indicador}}</td>
+                    <td class="text-center"> <span class="badge bg-success pos-badge" style="padding-top: 4px;"
+                        *ngIf="row.estado == 1">EJECUCION</span>
+                      <span class="badge bg-warning pos-badge" style="padding-top: 4px;"
+                        *ngIf="row.estado == 2">CULMINADO</span>
+                    </td>
                     <td *ngIf="filSelRegAct !== null">
-                      <button class="btn btn-mini2 btn-success" placement="top" ngbTooltip="agregar" container="body"
-                        *ngIf="row.index_grupo == 0" (click)="abrirModalEquipo()" (mouseup)="quitarfoco($event);">
-                        <i class="fa fa-plus icono-but"></i>
-                      </button>
-                      <button class="btn btn-mini2 btn-secondary" placement="top" ngbTooltip="editar" container="body"
-                        *ngIf="row.index_grupo !== 0" (click)="abrirModalEquipo(row)" (mouseup)="quitarfoco($event);">
-                        <i class="fa fa-edit icono-but"></i>
-                      </button>
-                      <button class="btn btn-mini2 btn-danger" placement="top" ngbTooltip="eliminar" container="body"
-                        (click)="eliminarFila(row, i)" (mouseup)="quitarfoco($event);">
-                        <i class="fa fa-trash icono-but"></i>
-                      </button>
+                      <ng-container *ngIf=" this.tablaRegActividades[this.filSelRegAct]?.estado == 2">
+                        <button class="btn btn-mini2 btn-success" placement="top" ngbTooltip="agregar" container="body"
+                          *ngIf="row.index_elemento == 0" (click)="abrirModalEquipo()" (mouseup)="quitarfoco($event);">
+                          <i class="fa fa-plus icono-but"></i>
+                        </button>
+                        <button class="btn btn-mini2 btn-secondary" placement="top" ngbTooltip="editar" container="body"
+                          *ngIf="row.index_elemento == 0" (click)="abrirModalEquipo(row)"
+                          (mouseup)="quitarfoco($event);">
+                          <i class="fa fa-edit icono-but"></i>
+                        </button>
+                        <button class="btn btn-mini2 btn-danger" placement="top" ngbTooltip="eliminar" container="body"
+                          *ngIf="row.index_elemento == 0" (click)="eliminarGrupo(row, i)"
+                          (mouseup)="quitarfoco($event);">
+                          <i class="fa fa-trash icono-but"></i>
+                        </button>
+                      </ng-container>
                     </td>
                   </tr>
                 </ng-container>
+                <ng-template #notablaServicios>
+                  <tr class="h-celda">
+                    <td class="mat-cell text-center" colspan="8">
+                      <label *ngIf="!buscando3">No se encontraron resultados</label>
+                      <div *ngIf="buscando3" class="preloader3 loader-block">
+                        <div class="circ1"></div>
+                        <div class="circ2"></div>
+                        <div class="circ3"></div>
+                        <div class="circ4"></div>
+                      </div>
+                    </td>
+                  </tr>
+                </ng-template>
               </tbody>
             </table>
           </div>
@@ -286,7 +334,7 @@
         </mat-form-field>
         <mat-form-field appearance="outline" class="mff-reduc col-3">
           <mat-label>Area</mat-label>
-          <mat-select [(ngModel)]="grupoSeleccionado" (ngModelChange)="filtrarPlanillaEquiposServicios()">
+          <mat-select [(ngModel)]="grupoSeleccionado" (ngModelChange)="cambioArea()">
             <mat-option [value]="''">Todos</mat-option>
             <mat-option *ngFor="let grupo of tablaRegActividades; let i = index" [value]="i">
               {{grupo.descripcion}}
@@ -294,33 +342,23 @@
 
           </mat-select>
         </mat-form-field>
-        <!--
         <mat-form-field appearance="outline" class="mff-reduc col-3">
-          <mat-label>Cargo</mat-label>
-          <mat-select [(ngModel)]="cargoSeleccionada" [disabled]="!areaSeleccionada">
-            <mat-option [value]="''">Todos</mat-option>
-            <mat-option *ngFor="let cargo of cargosFiltrados" [value]="cargo.id_cargo">
-              {{cargo.descripcion}}
-            </mat-option>
+          <mat-label>Detalle</mat-label>
+          <mat-select [(ngModel)]="verDetalle" (ngModelChange)="cambioDetalle()">
+            <mat-option [value]="''">Ocultar</mat-option>
+            <mat-option [value]="'desagregado'">Desagregado</mat-option>
+            <mat-option [value]="'mensual'">Mensual</mat-option>
           </mat-select>
         </mat-form-field>
-        <mat-slide-toggle class="mx-3" [(ngModel)]="ocultarSinAsistencia">
-          Ocultar sin asistencia
-        </mat-slide-toggle>
-        <button mat-raised-button color="primary" class="h-50" (click)="filtroListadoCargos()">
-          <mat-icon>search</mat-icon>
-          Buscar
-        </button> -->
-
 
       </div>
       <div class="col-12 px-0">
-        <div class="tabla-plantilla overflow-auto">
+        <div class=" overflow-auto"
+          [ngClass]="{'tabla-plantilla': this.verDetalle , 'tabla-plantilla-completo':!this.verDetalle }">
           <table class="table-bordered tab-10">
             <thead class="text-center" style="position: sticky; top: 0;">
               <tr [ngClass]="{'h-22': !calendarioFiltrado?.dias.length }">
                 <th rowspan="2" appAnchocol [ancho]="40"></th>
-                <!-- <th rowspan="2" appAnchocol [ancho]="120" [detalle]="true">CARGO</th> -->
                 <th rowspan="2" appAnchocol [ancho]="150" [detalle]="true">MAQUINARIA Y EQUIPO</th>
                 <th rowspan="2" appAnchocol [ancho]="60">MODELO</th>
                 <th rowspan="2" appAnchocol [ancho]="80">TIPO REGISTRO</th>
@@ -357,7 +395,8 @@
             <tbody>
               <ng-container *ngIf="tablaPlanilla.length; else elseTemplate">
                 <tr *ngFor="let row of this.tablaPlanilla; let i = index"
-                  [ngClass]="{'font-weight-bolder':row.item == 0}">
+                  [ngClass]="{'font-weight-bolder':row.item == 0, 'highlight3': selFilPlan == i}"
+                  (click)="seleccionFilaPlanrow(row,i)">
                   <td class="text-center">
                     <ng-container *ngIf="row.item !== 0">{{row.item}}</ng-container>
                   </td>
@@ -365,14 +404,37 @@
                   <td>{{row.modelo}}</td>
                   <td class="text-center">{{row.tipo_registro}}</td>
                   <td class="text-center">{{row.tipo}}</td>
-                  <td *ngFor="let dia of row.planilla;let j = index"
-                    [ngClass]="{'bg-info': i === celdaSel[0] && j === celdaSel[1] }" (click)="seleccionCelda(i,j)">
-                    <ng-container *ngIf="dia?.horas_dia">{{dia.horas_dia}}</ng-container>
+                  <ng-container *ngIf="row.tipo !=='GLOBAL' && row.tipo !== 'MES'">
+                    <td class="text-center" *ngFor="let dia of row.planilla;let j = index"
+                      [ngClass]="{'bg-info': i === celdaSel[0] && j === celdaSel[1] }" (click)="seleccionCelda(i,j)">
+                      <ng-container *ngIf="dia?.horas_dia">{{dia.horas_dia}}</ng-container>
+                    </td>
+                  </ng-container>
+                  <ng-container *ngIf="row.tipo =='GLOBAL' || row.tipo == 'MES'">
+                    <td class="text-center" *ngFor="let dia of row.arrayMes;let j = index">
+                      <ng-container *ngIf="dia">{{dia}}</ng-container>
+                    </td>
+                  </ng-container>
+                  <td class="text-center">{{row.total_hm}}</td>
+                  <td class="text-right">
+                    <ng-container *ngIf="row.item !== 0">
+                      <span class="float-left text-muted">S/</span>
+                      <span class="float-right"> {{row.precio_unitario | number:'0.2-2'}}</span>
+                    </ng-container>
                   </td>
-                  <td>{{row.total_hm}}</td>
-                  <td>{{row.precio_unitario}}</td>
-                  <td>{{row.parcial}}</td>
-                  <td class="text-center">{{row.estado}}</td>
+                  <td>
+                    <ng-container *ngIf="row.item !== 0">
+                      <span class="float-left text-muted">S/</span>
+                      <span class="float-right"> {{row.parcial | number:'0.2-2'}}</span>
+                    </ng-container>
+                  </td>
+                  <td class="text-center">
+                    <!-- {{row.estado}} -->
+                    <span class="badge bg-success pos-badge" style="padding-top: 4px;"
+                      *ngIf="row.estado == 1">EJECUCION</span>
+                    <span class="badge bg-danger pos-badge" style="padding-top: 4px;"
+                      *ngIf="row.estado == 2">CULMINADO</span>
+                  </td>
                 </tr>
               </ng-container>
               <ng-template #elseTemplate>
@@ -391,220 +453,467 @@
             </tbody>
           </table>
         </div>
-        <div class="contenedor-desagregado row" [formGroup]="formDesagregado">
-          <div class="col-12 d-flex justify-content-between">
-            <div class="col">
-              <h6 class="fw-bold">REGISTRO DESAGREGADO DE EQUIPO <ng-container *ngIf="celdaSel[1] !== null">-
-                  {{calendarioFiltrado?.dias[celdaSel[1]]?.fecha_display}}</ng-container></h6>
-            </div>
-            <div class="col d-flex justify-content-end pr-0">
-              <button type="button" class="btn btn-mini2 btn-success d-flex" placement="top"
-                (click)="guardarCambiosDesagregado()" ngbTooltip="Guardar cambios" (mouseup)="quitarfoco($event)"
-                container="body">
-                <i class="fa fa-save icono-but"></i> Guardar
-              </button>
-            </div>
-          </div>
-          <div class="col-3  h-100">
-            <div class="fw-bold">Orden servicio</div>
-            <input type="text" class="form-control form-control-sm" formControlName="ordenServicio">
-            <div class="fw-bold">Proveedor</div>
-            <input type="text" class="form-control form-control-sm" formControlName="proveedor"
-              value="Victor Manuel Peres Gonzales">
-            <div class="fw-bold">Telefono</div>
-            <input type="text" class="form-control form-control-sm me-2" formControlName="telefono"
-              placeholder="Teléfono">
-            <div class="fw-bold">Correo</div>
-            <input type="email" class="form-control form-control-sm" formControlName="correo">
-          </div>
-          <div class="col-3  h-100">
-            <div class="d-flex col-12" style="flex-wrap: wrap;">
-              <div class=" col-6 pl-0">
-                <div class="fw-bold">Coste Unitario</div>
-                <input type="text" class="form-control form-control-sm" formControlName="coste_unitario"
-                  value="241-2026">
-              </div>
-              <div class=" col-6 pr-0">
-                <div class="fw-bold">Unidad</div>
-                <input type="text" class="form-control form-control-sm" formControlName="unidad">
-              </div>
-              <div class="fw-bold">Total Tiempo Programado</div>
-              <input type="time" class="form-control form-control-sm" formControlName="tiempo_programado">
-              <div class="fw-bold">Total tiempo utilizado</div>
-              <input type="text" class="form-control form-control-sm" formControlName="tiempo_utilizado">
-              <div class="fw-bold">Saldo por utilizar</div>
-              <input type="text" class="form-control form-control-sm" formControlName="saldo_utilizar">
+        <div class="contenedor-desagregado row" [formGroup]="formDesagregado" *ngIf="verDetalle">
+          <ng-container *ngIf="!buscando; else buscandoData">
+            <ng-container *ngIf="verDetalle == 'desagregado'">
+              <div class="col-12 d-flex justify-content-between">
+                <div class="col">
+                  <h6 class="fw-bold">REGISTRO DESAGREGADO DE EQUIPO <ng-container *ngIf="celdaSel[1] !== null">-
+                      {{calendarioFiltrado?.dias[celdaSel[1]]?.fecha_display}}</ng-container></h6>
+                </div>
 
-            </div>
-          </div>
-          <div class="col-3  h-100">
-            <div>Horas laboradas en el dia</div>
-            <div>
-              <table class="table-bordered tab-10">
-                <thead class="table-light" style="position: sticky; top: 0;">
-                  <tr>
-                    <th>Inicio</th>
-                    <th>Fin</th>
-                    <th>Tiempo</th>
-                    <th style="width: 50px">
-                      <button type="button" class="btn btn-mini2 btn-success" (click)="agregarTiempo()"
-                        *ngIf="this.celdaSel[0] !== null && this.celdaSel[0]!== null">
-                        + Agregar Horario
-                      </button>
-                    </th>
-                  </tr>
-                </thead>
-                <tbody formArrayName="tiempos">
-                  <tr *ngFor="let tiempo of tiempos.controls; let i = index" [formGroupName]="i">
-                    <td>
-                      <input type="time" class="form-control form-control-sm" formControlName="inicio"
-                        (input)="calcularTiempo(i)" [ngClass]="{'is-invalid': tiempo.hasError('inicioMayor')}">
-                    </td>
-                    <td>
-                      <input type="time" class="form-control form-control-sm" formControlName="fin"
-                        (input)="calcularTiempo(i)" [ngClass]="{'is-invalid': tiempo.hasError('inicioMayor')}">
-                    </td>
-                    <td>
-                      <!-- Mostrar solo minutos -->
-                      <input type="text" class="form-control form-control-sm bg-light"
-                        [value]="tiempo.get('tiempo')?.value + ' min'" readonly>
-                    </td>
-                    <td class="text-center">
-                      <button type="button" class="btn btn-sm btn-danger py-0 px-1" (click)="eliminarTiempo(i)">
-                        <i class="bi bi-trash"></i> ×
-                      </button>
-                    </td>
-                  </tr>
-
-
-                </tbody>
-              </table>
-            </div>
-          </div>
-          <div class="col-3  h-100">
-            <div class="fw-bold">Horas total dia</div>
-            <input type="time" class="form-control form-control-sm" formControlName="horas_dia">
-            <div class="fw-bold">Coste utilizado por dia</div>
-            <input type="text" class="form-control form-control-sm" formControlName="coste_dia">
-            <div class="fw-bold">Observaciones de trabajos Realizado durante el Día</div>
-            <textarea class="form-control form-control-sm" formControlName="observaciones" rows="5"
-              placeholder="Observaciones..."></textarea>
-          </div>
-          <!-- <div class="row mb-3">
-            <div class="col-12">
-              <h6 class="fw-bold">REGISTRO DESAGREGADO DE EQUIPO - FECHA 18/02/2026</h6>
-            </div>
-          </div>
-
-          <div class="row mb-3">
-            <div class="col-3">
-              <div class="fw-bold">Orden servicio</div>
-              <input type="text" class="form-control form-control-sm" formControlName="ordenServicio" value="241-2026">
-            </div>
-            <div class="col-4">
-              <div class="fw-bold">Total Tiempo Programado</div>
-              <div class="d-flex align-items-center">
-                <input type="text" class="form-control form-control-sm w-25" formControlName="horasProg" value="15">
-                <span class="mx-1">hr:</span>
-                <input type="text" class="form-control form-control-sm w-25" formControlName="minutosProg" value="30">
-                <span class="mx-1">min</span>
-              </div>
-            </div>
-          </div>
-
-          <div class="row mb-3">
-            <div class="col-5">
-              <div class="fw-bold">Proveedor</div>
-              <input type="text" class="form-control form-control-sm" formControlName="proveedor"
-                value="Victor Manuel Peres Gonzales">
-            </div>
-            <div class="col-3">
-              <div class="fw-bold">Saldo por Utilizar</div>
-              <input type="text" class="form-control form-control-sm" formControlName="saldo" value="0h:00min" readonly>
-            </div>
-          </div>
-
-          <div class="row mb-3">
-            <div class="col-3">
-              <div class="fw-bold">Unidad</div>
-              <select class="form-select form-select-sm" formControlName="unidad">
-                <option selected>Hora laborada ▼</option>
-                <option>Minutos</option>
-                <option>Días</option>
-              </select>
-            </div>
-            <div class="col-4">
-              <div class="d-flex">
-                <input type="text" class="form-control form-control-sm me-2" formControlName="telefono"
-                  value="987564852" placeholder="Teléfono">
-                <input type="email" class="form-control form-control-sm" formControlName="correo"
-                  value="carlos2145@hotmail.com" placeholder="Email">
-              </div>
-            </div>
-          </div>
-
-          <div class="row mb-2">
-            <div class="col-12">
-              <div class="fw-bold">Hora laborada durante el Día Seleccionado</div>
-            </div>
-          </div>
-
-          <div class="row mb-1">
-            <div class="col-3">
-              <div class="fw-bold">HORA</div>
-            </div>
-            <div class="col-3">
-              <div class="fw-bold">HORA LABORADA</div>
-            </div>
-            <div class="col-3">
-              <div class="fw-bold">HORA DE LA SECCIÓN</div>
-            </div>
-            <div class="col-3">
-            </div>
-          </div>
-
-          <div formArrayName="registros">
-            <div *ngFor="let reg of registros.controls; let i = index" [formGroupName]="i"
-              class="row mb-1 align-items-center">
-              <div class="col-3">
-                <input type="text" class="form-control form-control-sm" formControlName="hora" placeholder="7:00 AM">
-              </div>
-              <div class="col-3">
-                <input type="text" class="form-control form-control-sm" formControlName="horaLaborada"
-                  placeholder="7:45 AM">
-              </div>
-              <div class="col-3">
-                <input type="text" class="form-control form-control-sm bg-light" formControlName="duracion"
-                  placeholder="45 Min" readonly>
-              </div>
-              <div class="col-3">
-                <button class="btn btn-sm btn-outline-danger" (click)="eliminarRegistro(i)">Eliminar</button>
-              </div>
-            </div>
-          </div>
-
-          <div class="row mb-3">
-            <div class="col-12">
-              <button class="btn btn-sm btn-success" (click)="agregarRegistro()">+ Agregar Registro</button>
-            </div>
-          </div>
-
-          <div class="row">
-            <div class="col-7">
-              <div class="fw-bold">Observaciones de trabajos Realizado durante el Día</div>
-              <textarea class="form-control form-control-sm" formControlName="observaciones" rows="2"
-                placeholder="Observaciones..."></textarea>
-            </div>
-            <div class="col-5">
-              <div class="fw-bold">Horas utilizadas por Día</div>
-              <div class="border p-2" style="min-height: 60px;">
-                <div *ngFor="let reg of registros.controls; let i = index" class="d-inline-block me-2">
-                  <span class="badge bg-secondary">{{reg.get('horaLaborada')?.value || '7:45 AM'}}</span>
+                <div class="col d-flex justify-content-end pr-0">
+                  <button type="button" class="btn btn-mini2 btn-danger d-flex" placement="top"
+                    *ngIf="id_desagregado.value" (click)="eliminarDesagregado()" ngbTooltip="Eliminar Registro"
+                    (mouseup)="quitarfoco($event)" container="body">
+                    <i class="fa fa-trash icono-but"></i> Eliminar
+                  </button>
+                  <button type="button" class="btn btn-mini2  d-flex" placement="top"
+                    [ngClass]="{'btn-warning': id_desagregado.value, 'btn-success': !id_desagregado.value}"
+                    (click)="guardarActualizarCambiosDesagregado()" ngbTooltip="Guardar cambios"
+                    (mouseup)="quitarfoco($event)" container="body">
+                    <i class="fa fa-save icono-but"></i> <ng-container
+                      *ngIf="id_desagregado.value">Actualizar</ng-container>
+                    <ng-container *ngIf="!id_desagregado.value">Guardar</ng-container>
+                  </button>
                 </div>
               </div>
+              <div class="col-2  h-100">
+                <div class="fw-bold">Orden servicio</div>
+                <input type="text" class="form-control form-control-sm" formControlName="ordenServicio">
+                <div class="fw-bold">Proveedor</div>
+                <input type="text" class="form-control form-control-sm" formControlName="proveedor"
+                  value="Victor Manuel Peres Gonzales">
+                <div class="fw-bold">Telefono</div>
+                <input type="text" class="form-control form-control-sm me-2" formControlName="telefono"
+                  placeholder="Teléfono">
+                <div class="fw-bold">Correo</div>
+                <input type="email" class="form-control form-control-sm" formControlName="correo">
+              </div>
+              <div class="col-3  h-100">
+                <div class="d-flex col-12" style="flex-wrap: wrap;">
+                  <div class=" col-6 pl-0">
+                    <div class="fw-bold">Coste Unitario</div>
+                    <input type="text" class="form-control form-control-sm" formControlName="coste_unitario"
+                      value="241-2026">
+                  </div>
+                  <div class=" col-6 pr-0">
+                    <div class="fw-bold">Unidad</div>
+                    <input type="text" class="form-control form-control-sm" formControlName="unidad">
+                  </div>
+                  <div class="fw-bold">Total Tiempo Programado</div>
+                  <input type="text" class="form-control form-control-sm" formControlName="tiempo_programado">
+                  <div class="fw-bold">Total tiempo utilizado</div>
+                  <input type="text" class="form-control form-control-sm" formControlName="tiempo_utilizado">
+                  <div class="fw-bold">Saldo por utilizar</div>
+                  <input type="text" class="form-control form-control-sm" formControlName="saldo_utilizar">
+
+                </div>
+              </div>
+
+              <div class="col-4 h-100">
+                <div>Horas laboradas <ng-container *ngIf="tipoSeleccionado == 'H-M' || tipoSeleccionado == 'DIA'">en el
+                    dia</ng-container></div>
+                <div>
+                  <table class="table-bordered tab-10">
+                    <thead class="table-light" style="position: sticky; top: 0;">
+                      <tr class="text-center">
+                        <!-- Cabecera dinámica según el tipo -->
+                        <ng-container [ngSwitch]="tipoSeleccionado">
+                          <!-- Para H-M y DIA -->
+                          <ng-container *ngSwitchCase="'H-M'">
+                            <th>Inicio</th>
+                            <th>Fin</th>
+                            <th>Tiempo</th>
+                          </ng-container>
+                          <ng-container *ngSwitchCase="'DIA'">
+                            <th>Inicio</th>
+                            <th>Fin</th>
+                            <th>Tiempo</th>
+                          </ng-container>
+
+                          <!-- Para MES y GLOBAL -->
+                          <ng-container *ngSwitchCase="'MES'">
+                            <th>Fecha Inicio</th>
+                            <th>Fecha Fin</th>
+                            <th>Días</th>
+                          </ng-container>
+                          <ng-container *ngSwitchCase="'GLOBAL'">
+                            <th>Fecha Inicio</th>
+                            <th>Fecha Fin</th>
+                            <th>Días</th>
+                          </ng-container>
+                        </ng-container>
+
+                        <th style="width: 50px">
+                          <button type="button" class="btn btn-mini2 btn-primary" (click)="agregarTiempo()"
+                            *ngIf="((tipoSeleccionado == 'DIA'|| tipoSeleccionado == 'H-M' )&& this.celdaSel[0] !== null && this.celdaSel[0]!== null) || (tipoSeleccionado !== 'DIA'&& tipoSeleccionado !== 'H-M' )&& selFilPlan !== null ">
+                            + {{tipoSeleccionado === 'H-M' || tipoSeleccionado === 'DIA' ? 'Horario' : 'Periodo'}}
+                          </button>
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody formArrayName="tiempos">
+                      <tr *ngFor="let tiempo of tiempos.controls; let i = index" [formGroupName]="i">
+                        <ng-container [ngSwitch]="tipoSeleccionado">
+
+                          <ng-container *ngSwitchCase="'H-M'">
+                            <td>
+                              <input type="time" class="form-control form-control-sm" formControlName="inicio"
+                                (input)="calcularTiempo(i)" (blur)="calcularTiempo(i)"
+                                [class.is-invalid]="mostrarError(tiempo, 'inicio')">
+                            </td>
+                            <td>
+                              <input type="time" class="form-control form-control-sm" formControlName="fin"
+                                (input)="calcularTiempo(i)" (blur)="calcularTiempo(i)"
+                                [class.is-invalid]="mostrarError(tiempo, 'fin')">
+                            </td>
+                            <td>
+                              <div *ngIf="tiempo.errors; else mostrarValorHM">
+                                <div *ngIf="tiempo.hasError('solapamiento')" class="text-danger fw-bold"
+                                  style="font-size: 11px;">
+                                  ⚠️ Horario solapado
+                                </div>
+                                <div *ngIf="tiempo.hasError('inicioMayor')" class="text-danger fw-bold"
+                                  style="font-size: 11px;">
+                                  ⚠️ Fin no válido
+                                </div>
+                              </div>
+
+                              <ng-template #mostrarValorHM>
+                                <input type="text" class="form-control form-control-sm bg-light text-center"
+                                  [value]="tiempo.get('tiempo')?.value + ' min'" readonly>
+                              </ng-template>
+                            </td>
+                          </ng-container>
+
+                          <ng-container *ngSwitchCase="'DIA'">
+                            <td>
+                              <input type="time" class="form-control form-control-sm" formControlName="inicio"
+                                (input)="calcularTiempo(i)" (blur)="calcularTiempo(i)"
+                                [class.is-invalid]="mostrarError(tiempo, 'inicio')">
+                            </td>
+                            <td>
+                              <input type="time" class="form-control form-control-sm" formControlName="fin"
+                                (input)="calcularTiempo(i)" (blur)="calcularTiempo(i)"
+                                [class.is-invalid]="mostrarError(tiempo, 'fin')">
+                            </td>
+                            <td>
+                              <div *ngIf="tiempo.errors; else mostrarValorHM">
+                                <div *ngIf="tiempo.hasError('solapamiento')" class="text-danger fw-bold"
+                                  style="font-size: 11px;">
+                                  ⚠️ Horario solapado
+                                </div>
+                                <div *ngIf="tiempo.hasError('inicioMayor')" class="text-danger fw-bold"
+                                  style="font-size: 11px;">
+                                  ⚠️ Fin no válido
+                                </div>
+                              </div>
+
+                              <ng-template #mostrarValorHM>
+                                <input type="text" class="form-control form-control-sm bg-light text-center"
+                                  [value]="tiempo.get('tiempo')?.value + ' min'" readonly>
+                              </ng-template>
+                            </td>
+                          </ng-container>
+
+                          <ng-container *ngSwitchCase="'MES'">
+                            <td>
+                              <input type="date" class="form-control form-control-sm" formControlName="fechaInicio"
+                                [min]="obtenerMinFechaMes()" [max]="obtenerMaxFechaMes()"
+                                (change)="validarFechasPeriodo(i)" (blur)="validarFechasPeriodo(i)"
+                                [class.is-invalid]="mostrarError(tiempo, 'fechaInicio')">
+                            </td>
+                            <td>
+                              <input type="date" class="form-control form-control-sm" formControlName="fechaFin"
+                                [min]="obtenerMinFechaMes()" [max]="obtenerMaxFechaMes()"
+                                (change)="validarFechasPeriodo(i)" (blur)="validarFechasPeriodo(i)"
+                                [class.is-invalid]="mostrarError(tiempo, 'fechaFin')">
+                            </td>
+
+                            <td>
+                              <div *ngIf="tiempo.errors; else mostrarValorMes">
+                                <div *ngIf="tiempo.hasError('fechaInvalida') || tiempo.hasError('inicioMayor')"
+                                  class="text-danger fw-bold" style="font-size: 11px;">
+                                  ⚠️ Fecha no válida
+                                </div>
+                              </div>
+
+                              <ng-template #mostrarValorMes>
+                                <span class="form-control-plaintext text-center texto-24">
+                                  {{ tiempo.get('tiempo')?.value || 0 }} días
+                                </span>
+                              </ng-template>
+
+                            </td>
+                          </ng-container>
+
+                          <ng-container *ngSwitchCase="'GLOBAL'">
+                            <td>
+                              <input type="date" class="form-control form-control-sm" formControlName="fechaInicio"
+                                [min]="obtenerMinFechaGlobal()" [max]="obtenerMaxFechaGlobal()"
+                                (change)="validarFechasPeriodo(i)" (blur)="validarFechasPeriodo(i)"
+                                [class.is-invalid]="mostrarError(tiempo, 'fechaInicio')">
+                            </td>
+                            <td>
+                              <input type="date" class="form-control form-control-sm" formControlName="fechaFin"
+                                [min]="obtenerMinFechaGlobal()" [max]="obtenerMaxFechaGlobal()"
+                                (change)="validarFechasPeriodo(i)" (blur)="validarFechasPeriodo(i)"
+                                [class.is-invalid]="mostrarError(tiempo, 'fechaFin')">
+                            </td>
+
+                            <td>
+                              <div *ngIf="tiempo.errors; else mostrarValorGlobal">
+                                <div *ngIf="tiempo.hasError('fechaInvalida') || tiempo.hasError('inicioMayor')"
+                                  class="text-danger fw-bold" style="font-size: 11px;">
+                                  ⚠️ Fecha no válida
+                                </div>
+                                <div *ngIf="tiempo.hasError('fechaFueraDeRango')" class="text-danger fw-bold"
+                                  style="font-size: 11px;">
+                                  ⚠️ Fecha fuera del rango del proyecto
+                                </div>
+                                <div *ngIf="tiempo.hasError('solapamiento')" class="text-danger fw-bold"
+                                  style="font-size: 11px;">
+                                  ⚠️ Periodo se solapa con otro
+                                </div>
+                              </div>
+
+                              <ng-template #mostrarValorGlobal>
+                                <span class="form-control-plaintext text-center texto-24">
+                                  {{ tiempo.get('tiempo')?.value || 0 }} días
+                                </span>
+                              </ng-template>
+                            </td>
+                          </ng-container>
+                        </ng-container>
+
+                        <td class="text-center">
+                          <button type="button" class="btn btn-sm btn-danger py-0 px-1" (click)="eliminarTiempo(i)">
+                            <i class="bi bi-trash"></i> ×
+                          </button>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              <div class="col-3  h-100">
+                <div class="fw-bold" *ngIf="tipoSeleccionado == 'H-M' || tipoSeleccionado == 'DIA'">
+                  <ng-container *ngIf="tipoSeleccionado == 'H-M'">Horas </ng-container> total dia
+                </div>
+                <input type="number" class="form-control form-control-sm" formControlName="horas_dia"
+                  (blur)="cambioHorasDia()" *ngIf="tipoSeleccionado == 'H-M' || tipoSeleccionado == 'DIA'">
+                <div class="fw-bold" *ngIf="tipoSeleccionado == 'H-M' || tipoSeleccionado == 'DIA'">Coste utilizado
+                  <ng-container *ngIf="tipoSeleccionado == 'H-M' || tipoSeleccionado == 'DIA'">por
+                    dia</ng-container>
+                </div>
+                <input type="text" class="form-control form-control-sm" formControlName="coste_dia"
+                  *ngIf="tipoSeleccionado == 'H-M' || tipoSeleccionado == 'DIA'">
+                <div class="fw-bold">Observaciones de trabajos Realizado <ng-container
+                    *ngIf="tipoSeleccionado == 'H-M' || tipoSeleccionado == 'DIA'">durante el Día</ng-container> </div>
+                <textarea class="form-control form-control-sm" formControlName="observaciones" rows="5"
+                  placeholder="Observaciones..."></textarea>
+              </div>
+            </ng-container>
+            <ng-container *ngIf="verDetalle == 'mensual'">
+              <div *ngIf="this.selFilPlan !== null">
+                <h4 class="font-weigth-bolder">{{tablaPlanilla[this.selFilPlan].descripcion}}</h4>
+              </div>
+              <div class="overflow-auto">
+                <table class="table-bordered tab-10">
+                  <thead>
+                    <tr class="text-center">
+                      <th *ngFor="let mes of detalleMensual" colspan="2">
+                        {{mes.mes_display}}
+                      </th>
+                    </tr>
+                    <tr class="text-center">
+                      <ng-container *ngFor="let mes of detalleMensual">
+                        <th>
+                          Cant.
+                        </th>
+                        <th>
+                          Parcial
+                        </th>
+                      </ng-container>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <ng-container *ngFor="let mes of detalleMensual">
+                        <td appAnchocol [ancho]="50">
+                          {{mes.cantidad}}
+                        </td>
+                        <td appAnchocol [ancho]="50">
+                          {{mes.parcial}}
+                        </td>
+                      </ng-container>
+
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </ng-container>
+          </ng-container>
+          <ng-template #buscandoData>
+            <div *ngIf="buscando" class="preloader3 loader-block w-100 h-100">
+              <div class="circ1"></div>
+              <div class="circ2"></div>
+              <div class="circ3"></div>
+              <div class="circ4"></div>
             </div>
-          </div> -->
+          </ng-template>
         </div>
+      </div>
+    </div>
+  </ng-container>
+
+  <ng-container *ngIf="subvista == 3">
+    <div class="h-100 m-0  px-3 w-100">
+      <div class="col-12 d-flex px-0">
+        <mat-form-field appearance="outline" class="mff-reduc col-3">
+          <mat-label>Mes</mat-label>
+          <mat-select [(ngModel)]="mesSeleccionado" (ngModelChange)="cambioMes()">
+            <mat-option *ngFor="let mes of calendario; let i=index" [value]="i">
+              {{mes.mes_nombre}} - {{mes.anio}}
+            </mat-option>
+
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field appearance="outline" class="mff-reduc col-3">
+          <mat-label>Area</mat-label>
+          <mat-select [(ngModel)]="grupoSeleccionado" (ngModelChange)="cambioArea()">
+            <mat-option [value]="''">Todos</mat-option>
+            <mat-option *ngFor="let grupo of tablaRegActividades; let i = index" [value]="i">
+              {{grupo.descripcion}}
+            </mat-option>
+
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field appearance="outline" class="mff-reduc col-3">
+          <mat-label>Detalle</mat-label>
+          <mat-select [(ngModel)]="verDetalle">
+            <mat-option [value]="''">Ocultar</mat-option>
+            <mat-option [value]="'mensual'">Mensual</mat-option>
+            <mat-option [value]="'desagregado'">Desagregado</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+      </div>
+      <div class="col-12 px-0">
+        <div class=" overflow-auto tabla-plantilla-completo">
+          <table class="table-bordered tab-10">
+            <thead class="text-center" style="position: sticky; top: 0;">
+              <tr [ngClass]="{'h-22': !calendarioFiltrado?.dias.length }">
+                <th rowspan="2" appAnchocol [ancho]="40"></th>
+                <th rowspan="2" appAnchocol [ancho]="150" [detalle]="true">MAQUINARIA Y EQUIPO</th>
+                <th rowspan="2" appAnchocol [ancho]="60">MODELO</th>
+                <th rowspan="2" appAnchocol [ancho]="80">TIPO REGISTRO</th>
+                <!-- <th rowspan="2" appAnchocol [ancho]="60">TIPO </th> -->
+                <ng-container *ngIf="calendarioFiltrado">
+                  <th [colSpan]="calendarioFiltrado?.total_dias" class="mes-header">
+                    {{calendarioFiltrado?.mes_display}}
+                  </th>
+                </ng-container>
+
+                <th rowspan="2" appAnchocol [ancho]="60">TOTAL HM</th>
+                <th rowspan="2" appAnchocol [ancho]="80">P.U.</th>
+                <th rowspan="2" appAnchocol [ancho]="90">PARCIAL</th>
+                <th rowspan="2" appAnchocol [ancho]="80">ESTADO</th>
+              </tr>
+
+              <tr>
+
+                <ng-container *ngFor="let dia of calendarioFiltrado?.dias">
+                  <!-- <ng-container *ngFor="let dia of mes.dias"> -->
+                  <th class="dia-header" [ngClass]="{
+                            'laborable': dia.es_laborable,
+                            'no-laborable': !dia.es_laborable,
+                            'feriado': dia.feriado
+                        }" appAnchocol [ancho]="56">
+                    <div class="dia-numero">{{dia.dia_numero}}</div>
+                    <div class="dia-abreviatura">{{dia.dia_semana_corto}}</div>
+                  </th>
+                  <!-- </ng-container> -->
+                </ng-container>
+
+              </tr>
+            </thead>
+            <tbody>
+              <ng-container *ngIf="tablaPlanilla.length; else elseTemplate">
+                <tr *ngFor="let row of this.tablaPlanilla; let i = index"
+                  [ngClass]="{'font-weight-bolder':row.item == 0, 'highlight3': selFilPlan == i}"
+                  (click)="selFilPlan=i">
+                  <td class="text-center">
+                    <ng-container *ngIf="row.item !== 0">{{row.item}}</ng-container>
+                  </td>
+                  <td>{{row.descripcion}}</td>
+                  <td>{{row.modelo}}</td>
+                  <td class="text-center">{{row.tipo_registro}}</td>
+                  <!-- <td class="text-center">{{row.tipo}}</td> -->
+                  <ng-container *ngIf="row.tipo !=='GLOBAL' && row.tipo !== 'MES'">
+                    <td class="text-center" *ngFor="let dia of row.planilla;let j = index">
+                      <ng-container *ngIf="dia?.horas_dia">{{dia.horas_dia * row.precio_unitario}}</ng-container>
+                    </td>
+                  </ng-container>
+                  <ng-container *ngIf="row.tipo =='GLOBAL' || row.tipo == 'MES'">
+                    <td class="text-center" *ngFor="let dia of row.arrayMes;let j = index">
+                      <ng-container *ngIf="dia">{{dia * row.precio_unitario}}</ng-container>
+                    </td>
+                  </ng-container>
+                  <td class="text-center">{{row.total_hm}}</td>
+                  <td class="text-right">
+                    <ng-container *ngIf="row.item !== 0">
+                      <span class="float-left text-muted">S/</span>
+                      <span class="float-right"> {{row.precio_unitario | number:'0.2-2'}}</span>
+                    </ng-container>
+                  </td>
+                  <td>
+                    <ng-container *ngIf="row.item !== 0">
+                      <span class="float-left text-muted">S/</span>
+                      <span class="float-right"> {{row.parcial | number:'0.2-2'}}</span>
+                    </ng-container>
+                  </td>
+                  <td class="text-center">
+                    <!-- {{row.estado}} -->
+                    <span class="badge bg-success pos-badge" style="padding-top: 4px;"
+                      *ngIf="row.estado == 1">EJECUCION</span>
+                    <span class="badge bg-danger pos-badge" style="padding-top: 4px;"
+                      *ngIf="row.estado == 2">CULMINADO</span>
+                  </td>
+                </tr>
+              </ng-container>
+              <ng-template #elseTemplate>
+                <tr class="h-celda">
+                  <td class="mat-cell text-center" colspan="8">
+                    <label *ngIf="!buscando3">No se encontraron resultados</label>
+                    <div *ngIf="buscando3" class="preloader3 loader-block">
+                      <div class="circ1"></div>
+                      <div class="circ2"></div>
+                      <div class="circ3"></div>
+                      <div class="circ4"></div>
+                    </div>
+                  </td>
+                </tr>
+              </ng-template>
+            </tbody>
+            <tfoot *ngIf="sumaPorDiaPlanilla && sumaPorDiaPlanilla.length > 0"
+              style="background: #f8f9fa; font-weight: bold;">
+              <tr>
+                <th colspan="4" class="text-end fw-bold">TOTAL POR DÍA:</th>
+                <th *ngFor="let total of sumaPorDiaPlanilla" class="text-center fw-bold">
+                  <span style="opacity: 0.6;">S/</span> {{ total | number:'0.2-2' }}
+                </th>
+                <th class="text-end fw-bold" colspan="2">TOTAL MES:</th>
+                <th class="text-end fw-bold text-primary text-right">
+                  <span style="opacity: 0.6;">S/</span> {{ totalMes | number:'1.2-2' }}
+                </th>
+                <th></th>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+
       </div>
     </div>
   </ng-container>
@@ -645,7 +954,7 @@
   </div>
 </app-modal-basic>
 
-<app-modal-basic #modalEquipo [dialogClass]="'modal-sm'">
+<app-modal-basic #modalEquipo [dialogClass]="'modal-lg modalgrande3'">
   <div class="app-modal-header">
     <h4 class="modal-title tit-modal1"><b>Datos Equipo</b></h4>
     <button type="button" class="close basic-close" (click)="cerrarModalEquipo()">
@@ -654,46 +963,159 @@
   </div>
   <div class="app-modal-body">
     <form [formGroup]="formEquipo">
-      <div class="row ">
-        <mat-form-field appearance="outline" class="mff-reduc col-sm-12 col-12">
-          <mat-label>Requerimiento</mat-label>
-          <select matNativeControl formControlName="fila_requerimiento" (change)="cambioFilaRequerimiento()">
-            <option *ngFor="let row of tablaRequerimientos; let i = index" [value]="i">
-              {{'E-'+row.idfila}} => {{row.descripcion}}
-            </option>
-          </select>
-        </mat-form-field>
-        <mat-form-field appearance="outline" class="mff-reduc col-sm-12 col-12">
-          <mat-label>Descripcion</mat-label>
-          <input matInput type="text" autocomplete="off" maxlength="255" formControlName="descripcion"
-            [maxLength]="150">
-        </mat-form-field>
-        <mat-form-field appearance="outline" class="mff-reduc col-sm-12 col-12">
-          <mat-label>Placa</mat-label>
-          <input matInput type="text" autocomplete="off" maxlength="255" formControlName="placa" [maxLength]="50">
-        </mat-form-field>
-        <mat-form-field appearance="outline" class="mff-reduc col-sm-12 col-12">
-          <mat-label>Fecha Solicitud</mat-label>
-          <input matInput type="date" formControlName="fecha_solicitada">
-        </mat-form-field>
-        <mat-form-field appearance="outline" class="mff-reduc col-sm-12 col-12">
-          <mat-label>Cantidad</mat-label>
-          <input matInput type="text" [textMask]="formService.maskUsAmountDecimal2" autocomplete="off" maxlength="11"
-            formControlName="cantidad">
-        </mat-form-field>
-        <mat-form-field appearance="outline" class="mff-reduc col-sm-12 col-12">
-          <mat-label>Precio Unitario</mat-label>
-          <input matInput type="text" [textMask]="formService.maskUsAmountDecimal2" autocomplete="off" maxlength="11"
-            formControlName="precio_unitario">
-        </mat-form-field>
-        <mat-form-field appearance="outline" class="mff-reduc col-sm-12 col-12" *ngIf="id_servicio_equipo.value">
-          <mat-label>Estado</mat-label>
-          <select matNativeControl formControlName="estado">
-            <option value="1">Culminado</option>
-            <option value="0">Ejecución</option>
-          </select>
-        </mat-form-field>
+      <div class="row mb-3" *ngIf="!actualizarEquipos">
+        <div class="col-sm-10 col-10">
+          <mat-form-field appearance="outline" class="mff-reduc w-100">
+            <mat-label>Requerimiento</mat-label>
+            <select matNativeControl formControlName="fila_requerimiento">
+              <option value="">Seleccione un requerimiento</option>
+              <option *ngFor="let row of tablaRequerimientos; let i = index" [value]="i">
+                {{'E-'+row.idfila}} => {{row.descripcion}}
+              </option>
+            </select>
+          </mat-form-field>
+        </div>
+        <div class="col-sm-2 col-2">
+          <button type="button" class="btn btn-primary btn-mini w-100 d-felx" (click)="agregarFila()"
+            [disabled]="!formEquipo.get('fila_requerimiento')?.value">
+            <i class="fa fa-plus"></i> Agregar
+          </button>
+        </div>
+      </div>
+      <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+        <table class=" table-bordered  tab-10">
+          <thead class="table-light text-center" style="position: sticky; top: 0; background: white; z-index: 1;">
+            <tr>
+              <th appAnchocol [ancho]="50">Item</th>
+              <th appAnchocol [ancho]="200" [detalle]="true">Equipo</th>
+              <th appAnchocol [ancho]="100">Placa</th>
+              <th appAnchocol [ancho]="90">F. Solicitada</th>
+              <th appAnchocol [ancho]="70">Und</th>
+              <th appAnchocol [ancho]="90">Cantidad</th>
+              <th appAnchocol [ancho]="100">P.U.</th>
+              <th appAnchocol [ancho]="100">Parcial</th>
+              <th appAnchocol [ancho]="100">Tipo Registro</th>
+              <th appAnchocol [ancho]="100">Tipo</th>
+              <th appAnchocol [ancho]="100">Estado</th>
+              <th appAnchocol [ancho]="40"></th>
+            </tr>
+          </thead>
+          <tbody formArrayName="equipos">
+            <tr *ngFor="let equipo of equipos.controls; let i = index" [formGroupName]="i" class="fila-24">
+              <td class="celda-item">
+                <span class="form-control-plaintext text-center texto-24">{{ equipo.get('item')?.value }}</span>
+              </td>
 
+              <td>
+                <input type="text" class="form-control form-control-sm input-24" formControlName="descripcion"
+                  [class.is-invalid]="equipo.get('descripcion')?.invalid && equipo.get('descripcion')?.touched"
+                  placeholder="Placa">
+              </td>
+
+              <!-- Placa -->
+              <td>
+                <input type="text" class="form-control form-control-sm input-24" formControlName="placa"
+                  [class.is-invalid]="equipo.get('placa')?.invalid && equipo.get('placa')?.touched" placeholder="Placa">
+              </td>
+
+              <!-- Fecha Solicitada -->
+              <td>
+                <!-- <input type="date" class="form-control form-control-sm input-24" formControlName="fecha_solicitud"
+                  [class.is-invalid]="equipo.get('fecha_solicitud')?.invalid && equipo.get('fecha_solicitud')?.touched"> -->
+                <span class="form-control-plaintext text-center texto-24">{{ equipo.get('fecha_solicitud')?.value |
+                  date: 'dd-MM-yyyy'}}</span>
+              </td>
+
+              <!-- Unidad -->
+              <td>
+                <!-- <select class="form-control form-control-sm input-24" formControlName="unidad">
+                  <option value="HRS">HRS</option>
+                  <option value="DÍAS">DÍAS</option>
+                  <option value="MES">MES</option>
+                </select> -->
+                <span class="form-control-plaintext text-center texto-24">{{ equipo.get('unidad')?.value }}</span>
+              </td>
+
+              <!-- Cantidad -->
+              <td>
+                <input type="number" step="0.01" class="form-control form-control-sm input-24"
+                  formControlName="cantidad" (input)="calcularParcial(equipo)" placeholder="0.00"
+                  [class.is-invalid]="equipo.get('cantidad')?.invalid && equipo.get('cantidad')?.touched">
+                <!-- <span class="form-control-plaintext text-end texto-24">
+                  {{ equipo.get('cantidad')?.value | number:'0.2-2' }}
+                </span> -->
+              </td>
+
+              <!-- Precio Unitario -->
+              <td>
+                <!-- <input type="number" step="0.01" class="form-control form-control-sm input-24"
+                  formControlName="precio_unitario" (input)="calcularParcial(equipo)" placeholder="0.00"
+                  [class.is-invalid]="equipo.get('precio_unitario')?.invalid && equipo.get('precio_unitario')?.touched"> -->
+                <span class="form-control-plaintext text-end texto-24">
+                  {{ equipo.get('precio_unitario')?.value | number:'0.2-2' }}
+                </span>
+              </td>
+
+              <!-- Parcial (solo lectura) -->
+              <td>
+                <span class="form-control-plaintext text-end texto-24">
+                  {{ equipo.get('parcial')?.value | number:'1.2-2' }}
+                </span>
+              </td>
+
+              <!-- Tipo Registro -->
+              <td>
+                <!-- <span class="form-control-plaintext texto-24">{{ equipo.get('tipo_registro')?.value }}</span> -->
+                <select class="form-control form-control-sm input-24" formControlName="tipo_registro"
+                  [class.is-invalid]="equipo.get('tipo_registro')?.invalid && equipo.get('tipo_registro')?.touched">
+                  <option value="ALQUILADO">ALQUILADO</option>
+                  <option value="PROPIO">PROPIO</option>
+                </select>
+              </td>
+
+              <!-- Tipo -->
+              <td>
+                <!-- <span class="form-control-plaintext texto-24">{{ equipo.get('tipo')?.value }}</span> -->
+                <select class="form-control form-control-sm input-24" formControlName="tipo"
+                  [class.is-invalid]="equipo.get('tipo')?.invalid && equipo.get('tipo')?.touched">
+                  <option value="H-M">H-M</option>
+                  <option value="DIA">DIA</option>
+                  <option value="MES">MES</option>
+                  <option value="GLOBAL">GLOBAL</option>
+                </select>
+              </td>
+              <td>
+                <!-- <span class="form-control-plaintext texto-24">{{ equipo.get('tipo_registro')?.value }}</span> -->
+                <select class="form-control form-control-sm input-24" formControlName="estado"
+                  [class.is-invalid]="equipo.get('estado')?.invalid && equipo.get('estado')?.touched">
+                  <option value="1"> EJECUCION </option>
+                  <option value="2">CULMINADO</option>
+                </select>
+              </td>
+              <!-- Botón eliminar -->
+              <td class="text-center celda-accion">
+                <button type="button" class="btn btn-danger btn-sm boton-24" (click)="eliminarFilaModal(i)">
+                  <i class="fa fa-trash mr-0"></i>
+                </button>
+              </td>
+            </tr>
+
+            <!-- Fila vacía cuando no hay datos -->
+            <tr *ngIf="equipos.length === 0" class="fila-24">
+              <td colspan="11" class="text-center text-muted py-3">
+                No hay servicios agregados. Seleccione un requerimiento y haga clic en Agregar.
+              </td>
+            </tr>
+          </tbody>
+          <!-- Fila de totales -->
+          <tfoot *ngIf="equipos.length > 0" style="background: #f8f9fa; font-weight: bold;">
+            <tr>
+              <td colspan="7" class="text-end">TOTAL:</td>
+              <td class="text-end">{{ totalParcial | number:'1.2-2' }}</td>
+              <td colspan="3"></td>
+            </tr>
+          </tfoot>
+        </table>
       </div>
     </form>
   </div>
@@ -702,8 +1124,11 @@
 
       <button type="button" style="margin-right: 5px;" class="btn btn-sm btn-danger ripple"
         (click)="cerrarModalEquipo()">Cerrar</button>
-      <button type="button" style="margin-right: 5px;" class="btn btn-sm btn-success ripple" (click)="agregarEquipo()">
-        Guardar</button>
+      <button type="button" style="margin-right: 5px;" class="btn btn-sm btn-success ripple"
+        (click)="!actualizarEquipos ? agregarEquipo():actualizarEquiposServicio()">
+        <ng-container *ngIf="!actualizarEquipos"> Guardar</ng-container>
+        <ng-container *ngIf="actualizarEquipos"> Actualizar</ng-container>
+      </button>
     </div>
   </div>
 </app-modal-basic>

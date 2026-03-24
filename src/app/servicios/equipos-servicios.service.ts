@@ -17,49 +17,28 @@ export class EquiposServiciosService {
     this.enviUrl = environment.apiUrl;
   }
 
-  guardarEquipoServicio(params = {}): any {
-    let formData: FormData = new FormData();
+  guardarEquiposServicio(equipos: any[]): Promise<any> {
+    const formData = new FormData();
+    formData.append('equipos', JSON.stringify(equipos));
 
-    // Definir los campos requeridos con sus valores por defecto
-    const campos = {
-      id_proyecto: '',
-      idregistro: '',
-      idgrupo: '',
-      idfila: '',
-      indrep: '',
-      index_array: '',
-      index_grupo: '',
-      descripcion: '',
-      placa: '',
-      fecha_solicitud: '',
-      cantidad: '',
-      precio_unitario: '',
-      estado: '',
-      unidad: '',
-      tipo_registro: '',
-      tipo: ''
-    };
+    console.log('Enviando equipos:', JSON.stringify(equipos));
 
-    // Combinar params con los valores por defecto
-    const datosEnvio = { ...campos, ...params };
+    const url = this.enviUrl + '/api/equiposservicios/guardarEquiposServicio';
 
-    // Filtrar undefined y null, y asegurar que todo sea string
-    Object.entries(datosEnvio).forEach(([key, value]) => {
-      const valToSend = (value === null || value === undefined) ? '' : String(value);
-      formData.append(key, valToSend);
-    });
-
-    const url = this.enviUrl + '/api/equiposservicios/guardarEquipoServicio';
     return this.http.post<any>(url, formData).pipe(
       map(res => {
         if (!res) {
-          throw new Error
+          throw new Error('No se recibió respuesta del servidor');
         }
-        return res
+        return res;
       }),
-      catchError(err => throwError(err))
-    ).toPromise()
+      catchError(err => {
+        console.error('Error en guardarEquiposServicio:', err);
+        return throwError(err);
+      })
+    ).toPromise();
   }
+
 
   listarEquipoServicio(params = {}): Promise<any> {
     let formData: FormData = new FormData();
@@ -161,5 +140,82 @@ export class EquiposServiciosService {
       }),
       catchError(err => throwError(err))
     ).toPromise()
+  }
+
+  actualizarEliminarEquiposServicio(payload: any): Promise<any> {
+    const formData = new FormData();
+    formData.append('data', JSON.stringify(payload));
+
+    const url = this.enviUrl + '/api/equiposservicios/actualizarEliminarEquiposServicio';
+
+    return this.http.post<any>(url, formData).pipe(
+      map(res => {
+        console.log('Respuesta del servidor:', res);
+        return res;
+      }),
+      catchError(err => {
+        console.error('Error en actualizarEliminarEquiposServicio:', err);
+        return throwError(err);
+      })
+    ).toPromise();
+  }
+
+
+  recuperarProveedor(params = {}): Promise<any> {
+    let formData: FormData = new FormData();
+    Object.entries(params).forEach(([key, value]) => {
+      formData.append(key, value as string);
+    });
+    const url = this.enviUrl + '/api/equiposservicios/recuperarProveedor';
+    return this.http.post<any>(url, formData).pipe(
+      map(res => {
+        console.log('res', res)
+        if (!res) {
+          throw new Error
+        }
+        return res
+      }),
+      catchError(err => throwError(err))
+    ).toPromise()
+  }
+
+    listarAgrupamientoRequerimientos(params = {}): Promise<any> {
+    let formData: FormData = new FormData();
+    Object.entries(params).forEach(([key, value]) => {
+      formData.append(key, value as string);
+    });
+    
+    const url = this.enviUrl + '/api/equiposservicios/listarAgrupamientoRequerimientos';
+    
+    return this.http.post<any>(url, formData).pipe(
+      map(res => {
+        if (!res) {
+          throw new Error('No se recibieron datos');
+        }
+        
+        // La respuesta tendrá dos arrays
+        console.log('res', res)
+        const datosPrincipales = res[0];  // Primer SELECT
+        const datosDesagregados = res[1]; // Segundo SELECT
+        
+        // Puedes estructurar la respuesta como prefieras
+        return {
+          agrupacion: datosPrincipales,
+          desagregados: datosDesagregados,
+          // O si necesitas combinarlos de alguna manera específica
+          // combinado: datosPrincipales.map(principal => ({
+          //   ...principal,
+          //   detalles: datosDesagregados.filter(d => 
+          //     d.idgrupo === principal.idgrupo && 
+          //     d.idfila === principal.idfila
+          //   )
+          // }))
+        };
+      }),
+      catchError(err => {
+        console.error('Error en la petición:', err);
+        return throwError(err);
+      })
+    ).toPromise();
   }
 }

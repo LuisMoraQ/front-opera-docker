@@ -1,4 +1,3 @@
-import { itemsMenu } from './../../menu-proyecto-list';
 import { SwalService } from 'src/app/servicios/swal.service';
 import { Component, Input, OnInit } from '@angular/core';
 import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
