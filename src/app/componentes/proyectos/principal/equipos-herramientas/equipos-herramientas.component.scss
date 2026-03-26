@@ -178,3 +178,29 @@ input[type="date"].input-24 {
 .tabla-plantilla-completo tfoot {
   box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
 }
+
+.static1 {
+  position: sticky !important;
+  left: -1px !important;
+  z-index: 2;
+  background-color: white !important;
+}
+
+.static1h {
+  position: sticky !important;
+  left: -1px !important;
+  z-index: 11 !important;
+}
+
+.static2 {
+  position: sticky !important;
+  left: 38px !important;
+  z-index: 2;
+  background-color: white !important;
+}
+
+.static2h {
+  position: sticky !important;
+  left: 38px !important;
+  z-index: 11 !important;
+}

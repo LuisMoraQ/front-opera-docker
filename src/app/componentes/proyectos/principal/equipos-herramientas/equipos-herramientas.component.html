@@ -39,7 +39,7 @@
 
           </mat-select>
         </mat-form-field>
-        <div class="row h-100 m-0 d-flex flex-column">
+        <div class="row  m-0 d-flex flex-column" style="height: calc(100% - 4rem);">
 
           <div class="col-12 px-0 overflow-auto flex-fill">
             <h4>REGISTRO DE ACTIVIDADES QUE VINCULAN LOS RECURSOS</h4>
@@ -67,11 +67,15 @@
                   </tr>
                 </thead>
                 <tbody>
-                  <ng-container *ngIf="tablaRegActividades.length">
+                  <ng-container *ngIf="tablaRegActividades.length;else notablaRegActividades">
                     <tr *ngFor="let row of tablaRegActividades; let i = index" (click)="selTablaRegAct(row,i)"
                       [ngClass]="{'highlight':this.filSelRegAct == i}">
                       <td class="text-center">{{i+1}}</td>
-                      <td>{{row.descripcion}}</td>
+                      <td appAnchocol [ancho]="200" [detalle]="true">
+                        <div class="recortatext" placement="top" ngbTooltip="{{row.descripcion}}" container="body">
+                          {{row.descripcion}}
+                        </div>
+                      </td>
                       <td class="text-center">{{row.tipo ? row.tipo: 'CD'}}</td>
                       <td class="text-center">
                         <label *ngIf="row.estado==0" class="label label-est"
@@ -86,13 +90,45 @@
                           <div>{{row.parcial | number:'0.2-2'}}</div>
                         </div>
                       </td>
-                      <td>{{row.reqsol| number:'0.2-2'}}</td>
-                      <td>{{row.presupuestoEjecutado | number:'0.2-2'}}</td>
-                      <td>{{row.saldo | number:'0.2-2'}}</td>
-                      <td>{{row.porcentaje | number:'0.2-2'}}</td>
+                      <td>
+                        <div class="w-100 d-flex justify-content-between ">
+                          <div style="opacity: 0.6;">S/.</div>
+                          <div>{{row.reqsol | number:'0.2-2'}}</div>
+                        </div>
+                      </td>
+                      <td>
+                        <div class="w-100 d-flex justify-content-between ">
+                          <div style="opacity: 0.6;">S/.</div>
+                          <div>{{row.presupuestoEjecutado | number:'0.2-2'}}</div>
+                        </div>
+                      </td>
+                      <td>
+
+                        <div class="w-100 d-flex justify-content-between ">
+                          <div style="opacity: 0.6;">S/.</div>
+                          <div>{{row.saldo | number:'0.2-2'}}</div>
+                        </div>
+                      </td>
+                      <td class="text-right" [class.text-success]="row.porcentaje >= 0"
+                        [class.text-danger]="row.porcentaje < 0">
+                        {{ row.porcentaje | number:'0.2-2' }}%
+                      </td>
                       <!-- <td>{{row.estado}}</td> -->
                     </tr>
                   </ng-container>
+                  <ng-template #notablaRegActividades>
+                    <tr class="h-celda">
+                      <td class="mat-cell text-center" colspan="9">
+                        <label *ngIf="!buscando3">No se encontraron resultados</label>
+                        <div *ngIf="buscando3" class="preloader3 loader-block">
+                          <div class="circ1"></div>
+                          <div class="circ2"></div>
+                          <div class="circ3"></div>
+                          <div class="circ4"></div>
+                        </div>
+                      </td>
+                    </tr>
+                  </ng-template>
                 </tbody>
               </table>
             </table>
@@ -126,7 +162,7 @@
                   </tr>
                 </thead>
                 <tbody>
-                  <ng-container *ngIf="tablaRequerimientos.length">
+                  <ng-container *ngIf="tablaRequerimientos.length;else notablaRequerimientos">
                     <tr *ngFor="let row of tablaRequerimientos; let i = index" (click)="selTablaReq(row,i)"
                       [ngClass]="{'highlight':this.filSelReq == i}">
                       <td class="text-center">{{'E-'+row.idfila}}</td>
@@ -151,7 +187,7 @@
                       </td>
                       <td class="text-center">
                         <div
-                          *ngIf="row.parcial_usada !== 0 && (!row.cantidad_usada && row.cantidad_usada !== 0); else cantidadNormal">
+                          *ngIf="row.cantidad_usada == null && (row.todos_iguales == null || row.todos_iguales == false); else cantidadNormal">
                           <i class="fa fa-minus text-danger"></i>
                         </div>
                         <ng-template #cantidadNormal>
@@ -161,7 +197,7 @@
 
                       <td>
                         <div class="text-center"
-                          *ngIf="row.parcial_usada !== 0 && (!row.precio_usada && row.precio_usada !== 0); else precioNormal">
+                          *ngIf="row.cantidad_usada == null && (row.todos_iguales == null || row.todos_iguales == false); else precioNormal">
                           <!-- <div class="w-100 d-flex justify-content-between"> -->
                           <!-- <div style="opacity: 0.6;">S/.</div> -->
                           <div><i class="fa fa-minus text-danger"></i></div>
@@ -198,7 +234,19 @@
 
                     </tr>
                   </ng-container>
-
+                  <ng-template #notablaRequerimientos>
+                    <tr class="h-celda">
+                      <td class="mat-cell text-center" colspan="9">
+                        <label *ngIf="!buscando3">No se encontraron resultados</label>
+                        <div *ngIf="buscando3" class="preloader3 loader-block">
+                          <div class="circ1"></div>
+                          <div class="circ2"></div>
+                          <div class="circ3"></div>
+                          <div class="circ4"></div>
+                        </div>
+                      </td>
+                    </tr>
+                  </ng-template>
                 </tbody>
               </table>
             </table>
@@ -228,7 +276,7 @@
                   <th appAnchocol [ancho]="35" rowspan="2">Item</th>
                   <th appAnchocol [ancho]="200" [detalle]="true" rowspan="2">Descripcion servicio</th>
                   <th appAnchocol [ancho]="50" rowspan="2">Placa Serie</th>
-                  <th appAnchocol [ancho]="80" rowspan="2"> Fecha Solicitada</th>
+                  <!-- <th appAnchocol [ancho]="80" rowspan="2"> Fecha Solicitada</th> -->
                   <th appAnchocol [ancho]="50" rowspan="2">Tipo</th>
                   <th appAnchocol [ancho]="50" rowspan="2">Cant Req.</th>
                   <th colspan="3"> Registro de equipo utilizado</th>
@@ -238,9 +286,9 @@
                 <tr>
 
 
-                  <th appAnchocol [ancho]="100">Cantidad</th>
-                  <th appAnchocol [ancho]="100">PU</th>
-                  <th appAnchocol [ancho]="100">Parcial</th>
+                  <th appAnchocol [ancho]="70">Cantidad</th>
+                  <th appAnchocol [ancho]="70">PU</th>
+                  <th appAnchocol [ancho]="70">Parcial</th>
 
                 </tr>
               </thead>
@@ -251,11 +299,15 @@
                     <td class="text-center">
                       <ng-container *ngIf="row.index_elemento!==0">{{'E-'+ row.id_fila}}</ng-container>
                     </td>
-                    <td>{{row.descripcion}}</td>
+                    <td [ngbTooltip]="row.descripcion" container="body" appAnchocol [ancho]="200">
+                      <div style=" overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                        {{row.descripcion}}
+                      </div>
+                    </td>
                     <td class="text-center">{{row.placa}}</td>
-                    <td class="text-center">{{row.fecha_solicitud | date:'dd-MM-yyyy'}}</td>
+                    <!-- <td class="text-center">{{row.fecha_solicitud | date:'dd-MM-yyyy'}}</td> -->
                     <td class="text-center">{{row.tipo}}</td>
-                    <td class="text-center">{{row.cantidad | number:'0.2-2'}}</td>
+                    <td class="text-right">{{row.cantidad | number:'0.2-2'}}</td>
                     <td class="text-center">{{row.tiempo_registrado | number:'0.2-2'}}</td>
                     <td>
                       <div class="w-100 d-flex justify-content-between " *ngIf="row.index_elemento!==0">
@@ -275,7 +327,7 @@
                       <span class="badge bg-warning pos-badge" style="padding-top: 4px;"
                         *ngIf="row.estado == 2">CULMINADO</span>
                     </td>
-                    <td *ngIf="filSelRegAct !== null">
+                    <td *ngIf="filSelRegAct !== null" class="text-center">
                       <ng-container *ngIf=" this.tablaRegActividades[this.filSelRegAct]?.estado == 2">
                         <button class="btn btn-mini2 btn-success" placement="top" ngbTooltip="agregar" container="body"
                           *ngIf="row.index_elemento == 0" (click)="abrirModalEquipo()" (mouseup)="quitarfoco($event);">
@@ -290,6 +342,11 @@
                           *ngIf="row.index_elemento == 0" (click)="eliminarGrupo(row, i)"
                           (mouseup)="quitarfoco($event);">
                           <i class="fa fa-trash icono-but"></i>
+                        </button>
+                        <button class="btn btn-mini2 btn-info" placement="top" ngbTooltip="editar estado"
+                          container="body" *ngIf="row.index_elemento !== 0" (click)="abrirModalEstado(row, i)"
+                          (mouseup)="quitarfoco($event);">
+                          <i class="fa fa-check icono-but"></i>
                         </button>
                       </ng-container>
                     </td>
@@ -350,16 +407,23 @@
             <mat-option [value]="'mensual'">Mensual</mat-option>
           </mat-select>
         </mat-form-field>
-
+        <div class="col-3">
+          <label>Columnas Estaticas :</label>
+          <div class="switch switch-primary d-inline m-r-10" style="margin-left: 10px;">
+            <input type="checkbox" id="switch-p-1" [(ngModel)]='columnasEstatica'>
+            <label for="switch-p-1" class="cr"></label>
+          </div>
+        </div>
       </div>
       <div class="col-12 px-0">
         <div class=" overflow-auto"
           [ngClass]="{'tabla-plantilla': this.verDetalle , 'tabla-plantilla-completo':!this.verDetalle }">
           <table class="table-bordered tab-10">
-            <thead class="text-center" style="position: sticky; top: 0;">
+            <thead class="text-center headsticky">
               <tr [ngClass]="{'h-22': !calendarioFiltrado?.dias.length }">
-                <th rowspan="2" appAnchocol [ancho]="40"></th>
-                <th rowspan="2" appAnchocol [ancho]="150" [detalle]="true">MAQUINARIA Y EQUIPO</th>
+                <th rowspan="2" appAnchocol [ancho]="40" [ngClass]="{'static1h': columnasEstatica}"></th>
+                <th rowspan="2" appAnchocol [ancho]="150" [detalle]="true" [ngClass]="{'static2h': columnasEstatica}">
+                  MAQUINARIA Y EQUIPO</th>
                 <th rowspan="2" appAnchocol [ancho]="60">MODELO</th>
                 <th rowspan="2" appAnchocol [ancho]="80">TIPO REGISTRO</th>
                 <th rowspan="2" appAnchocol [ancho]="60">TIPO </th>
@@ -397,10 +461,15 @@
                 <tr *ngFor="let row of this.tablaPlanilla; let i = index"
                   [ngClass]="{'font-weight-bolder':row.item == 0, 'highlight3': selFilPlan == i}"
                   (click)="seleccionFilaPlanrow(row,i)">
-                  <td class="text-center">
+                  <td class="text-center" [ngClass]="{'static1 ': columnasEstatica}">
                     <ng-container *ngIf="row.item !== 0">{{row.item}}</ng-container>
                   </td>
-                  <td>{{row.descripcion}}</td>
+                  <td [ngClass]="{'static2 ': columnasEstatica}">
+
+                    <div class="recortatext" placement="top" ngbTooltip="{{row.descripcion}}" container="body">
+                      {{row.descripcion}}
+                    </div>
+                  </td>
                   <td>{{row.modelo}}</td>
                   <td class="text-center">{{row.tipo_registro}}</td>
                   <td class="text-center">{{row.tipo}}</td>
@@ -464,11 +533,13 @@
 
                 <div class="col d-flex justify-content-end pr-0">
                   <button type="button" class="btn btn-mini2 btn-danger d-flex" placement="top"
-                    *ngIf="id_desagregado.value" (click)="eliminarDesagregado()" ngbTooltip="Eliminar Registro"
-                    (mouseup)="quitarfoco($event)" container="body">
+                    *ngIf="id_desagregado.value && tablaPlanilla[selFilPlan]?.estado == 1"
+                    (click)="eliminarDesagregado()" ngbTooltip="Eliminar Registro" (mouseup)="quitarfoco($event)"
+                    container="body">
                     <i class="fa fa-trash icono-but"></i> Eliminar
                   </button>
                   <button type="button" class="btn btn-mini2  d-flex" placement="top"
+                    *ngIf="tablaPlanilla[selFilPlan]?.estado == 1"
                     [ngClass]="{'btn-warning': id_desagregado.value, 'btn-success': !id_desagregado.value}"
                     (click)="guardarActualizarCambiosDesagregado()" ngbTooltip="Guardar cambios"
                     (mouseup)="quitarfoco($event)" container="body">
@@ -547,7 +618,7 @@
 
                         <th style="width: 50px">
                           <button type="button" class="btn btn-mini2 btn-primary" (click)="agregarTiempo()"
-                            *ngIf="((tipoSeleccionado == 'DIA'|| tipoSeleccionado == 'H-M' )&& this.celdaSel[0] !== null && this.celdaSel[0]!== null) || (tipoSeleccionado !== 'DIA'&& tipoSeleccionado !== 'H-M' )&& selFilPlan !== null ">
+                            *ngIf="(((tipoSeleccionado == 'DIA'|| tipoSeleccionado == 'H-M' )&& this.celdaSel[0] !== null && this.celdaSel[0]!== null) || ((tipoSeleccionado !== 'DIA'&& tipoSeleccionado !== 'H-M' )&& selFilPlan !== null) || tipoSeleccionado == 'GLOBAL') && this.selFilPlan && tablaPlanilla[this.selFilPlan]?.estado == 1">
                             + {{tipoSeleccionado === 'H-M' || tipoSeleccionado === 'DIA' ? 'Horario' : 'Periodo'}}
                           </button>
                         </th>
@@ -715,7 +786,7 @@
                   placeholder="Observaciones..."></textarea>
               </div>
             </ng-container>
-            <ng-container *ngIf="verDetalle == 'mensual'">
+            <!-- <ng-container *ngIf="verDetalle == 'mensual'">
               <div *ngIf="this.selFilPlan !== null">
                 <h4 class="font-weigth-bolder">{{tablaPlanilla[this.selFilPlan].descripcion}}</h4>
               </div>
@@ -752,6 +823,95 @@
                     </tr>
                   </tbody>
                 </table>
+              </div>
+            </ng-container> -->
+            <ng-container *ngIf="verDetalle == 'mensual'">
+              <div *ngIf="this.selFilPlan !== null">
+                <h4 class="font-weigth-bolder">{{tablaPlanilla[this.selFilPlan].descripcion}}</h4>
+              </div>
+
+              <!-- Tabla Mensual -->
+              <div class="overflow-auto" *ngIf="this.selFilPlan !== null">
+                <table class="table-bordered tab-10">
+                  <thead>
+                    <tr class="text-center">
+                      <th rowspan="2" style="min-width: 120px;">Concepto</th>
+                      <th *ngFor="let mes of detalleMensual" [attr.colspan]="1" style="min-width: 100px;">
+                        {{mes.mes_display}}
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <!-- Fila 1: Cantidad -->
+                    <tr>
+                      <td class="font-weight-bold">Cantidad</td>
+                      <td *ngFor="let mes of detalleMensual" class="text-right">
+                        {{ mes.cantidad | number:'0.2-2' }}
+                      </td>
+                    </tr>
+
+                    <!-- Fila 2: Cantidad Acumulada -->
+                    <tr>
+                      <td class="font-weight-bold bg-light">Cantidad Acumulada</td>
+                      <td *ngFor="let mes of detalleMensual; let i = index" class="text-right bg-light">
+                        {{ calcularAcumuladoCantidad(i) | number:'0.2-2' }}
+                      </td>
+                    </tr>
+
+                    <!-- Fila 3: Parcial -->
+                    <tr>
+                      <td class="font-weight-bold">Parcial</td>
+                      <td *ngFor="let mes of detalleMensual" class="text-right">
+                        <span class="float-left text-muted">S/</span>
+                        {{ mes.parcial | number:'0.2-2' }}
+                      </td>
+                    </tr>
+
+                    <!-- Fila 4: Parcial Acumulado -->
+                    <tr>
+                      <td class="font-weight-bold bg-light">Parcial Acumulado</td>
+                      <td *ngFor="let mes of detalleMensual; let i = index" class="text-right bg-light">
+                        <span class="float-left text-muted">S/</span>
+                        {{ calcularAcumuladoParcial(i) | number:'0.2-2' }}
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <!-- Tabla Resumen por Año -->
+              <div class="mt-4" *ngIf="resumenPorAnio.length > 0">
+                <h5 class="font-weight-bold">RESUMEN POR AÑO</h5>
+                <div class="overflow-auto">
+                  <table class="table-bordered tab-10">
+                    <thead>
+                      <tr class="text-center">
+                        <th style="min-width: 120px;">Concepto</th>
+                        <th *ngFor="let anio of resumenPorAnio" style="min-width: 100px;">
+                          {{ anio.anio }}
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <!-- Fila: Cantidad por Año -->
+                      <tr>
+                        <td class="font-weight-bold">Cantidad</td>
+                        <td *ngFor="let anio of resumenPorAnio" class="text-right">
+                          {{ anio.cantidad_total | number:'0.2-2' }}
+                        </td>
+                      </tr>
+
+                      <!-- Fila: Parcial por Año -->
+                      <tr>
+                        <td class="font-weight-bold">Parcial</td>
+                        <td *ngFor="let anio of resumenPorAnio" class="text-right">
+                          <span class="float-left text-muted">S/</span>
+                          {{ anio.parcial_total | number:'0.2-2' }}
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </ng-container>
           </ng-container>
@@ -790,23 +950,30 @@
 
           </mat-select>
         </mat-form-field>
-        <mat-form-field appearance="outline" class="mff-reduc col-3">
+        <!-- <mat-form-field appearance="outline" class="mff-reduc col-3">
           <mat-label>Detalle</mat-label>
           <mat-select [(ngModel)]="verDetalle">
             <mat-option [value]="''">Ocultar</mat-option>
             <mat-option [value]="'mensual'">Mensual</mat-option>
             <mat-option [value]="'desagregado'">Desagregado</mat-option>
           </mat-select>
-        </mat-form-field>
-
+        </mat-form-field> -->
+        <div class="col-3">
+          <label>Columnas Estaticas :</label>
+          <div class="switch switch-primary d-inline m-r-10" style="margin-left: 10px;">
+            <input type="checkbox" id="switch-p-1" [(ngModel)]='columnasEstatica'>
+            <label for="switch-p-1" class="cr"></label>
+          </div>
+        </div>
       </div>
       <div class="col-12 px-0">
         <div class=" overflow-auto tabla-plantilla-completo">
           <table class="table-bordered tab-10">
             <thead class="text-center" style="position: sticky; top: 0;">
               <tr [ngClass]="{'h-22': !calendarioFiltrado?.dias.length }">
-                <th rowspan="2" appAnchocol [ancho]="40"></th>
-                <th rowspan="2" appAnchocol [ancho]="150" [detalle]="true">MAQUINARIA Y EQUIPO</th>
+                <th rowspan="2" appAnchocol [ancho]="40" [ngClass]="{'static1h': columnasEstatica}"></th>
+                <th rowspan="2" appAnchocol [ancho]="150" [detalle]="true" [ngClass]="{'static2h': columnasEstatica}">
+                  MAQUINARIA Y EQUIPO</th>
                 <th rowspan="2" appAnchocol [ancho]="60">MODELO</th>
                 <th rowspan="2" appAnchocol [ancho]="80">TIPO REGISTRO</th>
                 <!-- <th rowspan="2" appAnchocol [ancho]="60">TIPO </th> -->
@@ -844,10 +1011,14 @@
                 <tr *ngFor="let row of this.tablaPlanilla; let i = index"
                   [ngClass]="{'font-weight-bolder':row.item == 0, 'highlight3': selFilPlan == i}"
                   (click)="selFilPlan=i">
-                  <td class="text-center">
+                  <td class="text-center" [ngClass]="{'static1 ': columnasEstatica}">
                     <ng-container *ngIf="row.item !== 0">{{row.item}}</ng-container>
                   </td>
-                  <td>{{row.descripcion}}</td>
+                  <td [ngClass]="{'static2 ': columnasEstatica}">
+                    <div class="recortatext" placement="top" ngbTooltip="{{row.descripcion}}" container="body">
+                      {{row.descripcion}}
+                    </div>
+                  </td>
                   <td>{{row.modelo}}</td>
                   <td class="text-center">{{row.tipo_registro}}</td>
                   <!-- <td class="text-center">{{row.tipo}}</td> -->
@@ -900,11 +1071,12 @@
             <tfoot *ngIf="sumaPorDiaPlanilla && sumaPorDiaPlanilla.length > 0"
               style="background: #f8f9fa; font-weight: bold;">
               <tr>
-                <th colspan="4" class="text-end fw-bold">TOTAL POR DÍA:</th>
+                <th colspan="2" class="text-end fw-bold" [ngClass]="{'static1h': columnasEstatica}">TOTAL POR DÍA:</th>
+                <th colspan="2" class="text-end fw-bold"></th>
                 <th *ngFor="let total of sumaPorDiaPlanilla" class="text-center fw-bold">
                   <span style="opacity: 0.6;">S/</span> {{ total | number:'0.2-2' }}
                 </th>
-                <th class="text-end fw-bold" colspan="2">TOTAL MES:</th>
+                <th class="text-center fw-bold" colspan="2">TOTAL MES:</th>
                 <th class="text-end fw-bold text-primary text-right">
                   <span style="opacity: 0.6;">S/</span> {{ totalMes | number:'1.2-2' }}
                 </th>
@@ -989,14 +1161,15 @@
               <th appAnchocol [ancho]="50">Item</th>
               <th appAnchocol [ancho]="200" [detalle]="true">Equipo</th>
               <th appAnchocol [ancho]="100">Placa</th>
-              <th appAnchocol [ancho]="90">F. Solicitada</th>
+              <!-- <th appAnchocol [ancho]="90">F. Solicitada</th> -->
               <th appAnchocol [ancho]="70">Und</th>
-              <th appAnchocol [ancho]="90">Cantidad</th>
+              <th appAnchocol [ancho]="80">Cant. Req</th>
+              <th appAnchocol [ancho]="80">Cant. Regis.</th>
               <th appAnchocol [ancho]="100">P.U.</th>
               <th appAnchocol [ancho]="100">Parcial</th>
               <th appAnchocol [ancho]="100">Tipo Registro</th>
               <th appAnchocol [ancho]="100">Tipo</th>
-              <th appAnchocol [ancho]="100">Estado</th>
+              <!-- <th appAnchocol [ancho]="100" *ngIf="actualizarEquipos">Estado</th> -->
               <th appAnchocol [ancho]="40"></th>
             </tr>
           </thead>
@@ -1019,48 +1192,63 @@
               </td>
 
               <!-- Fecha Solicitada -->
-              <td>
-                <!-- <input type="date" class="form-control form-control-sm input-24" formControlName="fecha_solicitud"
-                  [class.is-invalid]="equipo.get('fecha_solicitud')?.invalid && equipo.get('fecha_solicitud')?.touched"> -->
+              <!-- <td>
+           
                 <span class="form-control-plaintext text-center texto-24">{{ equipo.get('fecha_solicitud')?.value |
                   date: 'dd-MM-yyyy'}}</span>
-              </td>
+              </td> -->
 
               <!-- Unidad -->
               <td>
-                <!-- <select class="form-control form-control-sm input-24" formControlName="unidad">
-                  <option value="HRS">HRS</option>
-                  <option value="DÍAS">DÍAS</option>
-                  <option value="MES">MES</option>
-                </select> -->
+
                 <span class="form-control-plaintext text-center texto-24">{{ equipo.get('unidad')?.value }}</span>
               </td>
 
               <!-- Cantidad -->
               <td>
                 <input type="number" step="0.01" class="form-control form-control-sm input-24"
-                  formControlName="cantidad" (input)="calcularParcial(equipo)" placeholder="0.00"
+                  formControlName="cantidad" placeholder="0.00"
                   [class.is-invalid]="equipo.get('cantidad')?.invalid && equipo.get('cantidad')?.touched">
                 <!-- <span class="form-control-plaintext text-end texto-24">
                   {{ equipo.get('cantidad')?.value | number:'0.2-2' }}
                 </span> -->
               </td>
+              <td>
 
+                <span class="form-control-plaintext text-center texto-24">{{ equipo.get('tiempo_registrado')?.value
+                  }}</span>
+              </td>
               <!-- Precio Unitario -->
               <td>
-                <!-- <input type="number" step="0.01" class="form-control form-control-sm input-24"
-                  formControlName="precio_unitario" (input)="calcularParcial(equipo)" placeholder="0.00"
-                  [class.is-invalid]="equipo.get('precio_unitario')?.invalid && equipo.get('precio_unitario')?.touched"> -->
-                <span class="form-control-plaintext text-end texto-24">
-                  {{ equipo.get('precio_unitario')?.value | number:'0.2-2' }}
-                </span>
+
+                <ng-container *ngIf="equipo.get('tipo')?.value === 'GLOBAL'">
+                  <!-- Solo lectura cuando es GLOBAL -->
+                  <span class="form-control-plaintext text-end texto-24">
+                    {{ equipo.get('precio_unitario')?.value | number:'1.2-2' }}
+                  </span>
+                </ng-container>
+                <ng-container *ngIf="equipo.get('tipo')?.value !== 'GLOBAL'">
+                  <!-- Editable cuando NO es GLOBAL -->
+                  <input type="number" class="form-control form-control-sm input-24" formControlName="precio_unitario"
+                    (input)="calcularParcial(equipo)" placeholder="0.00"
+                    [class.is-invalid]="equipo.get('precio_unitario')?.invalid && equipo.get('precio_unitario')?.touched">
+                </ng-container>
               </td>
 
-              <!-- Parcial (solo lectura) -->
+              <!-- total_registrado (solo lectura) -->
               <td>
-                <span class="form-control-plaintext text-end texto-24">
-                  {{ equipo.get('parcial')?.value | number:'1.2-2' }}
-                </span>
+                <ng-container *ngIf="equipo.get('tipo')?.value !== 'GLOBAL'">
+                  <!-- Solo lectura cuando NO es GLOBAL -->
+                  <span class="form-control-plaintext text-end texto-24">
+                    {{ equipo.get('total_registrado')?.value | number:'1.2-2' }}
+                  </span>
+                </ng-container>
+                <ng-container *ngIf="equipo.get('tipo')?.value === 'GLOBAL'">
+                  <!-- Editable cuando es GLOBAL -->
+                  <input type="number" class="form-control form-control-sm input-24" formControlName="total_registrado"
+                    (input)="calcularPrecioUnitario(equipo)"
+                    [class.is-invalid]="equipo.get('total_registrado')?.invalid && equipo.get('total_registrado')?.touched">
+                </ng-container>
               </td>
 
               <!-- Tipo Registro -->
@@ -1075,26 +1263,35 @@
 
               <!-- Tipo -->
               <td>
-                <!-- <span class="form-control-plaintext texto-24">{{ equipo.get('tipo')?.value }}</span> -->
                 <select class="form-control form-control-sm input-24" formControlName="tipo"
+                  [title]="equipo.get('desagregadosCompleto').value?.length > 0 ? 'No se puede cambiar el tipo porque ya existen desagregados' : ''"
                   [class.is-invalid]="equipo.get('tipo')?.invalid && equipo.get('tipo')?.touched">
                   <option value="H-M">H-M</option>
                   <option value="DIA">DIA</option>
                   <option value="MES">MES</option>
                   <option value="GLOBAL">GLOBAL</option>
                 </select>
+                <!-- <select class="form-control form-control-sm input-24" formControlName="tipo"
+                  [class.is-invalid]="equipo.get('tipo')?.invalid && equipo.get('tipo')?.touched"
+                  [disabled]="equipo.get('desagregadosCompleto').value?.length > 0"
+                  [title]="equipo.get('desagregadosCompleto').value?.length > 0 ? 'No se puede cambiar el tipo porque ya existen desagregados' : ''">
+                  <option value="H-M">H-M</option>
+                  <option value="DIA">DIA</option>
+                  <option value="MES">MES</option>
+                  <option value="GLOBAL">GLOBAL</option>
+                </select> -->
               </td>
-              <td>
-                <!-- <span class="form-control-plaintext texto-24">{{ equipo.get('tipo_registro')?.value }}</span> -->
+              <!-- <td *ngIf="actualizarEquipos">
                 <select class="form-control form-control-sm input-24" formControlName="estado"
                   [class.is-invalid]="equipo.get('estado')?.invalid && equipo.get('estado')?.touched">
                   <option value="1"> EJECUCION </option>
                   <option value="2">CULMINADO</option>
                 </select>
-              </td>
+              </td> -->
               <!-- Botón eliminar -->
               <td class="text-center celda-accion">
-                <button type="button" class="btn btn-danger btn-sm boton-24" (click)="eliminarFilaModal(i)">
+                <button type="button" *ngIf="equipo.get('estado')?.value == 1" class="btn btn-danger btn-sm boton-24"
+                  (click)="eliminarFilaModal(i, row)">
                   <i class="fa fa-trash mr-0"></i>
                 </button>
               </td>
@@ -1108,13 +1305,13 @@
             </tr>
           </tbody>
           <!-- Fila de totales -->
-          <tfoot *ngIf="equipos.length > 0" style="background: #f8f9fa; font-weight: bold;">
+          <!-- <tfoot *ngIf="equipos.length > 0" style="background: #f8f9fa; font-weight: bold;">
             <tr>
               <td colspan="7" class="text-end">TOTAL:</td>
               <td class="text-end">{{ totalParcial | number:'1.2-2' }}</td>
               <td colspan="3"></td>
             </tr>
-          </tfoot>
+          </tfoot> -->
         </table>
       </div>
     </form>
@@ -1129,6 +1326,36 @@
         <ng-container *ngIf="!actualizarEquipos"> Guardar</ng-container>
         <ng-container *ngIf="actualizarEquipos"> Actualizar</ng-container>
       </button>
+    </div>
+  </div>
+</app-modal-basic>
+
+<app-modal-basic #modalEstado [dialogClass]="'modal-sm'">
+  <div class="app-modal-header">
+    <h4 class="modal-title tit-modal1"><b>Estado Equipo</b></h4>
+    <button type="button" class="close basic-close" (click)="cerrarModalEstado()">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="app-modal-body">
+    <div class="row">
+      <mat-form-field appearance="outline" class="mff-reduc col-sm-12 col-12">
+        <mat-label>Estado</mat-label>
+        <mat-select [(ngModel)]="estadoModificado">
+          <mat-option value="1">EJECUCION</mat-option>
+          <mat-option value="2">CULMINADO</mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+  </div>
+  <div class="app-modal-footer w-100">
+    <div class="row px-3 justify-content-between">
+
+      <button type="button" style="margin-right: 5px;" class="btn btn-sm btn-danger ripple"
+        (click)="cerrarModalEstado()">Cerrar</button>
+      <button type="button" style="margin-right: 5px;" class="btn btn-sm btn-success ripple"
+        (click)="actualizarEstadoEquipo()">
+        Guardar</button>
     </div>
   </div>
 </app-modal-basic>

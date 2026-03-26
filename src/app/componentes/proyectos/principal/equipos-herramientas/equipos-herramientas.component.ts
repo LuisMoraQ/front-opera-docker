@@ -32,7 +32,8 @@ export interface servicio {
   nroprov: number,
   tiempo_registrado: number,
   valorGlobal: null,
-  desagregadosCompleto: Array<any>
+  desagregadosCompleto: Array<any>,
+  total_registrado: number
 }
 @Component({
   selector: 'app-equipos-herramientas',
@@ -70,6 +71,7 @@ export class EquiposHerramientasComponent implements OnInit {
   sumaPorDiaPlanilla = []
   totalMes = 0
   detalleMensual = []
+  resumenPorAnio: any[] = [];
   @Input() set tabproyecto(value: any) {
     this.id_proyecto = value.get('id_proyecto').value;
     const aspectosGen = value.get('aspectos_generales') as UntypedFormGroup;
@@ -83,6 +85,7 @@ export class EquiposHerramientasComponent implements OnInit {
   }
   @ViewChild("modalServicio") modalServicio: ModalBasicComponent;
   @ViewChild("modalEquipo") modalEquipo: ModalBasicComponent;
+  @ViewChild("modalEstado") modalEstado: ModalBasicComponent;
 
   formServicio = new UntypedFormGroup({
     id_servicio: new UntypedFormControl('', []),
@@ -159,11 +162,17 @@ export class EquiposHerramientasComponent implements OnInit {
   tipoSeleccionado: string = 'H-M';
   buscando = false
   listaRegistros = []
+  estadoModificado = null
+  id_equipo_modificar = null
+  columnasEstatica = false
+  private acumuladoCantidades: number[] = [];
+  private acumuladoParciales: number[] = [];
   constructor(private fb: FormBuilder, private cdRef: ChangeDetectorRef, private encriptadorService: EncriptadorService, private _logisticaService: LogisticaService, private toaster: ToastrService, public formService: FormsService, private equiposServiciosService: EquiposServiciosService) { }
 
   async ngOnInit() {
     try {
       this.mostrar_carga_todo = true;
+
       let res = await this._logisticaService.ListarAdquisicionesProy({ id_proyecto: this.id_proyecto });
       this.listaRegistros = res
       this.buscando6 = false;
@@ -172,7 +181,6 @@ export class EquiposHerramientasComponent implements OnInit {
         await this.cambioDataRegistro()
       }
       else {
-        // this.toaster.error('No se pudo cargar la información.', 'Advertencia', { closeButton: false, positionClass: 'toast-bottom-right', timeOut: 5000 });
       }
       this.mostrar_carga_todo = false
     } catch (error) {
@@ -181,28 +189,54 @@ export class EquiposHerramientasComponent implements OnInit {
     }
   }
 
+  // async cambioDataRegistro() {
+  //   this.mostrar_carga_todo = true
+  //   console.log('b')
+  //   setTimeout(async () => {
+
+  //     this.limpiarVariables()
+  //     // this.id_registro = this.listaRegistros[this.registroSeleccionado]?.id_registro
+  //     const obj = { id_proyecto: this.id_proyecto, id_registro: this.id_registro, tipocontra: 2 }
+  //     const resp = await this.equiposServiciosService.listarAgrupamientoRequerimientos(obj)
+  //     const desagregados = await this.listarDesagregadosEquipos()
+  //     await this.listarEquiposServicios(desagregados)
+  //     const tablaRegActividades = resp.agrupacion.map(element => {
+  //       element.servicios = this.tablaServiciosCompleto.filter(ele => ele.id_grupo == Number(element.idgrupo) && ele.id_registro == element.id_registro)
+  //       return element
+  //     })
+  //     this.tablaRegActividades = await this.procesarCantidadAcumulada(tablaRegActividades)
+  //     this.reqCompletos = resp.desagregados
+  //     this.grupoSeleccionado = ''
+  //     await this.calcularTotales()
+  //     this.iduser_local = this.encriptadorService.recuperarlocalstory('idusuario');
+  //     this.mostrar_carga_todo = false
+  //     console.log('c')
+  //   }, 0);
+
+  // }
   async cambioDataRegistro() {
     this.mostrar_carga_todo = true
-    setTimeout(async () => {
-      this.limpiarVariables()
-      // this.id_registro = this.listaRegistros[this.registroSeleccionado]?.id_registro
-      const obj = { id_proyecto: this.id_proyecto, id_registro: this.id_registro, tipocontra: 2 }
-      const resp = await this.equiposServiciosService.listarAgrupamientoRequerimientos(obj)
-      const desagregados = await this.listarDesagregadosEquipos()
-      await this.listarEquiposServicios(desagregados)
-      const tablaRegActividades = resp.agrupacion.map(element => {
-        element.servicios = this.tablaServiciosCompleto.filter(ele => ele.id_grupo == Number(element.idgrupo) && ele.id_registro == element.id_registro)
-        return element
-      })
-      this.tablaRegActividades = await this.procesarCantidadAcumulada(tablaRegActividades)
-      this.reqCompletos = resp.desagregados
-      this.grupoSeleccionado = ''
-      await this.calcularTotales()
-      this.iduser_local = this.encriptadorService.recuperarlocalstory('idusuario');
-      this.mostrar_carga_todo = false
-    }, 0);
+    await new Promise(resolve => setTimeout(resolve, 0));
 
+    this.limpiarVariables()
+    const obj = { id_proyecto: this.id_proyecto, id_registro: this.id_registro, tipocontra: 2 }
+    const resp = await this.equiposServiciosService.listarAgrupamientoRequerimientos(obj)
+    const desagregados = await this.listarDesagregadosEquipos()
+    await this.listarEquiposServicios(desagregados)
+
+    const tablaRegActividades = resp.agrupacion.map(element => {
+      element.servicios = this.tablaServiciosCompleto.filter(ele => ele.id_grupo == Number(element.idgrupo) && ele.id_registro == element.id_registro)
+      return element
+    })
+
+    this.tablaRegActividades = await this.procesarCantidadAcumulada(tablaRegActividades)
+    this.reqCompletos = resp.desagregados
+    this.grupoSeleccionado = ''
+    await this.calcularTotales()
+    this.iduser_local = this.encriptadorService.recuperarlocalstory('idusuario');
+    this.mostrar_carga_todo = false
   }
+
   limpiarVariables() {
     this.tablaRegActividades = [];
     this.reqCompletos = []
@@ -228,13 +262,62 @@ export class EquiposHerramientasComponent implements OnInit {
     this.verDetalle = ''
     this.equipoEditado = false
     this.tipoSeleccionado = 'H-M';
+    this.estadoModificado = null
+    this.acumuladoCantidades = [];
+    this.acumuladoParciales = [];
+    this.resumenPorAnio = [];
   }
 
+  // procesarCantidadAcumulada(data) {
+  //   return data.map(actividad => {
+  //     // Calcular el total acumulado de todos los servicios de esta actividad
+  //     const totalActividad = actividad.servicios?.reduce((totalServicios, servicio) => {
+  //       const sumaServicio = servicio.desagregadosCompleto?.reduce((total, d) => {
+  //         if (servicio.tipo === 'H-M' || servicio.tipo === 'DIA') {
+  //           return total + (d.horas_dia || 0);
+  //         }
+  //         if (servicio.tipo === 'MES' || servicio.tipo === 'GLOBAL') {
+  //           const suma = d.horas_detalle?.split('/').reduce((sum, rango) => {
+  //             const partes = rango.split('|');
+  //             return sum + (parseFloat(partes[2]) || 0);
+  //           }, 0) || 0;
+  //           return total + suma;
+  //         }
+  //         return total;
+  //       }, 0) || 0;
+  //       return totalServicios + sumaServicio;
+  //     }, 0) || 0;
+
+  //     return {
+  //       ...actividad,
+  //       presupuestoEjecutado: totalActividad,
+  //       saldo: actividad.parcial - totalActividad,
+
+  //       porcentaje: actividad.parcial !== 0 ? ((actividad.parcial - totalActividad) / actividad.parcial) * 100 : 0,
+  //       servicios: actividad.servicios?.map(servicio => ({
+  //         ...servicio,
+  //         presupuestoEjecutado: servicio.desagregadosCompleto?.reduce((total, d) => {
+  //           if (servicio.tipo === 'H-M' || servicio.tipo === 'DIA') {
+  //             return total + (d.horas_dia || 0);
+  //           }
+  //           if (servicio.tipo === 'MES' || servicio.tipo === 'GLOBAL') {
+  //             const suma = d.horas_detalle?.split('/').reduce((sum, rango) => {
+  //               const partes = rango.split('|');
+  //               return sum + (parseFloat(partes[2]) || 0);
+  //             }, 0) || 0;
+  //             return total + suma;
+  //           }
+  //           return total;
+  //         }, 0) || 0
+  //       })) || []
+  //     };
+  //   });
+  // }
   procesarCantidadAcumulada(data) {
     return data.map(actividad => {
       // Calcular el total acumulado de todos los servicios de esta actividad
       const totalActividad = actividad.servicios?.reduce((totalServicios, servicio) => {
-        const sumaServicio = servicio.desagregados?.reduce((total, d) => {
+        const sumaServicio = servicio.desagregadosCompleto?.reduce((total, d) => {
           if (servicio.tipo === 'H-M' || servicio.tipo === 'DIA') {
             return total + (d.horas_dia || 0);
           }
@@ -250,14 +333,20 @@ export class EquiposHerramientasComponent implements OnInit {
         return totalServicios + sumaServicio;
       }, 0) || 0;
 
+      // Calcular saldo y porcentaje
+      const saldo = actividad.parcial - totalActividad;
+      const porcentaje = actividad.parcial !== 0
+        ? ((actividad.parcial - totalActividad) / actividad.parcial) * 100
+        : 0;
+
       return {
         ...actividad,
         presupuestoEjecutado: totalActividad,
-        saldo: actividad.parcial - totalActividad,
-        porcentaje: actividad.parcial !== 0 ? ((actividad.parcial - totalActividad) / actividad.parcial) * 100 : 0,
+        saldo: saldo,
+        porcentaje: porcentaje,  // Esto mostrará negativo cuando saldo es negativo
         servicios: actividad.servicios?.map(servicio => ({
           ...servicio,
-          presupuestoEjecutado: servicio.desagregados?.reduce((total, d) => {
+          presupuestoEjecutado: servicio.desagregadosCompleto?.reduce((total, d) => {
             if (servicio.tipo === 'H-M' || servicio.tipo === 'DIA') {
               return total + (d.horas_dia || 0);
             }
@@ -276,11 +365,11 @@ export class EquiposHerramientasComponent implements OnInit {
   }
 
   calcularTotalDesagregado(servicio) {
-    if (!servicio.desagregados || servicio.desagregados.length === 0) {
+    if (!servicio.desagregadosCompleto || servicio.desagregadosCompleto.length === 0) {
       return 0;
     }
 
-    return servicio.desagregados.reduce((total, d) => {
+    return servicio.desagregadosCompleto.reduce((total, d) => {
       if (servicio.tipo === 'H-M' || servicio.tipo === 'DIA') {
         return total + (d.horas_dia || 0);
       }
@@ -302,16 +391,27 @@ export class EquiposHerramientasComponent implements OnInit {
     }
     const response = await this.equiposServiciosService.listarEquipoServicio(obj)
     if (response.length) {
-      response.forEach(element => {
+      response.forEach(async element => {
         if (element.index_grupo !== 0) {
+          element.desagregadosCompleto = desagregados.filter(ele => ele.id_equipo == element.id_equipo)
+          const tiempo_registrado = await this.calcularTotalDesagregado(element);
           element.parcial = element.cantidad * element.precio_unitario
-          element.desagregados = desagregados.filter(ele => ele.id_equipo == element.id_equipo)
-          element.tiempo_registrado = this.calcularTotalDesagregado(element);
-          element.total_registrado = element.precio_unitario * element.tiempo_registrado
+
+          element.tiempo_registrado = tiempo_registrado
+          if (element.tipo == 'GLOBAL') {
+            element.precio_unitario = element.tiempo_registrado ? (element.total_registrado / element.tiempo_registrado) : 0
+          } else {
+            element.total_registrado = element.tiempo_registrado * element.precio_unitario
+          }
+
         }
       });
       this.tablaServiciosCompleto = response
     }
+  }
+
+  recalcularMontos() {
+
   }
 
   estructurarTablas(tablas) {
@@ -407,7 +507,7 @@ export class EquiposHerramientasComponent implements OnInit {
         precio_usada: null,
         cantidad_usada: null,
         parcial_usada: 0,
-        todos_iguales: false
+        todos_iguales: null
       };
     }
     const primerPrecio = encontrados[0].precio_unitario;
@@ -467,9 +567,22 @@ export class EquiposHerramientasComponent implements OnInit {
         const desagredados = await this.listarDesagregadosEquipos()
         await this.filtrarPlanillaEquiposServicios(desagredados)
 
+      } else {
+
+      }
+      this.mostrar_carga_todo = false
+    } else {
+      this.mostrar_carga_todo = true
+      let res = await this._logisticaService.ListarAdquisicionesProy({ id_proyecto: this.id_proyecto });
+      this.listaRegistros = res
+      this.buscando6 = false;
+      if (res?.length > 0) {
+        this.id_registro = res[0].id_registro
+        await this.cambioDataRegistro()
       }
       this.mostrar_carga_todo = false
     }
+
   }
 
   async listarDesagregadosEquipos() {
@@ -830,7 +943,8 @@ export class EquiposHerramientasComponent implements OnInit {
         nroprov: null,
         tiempo_registrado: 0,
         valorGlobal: null,
-        desagregadosCompleto: []
+        desagregadosCompleto: [],
+        total_registrado: 0,
       }
       const serviciosArray = [servicio];
       const idsInsertados = await this.equiposServiciosService.guardarEquiposServicio(serviciosArray)
@@ -896,7 +1010,7 @@ export class EquiposHerramientasComponent implements OnInit {
           fecha_solicitud: [fecha_solicitud],
           unidad: [requerimiento.unidad, [Validators.required]],
           cantidad: [requerimiento.cantidad, [Validators.required]],
-          precio_unitario: [requerimiento.precio_unitario, []],
+          precio_unitario: [requerimiento.precio_unitario, [Validators.required]],
           parcial: [requerimiento.cantidad * requerimiento.precio_unitario],
           estado: [requerimiento?.estado],
           index_grupo: [requerimiento?.index_grupo],
@@ -908,8 +1022,14 @@ export class EquiposHerramientasComponent implements OnInit {
           index_elemento: [requerimiento?.index_elemento],
           id_proyecto: [requerimiento?.id_proyecto],
           tipo_registro: [requerimiento?.tipo_registro],
-          tipo: [requerimiento?.tipo],
-          nroprov: [requerimiento?.nroprov]
+          tipo: [{
+            value: requerimiento?.tipo,
+            disabled: requerimiento?.desagregadosCompleto?.length > 0
+          }],
+          nroprov: [requerimiento?.nroprov],
+          desagregadosCompleto: [requerimiento?.desagregadosCompleto],
+          tiempo_registrado: [requerimiento?.tiempo_registrado],
+          total_registrado: [requerimiento?.total_registrado]
         });
         this.equipos.push(form)
       }
@@ -917,6 +1037,78 @@ export class EquiposHerramientasComponent implements OnInit {
       this.actualizarEquipos = false
     }
     this.modalEquipo.show()
+  }
+
+  abrirModalEstado(row) {
+    this.modalEstado.show()
+    this.estadoModificado = null
+    this.id_equipo_modificar = null
+    this.estadoModificado = row.estado?.toString() || '1'
+    this.id_equipo_modificar = row.id_equipo
+  }
+
+  cerrarModalEstado() {
+    this.modalEstado.hide()
+  }
+
+  async actualizarEstadoEquipo() {
+    try {
+      this.mostrar_carga_todo = true
+      const obj = {
+        id_proyecto: this.id_proyecto,
+        id_equipo: this.id_equipo_modificar,
+        estado: this.estadoModificado
+      }
+
+      const response = await this.equiposServiciosService.actualizarEstadoEquipo(obj)
+      // Verificar si la respuesta es exitosa
+      if (response && Array.isArray(response) && response.length > 0 && response[0].mensaje === "Registro actualizado correctamente") {
+
+        // Convertir estado a número si es necesario (depende de cómo lo tengas en tu array)
+        const nuevoEstado = typeof this.estadoModificado === 'string'
+          ? parseInt(this.estadoModificado)
+          : this.estadoModificado
+
+        // Actualizar en tablaServicios
+        const indexServicios = this.tablaServicios.findIndex(
+          item => item.id_equipo === this.id_equipo_modificar
+        )
+
+        if (indexServicios !== -1) {
+          this.tablaServicios[indexServicios].estado = nuevoEstado
+        }
+
+        // Actualizar en tablaServiciosCompleto
+        const indexServiciosCompleto = this.tablaServiciosCompleto.findIndex(
+          item => item.id_equipo === this.id_equipo_modificar
+        )
+
+        if (indexServiciosCompleto !== -1) {
+          this.tablaServiciosCompleto[indexServiciosCompleto].estado = nuevoEstado
+        }
+
+        // Mostrar mensaje de éxito
+        this.toaster.success('Estado actualizado correctamente', 'Éxito')
+
+        // Cerrar el modal si es necesario
+        this.modalEstado.hide()
+
+        // Opcional: Recargar la selección actual si es necesario
+        if (this.filSelRegAct !== null && this.tablaRegActividades[this.filSelRegAct]) {
+          const row = this.tablaRegActividades[this.filSelRegAct]
+          const i = this.filSelRegAct
+          await this.selTablaRegAct(row, i)
+        }
+
+      } else {
+        // Si la respuesta no es la esperada
+        this.toaster.error(response?.message || 'Error al actualizar el estado', 'Error')
+      }
+      this.mostrar_carga_todo = false
+    } catch (error) {
+      console.error('Error al actualizar estado:', error)
+      SwalService.error()
+    }
   }
 
   async agregarEquipo() {
@@ -976,7 +1168,8 @@ export class EquiposHerramientasComponent implements OnInit {
           nroprov: element.nroprov,
           tiempo_registrado: 0,
           valorGlobal: null,
-          desagregadosCompleto: []
+          desagregadosCompleto: [],
+          total_registrado: element.total_registrado
         }
         serviciosArray.push(equipo)
         i++
@@ -1010,19 +1203,32 @@ export class EquiposHerramientasComponent implements OnInit {
   }
 
   calcularParcial(equipo: AbstractControl) {
-    const cantidad = equipo.get('cantidad')?.value;
+    const tiempo_registrado = equipo.get('tiempo_registrado')?.value;
     const precioUnitario = equipo.get('precio_unitario')?.value;
 
-    let parcial = 0;
-
-    if (cantidad && precioUnitario && !isNaN(cantidad) && !isNaN(precioUnitario)) {
-      const cantNum = Number(cantidad);
+    let total_registrado = 0;
+    if (tiempo_registrado && precioUnitario && !isNaN(tiempo_registrado) && !isNaN(precioUnitario)) {
+      const cantNum = Number(tiempo_registrado);
       const precioNum = Number(precioUnitario);
-      parcial = cantNum * precioNum;
+      total_registrado = Number(this.formService.redondeo(cantNum * precioNum, 5));
     }
 
-    equipo.get('parcial')?.setValue(parcial, { emitEvent: false });
+    equipo.get('total_registrado')?.setValue(total_registrado, { emitEvent: false });
+  }
 
+  // Calcula el precio unitario cuando se edita parcial (modo GLOBAL)
+  calcularPrecioUnitario(equipo: AbstractControl) {
+    const tiempo_registrado = equipo.get('tiempo_registrado')?.value;
+    const total_registrado = equipo.get('total_registrado')?.value;
+    let precioUnitario = 0;
+
+    if (tiempo_registrado && total_registrado && !isNaN(tiempo_registrado) && !isNaN(total_registrado)) {
+      const cantNum = Number(tiempo_registrado);
+      const parcialNum = Number(total_registrado);
+      precioUnitario = cantNum !== 0 ? Number(this.formService.redondeo((parcialNum / cantNum), 5)) : 0;
+    }
+
+    equipo.get('precio_unitario')?.setValue(precioUnitario, { emitEvent: false });
   }
 
   async actualizarEquiposServicio() {
@@ -1065,12 +1271,12 @@ export class EquiposHerramientasComponent implements OnInit {
           tipo_registro: element.tipo_registro,
           nroprov: element.nroprov,
           tiempo_registrado: element.tiempo_registrado,
-          valorGlobal: null,
-          desagregadosCompleto: []
+          valorGlobal: element.valorGlobal,
+          desagregadosCompleto: element.desagregadosCompleto,
+          total_registrado: element.total_registrado
         }
         elementosActualizar.push(equipo)
       }
-
       const payload = {
         elementosActualizar: elementosActualizar,
         idsEliminar: this.idEquiposEliminar,
@@ -1090,10 +1296,33 @@ export class EquiposHerramientasComponent implements OnInit {
           );
 
           if (indexExistente !== -1) {
-            this.tablaServiciosCompleto[indexExistente] = {
-              ...this.tablaServiciosCompleto[indexExistente],
-              ...nuevo
-            };
+            // Obtener el objeto existente
+            const existente = this.tablaServiciosCompleto[indexExistente];
+
+            // ACTUALIZAR SOLO LOS CAMPOS QUE SE ENVIARON AL BACKEND
+            // Mantener todas las propiedades frontend (desagregadosCompleto, total_registrado, fecha_creacion, etc.)
+            existente.cantidad = nuevo.cantidad;
+            existente.descripcion = nuevo.descripcion;
+            existente.id_grupo = nuevo.id_grupo;
+            existente.fecha_solicitud = nuevo.fecha_solicitud;
+            existente.id_registro = nuevo.id_registro;
+            existente.id_fila = nuevo.id_fila;
+            existente.ind_rep = nuevo.ind_rep;
+            existente.index_grupo = nuevo.index_grupo;
+            existente.estado = nuevo.estado;
+            existente.item = nuevo.item;
+            existente.parcial = nuevo.precio_unitario * nuevo.cantidad; // Recalcular parcial
+            existente.placa = nuevo.placa;
+            existente.precio_unitario = nuevo.precio_unitario;
+            existente.unidad = nuevo.unidad;
+            existente.index_elemento = nuevo.index_elemento;
+            existente.tipo = nuevo.tipo;
+            existente.tipo_registro = nuevo.tipo_registro;
+            existente.nroprov = nuevo.nroprov;
+            existente.tiempo_registrado = nuevo.tiempo_registrado;
+            existente.valorGlobal = nuevo.valorGlobal;
+            existente.total_registrado = nuevo.total_registrado;
+
           }
         }
 
@@ -1119,7 +1348,7 @@ export class EquiposHerramientasComponent implements OnInit {
       } else {
         this.toaster.error(response.message || 'Error en la operación', 'Error');
       }
-
+      await this.actualizarDataCompleta()
       this.mostrar_carga_todo = false;
     } catch (e) {
       this.mostrar_carga_todo = false
@@ -1129,6 +1358,20 @@ export class EquiposHerramientasComponent implements OnInit {
   }
 
   async eliminarGrupo(row, i) {
+
+    const novalido = this.tablaServicios.find(ele => ele.index_grupo == row.index_grupo && ele.desagregadosCompleto.length)
+    if (novalido) {
+      this.toaster.error(
+        'El servicio tiene equipos con registros en planilla',
+        '',
+        {
+          closeButton: false,
+          positionClass: 'toast-bottom-right',
+          timeOut: 6000,
+        }
+      );
+      return
+    }
     const sw = await SwalService.confirm('Estas seguro?', 'Se eliminarà la servicio con los equipos  relacionados')
     if (sw.isConfirmed) {
       this.mostrar_carga_todo = true
@@ -1160,8 +1403,7 @@ export class EquiposHerramientasComponent implements OnInit {
             );
           }
         }
-
-
+        await this.actualizarDataCompleta()
       } catch (error) {
         this.mostrar_carga_todo = false
         console.error('Error al llamar al endpoint:', error);
@@ -1174,31 +1416,57 @@ export class EquiposHerramientasComponent implements OnInit {
 
   calcularTotales() {
     for (const element of this.tablaRequerimientos) {
-      const filtrados = this.tablaServicios.filter((ele: servicio) => Number(ele.id_registro) == Number(element.id_registro) && Number(ele.ind_rep) == Number(element.indrep) && Number(ele.id_grupo) == Number(element.idgrupo) && Number(ele.id_fila == element.idfila))
-      const sumaTotalCantidad = filtrados.reduce((acc, item) => acc + Number(item.cantidad), 0)
-      const sumaTotalPrecio = filtrados.reduce((acc, item) => acc + Number(item.precio_unitario), 0)
-      let precio_promedio = 0
-      if (filtrados.length) {
-        const parcialacumulado = filtrados.reduce((acc, item) => acc + Number(item.parcial), 0)
-        precio_promedio = parcialacumulado / sumaTotalCantidad
+      // Filtrar servicios relacionados con este requerimiento
+      const filtrados = this.tablaServicios.filter((ele: servicio) =>
+        Number(ele.id_registro) === Number(element.id_registro) &&
+        Number(ele.ind_rep) === Number(element.indrep) &&
+        Number(ele.id_grupo) === Number(element.idgrupo) &&
+        Number(ele.id_fila) === Number(element.idfila)
+      );
+
+      // Verificar si todos los servicios tienen el mismo tipo y precio_unitario
+      const primerServicio = filtrados[0];
+      const tienenMismoTipo = filtrados.every(servicio => servicio.tipo === primerServicio?.tipo);
+      const tienenMismoPrecio = filtrados.every(servicio => servicio.precio_unitario === primerServicio?.precio_unitario);
+      const sonHomogeneos = tienenMismoTipo && tienenMismoPrecio && filtrados.length > 0;
+
+      // Calcular el total de tiempo_registrado (cantidad_usada)
+      const sumaTotalTiempoRegistrado = filtrados.reduce((acc, item) => acc + (Number(item.tiempo_registrado) || 0), 0);
+
+      // Calcular el total de parcial_usada (suma de total_registrado)
+      const sumaTotalRegistrado = filtrados.reduce((acc, item) => acc + (Number(item.total_registrado) || 0), 0);
+
+      if (sonHomogeneos) {
+        // Caso homogéneo: todos tienen mismo tipo y precio_unitario
+        element.cantidad_usada = sumaTotalTiempoRegistrado;
+        element.precio_usada = primerServicio.precio_unitario;
+        element.parcial_usada = sumaTotalRegistrado;
+      } else {
+        // Caso heterogéneo: difieren en tipo o precio_unitario
+        element.cantidad_usada = null;
+        element.precio_usada = null;
+        element.parcial_usada = sumaTotalRegistrado;
       }
-      // element.cantidad_usada = sumaTotalCantidad
-      // element.precio_usada = precio_promedio
-      // element.parcial_usada = sumaTotalCantidad * precio_promedio
-      element.saldo = Number(element.parcial) - Number(element.parcial_usada)
+
+      // Calcular saldo
+      element.saldo = (Number(element.parcial) || 0) - (Number(element.parcial_usada) || 0);
     }
-    let acumuladoGrupo = 0
-    let acumuladoTotal = 0
+
+    // Recalcular acumulados por grupo
+    let acumuladoGrupo = 0;
+    let acumuladoTotal = 0;
+
     for (let i = this.tablaServicios.length - 1; i >= 0; i--) {
       const element = this.tablaServicios[i];
-      if (element.index_grupo == 0) {
-        element.parcial = acumuladoGrupo
-        acumuladoTotal += acumuladoGrupo
-        acumuladoGrupo = 0
+      if (element.index_grupo === 0) {
+        element.parcial = acumuladoGrupo;
+        acumuladoTotal += acumuladoGrupo;
+        acumuladoGrupo = 0;
       } else {
-        acumuladoGrupo += element.parcial
+        acumuladoGrupo += element.parcial;
       }
     }
+
   }
 
   async seleccionCelda(i, j) {
@@ -1383,7 +1651,12 @@ export class EquiposHerramientasComponent implements OnInit {
     totalMinutos = this.tipoSeleccionado == 'H-M' ? totalMinutos : (this.tipoSeleccionado == 'DIA' ? 60 : (this.tipoSeleccionado == 'MES' ? 60 : 60))
     this.minutos_dia.setValue(totalMinutos);
     this.horas_dia.setValue(this.tipoSeleccionado == 'H-M' ? (totalMinutos / 60) : 1);
+    if (this.tablaPlanilla[this.selFilPlan]?.tipo !== 'HM' && !this.tiempos.value.length) {
+      this.horas_dia.setValue(0)
+      this.minutos_dia.setValue(0);
+    }
     this.calcularSaldo();
+
     this.equipoEditado = true
   }
 
@@ -1480,7 +1753,7 @@ export class EquiposHerramientasComponent implements OnInit {
         diaSeleccionado = this.calendario[0].dias[0]
         row = this.tablaPlanilla[this.selFilPlan]
       }
-      if (horas_detalle || data.horas_dia) {
+      if ((horas_detalle || data.horas_dia)) {
         if (data.id_desagregado) {
           const obj = {
             id_desagregado: data.id_desagregado,
@@ -1690,8 +1963,8 @@ export class EquiposHerramientasComponent implements OnInit {
       fecha_solicitud: [requerimiento?.fecha_sol],
       unidad: [requerimiento?.unidad],
       cantidad: [requerimiento?.cantidad, [Validators.required]],
-      precio_unitario: [requerimiento?.precio, []],
-      parcial: [requerimiento?.cantidad * requerimiento?.precio],
+      precio_unitario: [requerimiento?.precio, [Validators.required]],
+      parcial: [0, [Validators.required]],
       estado: [1],
       index_grupo: [0],
       id_grupo: [0],
@@ -1702,8 +1975,14 @@ export class EquiposHerramientasComponent implements OnInit {
       index_elemento: [this.equipos.length],
       id_proyecto: [this.id_proyecto],
       tipo_registro: ['ALQUILADO'],
-      tipo: ['H-M'],
-      nroprov: [regAct?.nroprov]
+      tipo: [{
+        value: 'H-M',
+        disabled: false
+      }],
+      nroprov: [regAct?.nroprov],
+      desagregadosCompleto: [[]],
+      tiempo_registrado: [0],
+      total_registrado: [0]
     });
     return form
 
@@ -1717,8 +1996,19 @@ export class EquiposHerramientasComponent implements OnInit {
 
   }
   // Eliminar fila
-  eliminarFilaModal(index: number) {
-
+  eliminarFilaModal(index: number, row) {
+    if (row.desagredados.length) {
+      this.toaster.error(
+        'El equipo tiene registros en planilla, elimine todos los registro en planilla para poder eliminar',
+        '',
+        {
+          closeButton: false,
+          positionClass: 'toast-bottom-right',
+          timeOut: 4000,
+        }
+      );
+      return
+    }
     if (this.actualizarEquipos) {
       const id = this.equipos.value[index].id_equipo
       if (!this.idEquiposEliminar.includes(id)) {
@@ -1765,7 +2055,11 @@ export class EquiposHerramientasComponent implements OnInit {
     this.celdaSel = [null, null]
     this.buscando = true
     this.detalleMensual = []
+    this.acumuladoCantidades = [];
+    this.acumuladoParciales = [];
+    this.resumenPorAnio = [];
     row.item !== 0 ? this.selFilPlan = i : null
+    this.formDesagregado.reset()
     while (this.tiempos.value.length) {
       this.tiempos.removeAt(0);
     }
@@ -1916,6 +2210,7 @@ export class EquiposHerramientasComponent implements OnInit {
     this.buscando = false
   }
 
+  // Método para procesar los datos del equipo (tu método existente mejorado)
   procesarEquipoPorMes(equipo, mesesCalendario) {
     // Primero, obtener los resultados de los registros existentes
     const resultadosConDatos = [];
@@ -2042,10 +2337,58 @@ export class EquiposHerramientasComponent implements OnInit {
     });
 
     // Ordenar por año y mes
-    return todosLosMeses.sort((a, b) => {
+    const resultado = todosLosMeses.sort((a, b) => {
       if (a.anio !== b.anio) return a.anio - b.anio;
       return a.mes_numero - b.mes_numero;
     });
+
+    // Asignar a detalleMensual
+    this.detalleMensual = resultado;
+    this.recalcularAcumuladosYResumen();
+    return resultado;
+  }
+
+  recalcularAcumuladosYResumen() {
+    // Recalcular acumulados mensuales
+    this.acumuladoCantidades = [];
+    this.acumuladoParciales = [];
+
+    let acumCantidad = 0;
+    let acumParcial = 0;
+
+    for (let i = 0; i < this.detalleMensual.length; i++) {
+      acumCantidad += this.detalleMensual[i].cantidad;
+      acumParcial += this.detalleMensual[i].parcial;
+
+      this.acumuladoCantidades[i] = acumCantidad;
+      this.acumuladoParciales[i] = acumParcial;
+    }
+
+    // Recalcular resumen por año
+    this.calcularResumenPorAnio();
+  }
+
+  calcularResumenPorAnio() {
+    const resumenMap = new Map<number, { cantidad: number, parcial: number }>();
+
+    this.detalleMensual.forEach(mes => {
+      const anio = mes.anio;
+      if (!resumenMap.has(anio)) {
+        resumenMap.set(anio, { cantidad: 0, parcial: 0 });
+      }
+      const anioData = resumenMap.get(anio);
+      anioData.cantidad += mes.cantidad;
+      anioData.parcial += mes.parcial;
+    });
+
+    // Convertir a array y ordenar por año
+    this.resumenPorAnio = Array.from(resumenMap.entries())
+      .map(([anio, data]) => ({
+        anio: anio,
+        cantidad_total: data.cantidad,
+        parcial_total: data.parcial
+      }))
+      .sort((a, b) => a.anio - b.anio);
   }
 
   // Función auxiliar
@@ -2099,6 +2442,25 @@ export class EquiposHerramientasComponent implements OnInit {
     }
     this.buscando = false
   }
+
+
+  calcularAcumuladoCantidad(indice: number): number {
+    let acumulado = 0;
+    for (let i = 0; i <= indice; i++) {
+      acumulado += this.detalleMensual[i]?.cantidad || 0;
+    }
+    return acumulado;
+  }
+
+  // Método para calcular acumulado de parcial
+  calcularAcumuladoParcial(indice: number): number {
+    let acumulado = 0;
+    for (let i = 0; i <= indice; i++) {
+      acumulado += this.detalleMensual[i]?.parcial || 0;
+    }
+    return acumulado;
+  }
+
   // Obtener fecha mínima del mes actual
   obtenerMinFechaMes(): string {
     if (this.calendarioFiltrado && this.calendarioFiltrado.dias && this.calendarioFiltrado.dias.length > 0) {
@@ -2614,4 +2976,22 @@ export class EquiposHerramientasComponent implements OnInit {
     }
 
   }
+
+
+  async actualizarDataCompleta() {
+
+    const i = this.filSelRegAct
+    this.filSelRegAct = null
+    const tablaRegActividades = this.tablaRegActividades.map(element => {
+      element.servicios = this.tablaServiciosCompleto.filter(ele => ele.id_grupo == Number(element.idgrupo) && ele.id_registro == element.id_registro)
+      return element
+    })
+    this.tablaRegActividades = await this.procesarCantidadAcumulada(tablaRegActividades)
+    const row = this.tablaRegActividades[i]
+
+    await this.selTablaRegAct(row, i)
+    await this.calcularTotales()
+  }
+
+
 }

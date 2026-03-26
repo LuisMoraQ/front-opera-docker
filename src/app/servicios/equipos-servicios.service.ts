@@ -21,8 +21,6 @@ export class EquiposServiciosService {
     const formData = new FormData();
     formData.append('equipos', JSON.stringify(equipos));
 
-    console.log('Enviando equipos:', JSON.stringify(equipos));
-
     const url = this.enviUrl + '/api/equiposservicios/guardarEquiposServicio';
 
     return this.http.post<any>(url, formData).pipe(
@@ -46,6 +44,23 @@ export class EquiposServiciosService {
       formData.append(key, value as string);
     });
     const url = this.enviUrl + '/api/equiposservicios/listarEquipoServicio';
+    return this.http.post<any>(url, formData).pipe(
+      map(res => {
+        if (!res) {
+          throw new Error
+        }
+        return res
+      }),
+      catchError(err => throwError(err))
+    ).toPromise()
+  }
+
+  actualizarEstadoEquipo(params = {}): Promise<any> {
+    let formData: FormData = new FormData();
+    Object.entries(params).forEach(([key, value]) => {
+      formData.append(key, value as string);
+    });
+    const url = this.enviUrl + '/api/equiposservicios/actualizarEstadoEquipo';
     return this.http.post<any>(url, formData).pipe(
       map(res => {
         if (!res) {
@@ -150,7 +165,6 @@ export class EquiposServiciosService {
 
     return this.http.post<any>(url, formData).pipe(
       map(res => {
-        console.log('Respuesta del servidor:', res);
         return res;
       }),
       catchError(err => {
@@ -169,7 +183,6 @@ export class EquiposServiciosService {
     const url = this.enviUrl + '/api/equiposservicios/recuperarProveedor';
     return this.http.post<any>(url, formData).pipe(
       map(res => {
-        console.log('res', res)
         if (!res) {
           throw new Error
         }
@@ -194,7 +207,6 @@ export class EquiposServiciosService {
         }
         
         // La respuesta tendrá dos arrays
-        console.log('res', res)
         const datosPrincipales = res[0];  // Primer SELECT
         const datosDesagregados = res[1]; // Segundo SELECT
         
