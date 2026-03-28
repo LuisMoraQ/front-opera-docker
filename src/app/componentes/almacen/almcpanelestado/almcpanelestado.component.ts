@@ -159,17 +159,30 @@ export class AlmcpanelestadoComponent implements OnInit {
     else this.filasol_sel = ind;
   }
   async cambiarEstOrden(row:any){
-    this.mostrar_carga_todo=true;
-    let res = await this._logisticaService.ActualizaEstOrdenAgru({id_proyecto: this.id_proyecto,id_registro: row.id_registro,idgrupo: row.idgrupo,estorden: 1 }); //iding idregmov
-    if(res[0]?.id=="1")
-    {
-      this.mostrar_carga_todo=false;
-      SwalService.success('Correcto',res[0].mensaje);
+    const respu=await SwalService.multiple2('Seleccione una opción?','','Aprobar sin Observaciones','Observar sin Conformidad');
+    let valest
+    if(respu.isConfirmed){//aprobado
+      valest=3
+    }
+    else if(respu.dismiss.toString()=='cancel'){//con observacion
+      valest=4
     }
     else{
-      this.mostrar_carga_todo=false;
-      SwalService.error('Advertencia',"No se pudo realizar la operación.");
+      return;
+    }
+    if(valest){
+      this.mostrar_carga_todo=true;
+      let res = await this._logisticaService.ActualizaEstOrdenAgru({id_proyecto: this.id_proyecto,id_registro: row.id_registro,idgrupo: row.idgrupo,estorden: valest }); //iding idregmov
+      if(res[0]?.id=="1")
+      {
+        row.estorden=valest;
+        this.mostrar_carga_todo=false;
+        SwalService.success('Correcto',res[0].mensaje);
+      }
+      else{
+        this.mostrar_carga_todo=false;
+        SwalService.error('Advertencia',"No se pudo realizar la operación.");
+      }
     }
   }
-  
 }

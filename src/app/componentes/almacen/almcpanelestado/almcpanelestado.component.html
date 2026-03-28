@@ -62,11 +62,11 @@
                     <!-- <label *ngIf="row.estado==2" class="label label-success label-est">Orden Atención</label> -->
                   </td>
                   <td appAnchocol [ancho]="95">
-                    <label *ngIf="row.estorden==0" class="label label-danger label-est" (click)="cambiarEstOrden(row)">Sin Registro de Atención</label>
-                    <label *ngIf="row.estorden==1" class="label label-est" style="background-color: 'darkorange';">Pendiente a la Conformidad</label>
-                    <label *ngIf="row.estorden==2" class="label label-info label-est">En Ejecución del Requerimiento</label>
-                    <label *ngIf="row.estorden==3" class="label label-primary label-est">Aprobado sin Observaciones</label>
-                    <label *ngIf="row.estorden==4" class="label label-success label-est">Observado sin Conformidad</label>
+                    <label *ngIf="row.estorden==0" class="label label-primary label-est3">Sin Registro de Atención</label>
+                    <label *ngIf="row.estorden==1" class="label label-info label-est3">En Ejecución del Requerimiento</label>
+                    <label *ngIf="row.estorden==2" class="label label-est3" style="background-color: 'darkorange';cursor:pointer;" (click)="cambiarEstOrden(row)">Pendiente a la Conformidad</label>
+                    <label *ngIf="row.estorden==3" class="label label-success label-est3">Aprobado sin Observaciones</label>
+                    <label *ngIf="row.estorden==4" class="label label-danger label-est3">Observado sin Conformidad</label>
                   </td>
                 </tr>
               </ng-container>

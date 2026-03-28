@@ -639,9 +639,8 @@ export class AlmcsalidaComponent implements OnInit {
                 estadosal: estadosal,
                 datos1: tabla1,
               });
-              let res = await this._logisticaService.EliminarNotaSalAlmcObra(
-                body
-              ); //iding idregmov
+              let res = await this._logisticaService.EliminarNotaSalAlmcObra(body); //iding idregmov
+              console.log(res)
               if (res?.id == '1') {
                 this.fila4_sel = -1;
                 await this.listar1();
@@ -817,9 +816,8 @@ export class AlmcsalidaComponent implements OnInit {
                 datos1: tabla1,
                 datos2: tabla2,
               });
-              let res = await this._logisticaService.GuardarSalidaAlmcobra(
-                body
-              ); //iding idregmov
+              let res = await this._logisticaService.GuardarSalidaAlmcobra(body); //iding idregmov
+              console.log(res)
               if (res?.id == '1') {
                 await this.listar1();
                 //cargar los elementos seleccionados
@@ -893,6 +891,7 @@ export class AlmcsalidaComponent implements OnInit {
                 datos2: tabla2,
               });
               let res = await this._logisticaService.EditarSalidaAlmcobra(body); //iding idregmov
+              console.log(res)
               if (res?.id == '1') {
                 await this.listar1();
                 //cargar los elementos seleccionados

@@ -30,6 +30,8 @@ export class AlmcrepvalorizadoComponent implements OnInit {
   totalingreso
   totalsalida
   totalsaldo
+  sincontenido=false;
+  cargainicial=false;
 
   paddingscroll=0
   paddingscroll2=0
@@ -58,6 +60,7 @@ export class AlmcrepvalorizadoComponent implements OnInit {
   ) { }
 
   async ngOnInit() {
+    this.cargainicial=true;
     this.heighttmodal1=window.innerHeight-261;
     this.id_reg = this.filareg.idregmov;
     this.id_proyecto = this.filareg.id_proyecto;
@@ -75,18 +78,19 @@ export class AlmcrepvalorizadoComponent implements OnInit {
       this.mask_cant = '0.' + arrdec[3];
     }
     let res = await this._logisticaService.ListarMovalmcobraRepValo({id_proyecto: this.id_proyecto,fechaini: this.filareg.fechaini,fechafin: this.filareg.fechafin,iding: this.id_reg }); //iding idregmov
-    console.log(res);
     this.buscando = false;
     if (res?.length > 0) {
       this.dataagru = res[0];
       this.dataingreso=res[1]
       this.datasalida=res[2]
+      if(this.dataingreso.length==0 && this.datasalida.length==0){
+        this.sincontenido=true;
+      }
       // this.DatosDisgre=res[1]
       let ini1=this.dataingreso[0]?moment(this.dataingreso[0].fecha).format('YYYY-MM-DD'):null;
       let ini2=this.datasalida[0]?moment(this.datasalida[0].fecha).format('YYYY-MM-DD'):null;
       let fin1=this.dataingreso[this.dataingreso.length-1]?moment(this.dataingreso[this.dataingreso.length-1].fecha).format('YYYY-MM-DD'):null;
       let fin2=this.datasalida[this.datasalida.length-1]?moment(this.datasalida[this.datasalida.length-1].fecha).format('YYYY-MM-DD'):null;
-      console.log(ini1,ini2,fin1,fin2)
       if(ini1){
         if(ini2)
           this.fechamenor=ini1<ini2?ini1:ini2;
@@ -115,6 +119,7 @@ export class AlmcrepvalorizadoComponent implements OnInit {
     } else {
       this.toaster.error('No se pudo cargar la información.', 'Advertencia', { closeButton: false,positionClass: 'toast-bottom-right',timeOut: 5000 });
     }
+    this.cargainicial=false;
   }
   @HostListener('window:resize', ['$event'])
   onResize(event) {
@@ -164,6 +169,10 @@ export class AlmcrepvalorizadoComponent implements OnInit {
     else this.fila_sel = ind;
   }
   ActualizarRep(){
+    if(this.sincontenido){
+      this.toaster.error('No existen registros de Ingresos ni de Salidas de almacen.','Advertencia',{closeButton: false,positionClass: 'toast-bottom-right',timeOut: 5000});
+      return;
+    }
     this.mostrar_carga_todo=true;
     this.arrmes=[]
     this.totalingreso=0;
@@ -213,12 +222,11 @@ export class AlmcrepvalorizadoComponent implements OnInit {
       numvalan=numvalmes>12?(numvalan+1):numvalan
       numvalmes=numvalmes>12?1:numvalmes
     }
-    console.log(this.arrmes)
   }
   CalcularColdetalle(){
     let objfila=null
     for (let row of this.dataingreso){
-      if(objfila?.id_registro!=row.id_registro && objfila?.idgrupo!=row.idgrupo){
+      if(!(objfila?.id_registro==row.id_registro && objfila?.idgrupo==row.idgrupo)){
         objfila=this.dataSourcePri.find(ele=> ele.id_registro==row.id_registro && ele.idgrupo==row.idgrupo)
       }
       if(objfila){
@@ -245,12 +253,11 @@ export class AlmcrepvalorizadoComponent implements OnInit {
             objfila.totsaldo=Number(objfila.totingreso??0)-Number(objfila.totsalida??0)
           }
         }
-        console.log(JSON.parse(JSON.stringify(objfila)))
       }
     }
     objfila=null
     for (let row of this.datasalida){
-      if(objfila?.id_registro!=row.id_registro && objfila?.idgrupo!=row.idgrupo){
+      if(!(objfila?.id_registro==row.id_registro && objfila?.idgrupo==row.idgrupo)){
         objfila=this.dataSourcePri.find(ele=> ele.id_registro==row.id_registro && ele.idgrupo==row.idgrupo)
       }
       if(objfila){
@@ -277,7 +284,6 @@ export class AlmcrepvalorizadoComponent implements OnInit {
             objfila.totsaldo=Number(objfila.totingreso??0)-Number(objfila.totsalida??0)
           }
         }
-        console.log(JSON.parse(JSON.stringify(objfila)))
       }
     }
     for(let row of this.arrmes){

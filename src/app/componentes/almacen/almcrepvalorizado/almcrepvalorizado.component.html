@@ -17,7 +17,7 @@
           <input class="form-control inputmes mtop12 m-r-5" type="month" [(ngModel)]="minicio" [disabled]="completo">
           <input class="form-control inputmes mtop12" type="month" [(ngModel)]="mfin" [disabled]="completo">
         </div>
-        <button type="button" class="btn btn-success btn-sm" (click)="ActualizarRep()">
+        <button type="button" class="btn btn-success btn-sm" (click)="ActualizarRep()" [disabled]="cargainicial">
           <i class="fa fa-check"></i>Actualizar
         </button>
       </div>
