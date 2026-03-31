@@ -81,7 +81,7 @@ export class CompcostosComponent implements OnInit {
     if(res?.length>0){
       let taux=res[0]
       for(let a=0;a<taux.length;a++){
-        if(!(taux[a].tipocontra==1 || taux[a].tipocontra==2)){
+        if(!(taux[a].tipocontra==1 || taux[a].tipocontra==2 || taux[a].tipocontra==4)){
           taux.splice(a,1)
           a--;
           continue;

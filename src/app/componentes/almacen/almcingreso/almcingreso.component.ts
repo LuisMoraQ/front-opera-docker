@@ -86,6 +86,7 @@ export class AlmcingresoComponent implements OnInit {
   @ViewChild('modalHojas') modalHojas: ModalBasicComponent;
   nroingreso = '';
   fechaingreso = '';
+  indicaingreso = '';
   nroreqsel: any;
   detreqsol: any;
   lugreqsol: any;
@@ -380,6 +381,10 @@ export class AlmcingresoComponent implements OnInit {
   async OpenModalIngreso1() {
     if (this.fila2_sel != -1) {
       let estadoreq = this.dataSource2[this.fila2_sel].estingreso;
+      if(this.dataSource2[this.fila2_sel].estado!=2){
+        this.toaster.error('El requerimiento aun no esta en estado Orden de Atención.','Advertencia',{closeButton: false,positionClass: 'toast-bottom-right',timeOut: 5000});
+        return;
+      }
       if (estadoreq != 2) {
         this.tott5 = this.formService.redondeo(0, this.dec_parcial);
         if (this.fila2_sel != -1) {
@@ -436,6 +441,7 @@ export class AlmcingresoComponent implements OnInit {
           this.lugreqsol = this.dataSource2[this.fila2_sel].entrega;
           this.nroingreso = this.dataSource4[this.fila4_sel].nroingreso;
           this.fechaingreso = this.dataSource4[this.fila4_sel].fecha;
+          this.indicaingreso = this.dataSource4[this.fila4_sel].indicador;
           this.fechaSal = this.fechaingreso;
 
           this.dataSource3aux = [];
@@ -578,6 +584,16 @@ export class AlmcingresoComponent implements OnInit {
                 }
                 let estadoing = suma3 > 0 ? 0 : 1;
                 let estadosal = sald3b > 0 ? 0 : 1;
+                //verificar si hay saldo o no, para actualizar el estado de agrupacion
+                //si no hay registros, entonces seria 0, sino 1
+                let count=0
+                for(let row of this.dataSource4){
+                  console.log(row)
+                  if(row.idfila==null){
+                    count++;
+                  }
+                }
+                let estordenpas=count>1?1:0
                 const tabla1 = JSON.stringify(aux2);
                 const body = JSON.stringify({
                   id_proyecto: this.id_proyecto,
@@ -588,6 +604,7 @@ export class AlmcingresoComponent implements OnInit {
                   idgrupo: this.dataSource2[this.fila2_sel].idgrupo,
                   estadoing: estadoing,
                   estadosal: estadosal,
+                  estorden:estordenpas,
                   datos1: tabla1,
                 });
                 let res = await this._logisticaService.EliminarNotaIngAlmcObra(body); //iding idregmov
@@ -631,6 +648,7 @@ export class AlmcingresoComponent implements OnInit {
         //cancelar
         this.editaing = false;
         this.fechaingreso = null;
+        this.indicaingreso=null;
         this.seltodo5 = 0;
         this.dataSource5 = [];
         this.bcambiost5 = false;
@@ -641,6 +659,7 @@ export class AlmcingresoComponent implements OnInit {
     } else {
       this.editaing = false;
       this.fechaingreso = null;
+      this.indicaingreso=null;
       this.seltodo5 = 0;
       this.bcambiost5 = false;
       this.dataSource5 = [];
@@ -715,6 +734,12 @@ export class AlmcingresoComponent implements OnInit {
               }
               let estadoing = suma3 > 0 ? 0 : 1;
               let estadosal = sald3b > 0 ? 0 : 1;
+              //verificar si hay saldo o no, para actualizar el estado de agrupacion
+              let estordenpas=Number(this.tab3auxtotalsal)==0?2:1;
+              let fechalim = this.dataSource2[this.fila2_sel].fecha_max?new Date(this.dataSource2[this.fila2_sel].fecha_max):null;
+              let fecha1=new Date(this.fechaSal)
+              let indicadorpas=fecha1>fechalim?1:0
+              //recalcular indicador
               // nuevos parametros para metodo
               const tabla1 = JSON.stringify(aux);
               const tabla2 = JSON.stringify(aux2);
@@ -726,6 +751,8 @@ export class AlmcingresoComponent implements OnInit {
                 estadoing: estadoing,
                 estadosal: estadosal,
                 fecha: this.fechaSal,
+                estorden:estordenpas,
+                indicador:indicadorpas,
                 datos1: tabla1,
                 datos2: tabla2,
               });
@@ -789,6 +816,8 @@ export class AlmcingresoComponent implements OnInit {
                 }
                 let estadoing = suma3 > 0 ? 0 : 1;
                 let estadosal = sald3b > 0 ? 0 : 1;
+                //verificar si hay saldo o no, para actualizar el estado de agrupacion
+                let estordenpas=Number(this.tab3auxtotalsal)==0?2:1
                 // nuevos parametros para metodo
                 const tabla1 = JSON.stringify(this.dataSource5);
                 const tabla2 = JSON.stringify(aux2);
@@ -802,6 +831,8 @@ export class AlmcingresoComponent implements OnInit {
                   estadoing: estadoing,
                   estadosal: estadosal,
                   fecha: this.fechaingreso,
+                  indicador:this.indicaingreso,
+                  estorden:estordenpas,
                   datos1: tabla1,
                   datos2: tabla2,
                 });

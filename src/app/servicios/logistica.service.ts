@@ -236,6 +236,15 @@ export class LogisticaService {
       catchError(err => throwError(err))
     ).toPromise()
   }
+  ListarMovalmcobraRepDiarioDet(params = {}): Promise<any> {
+    const url = this.enviUrl + '/api/almacen/listarMovalmcobraRepDiarioDet';
+    return this.http.post<any>(url, this.Cargafrmdata(params)).pipe(
+      map(res => {
+        return res
+      }),
+      catchError(err => throwError(err))
+    ).toPromise()
+  }
   EliminarMovalmcobra(params = {}): Promise<any> {
     const url = this.enviUrl + '/api/almacen/eliminarMovalmcobra';
     return this.http.post<any>(url, this.Cargafrmdata(params)).pipe(

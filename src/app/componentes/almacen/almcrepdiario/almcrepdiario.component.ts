@@ -1,6 +1,8 @@
 import { Component, OnInit,Input,HostListener } from '@angular/core';
 import { ToastrService } from 'ngx-toastr';
 import { LogisticaService } from 'src/app/servicios/logistica.service';
+import * as moment from 'moment';
+import { FormsService } from 'src/app/servicios/forms.service';
 
 @Component({
   selector: 'app-almcrepdiario',
@@ -24,6 +26,7 @@ export class AlmcrepdiarioComponent implements OnInit {
   mask_cant='0.4';
   simbolo=''
   mostrar_carga_todo=false;
+  cargainicial=false;
 
   dataSource=[]
   heighttmodal1:any;
@@ -33,6 +36,8 @@ export class AlmcrepdiarioComponent implements OnInit {
   dataagru=[]
   dataingreso=[]
   datasalida=[]
+  ingresoant=[]
+  salidaant=[]
 
   minicio
   nombmes
@@ -44,10 +49,12 @@ export class AlmcrepdiarioComponent implements OnInit {
 
   constructor(
     private _logisticaService: LogisticaService,
+    public formService: FormsService,
     private toaster: ToastrService,
   ) { }
 
   async ngOnInit() {
+    this.cargainicial=true;
     this.heighttmodal1=window.innerHeight-230;
     this.id_reg = this.filareg.idregmov;
     this.id_proyecto = this.filareg.id_proyecto;
@@ -64,8 +71,7 @@ export class AlmcrepdiarioComponent implements OnInit {
       //this.dec_cant = arrdec[3];
       this.mask_cant = '0.' + arrdec[3];
     }
-    let res = await this._logisticaService.ListarMovalmcobraRepDiario({id_proyecto: this.id_proyecto,fechaini: this.filareg.fechaini,fechafin: this.filareg.fechafin,iding: this.id_reg }); //iding idregmov
-    console.log(res);
+    let res = await this._logisticaService.ListarMovalmcobraRepDiario({id_proyecto: this.id_proyecto }); //iding idregmov
     this.buscando = false;
     if (res?.length > 0) {
       let arraux=[...res[0],...res[1]]
@@ -77,7 +83,6 @@ export class AlmcrepdiarioComponent implements OnInit {
           return 1;
         }
       });
-      console.log(JSON.parse(JSON.stringify(arrfinal)))
       let idact=''
       let nroorden=0
       for(let a=0;a<arrfinal.length;a++){
@@ -96,15 +101,13 @@ export class AlmcrepdiarioComponent implements OnInit {
         arrfinal[a].icomost=1
       }
       this.dataagru = arrfinal
-      this.dataingreso=res[2]
-      this.datasalida=res[3]
+      /* this.dataingreso=res[2]
+      this.datasalida=res[3] */
       //si tabla 2 y tabla 3 no hay filas, no cargar nada y mostrar mensaje?
-      if(this.dataingreso.length<=0 && this.datasalida.length<=0){
-        this.toaster.error('No existen Ingresos ni Salidas.', 'Advertencia', { closeButton: false,positionClass: 'toast-bottom-right',timeOut: 5000 });
-      }
     } else {
       this.toaster.error('No se pudo cargar la información.', 'Advertencia', { closeButton: false,positionClass: 'toast-bottom-right',timeOut: 5000 });
     }
+    this.cargainicial=false;
   }
   @HostListener('window:resize', ['$event'])
   onResize(event) {
@@ -115,22 +118,104 @@ export class AlmcrepdiarioComponent implements OnInit {
     else this.fila_sel = ind;
   }
 
-  ActualizarRep(){
-    console.log(this.minicio)
+  async ActualizarRep(){
     this.mostrar_carga_todo=true;
-    this.arrmes=[]
-    this.dataSource=JSON.parse(JSON.stringify(this.dataagru))
-    
     if(this.minicio){
-      const d1 = this.minicio.split('-'); 
+      this.arrmes=[]
+      this.dataSource=JSON.parse(JSON.stringify(this.dataagru))
+      const d1 = this.minicio.split('-');
+      let fini=this.minicio+'-01';
+      const ultimoDia = new Date(Number(d1[0]), Number(d1[1]), 0);
+      let ffin=moment(ultimoDia).format('YYYY-MM-DD');
+      let res = await this._logisticaService.ListarMovalmcobraRepDiarioDet({id_proyecto: this.id_proyecto,fechaini: fini,fechafin: ffin }); //iding idregmov
+      this.dataingreso=res[0]
+      this.datasalida=res[1]
+      //anteriores
+      this.ingresoant=res[2]
+      this.salidaant=res[3]
+      if(this.dataingreso.length<=0 && this.datasalida.length<=0){
+        this.mostrar_carga_todo=false;
+        this.toaster.error('No existen Ingresos ni Salidas.', 'Advertencia', { closeButton: false,positionClass: 'toast-bottom-right',timeOut: 5000 });
+        return;
+      }
       this.CalculaColmes(Number(d1[1]),Number(d1[0]))
       //agregar detalles
-      //this.CalcularColdetalle()
+      this.CalcularColdetalle()
     }
     else{
       this.toaster.error('Seleccione un Mes para generar el reporte.','Advertencia',{closeButton: false,positionClass: 'toast-bottom-right',timeOut: 5000});
     }
     this.mostrar_carga_todo=false;
+  }
+  CalcularColdetalle(){
+    let objfila=null
+    for (let row of this.dataingreso){
+      if(!(objfila?.id_registro==row.id_registro && objfila?.idgrupo==row.idgrupo && objfila?.idfila==row.idfila && objfila?.indrep==row.indrep)){        
+        objfila=this.dataSource.find(ele=> ele.id_registro==row.id_registro && ele.idgrupo==row.idgrupo && ele.idfila==row.idfila && ele.indrep==row.indrep)
+      }
+      if(objfila){
+        if(objfila.dataing){
+          let arrfecha=row.fecha.split('-')
+          let diabusca=Number(arrfecha[2])
+          objfila.dataing[diabusca-1]=row.cantidad;
+          objfila.totingreso=(objfila.totingreso??0)+Number(row.cantidad);
+          //objfila.totsaldo=Number(objfila.totingreso??0)-Number(objfila.totsalida??0)
+        }
+        else{
+          objfila.dataing=Array(this.arrmes.length).fill(null)
+          let arrfecha=row.fecha.split('-')
+          let diabusca=Number(arrfecha[2])
+          objfila.dataing[diabusca-1]=row.cantidad;
+          objfila.totingreso=(objfila.totingreso??0)+Number(row.cantidad);
+          //objfila.totsaldo=Number(objfila.totingreso??0)-Number(objfila.totsalida??0)
+        }
+      }
+    }
+    objfila=null
+    for (let row of this.datasalida){
+      if(!(objfila?.id_registro==row.id_registro && objfila?.idgrupo==row.idgrupo && objfila?.idfila==row.idfila && objfila?.indrep==row.indrep)){
+        objfila=this.dataSource.find(ele=> ele.id_registro==row.id_registro && ele.idgrupo==row.idgrupo && ele.idfila==row.idfila && ele.indrep==row.indrep)
+      }
+      if(objfila){
+        if(objfila.datasal){
+          let arrfecha=row.fecha.split('-')
+          let diabusca=Number(arrfecha[2])
+          objfila.datasal[diabusca-1]=row.cantidad;
+          objfila.totsalida=(objfila.totsalida??0)+Number(row.cantidad);
+          // objfila.totsaldo=Number(objfila.totingreso??0)-Number(objfila.totsalida??0)
+        }
+        else{
+          objfila.datasal=Array(this.arrmes.length).fill(null)
+          let arrfecha=row.fecha.split('-')
+          let diabusca=Number(arrfecha[2])
+          objfila.datasal[diabusca-1]=row.cantidad;
+          objfila.totsalida=(objfila.totsalida??0)+Number(row.cantidad);
+          // objfila.totsaldo=Number(objfila.totingreso??0)-Number(objfila.totsalida??0)
+        }
+      }
+    }
+    for(let row of this.dataSource){
+      if(this.ingresoant.length>0){
+        let objfila=this.ingresoant.find(ele=> ele.id_registro==row.id_registro && ele.idgrupo==row.idgrupo && ele.idfila==row.idfila && ele.indrep==row.indrep)
+        if(objfila){
+          row.cantingant=objfila.cantAnt;
+          row.valingant=objfila.parcAnt;
+        }
+      }
+      if(this.salidaant.length>0){
+        let objfila=this.salidaant.find(ele=> ele.id_registro==row.id_registro && ele.idgrupo==row.idgrupo && ele.idfila==row.idfila && ele.indrep==row.indrep)
+        if(objfila){
+          row.cantsalant=objfila.cantAnt;
+          row.valsalant=objfila.parcAnt;
+        }
+      }
+      //calcular demas
+      row.valmesing=this.formService.redondeo(Number(row.totingreso??0)*Number(row.preciosol), this.dec_parcial);
+      row.valmessal=this.formService.redondeo(Number(row.totsalida??0)*Number(row.preciosol), this.dec_parcial);
+      row.valacuing=this.formService.redondeo(Number(row.valmesing??0)+Number(row.valingant??0), this.dec_parcial);
+      row.valacusal=this.formService.redondeo(Number(row.valmessal??0)+Number(row.valsalant??0), this.dec_parcial);
+      row.valsaldo=this.formService.redondeo(Number(row.valacuing??0)-Number(row.valacusal??0), this.dec_parcial);
+    }
   }
   CalculaColmes(mes:number,anio:number){
       const numDias = new Date(anio, mes, 0).getDate();
@@ -144,6 +229,5 @@ export class AlmcrepdiarioComponent implements OnInit {
           nomdia: inicialesDias[indiceDia]
         });
       }
-      console.log(this.arrmes)
     }
 }

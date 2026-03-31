@@ -182,7 +182,7 @@ export class CompcotizaComponent implements OnInit {
       for(let a=0;a<arrfinal.length;a++){
         if(arrfinal[a].idfila==0)
         {
-          if(!(arrfinal[a].tipocontra==1 || arrfinal[a].tipocontra==2)){
+          if(!(arrfinal[a].tipocontra==1 || arrfinal[a].tipocontra==2 || arrfinal[a].tipocontra==4)){
             idact=arrfinal[a].idgrupo
             arrfinal.splice(a,1);
             a--;
@@ -219,6 +219,7 @@ export class CompcotizaComponent implements OnInit {
     this.indver=ind
     this.rowver=row
     this.presel=row.nroprov
+    this.puedecanc=-1
     this.ruc1.setValue(row.ruc1)
     this.razon1.setValue(row.razon1)
     this.telefono1.setValue(row.telefono1)
@@ -226,7 +227,7 @@ export class CompcotizaComponent implements OnInit {
     this.direccion1.setValue(row.direccion1)
     this.actividad1.setValue(row.actividad1)
     this.contacto1.setValue(row.representante1)
-    this.fecha1.setValue(this.presel==1 && this.rowver.estado==2?row.fecha_gana:row.fecha_sol1)
+    this.fecha1.setValue(this.presel==1 && this.rowver.estado==2?row.vfechagana:row.fecha_sol1)
     this.plazo1.setValue(this.presel==1 && this.rowver.estado==2?row.plazo_gana:row.plazo1)
     this.estado1.setValue(row.fecha_resp1?'Atendido':'Pendiente')
     this.razon2.setValue(row.razon2)
@@ -236,7 +237,7 @@ export class CompcotizaComponent implements OnInit {
     this.direccion2.setValue(row.direccion2)
     this.actividad2.setValue(row.actividad2)
     this.contacto2.setValue(row.representante2)
-    this.fecha2.setValue(this.presel==2 && this.rowver.estado==2?row.fecha_gana:row.fecha_sol2)
+    this.fecha2.setValue(this.presel==2 && this.rowver.estado==2?row.vfechagana:row.fecha_sol2)
     this.plazo2.setValue(this.presel==2 && this.rowver.estado==2?row.plazo_gana:row.plazo2)
     this.estado2.setValue(row.fecha_resp2?'Atendido':'Pendiente')
     this.razon3.setValue(row.razon3)
@@ -246,24 +247,27 @@ export class CompcotizaComponent implements OnInit {
     this.direccion3.setValue(row.direccion3)
     this.actividad3.setValue(row.actividad3)
     this.contacto3.setValue(row.representante3)
-    this.fecha3.setValue(this.presel==3 && this.rowver.estado==2?row.fecha_gana:row.fecha_sol3)
+    this.fecha3.setValue(this.presel==3 && this.rowver.estado==2?row.vfechagana:row.fecha_sol3)
     this.plazo3.setValue(this.presel==3 && this.rowver.estado==2?row.plazo_gana:row.plazo3)
     this.estado3.setValue(row.fecha_resp3?'Atendido':'Pendiente')
     //cargar condicionales de ver cancelar verificar fechas fecha_gana,plazo_gana
-    // if(row.fecha_gana){
-    //   let fhoy=moment(fechaac).format('YYYY-MM-DD')
-    //   console.log(fhoy)
-    //   let fechaana1=new Date(moment(fhoy).format('YYYY-MM-DD')+' 09:00:00');
-    //   let fechaa = moment(fechaana1);
-    //   let fechana=new Date(moment(row.fecha_gana).format('YYYY-MM-DD')+' 09:00:00');
-    //   fechana.setDate(fechana.getDate()+Number(row.plazo_gana))
-    //   let fechab = moment(fechana);
-    //   let difdias=(fechab.diff(fechaa, 'days'));
-    //   if(difdias<0){
-    //     this.puedecanc=row.nroprov
-    //   }
-    // }
-    this.puedecanc=row.nroprov
+    if(row.fecha_gana){
+      let fhoy=moment(this.fechaac).format('YYYY-MM-DD')
+      let fechaana1=new Date(moment(fhoy).format('YYYY-MM-DD')+' 09:00:00');
+      let fechaa = moment(fechaana1);
+
+      let fechana=new Date(moment(row.fecha_gana).format('YYYY-MM-DD')+' 09:00:00');
+      fechana.setDate(fechana.getDate()+Number(row.plazo_gana))
+      let fechab = moment(fechana);
+      let difdias=(fechab.diff(fechaa, 'days'));
+      if(difdias<0){
+        this.puedecanc=row.nroprov
+      }
+    }
+    // let validoanula=row.estorden==0 || row.estorden==4;  //agregar esta validacion tambien
+    // if(validoanula)
+    //   this.puedecanc=row.nroprov
+    
   }
   toggleOn(tipo: any) {
     for (let row of this.dataSource) {

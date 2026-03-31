@@ -246,8 +246,8 @@
                 <span class="float-right">{{row.parcial | number: mask_parcial}}</span>
               </td>
               <td appAnchocol [ancho]="66"> 
-                <label *ngIf="row.indicador==0 && row.unidad!=''" class="label label-info spanest" style="width: 62px;font-size: 9px;">Sin Penalidad</label>
-                <label *ngIf="row.indicador==1 && row.unidad!=''" class="label label-danger spanest" style="width: 62px;font-size: 9px">Con Penalidad</label>
+                <label *ngIf="row.indicador==0 && row.unidad!=''" class="label label-info spanest" style="width: 65px;font-size: 9px;">Sin Penalidad</label>
+                <label *ngIf="row.indicador==1 && row.unidad!=''" class="label label-danger spanest" style="width: 65px;font-size: 9px">Con Penalidad</label>
                 <label *ngIf="row.unidad==''" class="label label-success spanest" style="width: 22px;font-size: 9px;cursor:pointer;" (click)="VerIngreso(row)"
                 placement="top" ngbTooltip="Ver" container="body">
                   <i class="fa fa-search"></i>
