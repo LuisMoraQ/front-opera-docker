@@ -167,6 +167,9 @@ export class EquiposHerramientasComponent implements OnInit {
   columnasEstatica = false
   private acumuladoCantidades: number[] = [];
   private acumuladoParciales: number[] = [];
+  todosExpandidos = true
+  todosExpandidosNueva = true
+  todosExpandidosNueva2 = true
   constructor(private fb: FormBuilder, private cdRef: ChangeDetectorRef, private encriptadorService: EncriptadorService, private _logisticaService: LogisticaService, private toaster: ToastrService, public formService: FormsService, private equiposServiciosService: EquiposServiciosService) { }
 
   async ngOnInit() {
@@ -224,11 +227,15 @@ export class EquiposHerramientasComponent implements OnInit {
     const desagregados = await this.listarDesagregadosEquipos()
     await this.listarEquiposServicios(desagregados)
 
-    const tablaRegActividades = resp.agrupacion.map(element => {
-      element.servicios = this.tablaServiciosCompleto.filter(ele => ele.id_grupo == Number(element.idgrupo) && ele.id_registro == element.id_registro)
-      return element
-    })
-
+    const tablaRegActividades = resp.agrupacion
+      .filter(element => element.indice == null)
+      .map(element => {
+        element.servicios = this.tablaServiciosCompleto.filter(ele =>
+          ele.id_grupo == Number(element.idgrupo) &&
+          ele.id_registro == element.id_registro
+        );
+        return element;
+      });
     this.tablaRegActividades = await this.procesarCantidadAcumulada(tablaRegActividades)
     this.reqCompletos = resp.desagregados
     this.grupoSeleccionado = ''
@@ -319,12 +326,12 @@ export class EquiposHerramientasComponent implements OnInit {
       const totalActividad = actividad.servicios?.reduce((totalServicios, servicio) => {
         const sumaServicio = servicio.desagregadosCompleto?.reduce((total, d) => {
           if (servicio.tipo === 'H-M' || servicio.tipo === 'DIA') {
-            return total + (d.horas_dia || 0);
+            return total + ((d.horas_dia * servicio.precio_unitario) || 0);
           }
           if (servicio.tipo === 'MES' || servicio.tipo === 'GLOBAL') {
             const suma = d.horas_detalle?.split('/').reduce((sum, rango) => {
               const partes = rango.split('|');
-              return sum + (parseFloat(partes[2]) || 0);
+              return sum + ((parseFloat(partes[2]) * servicio.precio_unitario) || 0);
             }, 0) || 0;
             return total + suma;
           }
@@ -484,18 +491,33 @@ export class EquiposHerramientasComponent implements OnInit {
           };
         });
 
+      // const tablaServicios = this.tablaServiciosCompleto.filter(ele =>
+      //   Number(ele.id_grupo) == Number(row.idgrupo)
+      // );
+      // this.tablaServicios = [...tablaServicios].sort((a, b) => {
+      //   // Primero ordenar por index_grupo
+      //   if (a.index_grupo !== b.index_grupo) {
+      //     return a.index_grupo - b.index_grupo;
+      //   }
+      //   // Si tienen el mismo index_grupo, ordenar por index_elemento
+      //   return a.index_elemento - b.index_elemento;
+      // });
       const tablaServicios = this.tablaServiciosCompleto.filter(ele =>
         Number(ele.id_grupo) == Number(row.idgrupo)
       );
+
       this.tablaServicios = [...tablaServicios].sort((a, b) => {
-        // Primero ordenar por index_grupo
         if (a.index_grupo !== b.index_grupo) {
           return a.index_grupo - b.index_grupo;
         }
-        // Si tienen el mismo index_grupo, ordenar por index_elemento
         return a.index_elemento - b.index_elemento;
-      });
+      }).map((item, index, array) => {
+        item.icomost = '1'; // Todos los grupos empiezan colapsados
+        item.visible = true; // La cabecera siempre visible
 
+        return item;
+      });
+      this.todosExpandidos = true
       await this.calcularTotales()
       this.mostrar_carga_todo = false
     }
@@ -515,7 +537,8 @@ export class EquiposHerramientasComponent implements OnInit {
     const todosMismoPrecio = encontrados.every(ele => ele.precio_unitario === primerPrecio);
     const todosMismoTipo = encontrados.every(ele => ele.tipo === primerTipo);
     // Sumar todos los total_registrado de cada elemento encontrado
-    const sumaTotalRegistrado = encontrados.reduce((sum, ele) => sum + (ele.total_registrado || 0), 0);
+    const sumaTotalRegistrado = encontrados.reduce((sum, ele) =>
+      sum + ((ele.tiempo_registrado !== 0 && ele.precio_unitario !== 0) ? (ele.total_registrado || 0) : 0), 0);
     if (todosMismoPrecio && todosMismoTipo) {
       return {
         precio_usada: primerPrecio,
@@ -606,103 +629,6 @@ export class EquiposHerramientasComponent implements OnInit {
     }, 0);
   }
 
-  // filtrarPlanillaEquiposServicios(desagredados) {
-  //   this.mostrar_carga_todo = true
-  //   setTimeout(async () => {
-  //     this.tablaPlanilla = []
-  //     let nuevaTabla = []
-  //     let tablaServicios = []
-  //     if (this.grupoSeleccionado !== '') {
-  //       const row = this.tablaRegActividades[this.grupoSeleccionado]
-  //       tablaServicios = this.tablaServiciosCompleto.filter(ele => Number(ele.id_grupo) == Number(row.idgrupo))
-  //       tablaServicios = [...tablaServicios].sort((a, b) => {
-  //         // Primero ordenar por index_grupo
-  //         if (a.index_grupo !== b.index_grupo) {
-  //           return a.index_grupo - b.index_grupo;
-  //         }
-  //         // Si tienen el mismo index_grupo, ordenar por index_elemento
-  //         return a.index_elemento - b.index_elemento;
-  //       });
-  //       this.tablaPlanilla = tablaServicios.filter(ele => ele.index_grupo !== 0)
-  //     } else {
-
-  //       for (const element of this.tablaRegActividades) {
-  //         let j = 0
-  //         const filtrados = this.tablaServiciosCompleto.filter(ele => Number(ele.id_grupo) == Number(element.idgrupo) && ele.index_elemento !== 0)
-  //         const grupo = {
-  //           "id_equipo": null,
-  //           "id_proyecto": null,
-  //           "id_registro": null,
-  //           "id_grupo": null,
-  //           "id_fila": null,
-  //           "ind_rep": null,
-  //           "index_elemento": null,
-  //           "index_grupo": null,
-  //           "descripcion": element.descripcion,
-  //           "placa": null,
-  //           "fecha_solicitud": null,
-  //           "cantidad": null,
-  //           "precio_unitario": null,
-  //           "estado": null,
-  //           "unidad": null,
-  //           "tipo_registro": null,
-  //           "tipo": null,
-  //           "fecha_creacion": null,
-  //           planilla: [],
-  //           cabecera: true,
-  //           item: j,
-  //           valorGlobal: null,
-  //           desagregadosCompleto: [],
-  //           valorMensual: null,
-  //           desagregadosMes: []
-  //         }
-  //         nuevaTabla.push(grupo)
-  //         for (const element of filtrados) {
-  //           j++
-  //           element.cabecera = false
-
-  //           const planilla = this.calendarioFiltrado?.dias.map(ele => {
-  //             const encontrado = desagredados.find(reg => reg.fecha.split('T')[0] == ele.fecha && reg.id_equipo == element.id_equipo)
-  //             return encontrado ? encontrado : null
-  //           })
-  //           const completos = desagredados.filter(reg => reg.id_equipo == element.id_equipo)
-  //           element.planilla = planilla
-  //           element.item = j
-  //           element.desagregadosCompleto = completos
-  //           if (element.tipo == 'GLOBAL') {
-  //             element.valorGlobal = completos[0]
-  //             const valorGlobal = completos.find(ele => ele)
-  //             const arrayMes = await this.evaluarGlobalMes(valorGlobal?.horas_detalle, 'GLOBAL')
-  //             element.valorGlobal = valorGlobal
-  //             element.arrayMes = arrayMes
-  //             const total = arrayMes.reduce((acc, ele) => acc + (Number(ele) || 0), 0)
-  //             element.total_hm = total
-  //             element.parcial = total * element.precio_unitario
-  //           } else if (element.tipo == 'MES') {
-  //             element.valorGlobal = null
-  //             const valorMes = planilla.find(ele => ele)
-  //             element.valorMensual = valorMes
-  //             const arrayMes = await this.evaluarGlobalMes(valorMes?.horas_detalle, 'MES')
-  //             element.arrayMes = arrayMes
-  //             const total = arrayMes.reduce((acc, ele) => acc + (Number(ele) || 0), 0)
-  //             element.total_hm = total
-  //             element.parcial = total * element.precio_unitario
-  //           } else {
-  //             element.arrayMes = []
-  //             const total = planilla.reduce((acc, ele) => acc + (Number(ele?.horas_dia) || 0), 0)
-  //             element.total_hm = total
-  //             element.parcial = total * element.precio_unitario
-  //           }
-  //         }
-  //         nuevaTabla = nuevaTabla.concat(filtrados)
-  //       }
-  //       this.tablaPlanilla = nuevaTabla
-  //     }
-  //     this.mostrar_carga_todo = false
-  //   }, 50);
-
-  // }
-
   filtrarPlanillaEquiposServicios(desagredados) {
     this.mostrar_carga_todo = true
     setTimeout(async () => {
@@ -711,6 +637,8 @@ export class EquiposHerramientasComponent implements OnInit {
       let nuevaTabla = []
       let tablaServicios = []
       this.totalMes = 0
+      this.todosExpandidosNueva = true
+      this.todosExpandidosNueva2 = true
       // Variable para controlar si es subvista 3
       const esSubvista3 = this.subvista === 3;
 
@@ -769,7 +697,9 @@ export class EquiposHerramientasComponent implements OnInit {
             desagregadosCompleto: [],
             valorMensual: null,
             desagregadosMes: [],
-            mostrar: 1
+            mostrar: 1,
+            visible: true,
+            icomost: '1'
           }
 
           // Solo agregar propiedad mostrar si es subvista 3
@@ -783,6 +713,7 @@ export class EquiposHerramientasComponent implements OnInit {
             j++
             element.cabecera = false
             element.mostrar = 1
+            element.icomost = '1'
             // Solo agregar propiedad mostrar si es subvista 3
             if (esSubvista3) {
               element.mostrar = 1;
@@ -796,7 +727,7 @@ export class EquiposHerramientasComponent implements OnInit {
             element.planilla = planilla
             element.item = j
             element.desagregadosCompleto = completos
-
+            element.visible = true
             if (element.tipo == 'GLOBAL') {
               element.valorGlobal = completos[0]
               const valorGlobal = completos.find(ele => ele)
@@ -1146,7 +1077,7 @@ export class EquiposHerramientasComponent implements OnInit {
       let i = filtrados.length + 1
       for (const element of this.equipos.value) {
         const equipo: servicio = {
-          cantidad: element.cantidad,
+          cantidad: this.formService.redondeo(element.cantidad, 5),
           descripcion: element.descripcion,
           id_grupo: filaRegAct.idgrupo,
           fecha_solicitud: element.fecha_solicitud,
@@ -1158,7 +1089,7 @@ export class EquiposHerramientasComponent implements OnInit {
           item: element.item,
           parcial: element.precio_unitario * element.cantidad,
           placa: element.placa,
-          precio_unitario: element.precio_unitario,
+          precio_unitario: this.formService.redondeo(element.precio_unitario, 5),
           unidad: element.unidad,
           id_equipo: null,
           index_elemento: i,
@@ -1434,8 +1365,9 @@ export class EquiposHerramientasComponent implements OnInit {
       const sumaTotalTiempoRegistrado = filtrados.reduce((acc, item) => acc + (Number(item.tiempo_registrado) || 0), 0);
 
       // Calcular el total de parcial_usada (suma de total_registrado)
-      const sumaTotalRegistrado = filtrados.reduce((acc, item) => acc + (Number(item.total_registrado) || 0), 0);
-
+      // const sumaTotalRegistrado = filtrados.reduce((acc, item) => acc + (Number(item.total_registrado) || 0), 0);
+      const sumaTotalRegistrado = filtrados.reduce((sum, ele) =>
+        sum + ((ele.tiempo_registrado !== 0 && ele.precio_unitario !== 0) ? (ele.total_registrado || 0) : 0), 0);
       if (sonHomogeneos) {
         // Caso homogéneo: todos tienen mismo tipo y precio_unitario
         element.cantidad_usada = sumaTotalTiempoRegistrado;
@@ -1470,7 +1402,6 @@ export class EquiposHerramientasComponent implements OnInit {
   }
 
   async seleccionCelda(i, j) {
-
     if (this.celdaSel[0] !== i || this.celdaSel[1] !== j) {
       if (this.equipoEditado) {
         await this.guardarActualizarCambiosDesagregado(true)
@@ -1483,7 +1414,7 @@ export class EquiposHerramientasComponent implements OnInit {
       this.minutos_dia.reset()
       this.coste_dia.reset()
       this.observaciones.reset()
-      this.observaciones.enable()
+      // this.observaciones.enable()
       this.horas_dia.enable()
       while (this.tiempos.value.length) {
         this.tiempos.removeAt(0);
@@ -1535,10 +1466,12 @@ export class EquiposHerramientasComponent implements OnInit {
             this.tiempos.push(nuevoGrupo);
           });
           if (this.tiempos.value.length) {
-            this.actualizarTiempoUtilizado();
+            await this.actualizarTiempoUtilizado();
+            this.observaciones.enable()
           } else {
-            this.calcularSaldo()
+            await this.calcularSaldo()
           }
+          this.equipoEditado = false
         }
 
         this.id_desagregado.setValue(dataDiaEquipo.id_desagregado)
@@ -1648,9 +1581,9 @@ export class EquiposHerramientasComponent implements OnInit {
       const minutos = tiempoControl.get('tiempo')?.value || 0;
       totalMinutos += Number(minutos);
     });
-    totalMinutos = this.tipoSeleccionado == 'H-M' ? totalMinutos : (this.tipoSeleccionado == 'DIA' ? 60 : (this.tipoSeleccionado == 'MES' ? 60 : 60))
+    totalMinutos = this.tipoSeleccionado == 'H-M' ? Number((totalMinutos).toFixed(5)) : (this.tipoSeleccionado == 'DIA' ? 60 : (this.tipoSeleccionado == 'MES' ? 60 : 60));
     this.minutos_dia.setValue(totalMinutos);
-    this.horas_dia.setValue(this.tipoSeleccionado == 'H-M' ? (totalMinutos / 60) : 1);
+    this.horas_dia.setValue(this.tipoSeleccionado == 'H-M' ? Number((totalMinutos / 60).toFixed(5)) : 1);
     if (this.tablaPlanilla[this.selFilPlan]?.tipo !== 'HM' && !this.tiempos.value.length) {
       this.horas_dia.setValue(0)
       this.minutos_dia.setValue(0);
@@ -1693,10 +1626,18 @@ export class EquiposHerramientasComponent implements OnInit {
     this.tiempo_utilizado.setValue(total)
     const saldo = this.tiempo_programado.value - total
     this.saldo_utilizar.setValue(saldo)
-    if (this.tablaPlanilla[this.selFilPlan].tipo !== 'GLOBAL' && this.tablaPlanilla[this.selFilPlan].tipo !== 'MES') {
+    if (this.tablaPlanilla[this.selFilPlan].tipo !== 'MES') {
       const total2 = this.tablaPlanilla[this.selFilPlan].planilla.reduce((acc, ele) => acc + (Number(ele?.horas_dia) || 0), 0)
       this.tablaPlanilla[this.selFilPlan].total_hm = total2
       this.tablaPlanilla[this.selFilPlan].parcial = total2 * this.tablaPlanilla[this.selFilPlan].precio_unitario
+    } else if (this.tablaPlanilla[this.selFilPlan].tipo !== 'GLOBAL') {
+      const total2 = this.tablaPlanilla[this.selFilPlan].planilla.reduce((acc, ele) => acc + (Number(ele?.horas_dia) || 0), 0)
+      this.tablaPlanilla[this.selFilPlan].total_hm = total2
+      // this.tablaPlanilla[this.selFilPlan].parcial = total2 * this.tablaPlanilla[this.selFilPlan].precio_unitario
+      this.tablaPlanilla[this.selFilPlan].precio_unitario = total2 !== 0
+        ? Number((this.tablaPlanilla[this.selFilPlan].total_registrado / total2).toFixed(5))
+        : 0;
+       
     } else {
       const total = this.tablaPlanilla[this.selFilPlan].arrayMes.reduce((acc, ele) => acc + (Number(ele) || 0), 0)
       this.tablaPlanilla[this.selFilPlan].total_hm = total
@@ -1831,6 +1772,7 @@ export class EquiposHerramientasComponent implements OnInit {
             observaciones: data.observaciones,
           }
           const resp = await this.equiposServiciosService.guardarDesagregadoEquipo(obj)
+
           if (resp[0]?.id_desagregado) {
             obj['id_desagregado'] = resp[0].id_desagregado
 
@@ -1882,6 +1824,7 @@ export class EquiposHerramientasComponent implements OnInit {
           id_desagregado: this.id_desagregado.value
         }
         const resp = await this.equiposServiciosService.eliminarDesagregadoEquipo(obj)
+
         if (resp[0].mensaje == '1') {
           while (this.tiempos.value.length) {
             this.tiempos.removeAt(0);
@@ -1997,7 +1940,7 @@ export class EquiposHerramientasComponent implements OnInit {
   }
   // Eliminar fila
   eliminarFilaModal(index: number, row) {
-    if (row.desagredados.length) {
+    if (row.desagredados?.length) {
       this.toaster.error(
         'El equipo tiene registros en planilla, elimine todos los registro en planilla para poder eliminar',
         '',
@@ -2017,6 +1960,7 @@ export class EquiposHerramientasComponent implements OnInit {
     }
 
     this.equipos.removeAt(index);
+
     this.reordenarPorGrupo();
   }
 
@@ -2065,7 +2009,7 @@ export class EquiposHerramientasComponent implements OnInit {
     }
     this.tipoSeleccionado = row.tipo
     if (row.tipo == 'GLOBAL') {
-      this.observaciones.enable()
+      // this.observaciones.enable()
       this.coste_unitario.setValue(this.tablaPlanilla[i].precio_unitario)
       this.unidad.setValue(this.tablaPlanilla[i].unidad)
       this.tiempo_programado.setValue(this.tablaPlanilla[i].cantidad)
@@ -2113,6 +2057,7 @@ export class EquiposHerramientasComponent implements OnInit {
           } else {
             this.calcularSaldo()
           }
+          this.equipoEditado = false
         }
       } else {
         // Si no existe, limpiamos o asignamos valores por defecto
@@ -2135,6 +2080,7 @@ export class EquiposHerramientasComponent implements OnInit {
       this.saldo_utilizar.setValue(saldo)
     } else if (row.tipo == 'DIA') {
       this.horas_dia.disable()
+
     } else if (row.tipo == 'MES') {
       const dataDiaEquipo = row.valorMensual
       this.coste_unitario.setValue(this.tablaPlanilla[i].precio_unitario)
@@ -2207,10 +2153,12 @@ export class EquiposHerramientasComponent implements OnInit {
     if (this.selFilPlan !== null) {
       await this.cambioDetalle()
     }
+    if (this.tiempos.value.length) {
+      this.observaciones.enable()
+    }
     this.buscando = false
   }
 
-  // Método para procesar los datos del equipo (tu método existente mejorado)
   procesarEquipoPorMes(equipo, mesesCalendario) {
     // Primero, obtener los resultados de los registros existentes
     const resultadosConDatos = [];
@@ -2626,6 +2574,9 @@ export class EquiposHerramientasComponent implements OnInit {
 
     this.tiempos.push(nuevoGrupo);
     this.actualizarTiempoUtilizado();
+    if (this.tiempos.value.length) {
+      this.observaciones.enable()
+    }
   }
 
   validarFila(group: AbstractControl): ValidationErrors | null {
@@ -2993,5 +2944,241 @@ export class EquiposHerramientasComponent implements OnInit {
     await this.calcularTotales()
   }
 
+  // Método para toggle ON (mostrar elementos)
+  toggleOn(row, indice) {
+    if (row.icomost === '0') {
+      // Cambiar el icono de la cabecera actual
+      row.icomost = '1';
+      // Mostrar todos los elementos del grupo
+      this.mostrarElementosDelGrupo(indice);
+    }
+  }
 
+  // Método para toggle OFF (ocultar elementos)
+  toggleOff(row, indice) {
+    if (row.icomost === '1') {
+      // Cambiar el icono de la cabecera actual
+      row.icomost = '0';
+      // Ocultar todos los elementos del grupo
+      this.ocultarElementosDelGrupo(indice);
+    }
+  }
+
+  // Mostrar elementos del grupo
+  mostrarElementosDelGrupo(cabeceraIndex) {
+    // Buscar la siguiente cabecera
+    const siguienteCabeceraIndex = this.tablaServicios.findIndex(
+      (item, index) => index > cabeceraIndex && item.index_elemento === 0
+    );
+
+    const limite = siguienteCabeceraIndex !== -1 ? siguienteCabeceraIndex : this.tablaServicios.length;
+
+    // Mostrar todos los elementos entre la cabecera actual y la siguiente cabecera
+    for (let i = cabeceraIndex + 1; i < limite; i++) {
+      this.tablaServicios[i].visible = true;
+    }
+  }
+
+  // Ocultar elementos del grupo
+  ocultarElementosDelGrupo(cabeceraIndex) {
+    // Buscar la siguiente cabecera
+    const siguienteCabeceraIndex = this.tablaServicios.findIndex(
+      (item, index) => index > cabeceraIndex && item.index_elemento === 0
+    );
+
+    const limite = siguienteCabeceraIndex !== -1 ? siguienteCabeceraIndex : this.tablaServicios.length;
+
+    // Ocultar todos los elementos entre la cabecera actual y la siguiente cabecera
+    for (let i = cabeceraIndex + 1; i < limite; i++) {
+      this.tablaServicios[i].visible = false;
+    }
+  }
+
+  // Método toggle que alterna entre expandir y contraer
+  toggleTodo() {
+    if (this.todosExpandidos) {
+      this.contraerTodo();
+    } else {
+      this.expandirTodo();
+    }
+  }
+  // Expandir todos los grupos (usando métodos existentes)
+  expandirTodo() {
+    this.tablaServicios.forEach((item, index) => {
+      if (item.index_elemento === 0) {
+        item.icomost = '1';
+        this.mostrarElementosDelGrupo(index);
+      }
+    });
+    this.todosExpandidos = true;
+  }
+
+  // Contraer todos los grupos (usando métodos existentes)
+  contraerTodo() {
+    this.tablaServicios.forEach((item, index) => {
+      if (item.index_elemento === 0) {
+        item.icomost = '0';
+        this.ocultarElementosDelGrupo(index);
+      }
+    });
+    this.todosExpandidos = false;
+  }
+
+  // Métodos para la nueva tabla
+  toggleOnNueva(row, indice) {
+    if (row.icomost === '0') {
+      row.icomost = '1';
+      this.mostrarElementosDelGrupoNueva(indice);
+    }
+  }
+
+  toggleOffNueva(row, indice) {
+    if (row.icomost === '1') {
+      row.icomost = '0';
+      this.ocultarElementosDelGrupoNueva(indice);
+    }
+  }
+
+  toggleOnNueva2(row, indice) {
+    if (row.icomost === '0') {
+      row.icomost = '1';
+      this.mostrarElementosDelGrupoNueva2(indice);
+    }
+  }
+
+  toggleOffNueva2(row, indice) {
+    if (row.icomost === '1') {
+      row.icomost = '0';
+      this.ocultarElementosDelGrupoNueva2(indice);
+    }
+  }
+
+
+  mostrarElementosDelGrupoNueva(cabeceraIndex) {
+    const siguienteCabeceraIndex = this.tablaPlanilla.findIndex(
+      (item, index) => index > cabeceraIndex && item.item === 0
+    );
+
+    const limite = siguienteCabeceraIndex !== -1 ? siguienteCabeceraIndex : this.tablaPlanilla.length;
+
+    for (let i = cabeceraIndex + 1; i < limite; i++) {
+      this.tablaPlanilla[i].visible = true;
+    }
+  }
+
+  ocultarElementosDelGrupoNueva(cabeceraIndex) {
+    const siguienteCabeceraIndex = this.tablaPlanilla.findIndex(
+      (item, index) => index > cabeceraIndex && item.item === 0
+    );
+
+    const limite = siguienteCabeceraIndex !== -1 ? siguienteCabeceraIndex : this.tablaPlanilla.length;
+
+    for (let i = cabeceraIndex + 1; i < limite; i++) {
+      this.tablaPlanilla[i].visible = false;
+    }
+  }
+
+
+  mostrarElementosDelGrupoNueva2(cabeceraIndex) {
+    const siguienteCabeceraIndex = this.tablaPlanilla.findIndex(
+      (item, index) => index > cabeceraIndex && item.item === 0
+    );
+
+    const limite = siguienteCabeceraIndex !== -1 ? siguienteCabeceraIndex : this.tablaPlanilla.length;
+
+    for (let i = cabeceraIndex + 1; i < limite; i++) {
+      this.tablaPlanilla[i].visible = true;
+    }
+  }
+
+  ocultarElementosDelGrupoNueva2(cabeceraIndex) {
+    const siguienteCabeceraIndex = this.tablaPlanilla.findIndex(
+      (item, index) => index > cabeceraIndex && item.item === 0
+    );
+
+    const limite = siguienteCabeceraIndex !== -1 ? siguienteCabeceraIndex : this.tablaPlanilla.length;
+
+    for (let i = cabeceraIndex + 1; i < limite; i++) {
+      this.tablaPlanilla[i].visible = false;
+    }
+  }
+
+  // Métodos para expandir/contraer todo en la nueva tabla
+  expandirTodoNueva() {
+    this.tablaPlanilla.forEach((item, index) => {
+      if (item.item === 0) {
+        item.icomost = '1';
+        this.mostrarElementosDelGrupoNueva(index);
+      }
+    });
+    this.todosExpandidosNueva = true;
+  }
+
+  expandirTodoNueva2() {
+    this.tablaPlanilla.forEach((item, index) => {
+      if (item.item === 0) {
+        item.icomost = '1';
+        this.mostrarElementosDelGrupoNueva2(index);
+      }
+    });
+    this.todosExpandidosNueva2 = true;
+  }
+
+  contraerTodoNueva() {
+    this.tablaPlanilla.forEach((item, index) => {
+      if (item.item === 0) {
+        item.icomost = '0';
+        this.ocultarElementosDelGrupoNueva(index);
+      }
+    });
+    this.todosExpandidosNueva = false;
+  }
+
+  contraerTodoNueva2() {
+    this.tablaPlanilla.forEach((item, index) => {
+      if (item.item === 0) {
+        item.icomost = '0';
+        this.ocultarElementosDelGrupoNueva2(index);
+      }
+    });
+    this.todosExpandidosNueva2 = false;
+  }
+
+  toggleTodoNueva() {
+    if (this.todosExpandidosNueva) {
+      this.contraerTodoNueva();
+    } else {
+      this.expandirTodoNueva();
+    }
+  }
+
+  toggleTodoNueva2() {
+    if (this.todosExpandidosNueva2) {
+      this.contraerTodoNueva2();
+    } else {
+      this.expandirTodoNueva2();
+    }
+  }
+
+
+  onVerDetalleChange(value: boolean): void {
+    this.verDetalle = !this.verDetalle ? 'desagregado' : '';
+    if (this.selFilPlan !== null && this.tablaPlanilla[this.selFilPlan]) {
+      this.cambioDetalle()
+    }
+  }
+
+  calcularSum(row, i) {
+    let total = 0
+    if (i < this.tablaServicios.length - 1) {
+      for (let index = i + 1; index < this.tablaServicios.length; index++) {
+        if (this.tablaServicios[index]?.index_elemento !== 0) {
+          total = this.tablaServicios[index].total_registrado + total;
+        } else {
+          break
+        }
+      }
+    }
+    return total
+  }
 }
