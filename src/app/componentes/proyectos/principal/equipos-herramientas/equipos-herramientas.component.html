@@ -503,7 +503,7 @@
                             'laborable': dia.es_laborable,
                             'no-laborable': !dia.es_laborable,
                             'feriado': dia.feriado
-                        }" appAnchocol [ancho]="56">
+                        }" appAnchocol [ancho]="45">
                     <div class="dia-numero">{{dia.dia_numero}}</div>
                     <div class="dia-abreviatura">{{dia.dia_semana_corto}}</div>
                   </th>
@@ -517,7 +517,7 @@
                 <tr *ngFor="let row of this.tablaPlanilla; let i = index"
                   [ngClass]="{'font-weight-bolder':row.item == 0, 'highlight3': selFilPlan == i ,'cabecera-bg':row.item == 0}"
                   (click)="seleccionFilaPlanrow(row,i)" [hidden]="!row.visible">
-                  <td class="text-center" [ngClass]="{'static1 ': columnasEstatica}">
+                  <td class="text-center" [ngClass]="{'static1 ': columnasEstatica, 'bg-white':row.item !== 0 && columnasEstatica}">
                     <ng-container *ngIf="row.item !== 0; else toggleButton">
                       {{row.item}}
                     </ng-container>
@@ -533,7 +533,7 @@
                       </div>
                     </ng-template>
                   </td>
-                  <td [ngClass]="{'static2 ': columnasEstatica}" appAnchocol [ancho]="250">
+                  <td [ngClass]="{'static2 ': columnasEstatica, 'bg-white':row.item !== 0 && columnasEstatica}" appAnchocol [ancho]="250">
 
                     <div class="recortatext1l" placement="top" ngbTooltip="{{row.descripcion}}" container="body">
                       {{row.descripcion}}
@@ -1108,7 +1108,7 @@
                             'laborable': dia.es_laborable,
                             'no-laborable': !dia.es_laborable,
                             'feriado': dia.feriado
-                        }" appAnchocol [ancho]="56">
+                        }" appAnchocol [ancho]="45">
                     <div class="dia-numero">{{dia.dia_numero}}</div>
                     <div class="dia-abreviatura">{{dia.dia_semana_corto}}</div>
                   </th>
@@ -1122,7 +1122,7 @@
                 <tr *ngFor="let row of this.tablaPlanilla; let i = index"
                   [ngClass]="{'font-weight-bolder':row.item == 0, 'highlight3': selFilPlan == i ,'cabecera-bg':row.item == 0}"
                   (click)="selFilPlan=i" [hidden]="!row.visible">
-                  <td class="text-center" [ngClass]="{'static1 ': columnasEstatica}">
+                  <td class="text-center" [ngClass]="{'static1 ': columnasEstatica, 'bg-white':row.item !== 0 && columnasEstatica}">
                     <ng-container *ngIf="row.item !== 0; else toggleButton2">
                       {{row.item}}
                     </ng-container>
@@ -1138,7 +1138,7 @@
                       </div>
                     </ng-template>
                   </td>
-                  <td [ngClass]="{'static2 ': columnasEstatica}">
+                  <td [ngClass]="{'static2 ': columnasEstatica, 'bg-white':row.item !== 0 && columnasEstatica}">
                     <div class="recortatext1l" placement="top" ngbTooltip="{{row.descripcion}}" container="body">
                       {{row.descripcion}}
                     </div>

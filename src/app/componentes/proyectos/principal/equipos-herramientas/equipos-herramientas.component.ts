@@ -1466,7 +1466,7 @@ export class EquiposHerramientasComponent implements OnInit {
             this.tiempos.push(nuevoGrupo);
           });
           if (this.tiempos.value.length) {
-            await this.actualizarTiempoUtilizado();
+            await this.actualizarTiempoUtilizado(false);
             this.observaciones.enable()
           } else {
             await this.calcularSaldo()
@@ -1573,7 +1573,7 @@ export class EquiposHerramientasComponent implements OnInit {
     });
   }
 
-  actualizarTiempoUtilizado() {
+  actualizarTiempoUtilizado(cambio = true) {
     let totalMinutos = 0;
 
     this.tiempos.controls.forEach(control => {
@@ -1589,8 +1589,10 @@ export class EquiposHerramientasComponent implements OnInit {
       this.minutos_dia.setValue(0);
     }
     this.calcularSaldo();
+    if (cambio) {
+      this.equipoEditado = true
+    }
 
-    this.equipoEditado = true
   }
 
   calcularSaldo() {
@@ -1637,7 +1639,7 @@ export class EquiposHerramientasComponent implements OnInit {
       this.tablaPlanilla[this.selFilPlan].precio_unitario = total2 !== 0
         ? Number((this.tablaPlanilla[this.selFilPlan].total_registrado / total2).toFixed(5))
         : 0;
-       
+
     } else {
       const total = this.tablaPlanilla[this.selFilPlan].arrayMes.reduce((acc, ele) => acc + (Number(ele) || 0), 0)
       this.tablaPlanilla[this.selFilPlan].total_hm = total
@@ -1741,7 +1743,7 @@ export class EquiposHerramientasComponent implements OnInit {
               this.tablaPlanilla[this.selFilPlan].desagregadosCompleto = array
             }
             if (horas_detalle) {
-              this.actualizarTiempoUtilizado();
+              this.actualizarTiempoUtilizado(false);
             } else {
               this.calcularSaldo()
             }
@@ -2053,7 +2055,7 @@ export class EquiposHerramientasComponent implements OnInit {
             this.tiempos.push(nuevoGrupo);
           });
           if (this.tiempos.value.length) {
-            this.actualizarTiempoUtilizado();
+            this.actualizarTiempoUtilizado(false);
           } else {
             this.calcularSaldo()
           }
@@ -2124,7 +2126,7 @@ export class EquiposHerramientasComponent implements OnInit {
             this.tiempos.push(nuevoGrupo);
           });
           if (this.tiempos.value.length) {
-            this.actualizarTiempoUtilizado();
+            this.actualizarTiempoUtilizado(false);
           } else {
             this.calcularSaldo()
           }
