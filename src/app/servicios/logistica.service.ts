@@ -514,4 +514,13 @@ export class LogisticaService {
       catchError(err => throwError(err))
     ).toPromise()
   }
+  AgruinsModReqaBorrador(params = {}): Promise<any> {
+    const url = this.enviUrl + '/api/logistica/agruinsReqaBorrador';
+    return this.http.post<any>(url, this.Cargafrmdata(params)).pipe(
+      map(res => {
+        return res
+      }),
+      catchError(err => throwError(err))
+    ).toPromise()
+  }
 }

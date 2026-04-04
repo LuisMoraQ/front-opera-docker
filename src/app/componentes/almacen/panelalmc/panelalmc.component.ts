@@ -197,7 +197,7 @@ export class PanelalmcComponent implements OnInit {
       }
     }
   }
-  buAgregar(){
+  async buAgregar(){
     const primerDia = new Date(this.fechaac.getFullYear(), this.fechaac.getMonth() , 1)
     const ultimoDia = new Date(this.fechaac.getFullYear(), this.fechaac.getMonth() + 1, 0)
     var fecha1=moment(primerDia).format('YYYY-MM-DD');//this.datePipe.transform(primerDia, "yyyy-MM-dd");

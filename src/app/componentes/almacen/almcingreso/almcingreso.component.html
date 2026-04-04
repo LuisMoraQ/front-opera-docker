@@ -9,15 +9,23 @@
           <tr class="headsticky header-custom">
             <th rowspan="2" appAnchocol [ancho]="25">N°</th>
             <th colspan="2">Emisión Requerimiento</th>
-            <th colspan="8">Ejecución del Requerimiento</th>
-            <th rowspan="2" appAnchocol [ancho]="48">Estado</th>
+            <th rowspan="2" appAnchocol [ancho]="75">
+              Estado Solicitud<br>
+              <i class="fa fa-filter" style="cursor: pointer; font-size: 15px;" placement="bottom"
+                    [ngbPopover]="popContent" container="body" [autoClose]="'outside'"></i>
+            </th>
+            <th colspan="5">Ejecución del Requerimiento</th>
+            <th rowspan="2" appAnchocol [ancho]="48">
+              Estado<br>
+              <i class="fa fa-filter" style="cursor: pointer; font-size: 15px;" placement="bottom"
+                    [ngbPopover]="popContent2" container="body" [autoClose]="'outside'"></i>
+            </th>
           </tr>
           <tr class="headsticky2 header-custom" style="top:23px">
             <th appAnchocol [ancho]="35">N° Req</th>
             <th appAnchocol [ancho]="200" [detalle]="true">Detalle del Requerimiento</th>
-            <th appAnchocol [ancho]="75">Estado Solicitud</th>
-            <th appAnchocol [ancho]="35">OC/OS</th>
-            <th appAnchocol [ancho]="30">Tipo Gasto</th>
+            <!-- <th appAnchocol [ancho]="35">OC/OS</th>
+            <th appAnchocol [ancho]="30">Tipo Gasto</th> -->
             <th appAnchocol [ancho]="40">N° Orden</th>
             <th appAnchocol [ancho]="50">Lugar Entrega</th>
             <th appAnchocol [ancho]="54">Fecha Notificada</th>
@@ -47,8 +55,8 @@
                 <label *ngIf="row.estado==3" class="label label-primary label-est">Cotización</label>
                 <label *ngIf="row.estado==2" class="label label-success label-est">Orden Atención</label>
               </td>
-              <td appAnchocol [ancho]="35"></td>
-              <td appAnchocol [ancho]="30">CD</td>
+              <!-- <td appAnchocol [ancho]="35"></td>
+              <td appAnchocol [ancho]="30">CD</td> -->
               <td appAnchocol [ancho]="40">{{row.nro_orden?'OC-'+row.nro_orden:''}}</td>
               <td appAnchocol [ancho]="50">{{row.entrega=='1'?'Almacen Central':'Almacen de Obra'}}</td>
               <td appAnchocol [ancho]="54">{{row.fecha_gana}}</td>
@@ -694,3 +702,22 @@
     </div>
   </div>
 </app-modal-basic>
+<ng-template #popContent>
+  <select class="form-control-primary cust-sel1" [(ngModel)]="festReq" (change)="cambiarfestIngreso()">
+      <option value="">--Todos--</option>
+      <option [value]="1">Requerimiento</option>
+      <option [value]="2">Orden Atencion</option><!-- 1:requerimiento,2:orden atencion, 3:cotizacion -->
+      <option [value]="3">Cotizacion</option>
+      <!-- <option [value]="1">Conforme</option> -->
+  </select>
+  <!-- <input type="search" id="txt_buscam12" style="width: 200px;margin:6px 6px;" (keyup)="applyFilterm12($event)" class="form-control form-control-primary" placeholder="Buscar" #input (search)="limpiarfiltrom12()" value="{{filtrom12}}" appAutoFocus> -->
+</ng-template>
+<ng-template #popContent2>
+  <select class="form-control-primary cust-sel1" [(ngModel)]="festIngreso" (change)="cambiarfestIngreso()">
+      <option value="">--Todos--</option>
+      <option [value]="0">Pendiente</option>
+      <option [value]="1">Atendido</option>
+      <!-- <option [value]="1">Conforme</option> -->
+  </select>
+  <!-- <input type="search" id="txt_buscam12" style="width: 200px;margin:6px 6px;" (keyup)="applyFilterm12($event)" class="form-control form-control-primary" placeholder="Buscar" #input (search)="limpiarfiltrom12()" value="{{filtrom12}}" appAutoFocus> -->
+</ng-template>

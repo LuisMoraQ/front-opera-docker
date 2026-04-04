@@ -2,6 +2,7 @@ import { Component, OnInit,Input,HostListener } from '@angular/core';
 import { ToastrService } from 'ngx-toastr';
 import { LogisticaService } from 'src/app/servicios/logistica.service';
 import * as moment from 'moment';
+import { EncriptadorService } from 'src/app/servicios/encriptador.service';
 
 @Component({
   selector: 'app-almcrepvalorizado',
@@ -53,14 +54,17 @@ export class AlmcrepvalorizadoComponent implements OnInit {
     'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
     'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
   ];
+  uidadmin:any
 
   constructor(
     private _logisticaService: LogisticaService,
+    private encriptadorService: EncriptadorService,
     private toaster: ToastrService,
   ) { }
 
   async ngOnInit() {
     this.cargainicial=true;
+    this.uidadmin = this.encriptadorService.recuperarlocalstory('id_admin');
     this.heighttmodal1=window.innerHeight-261;
     this.id_reg = this.filareg.idregmov;
     this.id_proyecto = this.filareg.id_proyecto;
@@ -77,7 +81,7 @@ export class AlmcrepvalorizadoComponent implements OnInit {
       //this.dec_cant = arrdec[3];
       this.mask_cant = '0.' + arrdec[3];
     }
-    let res = await this._logisticaService.ListarMovalmcobraRepValo({id_proyecto: this.id_proyecto,fechaini: this.filareg.fechaini,fechafin: this.filareg.fechafin,iding: this.id_reg }); //iding idregmov
+    let res = await this._logisticaService.ListarMovalmcobraRepValo({id_proyecto: this.id_proyecto,fechaini: this.filareg.fechaini,fechafin: this.filareg.fechafin,iding: this.id_reg,id_usuario:this.uidadmin }); //iding idregmov
     this.buscando = false;
     if (res?.length > 0) {
       this.dataagru = res[0];

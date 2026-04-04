@@ -251,22 +251,22 @@ export class CompcotizaComponent implements OnInit {
     this.plazo3.setValue(this.presel==3 && this.rowver.estado==2?row.plazo_gana:row.plazo3)
     this.estado3.setValue(row.fecha_resp3?'Atendido':'Pendiente')
     //cargar condicionales de ver cancelar verificar fechas fecha_gana,plazo_gana
-    if(row.fecha_gana){
-      let fhoy=moment(this.fechaac).format('YYYY-MM-DD')
-      let fechaana1=new Date(moment(fhoy).format('YYYY-MM-DD')+' 09:00:00');
-      let fechaa = moment(fechaana1);
+    // if(row.fecha_gana){
+    //   let fhoy=moment(this.fechaac).format('YYYY-MM-DD')
+    //   let fechaana1=new Date(moment(fhoy).format('YYYY-MM-DD')+' 09:00:00');
+    //   let fechaa = moment(fechaana1);
 
-      let fechana=new Date(moment(row.fecha_gana).format('YYYY-MM-DD')+' 09:00:00');
-      fechana.setDate(fechana.getDate()+Number(row.plazo_gana))
-      let fechab = moment(fechana);
-      let difdias=(fechab.diff(fechaa, 'days'));
-      if(difdias<0){
-        this.puedecanc=row.nroprov
-      }
-    }
-    // let validoanula=row.estorden==0 || row.estorden==4;  //agregar esta validacion tambien
-    // if(validoanula)
-    //   this.puedecanc=row.nroprov
+    //   let fechana=new Date(moment(row.fecha_gana).format('YYYY-MM-DD')+' 09:00:00');
+    //   fechana.setDate(fechana.getDate()+Number(row.plazo_gana))
+    //   let fechab = moment(fechana);
+    //   let difdias=(fechab.diff(fechaa, 'days'));
+    //   if(difdias<0){
+    //     this.puedecanc=row.nroprov
+    //   }
+    // }
+    let validoanula=row.estorden==0 || row.estorden==4;  //agregar esta validacion tambien , cual tiene prioridad?
+    if(validoanula)
+      this.puedecanc=row.nroprov
     
   }
   toggleOn(tipo: any) {
@@ -289,10 +289,11 @@ export class CompcotizaComponent implements OnInit {
   }
   async Cancelar(nroprov:any){
     try{
-      const sw = await SwalService.confirm('Estas seguro que desea Anular la Orden de Atención?', '')
+      //const sw = await SwalService.confirm('Estas seguro que desea Anular la Orden de Atención?', '')
+      const sw = await SwalService.radioopt('Estas seguro que desea Anular la Orden de Atención?','',{0:'Mantener Cotizaciones',1:'Limpiar cotizaciones'},'Confirmar','Cancelar','0');
       if (sw.isConfirmed) {
         this.mostrar_carga_todo=true;
-        let res=await this._logisticaService.DesAprobarCotizacion({id_proyecto:this.id_proyecto,id_registro:this.rowver.id_registro,idgrupo:this.rowver.idgrupo,idfila:this.rowver.idfila});
+        let res=await this._logisticaService.DesAprobarCotizacion({id_proyecto:this.id_proyecto,id_registro:this.rowver.id_registro,idgrupo:this.rowver.idgrupo,idfila:this.rowver.idfila,eliminacoti:sw.value});//eliminacoti 0 no elimina,1 elimina cotizaciones
         if(res.id==1)
         {
           await this.listar();
@@ -303,7 +304,7 @@ export class CompcotizaComponent implements OnInit {
         else
         {
           this.mostrar_carga_todo=false;
-          SwalService.error('Advertencia','No se pudo realizar la Operación. '+res.mensaje);
+          SwalService.error('Advertencia',res.mensaje);
         }
       }
     }catch(e){

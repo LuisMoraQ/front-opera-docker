@@ -37,7 +37,7 @@
                   </td>
                   <td appAnchocol [ancho]="75">
                     <label *ngIf="row.estado==0" class="label label-est" style="background-color: 'darkorange';">Borrador</label>
-                    <label *ngIf="row.estado==1" class="label label-info label-est">Requerimiento</label>
+                    <label *ngIf="row.estado==1" class="label label-info label-est" style="cursor: pointer;" (click)="Cambioest(indice)">Requerimiento</label>
                     <label *ngIf="row.estado==3" class="label label-primary label-est">Cotización</label>
                     <label *ngIf="row.estado==2" class="label label-success label-est">Orden Atención</label>
                   </td>

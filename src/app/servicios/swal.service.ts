@@ -627,4 +627,28 @@ export class SwalService {
       allowEnterKey: false,
     })
   }
+  static radioopt(title: string, text: string,opciones:any,boton1='Confirmar',boton2='Cancelar',asignado=null) {
+    let color = '#f3f3f3'
+    let letra = '#545454'
+    const colorTema = localStorage.getItem('configtema').split('|')
+    if (colorTema[0] == 'dark') {
+      color = '#4c626d'
+      letra = '#ffff'
+    }
+    return Swal.fire({
+      title: title,
+      text: text,
+      input: "radio",
+      inputOptions:opciones,
+      inputValue: asignado, 
+      showCancelButton: true,
+      confirmButtonText: boton1??'Confirmar',
+      cancelButtonText: boton2??'Cancelar',
+      inputValidator: (value) => {
+        if (!value) {
+          return 'Seleccione una opcion.'
+        }
+      }
+    })
+  }
 }

@@ -1,4 +1,5 @@
 import { Component, HostListener, Input, OnInit } from '@angular/core';
+import { EncriptadorService } from 'src/app/servicios/encriptador.service';
 import { FormsService } from 'src/app/servicios/forms.service';
 import { LogisticaService } from 'src/app/servicios/logistica.service';
 
@@ -18,6 +19,7 @@ export class SegcontrolComponent implements OnInit {
   dec_parcial=2;
   mask_parcial='0.2';
 
+  uidadmin:any
   id_proyecto:any;
   id_reg:any;
   //datosproy=null;
@@ -27,12 +29,14 @@ export class SegcontrolComponent implements OnInit {
   
   constructor(
     private _logisticaService:LogisticaService,
+    private encriptadorService: EncriptadorService,
     public formService: FormsService,
     //private modalService: NgbModal,
   ) { }
 
   async ngOnInit() {
     this.heightpres = window.innerHeight-180;
+    this.uidadmin = this.encriptadorService.recuperarlocalstory('id_admin');
     this.id_reg=this.filareg.id_registro;
     this.id_proyecto=this.filareg.id_proyecto
     this.simbolo=this.filareg.simbolo
@@ -44,7 +48,7 @@ export class SegcontrolComponent implements OnInit {
     }
     try{
       this.buscando1=true;
-      let tablares=await this._logisticaService.ListarAgruadquisol({id_proyecto:this.id_proyecto,id_registro:this.id_reg,fuente:this.filareg.excuagru});//falta 1 parametro this.filareg
+      let tablares=await this._logisticaService.ListarAgruadquisol({id_proyecto:this.id_proyecto,id_registro:this.id_reg,id_usuario:this.uidadmin});
       if(tablares){
         let aux=tablares[0];//presupuesto
         console.log(this.dataSource2)

@@ -3,6 +3,7 @@ import { ToastrService } from 'ngx-toastr';
 import { LogisticaService } from 'src/app/servicios/logistica.service';
 import * as moment from 'moment';
 import { SwalService } from './../../../servicios/swal.service';
+import { EncriptadorService } from 'src/app/servicios/encriptador.service';
 
 @Component({
   selector: 'app-almcpanelestado',
@@ -15,6 +16,7 @@ export class AlmcpanelestadoComponent implements OnInit {
   solover=false
   id_reg:any
   id_proyecto:any
+  uidadmin:any
   //dec_precio=2;
   mask_precio='0.2';
   dec_parcial=2;
@@ -48,10 +50,12 @@ export class AlmcpanelestadoComponent implements OnInit {
 
   constructor(
     private _logisticaService: LogisticaService,
+    private encriptadorService: EncriptadorService,
     private toaster: ToastrService,
   ) { }
 
   async ngOnInit() {
+    this.uidadmin = this.encriptadorService.recuperarlocalstory('id_admin');
     this.heighttmodal13=window.innerHeight-187;
     this.heighttmodal2=(window.innerHeight-250)/2;
     this.id_reg = this.filareg.idregmov;
@@ -59,7 +63,7 @@ export class AlmcpanelestadoComponent implements OnInit {
     this.simbolo = this.filareg.simbolo;
     this.solover = this.filareg.estado == 1 ? true : this.filareg.solover;
     this.buscando6 = true;
-    let res = await this._logisticaService.ListarMovalmcobraRegest({id_proyecto: this.id_proyecto,fechaini: this.filareg.fechaini,fechafin: this.filareg.fechafin,iding: this.id_reg }); //iding idregmov
+    let res = await this._logisticaService.ListarMovalmcobraRegest({id_proyecto: this.id_proyecto,fechaini: this.filareg.fechaini,fechafin: this.filareg.fechafin,iding: this.id_reg,id_usuario:this.uidadmin }); //iding idregmov
     console.log(res);
     this.buscando6 = false;
     if (res?.length > 0) {
