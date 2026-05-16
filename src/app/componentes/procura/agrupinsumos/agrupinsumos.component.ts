@@ -983,7 +983,7 @@ export class AgrupinsumosComponent implements OnInit {
       }
     }
     if (indgrupo > -1) {
-      if (estgru != '1') {
+      if (estgru == '0') {
         if (complem == 0) {
           let totagrins = Number(this.totalinsagru);
           let cont = 0;
@@ -1076,7 +1076,7 @@ export class AgrupinsumosComponent implements OnInit {
         }
       } else {
         this.toaster.error(
-          'No se puede modificar un grupo APROBADO.',
+          'Solo puede modificar agrupaciones con estado BORRADOR.',
           'Advertencia',
           {
             closeButton: false,
@@ -1212,9 +1212,10 @@ export class AgrupinsumosComponent implements OnInit {
         estgru = this.dataSource5[h].estado;
         complem = this.dataSource5[h].complemento;
         idcomple = this.dataSource5[h].id_comple;
+        break;
       }
     }
-    if (estgru != '1') {
+    if (estgru == '0') {
       if (complem == 0) {
         let existefsel = 0;
         for (let j = 0; j < this.dataSource5.length; j++) {
@@ -1305,7 +1306,7 @@ export class AgrupinsumosComponent implements OnInit {
       }
     } else {
       this.toaster.error(
-        'No se puede modificar un grupo APROBADO.',
+        'Solo puede modificar agrupaciones con estado BORRADOR.',
         'Advertencia',
         {
           closeButton: false,
@@ -1356,6 +1357,7 @@ export class AgrupinsumosComponent implements OnInit {
     // this.actualizarvistat5();
   }
   subirfila5() {
+    let estgru = '0';
     let cantfil = 0;
     let indfilasel = 0;
     for (let i = 0; i < this.dataSource5.length; i++) {
@@ -1363,6 +1365,13 @@ export class AgrupinsumosComponent implements OnInit {
         cantfil = cantfil + 1;
         indfilasel = i;
       }
+      if ((this.dataSource5[i].seleccion == 1 || this.dataSource5[i].seleccion == 2) && this.dataSource5[i].indice == null) {
+        estgru = this.dataSource5[i].estado;
+      }
+    }
+    if (estgru != '0') {
+      this.toaster.error('Solo puede modificar agrupaciones con estado BORRADOR.','Advertencia', { closeButton: false,positionClass: 'toast-bottom-right',timeOut: 5000 });
+      return;
     }
     if (cantfil == 1) {
       let ind_ant = indfilasel > 0 ? indfilasel - 1 : -1;
@@ -1413,6 +1422,7 @@ export class AgrupinsumosComponent implements OnInit {
     }
   }
   bajarfila5() {
+    let estgru = '0';
     let cantfil = 0;
     let indfilasel = 0;
     for (let i = 0; i < this.dataSource5.length; i++) {
@@ -1423,6 +1433,13 @@ export class AgrupinsumosComponent implements OnInit {
         cantfil = cantfil + 1;
         indfilasel = i;
       }
+      if ((this.dataSource5[i].seleccion == 1 || this.dataSource5[i].seleccion == 2) && this.dataSource5[i].indice == null) {
+        estgru = this.dataSource5[i].estado;
+      }
+    }
+    if (estgru != '0') {
+      this.toaster.error('Solo puede modificar agrupaciones con estado BORRADOR.','Advertencia', { closeButton: false,positionClass: 'toast-bottom-right',timeOut: 5000 });
+      return;
     }
     if (cantfil == 1) {
       //variable nro se debe actualizar, para definir orden,probar json.parse,json stringfy

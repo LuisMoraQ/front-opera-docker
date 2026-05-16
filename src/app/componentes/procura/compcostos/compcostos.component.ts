@@ -197,7 +197,8 @@ export class CompcostosComponent implements OnInit {
         sum5+=Number(parc3)??0
         if(filacop.preciosol){
           filacop.preciovar=this.formService.redondeo(Number(filacop.preciosol)-Number(filacop.precio),this.dec_precio)
-          let varia=((Number(filacop.precio)-Number(filacop.preciosol))/Number(filacop.precio))*100;
+          //let varia=((Number(filacop.precio)-Number(filacop.preciosol))/Number(filacop.precio))*100;
+          let varia=Number(filacop.parcial)-Number(filacop.parcialsol);
           filacop.variacion=this.formService.redondeo(varia,2);
         }
         else

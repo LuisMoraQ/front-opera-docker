@@ -122,7 +122,7 @@
             <ng-container *ngIf="dataSource7.length>0">
               <tr *ngFor="let row of dataSource7;let indice=index;" (click)="cambindicesel7(indice)" [ngClass]="{'highlight': fila7_sel == indice,'filagrupo':row.indice==null}">
                 <td appAnchocol [ancho]="35"> 
-                  {{row.nro}}
+                  {{row.num_det}}
                 </td>
                 <td appAnchocol [ancho]="60">
                   {{row.indiceunif}}

@@ -1308,13 +1308,13 @@
                                     </td>
                                     <td [ngClass]="{'titulo-grupo-iu': !item.unidad, 'static3h': columnasEstatica2, 'color-celda': item.unidad, 'highlight2': filaMateriales == index, 'bg-grupo': !item.unidad && item.descripcion == 'total'}"
                                         class="text-right">
-                                        <ng-container *ngIf="item.unidad">
+                                        <ng-container *ngIf="item.unidad && item.operador!='%'">
                                             {{item.cantidad | number:'0.'+ this.dec_cant + '-'+ this.dec_cant}}
                                         </ng-container>
                                     </td>
                                     <td
                                         [ngClass]="{'titulo-grupo-iu': !item.unidad, 'static4h': columnasEstatica2,'color-celda': item.unidad, 'highlight2': filaMateriales == index,  'bg-grupo': !item.unidad && item.descripcion == 'total'}">
-                                        <div class="d-flex justify-content-between" *ngIf="item.unidad">
+                                        <div class="d-flex justify-content-between" *ngIf="item.unidad && item.operador!='%'">
                                             <div style="opacity: 0.6;">
                                                 {{simbolo}}
                                             </div>
@@ -1344,7 +1344,7 @@
                                                     <ng-container *ngIf="row > 0">
                                                         <div style="opacity: 0.6;">
                                                         </div>
-                                                        <div>
+                                                        <div *ngIf="item.operador!='%'">
                                                             {{ item.cantidades[idx] | number:'0.'+ this.dec_cant + '-'+
                                                             this.dec_cant}}
                                                         </div>

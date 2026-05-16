@@ -197,8 +197,8 @@ export class CompcotizaComponent implements OnInit {
           }
         }
 
-        arrfinal[a].mostrar=1
-        arrfinal[a].icomost=1
+        arrfinal[a].mostrar=arrfinal[a].idfila==0?1:0
+        arrfinal[a].icomost=0
       }
       this.dataSource=arrfinal
       //this.detalledisgre=res[1]

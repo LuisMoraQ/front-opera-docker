@@ -27,7 +27,7 @@
           </thead>
           <tbody>
             <ng-container *ngIf="dataSource.length>0">
-              <tr *ngFor="let row of dataSource;let indice=index;" (click)="cambindicesel(indice)" [ngClass]="{'highlight': fila_sel == indice,'filagrupo':row.indice==null}"
+              <tr *ngFor="let row of dataSource;let indice=index;" (click)="cambindicesel(indice)" [ngClass]="{'highlight': fila_sel == indice,'filagrupo':row.indice==null,'highlight2': indver == indice}"
               [hidden]="row.mostrar==0">
                 <td appAnchocol [ancho]="48" style="cursor: pointer;" (click)="row.orden==0 && row.icomost=='0'?toggleOn(row.idgrupo):row.orden==0 && row.icomost=='1'?toggleOff(row.idgrupo):false">
                   <a  *ngIf="row.orden==0 && row.icomost=='0'" style="color:green; width: 14px;">
@@ -93,7 +93,7 @@
         </table>
       </div>
     </div>
-    <div class="w-100 m-b-10 col-12 col-sm-6" style="padding-left: 5px; padding-right: 5px;">
+    <div class="w-100 m-b-10 col-12 col-sm-6" style="padding-left: 5px; padding-right: 5px;" style="height: calc(100vh - 177px);overflow: auto;">
       <div class="borde-div col-12" [ngClass]="{'baprob': presel==1}">
         <h4 class="col-12 sub-title h4-grupo"><b>Proveedor 01: {{razon1.value}} <span class="text-success">{{presel==1 && rowver.estado==3?' (PreAprobado)':(presel==1 && rowver.estado==2?' (Aprobado)':'')}}</span></b></h4>
         <form [formGroup]="formSoli">

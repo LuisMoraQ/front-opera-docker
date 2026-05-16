@@ -95,7 +95,7 @@
                                 </td>
                                 <td appAnchocol [ancho]="44"> {{row.unidad}}</td>
                                 <td appAnchocol [ancho]="90">
-                                  <div *ngIf="row.editar==0  && row.afcuadrilla==1 && Anumero(tab.get('data_partida').value.rendimiento)!=0" class="float-right w-100">
+                                  <div *ngIf="row.afcuadrilla==1 && Anumero(tab.get('data_partida').value.rendimiento)!=0" class="float-right w-100"><!-- row.editar==0 &&  -->
                                     <span [ngClass]="{'celdaadvcero':row.cuadrilla==0,'celdanocero':row.cuadrilla!=0}">
                                       {{row.cuadrilla | formatoDec}}</span>
                                     <i *ngIf="!(row.cuadrilla!=0)" class="fa fa-exclamation-triangle c-alert"></i>
@@ -107,7 +107,7 @@
                                   </div>
                                 </td>
                                 <td appAnchocol [ancho]="90">
-                                  <div *ngIf="(row.editar2==0)" class="float-right w-100">
+                                  <div class="float-right w-100"><!-- *ngIf="(row.editar2==0)" -->
                                     <span *ngIf="row.unidad!=''" class="float-left">{{moneda}}<i *ngIf="(row.advceros===1 || row.precio==0) && row.unidad!=''" class="fa fa-exclamation-triangle c-alert"></i></span>
                                     <span class="float-right">{{row.precio | number: mask_precio}}</span>
                                   </div>

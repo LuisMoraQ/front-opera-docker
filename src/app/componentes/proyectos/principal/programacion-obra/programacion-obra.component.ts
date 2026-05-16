@@ -4055,326 +4055,332 @@ export class ProgramacionObraComponent implements OnInit, OnDestroy {
   }
 
   async generarCalendarioMateriales() {
-    this.totalColumna = null;
-    this.calendarioMateriales = [];
-    const obj = {
-      id_proyecto: this.idProyecto,
-    };
-    let array = [];
-    for (let i = 0; i < this.dataHeader.length; i++) {
-      array.push(0);
-    }
-    this.totalesMateriales = JSON.parse(JSON.stringify(array));
-    let response = await this.principalService.relInsPrograDetallado(obj);
-    if (response == null) {
-      SwalService.error(response);
-      this.mostrar_carga_todo = false;
-      return;
-    }
-    let auxiliar = JSON.parse(JSON.stringify(response));
-    let acumulados = await this.agrupadoXinsumo(auxiliar);
-    let sumag = 0;
-    let suma2 = 0;
-    for (const iterator of this.listaInsumos) {
-      if (Number(iterator.num_det) > 0) {
-        sumag += Number(iterator.parcial);
-      }
-    }
-    for (const iterator of auxiliar) {
-      if (Number(iterator.id_tipo_insumo) != 5) {
-        suma2 += Number(iterator.parcial);
-      }
-    }
-
-    let formatPresu = [];
-    let totalCostoParciales = 0;
-    for (const element of this.tablaDesembolso) {
-      let insumos = [];
-      if (element.unidad) {
-        const encontrados = await response.filter(
-          (ele) =>
-            ele.indice == element.indice &&
-            ele.id_tipo_insumo !== 0 &&
-            ele.id_tipo_insumo !== 5
-        );
-        if (encontrados.length) {
-          encontrados.forEach((iterator) => {
-            const obj = {
-              descripcion: iterator.descripcion,
-              meses: array,
-              unidad: iterator.unidad,
-              parcial: iterator.parcial,
-              precio: iterator.precio,
-              id_insumo: iterator.id_insumo,
-              id_tipo_insumo: iterator.id_tipo_insumo,
-              cantidades: array,
-              cantidad: iterator.cantidad,
-              descripcion_partida: element.descripcion,
-              item_partida: element.item,
-              indice_partida: element.indice,
-              unidad_partida: element.unidad,
-              operador: iterator.operador,
-            };
-            insumos.push(obj);
-          });
-        }
-      }
-      const parcial_2dec = this.formsService.redondeo(
-        Number(element.parcial),
-        this.dec_parcial
-      );
-      let partida = {
-        descripcion: element.descripcion,
-        item: element.item,
-        indice: element.indice,
-        parcial: Number(parcial_2dec).toFixed(2),
-        unidad: element.unidad,
-        meses: element.meses,
-        insumos: insumos,
+    try{
+      this.totalColumna = null;
+      this.calendarioMateriales = [];
+      const obj = {
+        id_proyecto: this.idProyecto,
       };
-      formatPresu.push(partida);
-    }
-    for (let ele of formatPresu) {
-      if (ele.unidad) {
-        let pocentajeTotal = 0;
-        for (let element of ele.insumos) {
-          if (Number(ele.parcial) > 0) {
-            element.porcentaje = (element.parcial * 100) / ele.parcial;
-          } else {
-            element.porcentaje = 0;
-          }
-          pocentajeTotal += element.porcentaje;
-        }
-        for (let insumo of ele.insumos) {
-          let meses = [];
-          for (const mes of ele.meses) {
-            if (mes) {
-              const monto = (mes.monto * insumo.porcentaje) / 100;
-              meses.push(monto);
-            } else {
-              meses.push(0);
-            }
-          }
-          insumo.meses = meses;
+      let array = [];
+      for (let i = 0; i < this.dataHeader.length; i++) {
+        array.push(0);
+      }
+      this.totalesMateriales = JSON.parse(JSON.stringify(array));
+      let response = await this.principalService.relInsPrograDetallado(obj);
+      if (response == null) {
+        SwalService.error(response);
+        this.mostrar_carga_todo = false;
+        return;
+      }
+      let auxiliar = JSON.parse(JSON.stringify(response));
+      let acumulados = await this.agrupadoXinsumo(auxiliar);
+      let sumag = 0;
+      let suma2 = 0;
+      for (const iterator of this.listaInsumos) {
+        if (Number(iterator.num_det) > 0) {
+          sumag += Number(iterator.parcial);
         }
       }
-    }
-    let concatInsumos = [];
-    for (const iterator of formatPresu) {
-      if (iterator.unidad) {
-        concatInsumos = concatInsumos.concat(iterator.insumos);
-      }
-    }
-    for (const iterator of acumulados) {
-      const existentes = concatInsumos.filter((ele) => {
-        if (iterator.operador == '%') {
-          if (
-            iterator.descripcion == ele.descripcion &&
-            iterator.id_tipo_insumo == ele.id_tipo_insumo &&
-            ele.id_tipo_insumo !== 0 &&
-            ele.id_tipo_insumo !== 5
-          ) {
-            return ele;
-          }
-        } else {
-          if (
-            iterator.descripcion == ele.descripcion &&
-            iterator.id_tipo_insumo == ele.id_tipo_insumo &&
-            iterator.precio == ele.precio &&
-            ele.id_tipo_insumo !== 0 &&
-            ele.id_tipo_insumo !== 5
-          ) {
-            return ele;
-          }
+      for (const iterator of auxiliar) {
+        if (Number(iterator.id_tipo_insumo) != 5) {
+          suma2 += Number(iterator.parcial);
         }
-      });
-      let meses = JSON.parse(JSON.stringify(iterator.meses));
-      let cantidades = JSON.parse(JSON.stringify(iterator.cantidades));
-      let partidas = [];
+      }
 
-      for (let row of existentes) {
-        let i = 0;
-        const objPart = {
-          descripcion: row.descripcion_partida,
-          porcentaje: row.porcentaje,
-          item: row.item_partida,
-          unidad: row.unidad,
-          meses: row.meses,
-          cantidades: row.cantidades,
-          parcial: this.formsService.redondeo(row.parcial, this.dec_parcial),
-        };
-        partidas.push(objPart);
-        for (const mes of row.meses) {
-          // if (iterator.compensa && i == 0) {
-          //   console.log(' Number(iterator.compensa)',  Number(iterator.compensa));
-
-          //   meses[i] = meses[i] + Number(iterator.compensa)
-          // }
-          meses[i] = meses[i] + mes;
-          cantidades[i] = this.formsService.redondeo(
-            meses[i] / iterator.precio,
-            this.dec_cant
+      let formatPresu = [];
+      let totalCostoParciales = 0;
+      for (const element of this.tablaDesembolso) {
+        let insumos = [];
+        if (element.unidad) {
+          const encontrados = await response.filter(
+            (ele) =>
+              ele.indice == element.indice &&
+              ele.id_tipo_insumo !== 0 &&
+              ele.id_tipo_insumo !== 5
           );
-          i++;
-        }
-      }
-      let suma = 0;
-      partidas.map((ele) => (suma += Number(ele.parcial)));
-      iterator.parcialCalculado = suma;
-      iterator.partidas = partidas;
-      iterator.meses = meses;
-      iterator.cantidades = cantidades;
-      if (iterator.compensa) {
-        const index = iterator.meses.findIndex((ele) => ele > 0);
-        iterator.meses[index] =
-          iterator.meses[index] + Number(iterator.compensa);
-        iterator.cantidades[index] = Number(
-          this.formsService.redondeo(
-            iterator.meses[index] / Number(iterator.precio),
-            this.dec_cant
-          )
-        );
-        let indices = [];
-        let insumos = iterator.partidas.filter((ele, index) => {
-          if (ele.meses.find((ele) => ele > 0)) {
-            indices.push(index);
-            return ele;
+          if (encontrados.length) {
+            encontrados.forEach((iterator) => {
+              const obj = {
+                descripcion: iterator.descripcion,
+                meses: array,
+                unidad: iterator.unidad,
+                parcial: iterator.parcial,
+                precio: iterator.precio,
+                //id_insumo: iterator.id_insumo,
+                id_tipo_insumo: iterator.id_tipo_insumo,
+                cantidades: array,
+                cantidad: iterator.cantidad,
+                descripcion_partida: element.descripcion,
+                item_partida: element.item,
+                indice_partida: element.indice,
+                unidad_partida: element.unidad,
+                operador: iterator.operador,
+              };
+              insumos.push(obj);
+            });
           }
-        });
-        let valorCompensa = Number(iterator.compensa);
-        let i = 0;
-        for (let element of insumos) {
-          let j = 0;
-          for (let mes of element.meses) {
-            if (mes > 0) {
-              const valor = mes + valorCompensa;
-
-              if (valor > 0) {
-                iterator.partidas[indices[i]].meses[j] = valor;
-                valorCompensa = 0;
+        }
+        const parcial_2dec = this.formsService.redondeo(
+          Number(element.parcial),
+          this.dec_parcial
+        );
+        let partida = {
+          descripcion: element.descripcion,
+          item: element.item,
+          indice: element.indice,
+          parcial: Number(parcial_2dec).toFixed(2),
+          unidad: element.unidad,
+          meses: element.meses,
+          insumos: insumos,
+        };
+        formatPresu.push(partida);
+      }
+      for (let ele of formatPresu) {
+        if (ele.unidad) {
+          let pocentajeTotal = 0;
+          for (let element of ele.insumos) {
+            if (Number(ele.parcial) > 0) {
+              element.porcentaje = (element.parcial * 100) / ele.parcial;
+            } else {
+              element.porcentaje = 0;
+            }
+            pocentajeTotal += element.porcentaje;
+          }
+          for (let insumo of ele.insumos) {
+            let meses = [];
+            for (const mes of ele.meses) {
+              if (mes) {
+                const monto = (mes.monto * insumo.porcentaje) / 100;
+                meses.push(monto);
               } else {
-                valorCompensa = valorCompensa - mes;
-                iterator.partidas[indices[i]].meses[j] = 0;
+                meses.push(0);
               }
             }
-            let parcial = 0;
-            element.meses.map((ele) => {
-              parcial = ele + parcial;
-            });
-            iterator.partidas[indices[i]].parcial = this.formsService.redondeo(
-              parcial,
-              this.dec_parcial
+            insumo.meses = meses;
+          }
+        }
+      }
+      let concatInsumos = [];
+      for (const iterator of formatPresu) {
+        if (iterator.unidad) {
+          concatInsumos = concatInsumos.concat(iterator.insumos);
+        }
+      }
+      for (const iterator of acumulados) {
+        const existentes = concatInsumos.filter((ele) => {
+          if (iterator.operador == '%') {
+            if (
+              iterator.descripcion == ele.descripcion &&
+              iterator.id_tipo_insumo == ele.id_tipo_insumo &&
+              ele.id_tipo_insumo !== 0 &&
+              ele.id_tipo_insumo !== 5
+            ) {
+              return ele;
+            }
+          } else {
+            if (
+              iterator.descripcion == ele.descripcion &&
+              iterator.id_tipo_insumo == ele.id_tipo_insumo &&
+              iterator.precio == ele.precio &&
+              ele.id_tipo_insumo !== 0 &&
+              ele.id_tipo_insumo !== 5
+            ) {
+              return ele;
+            }
+          }
+        });
+        let meses = JSON.parse(JSON.stringify(iterator.meses));
+        let cantidades = JSON.parse(JSON.stringify(iterator.cantidades));
+        let partidas = [];
+
+        for (let row of existentes) {
+          let i = 0;
+          const objPart = {
+            descripcion: row.descripcion_partida,
+            porcentaje: row.porcentaje,
+            item: row.item_partida,
+            unidad: row.unidad,
+            meses: row.meses,
+            cantidades: row.cantidades,
+            parcial: this.formsService.redondeo(row.parcial, this.dec_parcial),
+          };
+          partidas.push(objPart);
+          for (const mes of row.meses) {
+            // if (iterator.compensa && i == 0) {
+            //   console.log(' Number(iterator.compensa)',  Number(iterator.compensa));
+
+            //   meses[i] = meses[i] + Number(iterator.compensa)
+            // }
+            meses[i] = meses[i] + mes;
+            cantidades[i] = this.formsService.redondeo(
+              meses[i] / iterator.precio,
+              this.dec_cant
             );
+            i++;
+          }
+        }
+        let suma = 0;
+        partidas.map((ele) => (suma += Number(ele.parcial)));
+        iterator.parcialCalculado = suma;
+        iterator.partidas = partidas;
+        iterator.meses = meses;
+        iterator.cantidades = cantidades;
+        if (iterator.compensa) {
+          const index = iterator.meses.findIndex((ele) => ele > 0);
+          iterator.meses[index] =
+            iterator.meses[index] + Number(iterator.compensa);
+          iterator.cantidades[index] = Number(
+            this.formsService.redondeo(
+              iterator.meses[index] / Number(iterator.precio),
+              this.dec_cant
+            )
+          );
+          let indices = [];
+          let insumos = iterator.partidas.filter((ele, index) => {
+            if (ele.meses.find((ele) => ele > 0)) {
+              indices.push(index);
+              return ele;
+            }
+          });
+          let valorCompensa = Number(iterator.compensa);
+          let i = 0;
+          for (let element of insumos) {
+            let j = 0;
+            for (let mes of element.meses) {
+              if (mes > 0) {
+                const valor = mes + valorCompensa;
+
+                if (valor > 0) {
+                  iterator.partidas[indices[i]].meses[j] = valor;
+                  valorCompensa = 0;
+                } else {
+                  valorCompensa = valorCompensa - mes;
+                  iterator.partidas[indices[i]].meses[j] = 0;
+                }
+              }
+              let parcial = 0;
+              element.meses.map((ele) => {
+                parcial = ele + parcial;
+              });
+              iterator.partidas[indices[i]].parcial = this.formsService.redondeo(
+                parcial,
+                this.dec_parcial
+              );
+              if (valorCompensa == 0) {
+                break;
+              }
+              j++;
+            }
             if (valorCompensa == 0) {
               break;
             }
-            j++;
+            i++;
           }
-          if (valorCompensa == 0) {
-            break;
-          }
-          i++;
-        }
-      }
-    }
-
-    let tablaFinal = [];
-    let j = 1;
-    const arrayTipos = [
-      'MANO DE OBRA (MO)',
-      'MATERIALES (MAT)',
-      'EQUIPOS (EQ)',
-      'SUBCONTRATOS (SUBCONT)',
-    ];
-    for (const iterator of arrayTipos) {
-      let totalGrupo = JSON.parse(JSON.stringify(array));
-      const obj = {
-        cantidad: 0,
-        cantidades: array,
-        descripcion: arrayTipos[j - 1],
-        id_insumo: null,
-        id_tipo_insumo: j,
-        ind: null,
-        meses: array,
-        parcial: 0,
-        partidas: [],
-        precio: 0,
-        unidad: '',
-      };
-      tablaFinal.push(obj);
-      let filtXtipo = await acumulados.filter((ele) => ele.id_tipo_insumo == j);
-      filtXtipo = await filtXtipo.map((ele, index) => {
-        ele.ind2 = index;
-        return ele;
-      });
-      let sumaGrupo2 = 0;
-      filtXtipo.map((ele) => (sumaGrupo2 = sumaGrupo2 + Number(ele.parcial)));
-      tablaFinal = tablaFinal.concat(filtXtipo);
-      for (const insum of filtXtipo) {
-        let k = 0;
-        for (const mes of insum.meses) {
-          totalGrupo[k] = totalGrupo[k] + mes;
-          this.totalesMateriales[k] = this.totalesMateriales[k] + mes;
-          k++;
         }
       }
 
-      const totRd = totalGrupo.map((ele) =>
-        this.formsService.redondeo(ele, this.dec_parcial)
-      );
-      const sumagrupo = this.formsService.redondeo(
-        totalGrupo.reduce((a, b) => a + b, 0),
+      let tablaFinal = [];
+      let j = 1;
+      const arrayTipos = [
+        'MANO DE OBRA (MO)',
+        'MATERIALES (MAT)',
+        'EQUIPOS (EQ)',
+        'SUBCONTRATOS (SUBCONT)',
+      ];
+      for (const iterator of arrayTipos) {
+        let totalGrupo = JSON.parse(JSON.stringify(array));
+        const obj = {
+          cantidad: 0,
+          cantidades: array,
+          descripcion: arrayTipos[j - 1],
+          id_insumo: null,
+          id_tipo_insumo: j,
+          ind: null,
+          meses: array,
+          parcial: 0,
+          partidas: [],
+          precio: 0,
+          unidad: '',
+        };
+        tablaFinal.push(obj);
+        let filtXtipo = await acumulados.filter((ele) => ele.id_tipo_insumo == j);
+        filtXtipo = await filtXtipo.map((ele, index) => {
+          ele.ind2 = index;
+          return ele;
+        });
+        let sumaGrupo2 = 0;
+        filtXtipo.map((ele) => (sumaGrupo2 = sumaGrupo2 + Number(ele.parcial)));
+        tablaFinal = tablaFinal.concat(filtXtipo);
+        for (const insum of filtXtipo) {
+          let k = 0;
+          for (const mes of insum.meses) {
+            totalGrupo[k] = totalGrupo[k] + mes;
+            this.totalesMateriales[k] = this.totalesMateriales[k] + mes;
+            k++;
+          }
+        }
+
+        const totRd = totalGrupo.map((ele) =>
+          this.formsService.redondeo(ele, this.dec_parcial)
+        );
+        const sumagrupo = this.formsService.redondeo(
+          totalGrupo.reduce((a, b) => a + b, 0),
+          this.dec_parcial
+        );
+        const sumagrupoComp = totalGrupo.reduce((a, b) => a + b, 0);
+
+        const obj2 = {
+          cantidad: 0,
+          cantidades: array,
+          descripcion: 'total',
+          id_insumo: null,
+          id_tipo_insumo: j,
+          ind: null,
+          meses: totRd,
+          parcial: sumagrupo,
+          partidas: [],
+          precio: 0,
+          unidad: '',
+        };
+        tablaFinal.push(obj2);
+        j++;
+      }
+      this.totalParcialesCalMat = this.formsService.redondeo(
+        this.totalesMateriales.reduce((a, b) => a + b, 0),
         this.dec_parcial
       );
-      const sumagrupoComp = totalGrupo.reduce((a, b) => a + b, 0);
+      const totalParcialesCalMatComp = this.totalesMateriales.reduce(
+        (a, b) => a + b,
+        0
+      );
+      acumulados.map((ele) => (totalCostoParciales += Number(ele.parcial)));
 
-      const obj2 = {
-        cantidad: 0,
-        cantidades: array,
-        descripcion: 'total',
-        id_insumo: null,
-        id_tipo_insumo: j,
-        ind: null,
-        meses: totRd,
-        parcial: sumagrupo,
-        partidas: [],
-        precio: 0,
-        unidad: '',
-      };
-      tablaFinal.push(obj2);
-      j++;
+      this.totColRedMat = this.totalesMateriales.map((ele) =>
+        this.formsService.redondeo(ele, this.dec_parcial)
+      );
+      let totalPorMat = 0;
+      this.porcTotMat = [];
+      for (const iterator of this.totColRedMat) {
+        const porcentaje =
+          (Number(iterator) * 100) / Number(this.totalParcialesCalMat);
+        const porcRed = this.formsService.redondeo(porcentaje, this.dec_parcial);
+        totalPorMat = totalPorMat + Number(porcentaje);
+        this.porcTotMat.push(porcRed);
+      }
+      this.totalPorcMat = this.formsService.redondeo(totalPorMat, 2);
+
+      this.totalColumna = this.formsService.redondeo(
+        totalCostoParciales,
+        this.dec_parcial
+      );
+      this.calendarioMateriales = tablaFinal;
+      this.totalParcialesCalMat = sumag; //Corregir
+      this.tablaMatDesac = false;
+    }catch(e){
+      console.log(e)
+      this.toaster.error('No se pudo cargar la información.', 'Advertencia', { closeButton: false, positionClass: 'toast-bottom-right', timeOut: 5000 })
+      this.mostrar_carga_todo=false;
     }
-    this.totalParcialesCalMat = this.formsService.redondeo(
-      this.totalesMateriales.reduce((a, b) => a + b, 0),
-      this.dec_parcial
-    );
-    const totalParcialesCalMatComp = this.totalesMateriales.reduce(
-      (a, b) => a + b,
-      0
-    );
-    acumulados.map((ele) => (totalCostoParciales += Number(ele.parcial)));
-
-    this.totColRedMat = this.totalesMateriales.map((ele) =>
-      this.formsService.redondeo(ele, this.dec_parcial)
-    );
-    let totalPorMat = 0;
-    this.porcTotMat = [];
-    for (const iterator of this.totColRedMat) {
-      const porcentaje =
-        (Number(iterator) * 100) / Number(this.totalParcialesCalMat);
-      const porcRed = this.formsService.redondeo(porcentaje, this.dec_parcial);
-      totalPorMat = totalPorMat + Number(porcentaje);
-      this.porcTotMat.push(porcRed);
-    }
-    this.totalPorcMat = this.formsService.redondeo(totalPorMat, 2);
-
-    this.totalColumna = this.formsService.redondeo(
-      totalCostoParciales,
-      this.dec_parcial
-    );
-    this.calendarioMateriales = tablaFinal;
-    this.totalParcialesCalMat = sumag; //Corregir
-    this.tablaMatDesac = false;
   }
 
   async agrupadoXinsumo(auxiliar) {
