@@ -414,6 +414,15 @@ export class LogisticaService {
       catchError(err => throwError(err))
     ).toPromise()
   }
+  ListarAgruadquiSeguimiento(params = {}): Promise<any> {
+    const url = this.enviUrl + '/api/logistica/listarAgruadquiSeguimiento';
+    return this.http.post<any>(url, this.Cargafrmdata(params)).pipe(
+      map(res => {
+        return res
+      }),
+      catchError(err => throwError(err))
+    ).toPromise()
+  }
   AdquisolAsignaProv(params = {}): Promise<any> {
     const url = this.enviUrl + '/api/logistica/adquiasignaProv';
     return this.http.post<any>(url, this.Cargafrmdata(params)).pipe(
@@ -507,6 +516,15 @@ export class LogisticaService {
   ActualizaEstOrdenAgru(params = {}):any//ejemplo con json
   {
     const url = this.enviUrl + '/api/logistica/actualizarEstOrdenAgru';
+    return this.http.post<any>(url, this.Cargafrmdata(params)).pipe(
+      map(res => {
+        return res
+      }),
+      catchError(err => throwError(err))
+    ).toPromise()
+  }
+  AgruinsModReqaBorrador(params = {}): Promise<any> {
+    const url = this.enviUrl + '/api/logistica/agruinsReqaBorrador';
     return this.http.post<any>(url, this.Cargafrmdata(params)).pipe(
       map(res => {
         return res

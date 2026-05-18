@@ -54,6 +54,7 @@ export class AlmcingresoComponent implements OnInit {
   id_proyecto: any;
   id_reg: any;
 
+  datacompleto=[]
   dataSource2 = [];
   fila2_sel = -1;
   buscando2 = false;
@@ -111,9 +112,12 @@ export class AlmcingresoComponent implements OnInit {
   tab3auxtotalparc: any;
   tab3auxtotalsal: any;
   widthm1b3 = 100;
-  fechaSal;
-  fechamin;
-  fechamax;
+  fechaSal:any;
+  fechamin:any;
+  fechamax:any;
+  //filtros
+  festIngreso=''
+  festReq=''
 
   constructor(
     private _EncriptadorService: EncriptadorService,
@@ -299,6 +303,7 @@ export class AlmcingresoComponent implements OnInit {
     console.log(res);
     this.buscando2 = false;
     if (res?.length > 0) {
+      this.datacompleto=res[0]
       this.dataSource2 = res[0];
       this.datainsdisg = res[1];
       this.dataingreso = res[2];
@@ -1473,5 +1478,9 @@ export class AlmcingresoComponent implements OnInit {
   async OpenModal() {
     this.formHojas.reset();
     this.modalHojas.show();
+  }
+  async cambiarfestIngreso(){
+    this.dataSource2 = this.datacompleto.filter(x => (this.festIngreso=='' || x.estingreso === parseInt(this.festIngreso)) && (this.festReq=='' || x.estado === parseInt(this.festReq)));
+    await this.cambindicesel2(this.fila2_sel);
   }
 }

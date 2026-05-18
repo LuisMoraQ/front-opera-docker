@@ -338,6 +338,7 @@ export class PresdirectoComponent implements OnInit,OnDestroy {
           this.solover=true;
         }
       }
+      this.solover=true;
       if(this.solover){
         this.formDataPartida.disable();
         this.edicionacu=false;
@@ -357,6 +358,7 @@ export class PresdirectoComponent implements OnInit,OnDestroy {
         this.mask_cant='0.'+arrdec[3];
       }
       let res= await this.presuservice.listarTopPresupuesto({id_proyecto:this.id_proyecto});
+      console.log(res)
         this.datasourcePri=res[0]
         this.datasourcePriacu=res[1];
         this.datasourcePrisub=res[2];
@@ -2630,7 +2632,7 @@ export class PresdirectoComponent implements OnInit,OnDestroy {
         this.formDataPartida.reset({
           item:rowsel.item,
           descripcion:rowsel.descripcion,
-          unidad:Number(rowsel.id_unidad),
+          unidad:rowsel.unidad,
           precio:rowsel.precio,
           rendimiento:rowsel.rendimiento,
           undrendimiento:rowsel.und_rendi,
@@ -7191,17 +7193,17 @@ export class PresdirectoComponent implements OnInit,OnDestroy {
       //corregir total en % mano obra operador% tipo_insumo1
       let totax=0;
       let indporc=-1;
-      let indporc2=-1;
+      // let indporc2=-1;
       for(let r1=0;r1<tabresult.length;r1++){
         totax=totax+=Number(tabresult[r1].parcial);
-        if(tabresult[r1].operador=='%' && tabresult[r1].tipo_insumo==1 && indporc==-1){
+        if(tabresult[r1].operador=='%' /* && tabresult[r1].tipo_insumo==1 */ && indporc==-1){
           indporc=r1;
         }
-        if(tabresult[r1].operador=='%' && indporc2==-1){
-          indporc2=r1;
-        }
+        // if(tabresult[r1].operador=='%' && indporc2==-1){
+        //   indporc2=r1;
+        // }
       }
-      let indcor=indporc!=-1?indporc:(indporc2!=-1?indporc2:-1)
+      let indcor=indporc/* !=-1?indporc:(indporc2!=-1?indporc2:-1) */
       if(indcor>=0){
         console.log(this.formService.redondeo(totpre-totax,4))
         tabresult[indcor].parcial=this.formService.redondeo((Number(tabresult[indcor].parcial)+(totpre-totax)),this.dec_parcial);
@@ -9906,6 +9908,7 @@ export class PresdirectoComponent implements OnInit,OnDestroy {
       this.toaster.error('No se puede abrir mas de 4 pestañas', 'Advertencia', { closeButton: false,positionClass: 'toast-bottom-right',timeOut: 5000 })
       return
     }
+    console.log(detalleSubpartida)
     const nrotab = this.formSubPartida.value.length
     const datosPartida = await this.formDataSubPartida(row)
     const datosTab = new UntypedFormGroup({
@@ -9936,7 +9939,7 @@ export class PresdirectoComponent implements OnInit,OnDestroy {
     const inputidusuariols = this.encriptadorService.recuperarlocalstory('idusuario');
     const formDataPartida = new UntypedFormGroup({
       descripcion: new UntypedFormControl(partida.descripcion, [Validators.required]),
-      unidad: new UntypedFormControl(Number(partida.id_unidad), [Validators.required]),
+      unidad: new UntypedFormControl(partida.unidad, [Validators.required]),
       precio: new UntypedFormControl(partida.precio, [Validators.required, Validators.min(0)]),
       rendimiento: new UntypedFormControl(partida.rendimiento!=null?partida.rendimiento : '', []),
       undrendimiento: new UntypedFormControl(partida.und_rendi ? partida.und_rendi : '', []),

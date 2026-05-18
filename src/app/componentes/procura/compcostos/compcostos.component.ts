@@ -92,7 +92,8 @@ export class CompcostosComponent implements OnInit {
           taux[a].variacion=this.formService.redondeo(varia,2);
           //fecha ate - fecha sol
           if(taux[a].fecha_gana){
-            let arrfe=taux[a].fecha_gana.split('-')
+            console.log(taux[a].vfechagana)
+            let arrfe=taux[a].vfechagana.split('-')
             let feac = new Date(Number(arrfe[2]),Number(arrfe[1])-1,Number(arrfe[0]));
             feac.setHours(9, 0, 0,0);
             feac.setDate(feac.getDate()+Number(taux[a].plazo_gana))
@@ -196,7 +197,8 @@ export class CompcostosComponent implements OnInit {
         sum5+=Number(parc3)??0
         if(filacop.preciosol){
           filacop.preciovar=this.formService.redondeo(Number(filacop.preciosol)-Number(filacop.precio),this.dec_precio)
-          let varia=((Number(filacop.precio)-Number(filacop.preciosol))/Number(filacop.precio))*100;
+          //let varia=((Number(filacop.precio)-Number(filacop.preciosol))/Number(filacop.precio))*100;
+          let varia=Number(filacop.parcial)-Number(filacop.parcialsol);
           filacop.variacion=this.formService.redondeo(varia,2);
         }
         else

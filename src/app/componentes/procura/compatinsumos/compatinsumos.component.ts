@@ -1240,6 +1240,17 @@ export class CompatinsumosComponent implements OnInit {
     const result = await modalRef.result;
   }
   async Cambioest(ind:any){
+    let valido=false;
+    for(let row of this.dataSource8){
+      if(row.indice!=null){
+        valido=true;
+        break;
+      }
+    }
+    if(!valido){
+      this.toaster.error('Tiene que agregar Insumos a la tabla Requerimientos Realizados antes de continuar.', 'Advertencia', { closeButton: false,positionClass: 'toast-bottom-right',timeOut: 5000 });
+      return;
+    }
     const respu = await SwalService.confirm('Esta seguro que desea Cambiar a Estado REQUERIMIENTO?', 'Ya no podra editar el requerimiento despues de continuar.');
     if (respu.isConfirmed) {
       this.mostrar_carga_todo=true;

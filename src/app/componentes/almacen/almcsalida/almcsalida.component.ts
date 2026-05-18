@@ -54,6 +54,7 @@ export class AlmcsalidaComponent implements OnInit {
   id_proyecto: any;
   id_reg: any;
 
+  datacompleto=[]
   dataSource2 = [];
   fila2_sel = -1;
   buscando2 = false;
@@ -113,6 +114,9 @@ export class AlmcsalidaComponent implements OnInit {
   fechaSal;
   fechamin;
   fechamax;
+  //filtros
+  festSalida=''
+  festReq=''
 
   constructor(
     private _EncriptadorService: EncriptadorService,
@@ -303,6 +307,7 @@ export class AlmcsalidaComponent implements OnInit {
     console.log(res);
     this.buscando2 = false;
     if (res?.length > 0) {
+      this.datacompleto=res[0]
       this.dataSource2 = res[0];
       this.datainsdisg = res[1];
       this.dataingreso = res[2];
@@ -1555,4 +1560,8 @@ export class AlmcsalidaComponent implements OnInit {
       this.formHojas.reset();
       this.modalHojas.show();
     }
+  async cambiarfestSalida(){
+    this.dataSource2 = this.datacompleto.filter(x => (this.festSalida=='' || x.estsalida === parseInt(this.festSalida)) && (this.festReq=='' || x.estado === parseInt(this.festReq)));
+    await this.cambindicesel2(this.fila2_sel);
+  }
 }

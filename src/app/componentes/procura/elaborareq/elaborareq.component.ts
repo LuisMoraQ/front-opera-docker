@@ -807,4 +807,26 @@ export class ElaborareqComponent implements OnInit {
     }
     this.mostrar_carga_todo=false;
   }
+  async Cambioest(ind:any){
+    if(!(this.dataSource6[ind].tipocontra==1 || this.dataSource6[ind].tipocontra==2 || this.dataSource6[ind].tipocontra==4)){
+      this.toaster.error('No se puede cambiar de estado por el Tipo de Contratación.', 'Advertencia', { closeButton: false,positionClass: 'toast-bottom-right',timeOut: 5000 });
+      return;
+    }
+    const respu = await SwalService.confirm('Esta seguro que desea Cambiar a Estado Borrador?', '');
+    if (respu.isConfirmed) {
+      this.mostrar_carga_todo=true;
+      let res=await this._logisticaService.AgruinsModReqaBorrador({id_proyecto:this.id_proyecto,id_registro:this.dataSource6[ind].id_registro,idgrupo:this.dataSource6[ind].idgrupo});
+      if(res[0]?.id=="1"){
+        this.dataSource6[ind].estado=0;
+        this.dataSource6[ind].plazo_ate=null;
+        this.dataSource6[ind].nroprov=null;
+        this.dataSource6[ind].parcialsol=null;
+        this.mostrar_carga_todo=false;
+        SwalService.success('Correcto',res[0]?.mensaje)
+      }
+      else{
+        SwalService.error('Advertencia', 'No se pudo realizar la acción.');
+      }
+    }
+  }
 }

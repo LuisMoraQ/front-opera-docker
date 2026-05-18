@@ -28,7 +28,7 @@
             <th appAnchocol [ancho]="105">Variacion</th>
             <th appAnchocol [ancho]="70">Fecha Solicitada</th>
             <th appAnchocol [ancho]="70">Plazo Atención</th>
-            <th appAnchocol [ancho]="175">Estado Situacional</th>
+            <th appAnchocol [ancho]="145">Estado Situacional</th>
           </tr>
         </thead>
         <tbody>
@@ -74,7 +74,14 @@
               </td>
               <td appAnchocol [ancho]="70">{{row.fecha}}</td>
               <td appAnchocol [ancho]="70">{{row.plazo_ate}}</td>
-              <td appAnchocol [ancho]="175">{{row.estado==0?'':row.estado==1?'Fase de Selección - Convocatoria':row.estado==2?'Fase de Ejecución - Orden Compra':row.estado==3?'Fase de Cotización':''}}</td>
+              <td appAnchocol [ancho]="145">
+                <!-- {{row.estado==0?'':row.estado==1?'Fase de Selección - Convocatoria':row.estado==2?'Fase de Ejecución - Orden Compra':row.estado==3?'Fase de Cotización':''}} -->
+                  <label *ngIf="row.estorden==0" class="label label-primary label-est3">Sin Registro de Atención</label>
+                  <label *ngIf="row.estorden==1" class="label label-info label-est3">En Ejecución del Requerimiento</label>
+                  <label *ngIf="row.estorden==2" class="label label-est3" style="background-color: 'darkorange';">Pendiente a la Conformidad</label>
+                  <label *ngIf="row.estorden==3" class="label label-success label-est3">Aprobado sin Observaciones</label>
+                  <label *ngIf="row.estorden==4" class="label label-danger label-est3">Observado sin Conformidad</label>
+              </td>
             </tr>
           </ng-container>
           <ng-container *ngIf="dataSource6.length<=0">
@@ -115,7 +122,7 @@
             <ng-container *ngIf="dataSource7.length>0">
               <tr *ngFor="let row of dataSource7;let indice=index;" (click)="cambindicesel7(indice)" [ngClass]="{'highlight': fila7_sel == indice,'filagrupo':row.indice==null}">
                 <td appAnchocol [ancho]="35"> 
-                  {{row.nro}}
+                  {{row.num_det}}
                 </td>
                 <td appAnchocol [ancho]="60">
                   {{row.indiceunif}}

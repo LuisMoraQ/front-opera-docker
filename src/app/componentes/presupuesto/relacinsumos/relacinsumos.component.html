@@ -147,14 +147,13 @@
                   {{row.unidad}}
                 </td>
                 <td class="cellsinpadding" appAnchocol [ancho]="90">
-                  <div class="float-right w-100">{{row.cantidad | number: mask_metrado}}</div>
+                  <div *ngIf="row.operador!='%'" class="float-right w-100">{{row.cantidad | number: mask_metrado}}</div>
                 </td>
                 <td class="cellsinpadding" appAnchocol [ancho]="90">
-                  <div style="cursor: pointer;" class="float-right w-100">
+                  <div *ngIf="row.operador!='%'" style="cursor: pointer;" class="float-right w-100">
                     <span *ngIf="row.unidad!=''" class="float-left">{{moneda}}<i *ngIf="(row.advceros===1 || row.precio==0) && row.unidad!=''" class="fa fa-exclamation-triangle c-alert"></i></span>
                     <span class="float-right">{{row.precio | number: mask_precio}}</span>
                   </div>
-                
                 </td>
                 <td class="cellsinpadding" appAnchocol [ancho]="100">
                   <span class="float-left">{{moneda}}</span>

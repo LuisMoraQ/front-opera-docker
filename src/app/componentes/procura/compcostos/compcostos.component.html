@@ -75,7 +75,7 @@
                 <label *ngIf="row.estado==2" class="label label-success label-est">Orden Atención</label>
               </td>
               <td appAnchocol [ancho]="70">{{row.fecha_sol}}</td>
-              <td appAnchocol [ancho]="70">{{row.fecha_gana}}</td><!-- cambiar por fecha aprueba -->
+              <td appAnchocol [ancho]="70">{{row.vfechagana}}</td><!-- cambiar por fecha aprueba -->
               <td appAnchocol [ancho]="70">{{row.plazo_gana}}</td><!-- fecha atencion menos fecha solicitada? -->
               <td appAnchocol [ancho]="70">{{row.fechalim}}</td>
             </tr>
@@ -162,15 +162,16 @@
                 <td appAnchocol [ancho]="68" class="text-right">
                   {{row.preciovar | number: mask_precio}}
                 </td>
-                <td appAnchocol [ancho]="105">
-                  <div *ngIf="row.variacion && row.variacion>=0" class="progressj" style="width: 50px;margin-left: 50px;">
+                <td appAnchocol [ancho]="105" class="text-right">
+                  <span [ngClass]="{'text-danger': row.variacion<0,'text-primary': row.variacion>=0}">{{row.variacion | number: mask_precio}}</span>
+                  <!-- <div *ngIf="row.variacion && row.variacion>=0" class="progressj" style="width: 50px;margin-left: 50px;">
                     <span class="progressj-text" [ngStyle]="{'justify-content': row.variacion==0?'left':'center'}">{{row.variacion | number: '0.2'}}</span>
                     <div class="progressj-fill" [ngStyle]="{'width': row.variacion+'%','background':'#56db60'}"></div>
                   </div>
                   <div *ngIf="row.variacion && row.variacion<0" class="progressj rtl" style="width: 50px;margin-right: 50px;">
                     <span class="progressj-text" style="direction: ltr;">{{row.variacion | number: '0.2'}}</span>
                     <div class="progressj-fill" [ngStyle]="{'width': (row.variacion*-1)+'%','background':'#ff5656'}"></div>
-                  </div>
+                  </div> -->
                 </td>
               </tr>
             </ng-container>

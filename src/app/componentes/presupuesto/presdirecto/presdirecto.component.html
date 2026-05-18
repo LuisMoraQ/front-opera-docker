@@ -332,7 +332,7 @@
                   <div *ngIf="!esgruposel && !acuxmetrado" class="col-12 col-sm-4 col-lg-3 d-flex">
                       <mat-form-field appearance="outline" class="mff-reduc my-form-field" style="width: calc(100% - 36px);padding-bottom: 10px;">
                         <mat-label>Unidad</mat-label>
-                        <input matInput class="mayuscula" [value]="item.value" disabled>
+                        <input matInput class="mayuscula" [value]="unidad.value" disabled>
                       </mat-form-field>
                   </div>
                   <div class="col-12 col-sm-4 col-lg-3 custpad-col">
@@ -483,8 +483,10 @@
                 <td class="cellsinpadding" appAnchocol [ancho]="44">
                   {{row.unidad}}
                 </td>
-                <td class="cellsinpadding" appAnchocol [ancho]="90" [hidden]="esgruposel || acuxmetrado">             
+                <td class="cellsinpadding" appAnchocol [ancho]="90" [hidden]="esgruposel || acuxmetrado">
+                  <ng-container *ngIf="row.afcuadrilla==1">
                     <span [ngClass]="{'celdaadvcero':row.cuadrilla==0,'celdanocero':row.cuadrilla!=0}">{{row.cuadrilla | formatoDec}}</span><i *ngIf="!(row.cuadrilla!=0) && datasourcePri[filaSel]?.unidad!=''" class="fa fa-exclamation-triangle c-alert"></i>
+                  </ng-container>
                 </td>
                 <td class="cellsinpadding" appAnchocol [ancho]="90">
                   <!-- <div *ngIf="row.afcuadrilla==1 && row.operador!='%'" class="float-right w-100">{{row.cantidad | number: mask_cant}}<span *ngIf="row.operador=='%' && datasourcePri[filaSel]?.unidad!='' && !acuxmetrado"> % </span></div> -->
@@ -597,7 +599,7 @@
                           <i class="fa fa-undo icono-but"></i>
                         </button>
                       </div>
-                      <div class="col-12 col-sm-4 col-lg-3 d-flex">
+                      <!-- <div class="col-12 col-sm-4 col-lg-3 d-flex">
                         <div class="custom-row" style="width: calc(100% - 36px);padding-bottom: 18px;">
                           <span class="span-sobre" [ngClass]="{'invalidspan':(tab.get('data_partida').get('unidad').invalid && tab.get('data_partida').get('unidad').touched)}">Unidad</span>
                           <ng-select [ngClass]="{'invalidsel':(tab.get('data_partida').get('unidad').invalid && tab.get('data_partida').get('unidad').touched)}" [appendTo]="'body'"
@@ -614,7 +616,11 @@
                             <i class="fa fa-search icono-but"></i>
                           </button>
                         </div>
-                      </div>
+                      </div> -->
+                      <mat-form-field appearance="outline" class="mff-reduc my-form-field col-12 col-sm-4 col-lg-3">
+                        <mat-label>Unidad</mat-label>
+                        <input matInput class="mayuscula" formControlName="unidad">
+                      </mat-form-field>
                       <mat-form-field appearance="outline" class="mff-reduc my-form-field col-12 col-sm-4 col-lg-3">
                         <mat-label>Rendimiento</mat-label>
                         <input matInput type="text" autocomplete="off" formControlName="rendimiento" [textMask]="this.formService.maskUsAmountDecimal2"
