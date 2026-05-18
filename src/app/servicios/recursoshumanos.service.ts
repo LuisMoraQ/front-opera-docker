@@ -1101,12 +1101,316 @@ export class RecursosHumanosService {
         ).toPromise()
     }
 
-      verificarDniUsuario(params = {}): any {
+    verificarDniUsuario(params = {}): any {
         let formData: FormData = new FormData();
         Object.entries(params).forEach(([key, value]) => {
             formData.append(key, value as string);
         });
         const url = this.enviUrl + '/api/recursoshumanos/verificarDniUsuario';
+        return this.http.post<any>(url, formData).pipe(
+            map(res => {
+                if (!res) {
+                    throw new Error
+                }
+                return res
+            }),
+            catchError(err => throwError(err))
+        ).toPromise()
+    }
+    guardarUsuarioConAsignaciones(params: any): any {
+        const formData = new FormData();
+
+        formData.append('id_proyecto', String(params.id_proyecto));
+        formData.append('nombres', params.nombres);
+        formData.append('apellidos', params.apellidos);
+        formData.append('dni', params.dni);
+        formData.append('telefono', params.telefono);
+        formData.append('correo', params.correo);
+        formData.append('fecha_asignacion', params.fecha_asignacion);
+        formData.append('fecha_culminacion', params.fecha_culminacion);
+        formData.append('estado', String(params.estado));
+        formData.append('asignaciones', JSON.stringify(params.asignaciones));
+
+        const url = this.enviUrl + '/api/recursoshumanos/guardarUsuarioConAsignaciones';
+
+        return this.http.post<any>(url, formData).pipe(
+            map(res => {
+                if (!res) {
+                    throw new Error();
+                }
+                return res;
+            }),
+            catchError(err => throwError(err))
+        ).toPromise();
+    }
+
+    // En tu recursosHumanosService
+    actualizarUsuarioCompleto(params: any): any {
+        let formData: FormData = new FormData();
+        Object.entries(params).forEach(([key, value]) => {
+            if (value !== null && value !== undefined) {
+                // Convertir arrays a JSON string
+                if (Array.isArray(value)) {
+                    formData.append(key, JSON.stringify(value));
+                } else {
+                    formData.append(key, value.toString());
+                }
+            }
+        });
+
+        const url = this.enviUrl + '/api/recursoshumanos/actualizarUsuarioCompleto';
+        return this.http.post<any>(url, formData).toPromise();
+    }
+
+    listarRegistrosVinculoPlanilla(params = {}): any {
+        let formData: FormData = new FormData();
+        Object.entries(params).forEach(([key, value]) => {
+            formData.append(key, value as string);
+        });
+        const url = this.enviUrl + '/api/recursoshumanos/listarRegistrosVinculoPlanilla';
+        return this.http.post<any>(url, formData).pipe(
+            map(res => {
+                if (!res) {
+                    throw new Error
+                }
+                return res
+            }),
+            catchError(err => throwError(err))
+        ).toPromise()
+    }
+
+    guardarRegistroVinculoPlanilla(params = {}): any {
+        let formData: FormData = new FormData();
+        Object.entries(params).forEach(([key, value]) => {
+            formData.append(key, value as string);
+        });
+        const url = this.enviUrl + '/api/recursoshumanos/guardarRegistroVinculoPlanilla';
+        return this.http.post<any>(url, formData).pipe(
+            map(res => {
+                if (!res) {
+                    throw new Error
+                }
+                return res
+            }),
+            catchError(err => throwError(err))
+        ).toPromise()
+    }
+
+    actualizarRegistroVinculoPlanilla(params = {}): any {
+        let formData: FormData = new FormData();
+        Object.entries(params).forEach(([key, value]) => {
+            formData.append(key, value as string);
+        });
+        const url = this.enviUrl + '/api/recursoshumanos/actualizarRegistroVinculoPlanilla';
+        return this.http.post<any>(url, formData).pipe(
+            map(res => {
+                if (!res) {
+                    throw new Error
+                }
+                return res
+            }),
+            catchError(err => throwError(err))
+        ).toPromise()
+    }
+
+    eliminarRegistroVinculoPlanilla(params = {}): any {
+        let formData: FormData = new FormData();
+        Object.entries(params).forEach(([key, value]) => {
+            formData.append(key, value as string);
+        });
+        const url = this.enviUrl + '/api/recursoshumanos/eliminarRegistroVinculoPlanilla';
+        return this.http.post<any>(url, formData).pipe(
+            map(res => {
+                if (!res) {
+                    throw new Error
+                }
+                return res
+            }),
+            catchError(err => throwError(err))
+        ).toPromise()
+    }
+
+    consultarPlanillaAprobada(params = {}): any {
+        let formData: FormData = new FormData();
+        Object.entries(params).forEach(([key, value]) => {
+            formData.append(key, value as string);
+        });
+        const url = this.enviUrl + '/api/recursoshumanos/consultarPlanillaAprobada';
+        return this.http.post<any>(url, formData).pipe(
+            map(res => {
+                if (!res) {
+                    throw new Error
+                }
+                return res
+            }),
+            catchError(err => throwError(err))
+        ).toPromise()
+    }
+
+    guardarPlanillaMensualAprobada(params = {}): any {
+        let formData: FormData = new FormData();
+        Object.entries(params).forEach(([key, value]) => {
+            formData.append(key, value as string);
+        });
+        const url = this.enviUrl + '/api/recursoshumanos/guardarPlanillaMensualAprobada';
+        return this.http.post<any>(url, formData).pipe(
+            map(res => {
+                if (!res) {
+                    throw new Error
+                }
+                return res
+            }),
+            catchError(err => throwError(err))
+        ).toPromise()
+    }
+
+    actualizarPlanillaMensualAprobada(params = {}): any {
+        let formData: FormData = new FormData();
+        Object.entries(params).forEach(([key, value]) => {
+            formData.append(key, value as string);
+        });
+        const url = this.enviUrl + '/api/recursoshumanos/actualizarPlanillaMensualAprobada';
+        return this.http.post<any>(url, formData).pipe(
+            map(res => {
+                if (!res) {
+                    throw new Error
+                }
+                return res
+            }),
+            catchError(err => throwError(err))
+        ).toPromise()
+    }
+
+    eliminarPlanillaMensualAprobada(params = {}): any {
+        let formData: FormData = new FormData();
+        Object.entries(params).forEach(([key, value]) => {
+            formData.append(key, value as string);
+        });
+        const url = this.enviUrl + '/api/recursoshumanos/eliminarPlanillaMensualAprobada';
+        return this.http.post<any>(url, formData).pipe(
+            map(res => {
+                if (!res) {
+                    throw new Error
+                }
+                return res
+            }),
+            catchError(err => throwError(err))
+        ).toPromise()
+    }
+
+    listarAgrupamientoRequerimientos(params = {}): Promise<any> {
+        let formData: FormData = new FormData();
+        Object.entries(params).forEach(([key, value]) => {
+            formData.append(key, value as string);
+        });
+
+        const url = this.enviUrl + '/api/recursoshumanos/listarAgrupamientoRequerimientos';
+
+        return this.http.post<any>(url, formData).pipe(
+            map(res => {
+                if (!res) {
+                    throw new Error('No se recibieron datos');
+                }
+
+                // La respuesta tendrá dos arrays
+                const datosPrincipales = res[0];  // Primer SELECT
+                const datosDesagregados = res[1]; // Segundo SELECT
+
+                // Puedes estructurar la respuesta como prefieras
+                return {
+                    agrupacion: datosPrincipales,
+                    desagregados: datosDesagregados,
+                    // O si necesitas combinarlos de alguna manera específica
+                    // combinado: datosPrincipales.map(principal => ({
+                    //   ...principal,
+                    //   detalles: datosDesagregados.filter(d => 
+                    //     d.idgrupo === principal.idgrupo && 
+                    //     d.idfila === principal.idfila
+                    //   )
+                    // }))
+                };
+            }),
+            catchError(err => {
+                console.error('Error en la petición:', err);
+                return throwError(err);
+            })
+        ).toPromise();
+    }
+
+    listarRequerimientoCargo(params = {}): any {
+        let formData: FormData = new FormData();
+        Object.entries(params).forEach(([key, value]) => {
+            formData.append(key, value as string);
+        });
+        const url = this.enviUrl + '/api/recursoshumanos/listarRequerimientoCargo';
+        return this.http.post<any>(url, formData).pipe(
+            map(res => {
+                if (!res) {
+                    throw new Error
+                }
+                return res
+            }),
+            catchError(err => throwError(err))
+        ).toPromise()
+    }
+
+    guardarRequerimientoCargo(params = {}): any {
+        let formData: FormData = new FormData();
+        Object.entries(params).forEach(([key, value]) => {
+            formData.append(key, value as string);
+        });
+        const url = this.enviUrl + '/api/recursoshumanos/guardarRequerimientoCargo';
+        return this.http.post<any>(url, formData).pipe(
+            map(res => {
+                if (!res) {
+                    throw new Error
+                }
+                return res
+            }),
+            catchError(err => throwError(err))
+        ).toPromise()
+    }
+
+    actualizarRequerimientoCargo(params = {}): any {
+        let formData: FormData = new FormData();
+        Object.entries(params).forEach(([key, value]) => {
+            formData.append(key, value as string);
+        });
+        const url = this.enviUrl + '/api/recursoshumanos/actualizarRequerimientoCargo';
+        return this.http.post<any>(url, formData).pipe(
+            map(res => {
+                if (!res) {
+                    throw new Error
+                }
+                return res
+            }),
+            catchError(err => throwError(err))
+        ).toPromise()
+    }
+
+    eliminarRequerimientoCargo(params = {}): any {
+        let formData: FormData = new FormData();
+        Object.entries(params).forEach(([key, value]) => {
+            formData.append(key, value as string);
+        });
+        const url = this.enviUrl + '/api/recursoshumanos/eliminarRequerimientoCargo';
+        return this.http.post<any>(url, formData).pipe(
+            map(res => {
+                if (!res) {
+                    throw new Error
+                }
+                return res
+            }),
+            catchError(err => throwError(err))
+        ).toPromise()
+    }
+
+    listarInformacionRHPlanilla(params = {}): any {
+        let formData: FormData = new FormData();
+        Object.entries(params).forEach(([key, value]) => {
+            formData.append(key, value as string);
+        });
+        const url = this.enviUrl + '/api/recursoshumanos/listarInformacionRHPlanilla';
         return this.http.post<any>(url, formData).pipe(
             map(res => {
                 if (!res) {

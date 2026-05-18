@@ -183,6 +183,7 @@ export class LoginComponent implements OnInit {
             return;
           }
           if(!datos.conex){
+            console.log('datos', datos)
             this._EncriptadorService.guardarlocalstory('idusuario', JSON.stringify(datos.id_usuario));
             this._EncriptadorService.guardarlocalstory('role', JSON.stringify(datos.role));
             this._EncriptadorService.guardarlocalstory('nombre', JSON.stringify(datos.nombres));

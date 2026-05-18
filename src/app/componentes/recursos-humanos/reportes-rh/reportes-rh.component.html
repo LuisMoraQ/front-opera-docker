@@ -1,0 +1,423 @@
+<div id="divbut" style="width: calc(100% - 58px); margin-left: 44px" class="hidescroll m-b-10">
+    <div class="row " style="margin-right: 0px; margin-left: 0px">
+        <button class="btn btn-sm btn-outline-secondary btn-menu-top" type="button" (mouseup)="quitarfoco($event)"
+            (click)="cambioVista(1)" style="padding: 4px 8px" [ngClass]="{ active: subvista === 1 }">
+            <i class="fa fa-list"></i> PANEL DE RR.HH.
+        </button>
+        <button class="btn btn-sm btn-outline-secondary btn-menu-top" type="button" (mouseup)="quitarfoco($event)"
+            style="padding: 4px 8px" [ngClass]="{ active: subvista === 2 }" (click)="cambioVista(2)">
+            <i class="fa fa-list"></i> GRAFICOS DE RR.HH.
+        </button>
+        <button class="btn btn-sm btn-outline-secondary btn-menu-top" type="button" (mouseup)="quitarfoco($event)"
+            style="padding: 4px 8px" [ngClass]="{ active: subvista === 3 }" (click)="cambioVista(3)">
+            <i class="fa fa-list"></i> DASHBOARD DE RR.HH.
+        </button>
+    </div>
+</div>
+
+
+<app-cargando [bloquearTodo]="true" *ngIf="mostrar_carga_todo"></app-cargando>
+<ng-container *ngIf="subvista == 1">
+    <div class=" px-0 " style="height: calc(100dvh - 150px);">
+        <div class="col-12 d-flex justify-content-end">
+            <button type="button" class="btn btn-success btn-sm light ripple m-b-10" (click)="openModal()"
+                (mouseup)="quitarfoco($event);">
+                <i class="fa fa-plus"></i>Agregar
+            </button>
+        </div>
+        <div class="col-12 overflow-auto h-content">
+            <table class="table-bordered tab-10">
+                <thead class="text-center">
+                    <tr>
+                        <th rowspan="2" appAnchocol [ancho]="60">Item</th>
+                        <th rowspan="2" appAnchocol [ancho]="200" [detalle]="true">Insumos Agrupados</th>
+                        <th rowspan="2" appAnchocol [ancho]="40">Rubro</th>
+                        <th colspan="2"> Expediente tecnico</th>
+                        <th rowspan="2"> Presupuesto Asignado</th>
+                        <th colspan="2">Ejecucion</th>
+                        <th colspan="3">Variacion</th>
+                        <th rowspan="2" appAnchocol [ancho]="80">Edicion</th>
+                    </tr>
+                    <tr>
+                        <th appAnchocol [ancho]="100">Presupuesto</th>
+                        <th appAnchocol [ancho]="80">Dias Programados</th>
+                        <th appAnchocol [ancho]="100">Presupuesto</th>
+                        <th appAnchocol [ancho]="80">Dias Utilizado</th>
+                        <th appAnchocol [ancho]="100">Presupuesto</th>
+                        <th appAnchocol [ancho]="80">Var. Plazo</th>
+                        <th appAnchocol [ancho]="80">% Pres.</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <ng-container *ngIf="tablaAgrupamientos.length > 0">
+                        <ng-container *ngFor="let row of tablaAgrupamientos; let i = index">
+                            <tr *ngIf="row.mostrar==1" class="text-right" (click)="filSel = i"
+                                [ngClass]="{'font-weight-bolder': !row.id_elemento  }">
+                                <td class="text-center">
+                                    <ng-container *ngIf="row.id_elemento; else noElemento">
+                                        P - {{row.orden}}
+                                    </ng-container>
+                                    <ng-template #noElemento>
+                                        <!-- {{row.orden}} -->
+                                        <a *ngIf="!row.id_elemento && row.icomost==0"
+                                            style="padding: 0px 2px;color:#06bb06;cursor: pointer;"
+                                            (click)="toggleOnpresu(row,i)">
+                                            <i class="icofont icofont-caret-down"></i>
+                                        </a>
+                                        <a *ngIf="!row.id_elemento && row.icomost==1"
+                                            style="padding: 0px 2px;color:red;cursor: pointer;"
+                                            (click)="toggleOffpresu(row,i)">
+                                            <i class="icofont icofont-caret-up"></i>
+                                        </a>
+                                    </ng-template>
+
+                                </td>
+                                <td class="text-left">
+                                    <div [ngClass]="{'recortatext':lineas2,'recortatextlinea':!lineas2, 'ml-2':row.id_elemento }"
+                                        ngbTooltip="{{row.descripcion}}" #t="ngbTooltip" container="body">
+                                        {{row.descripcion}}
+                                    </div>
+                                </td>
+                                <td class="text-center">{{row.abrev}}</td>
+                                <td>
+                                    <div class="d-flex justify-content-between">
+                                        <div style="opacity: 0.5;">S/</div>
+                                        <div>{{row.monto_presupuesto | number:'0.2-2'}}</div>
+                                    </div>
+
+                                </td>
+
+                                <td class="text-center">
+                                    <ng-container *ngIf="row.id_elemento">
+                                        {{row.dias_pres}} dias
+                                    </ng-container>
+
+                                </td>
+                                <td class="text-center">
+                                    <ng-container *ngIf="row.id_elemento">
+                                        {{row.pres_asignado | number:'0.2-2'}}
+                                    </ng-container>
+
+                                </td>
+                                <td>
+                                    <ng-container *ngIf="row.id_elemento">
+                                        <div class="d-flex justify-content-between">
+                                            <div style="opacity: 0.5;">S/</div>
+                                            <div>{{row.ejecucion_presu | number:'0.2-2'}}</div>
+                                        </div>
+                                    </ng-container>
+                                </td>
+                                <td class="text-center">
+                                    <ng-container *ngIf="row.id_elemento ">
+                                        {{row.dias_eje}} dias
+                                    </ng-container>
+
+                                </td>
+                                <td>
+                                    <ng-container *ngIf="row.id_elemento">
+                                        <div class="d-flex justify-content-between">
+                                            <div style="opacity: 0.5;">S/</div>
+                                            <div>{{row.variacion_presu | number:'0.2-2'}}</div>
+                                        </div>
+                                    </ng-container>
+                                </td>
+                                <td class="text-center">
+                                    <ng-container *ngIf="row.id_elemento ">
+                                        {{row.variacion_plazo}} dias
+                                    </ng-container>
+
+                                </td>
+                                <td [ngClass]="">
+                                    <ng-container *ngIf="row.id_elemento">
+                                        <i class="fa"
+                                            [ngClass]="{'fa-arrow-up text-success': row.porcentaje > 0, 'fa-arrow-down text-danger': row.porcentaje < 0 }"></i>
+                                        {{row.porcentaje | number:'0.2-2'}} %
+                                    </ng-container>
+                                </td>
+
+                                <td>
+                                    <div class="d-flex justify-content-center">
+
+                                        <!-- <button class="btn btn-mini btn-primary" placement="top" ngbTooltip="Ver"
+                                            *ngIf="!row.id_elemento && row.abrev !== 'CD'" container="body"
+                                            (mouseup)="quitarfoco($event);" (click)="openModalElementos()">
+                                            <i class="fa fa-plus icono-but"></i>
+                                        </button> -->
+
+                                        <button class="btn btn-mini btn-secondary" placement="top" ngbTooltip="Editar"
+                                            *ngIf="row.estado !== 2 && !row.id_elemento && row.abrev !== 'CD'"
+                                            container="body" (mouseup)="quitarfoco($event);"
+                                            (click)="actualizarModal(row)">
+                                            <i class="fa fa-pencil icono-but"></i>
+                                        </button>
+                                        <button class="btn btn-mini btn-secondary" placement="top"
+                                            ngbTooltip="Ver detalle" *ngIf="row.id_elemento" container="body"
+                                            (mouseup)="quitarfoco($event);" (click)="abrirModalRHMensual(row)">
+                                            <i class="fa fa-search icono-but"></i>
+                                        </button>
+                                        <ng-container>
+                                            <button class="btn btn-mini btn-danger" placement="top"
+                                                ngbTooltip="Eliminar" container="body"
+                                                *ngIf="!row.id_elemento && row.abrev !== 'CD'"
+                                                (click)="eliminarAgrupamiento(i)" (mouseup)="quitarfoco($event);">
+                                                <i class="fa fa-remove icono-but"></i>
+                                            </button>
+                                        </ng-container>
+
+                                    </div>
+                                </td>
+                            </tr>
+                        </ng-container>
+                    </ng-container>
+                    <ng-container *ngIf="tablaAgrupamientos.length<=0">
+                        <tr>
+                            <td class="mat-cell text-center" colspan="8">
+                                <label>No se encontraron resultados</label>
+                                <!-- <div *ngIf="buscando" class="preloader3 loader-block">
+                                        <div class="circ1"></div>
+                                        <div class="circ2"></div>
+                                        <div class="circ3"></div>
+                                        <div class="circ4"></div>
+                                    </div> -->
+                            </td>
+                        </tr>
+                    </ng-container>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</ng-container>
+
+<app-modal-basic #modalAgregarElemento [dialogClass]="'modal-sm'">
+    <div class="app-modal-header">
+        <h4 class="modal-title tit-modal1"><b>Datos </b></h4>
+        <button type="button" class="close basic-close" (click)="cerrarModal3()">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+    <div class="app-modal-body">
+        <form [formGroup]="formElementos">
+            <div class="row ">
+                <mat-form-field appearance="outline" class="mff-reduc col-12  px-0">
+                    <mat-label>Mes</mat-label>
+                    <select matNativeControl formControlName="mes">
+
+                        <option *ngFor="let mes of meses" [value]="mes">
+                            {{mes}}
+                        </option>
+                    </select>
+                </mat-form-field>
+                <mat-form-field appearance="outline" class="mff-reduc col-12  px-0">
+                    <mat-label>Año</mat-label>
+                    <select matNativeControl formControlName="anio">
+                        <option *ngFor="let anio of anios" [value]="anio">
+                            {{anio}}
+                        </option>
+                    </select>
+                </mat-form-field>
+
+            </div>
+        </form>
+    </div>
+    <div class="app-modal-footer w-100">
+        <div class="row px-3">
+            <button type="button" style="margin-right: 5px;" class="btn btn-sm btn-success ripple"
+                (click)="agregarElemento(this.filSel)">Guardar</button>
+            <button type="button" style="margin-right: 5px;" class="btn btn-sm btn-danger ripple"
+                (click)="cerrarModal3()">Cerrar</button>
+        </div>
+    </div>
+</app-modal-basic>
+
+<app-modal-basic #modalActualizarAgrupado [dialogClass]="'modal-sm'">
+    <div class="app-modal-header">
+        <h4 class="modal-title tit-modal1"><b>Datos </b></h4>
+        <button type="button" class="close basic-close" (click)="cerrarModal2()">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+    <div class="app-modal-body">
+        <form [formGroup]="formAgrupacion">
+            <div class="row ">
+                <mat-form-field appearance="outline" class="mff-reduc col-sm-12 col-12">
+                    <mat-label>Nombre Agrupamiento</mat-label>
+                    <input matInput type="text" class="mayuscula" autocomplete="off" maxlength="255"
+                        formControlName="descripcion" [maxLength]="150">
+                </mat-form-field>
+
+                <!-- <div class="col-12 form-group">
+                        <label>Aprobar :</label>
+                        <div class="switch  d-inline m-r-10" style="margin-left: 10px;">
+                            <input type="checkbox" id="switch-p-1" formControlName="estado">
+                            <label for="switch-p-1" class="cr"></label>
+                        </div>
+                    </div> -->
+            </div>
+        </form>
+    </div>
+    <div class="app-modal-footer w-100">
+        <div class="row px-3">
+            <button type="button" style="margin-right: 5px;" class="btn btn-sm btn-success ripple"
+                (click)="actualizarAgrupamiento()">Guardar</button>
+            <button type="button" style="margin-right: 5px;" class="btn btn-sm btn-danger ripple"
+                (click)="cerrarModal2()">Cerrar</button>
+        </div>
+    </div>
+</app-modal-basic>
+
+<app-modal-basic #modalAgregarAgrupados [dialogClass]="'modal-sm'">
+    <div class="app-modal-header">
+        <h4 class="modal-title tit-modal1"><b>Datos </b></h4>
+        <button type="button" class="close basic-close" (click)="cerrarModal()">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+    <div class="app-modal-body">
+        <form [formGroup]="formAgrupacion">
+            <div class="row ">
+                <mat-form-field appearance="outline" class="mff-reduc col-sm-12 col-12">
+                    <mat-label>Nombre Agrupamiento</mat-label>
+                    <input matInput type="text" class="mayuscula" autocomplete="off" maxlength="255"
+                        formControlName="descripcion" [maxLength]="150">
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" class="mff-reduc col-sm-12 col-12">
+                    <mat-label> Costo Relacionado</mat-label>
+                    <select matNativeControl formControlName="indice">
+                        <option value="">--Seleccionar--</option>
+                        <option *ngFor="let tipo of costosFiltrados" [value]="tipo.indice">
+                            {{tipo.descripcion}} ({{tipo.abrev}})
+                        </option>
+                    </select>
+                </mat-form-field>
+            </div>
+        </form>
+    </div>
+    <div class="app-modal-footer w-100">
+        <div class="row px-3">
+            <button type="button" style="margin-right: 5px;" class="btn btn-sm btn-success ripple"
+                (click)="guardarAgrupamiento()">Guardar</button>
+            <button type="button" style="margin-right: 5px;" class="btn btn-sm btn-danger ripple"
+                (click)="cerrarModal()">Cerrar</button>
+        </div>
+    </div>
+</app-modal-basic>
+
+<app-modal-basic #modalRHMensual [dialogClass]="'modal-lg modalgrande'">
+    <div class="app-modal-header">
+        <h4 class="modal-title tit-modal1"><b>Datos Mes Resumen </b></h4>
+        <button type="button" class="close basic-close" (click)="cerrarModalRHMensual()">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+    <div class="app-modal-body">
+         <table class="table-bordered tab-10">
+                <thead class="text-center">
+                    <tr>
+                        <!-- <th rowspan="3"></th> -->
+                        <!-- <th rowspan="3">Area</th> -->
+                        <th rowspan="3">Cargo</th>
+                        <th rowspan="3">Categoria</th>
+                        <!-- <th rowspan="3">Cantidad</th> -->
+                        <th [colSpan]="calendarioFiltrado2?.dias?.length * 2">
+                            {{calendarioFiltrado2?.mes}} - {{calendarioFiltrado2?.anio}}
+                        </th>
+                        <th rowspan="3">Total Mes</th>
+                    </tr>
+                    <tr>
+                        <ng-container *ngFor="let dia of calendarioFiltrado2?.dias">
+                            <th colspan="2">
+                                <div class="dia-numero">{{dia.numero_dia_mes}} - {{dia.abreviatura}}</div>
+                                <!-- <div class="dia-abreviatura"></div> -->
+                            </th>
+                        </ng-container>
+                    </tr>
+                    <tr>
+                        <ng-container *ngFor="let dia of calendarioFiltrado2?.dias">
+                            <th appAnchocol [ancho]="40">
+                                Cant.
+                            </th>
+                            <th appAnchocol [ancho]="70">
+                                Monto
+                            </th>
+                        </ng-container>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let row of tablaAcumFiltrada; let i = index"
+                        [ngClass]="{ 
+                                        'font-weight-bolder': row.es_encabezado_area || row.es_total_area, 'bg-area':row.es_encabezado_area, 'bg-total': row.es_total_area}">
+                        <!-- <td class="text-center">{{i+1}}</td> -->
+                        <!-- <td>{{row.descripcion_area}}</td> -->
+                        <td [ngClass]="{'pl-3':!row.es_encabezado_area && !row.es_total_area}">
+                            {{row.descripcion_cargo}}
+                        </td>
+                        <td class="text-center">{{getRomanNumeral(row.tipo_cargo)}}</td>
+                        <!-- <td>{{row.cantidad}}</td> -->
+                        <ng-container *ngFor="let dia of row.calendario">
+                            <ng-container>
+                                <td class="text-center">
+                                    <ng-container
+                                        *ngIf="dia.cantidad_asignaciones && !row.es_encabezado_area && !row.es_total_area">{{dia.cantidad_asignaciones}}</ng-container>
+
+                                </td>
+                                <td>
+                                    <div class="d-flex justify-content-between align-items-center"
+                                        *ngIf="dia.monto_dia && !row.es_encabezado_area && !row.es_total_area">
+                                        <!-- Símbolo izquierdo -->
+                                        <span class="text-muted small">S/.</span>
+
+                                        <!-- Monto -->
+                                        <span>{{dia.monto_dia | number:'0.2-2'}}</span>
+                                    </div>
+                                </td>
+                            </ng-container>
+                        </ng-container>
+                        <td>
+                            <!-- {{row.costo_total| number:'0.2-2'}} -->
+                            <div class="d-flex justify-content-between align-items-center" *ngIf="row.costo_total">
+                                <!-- Símbolo izquierdo -->
+                                <span class="text-muted small">S/.</span>
+
+                                <!-- Monto -->
+                                <span>{{row.costo_total | number:'0.2-2'}}</span>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+                <tfoot>
+                    <tr *ngIf="tablaAcumFiltrada.length">
+                        <th colspan="2" class="text-center">TOTAL </th>
+                        <ng-container *ngFor="let diaAcumulado of totalesAcumulados?.acumulados">
+                            <th></th>
+                            <th>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <!-- Símbolo izquierdo -->
+                                    <span class="text-muted small text-white">S/.</span>
+
+                                    <!-- Monto -->
+                                    <span>{{diaAcumulado | number:'0.2-2'}}</span>
+                                </div>
+                            </th>
+                        </ng-container>
+                        <th>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <!-- Símbolo izquierdo -->
+                                <span class="text-muted small text-white">S/.</span>
+
+                                <!-- Monto -->
+                                <span>{{totalesAcumulados?.totalGeneral | number:'0.2-2'}}</span>
+                            </div>
+                        </th>
+                    </tr>
+                </tfoot>
+            </table>
+    </div>
+    <div class="app-modal-footer w-100">
+        <div class="row px-3 justify-content-between">
+
+            <button type="button" style="margin-right: 5px;" class="btn btn-sm btn-secondary ripple"
+                (click)="cerrarModalRHMensual()">Cerrar</button>
+
+        </div>
+    </div>

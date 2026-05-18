@@ -2,7 +2,7 @@ import { ProcesosRhService } from './../../../servicios/procesos-rh.service';
 import { SwalService } from './../../../servicios/swal.service';
 import { RecursosHumanosService } from './../../../servicios/recursoshumanos.service';
 import { AfterViewInit, ApplicationRef, ChangeDetectorRef, Component, Input, OnChanges, OnDestroy, OnInit, QueryList, ViewChild, ViewChildren } from '@angular/core';
-import * as moment from 'moment';
+const moment = require('moment');
 import { filatabla } from '../../configuraciones/parametros/parametros.component';
 import { ToastrService } from 'ngx-toastr';
 import { FormsService } from 'src/app/servicios/forms.service';
@@ -11,6 +11,10 @@ import { AnchocolDirective } from 'src/app/directivas/anchocol.directive';
 import { Anchocol2Directive } from 'src/app/directivas/anchocol2.directive';
 import { FormulaEvaluatorService } from 'src/app/servicios/formula-evaluator.service';
 import { ModalBasicComponent } from 'src/app/shared/modal-basic/modal-basic.component';
+import { AbstractControl, UntypedFormControl, UntypedFormGroup, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
+import { EncriptadorService } from 'src/app/servicios/encriptador.service';
+import { LogisticaService } from 'src/app/servicios/logistica.service';
+import { EquiposServiciosService } from 'src/app/servicios/equipos-servicios.service';
 interface DiaEntrada {
   anio: number;
   mes_nombre: string;
@@ -72,7 +76,9 @@ interface filaTabla {
   descuentos: any,
   diasNoLaborables: any,
   feriadosSoloFecha: any
-  tipo_cargo: number
+  tipo_cargo: number,
+  estado_pago: number,
+  planilla_mensual_aprobada: any
 }
 interface Asistencia {
   id_asistencia: number;
@@ -130,6 +136,56 @@ interface cargoFila {
   parcial: number | null,
   editable?: boolean
 }
+
+interface AsistenciaAgrupadaPorDia extends AsistenciaAgrupada {
+  fecha: string; // Fecha en formato YYYY-MM-DD
+  fecha_display: string; // Fecha para mostrar
+}
+
+interface planillaAprobada {
+  id_aprobado_planilla?: number;
+  id_proyecto: number;
+  id_usuario: number | null;
+  descripcion_usuario: string | null;
+  id_area: number;
+  area: string;
+  id_cargo: number | null;
+  cargo: string | null;
+  tipo_cargo: number | null;
+  dias: string; // fecha,costedia,horas_extra, monto, monto_extra, tipo
+  tipos_dias: string;  //  Formato: "dias_laborados|dias_dominicales|dias_feriados|dias_tardanzas|dias_permiso|dias_faltados|dias_otros"
+  coste_dia: number | null;
+  coste_mensual: number | null;
+  tipo_fila: number;  // 0 = Area, 1 = Cargo, 2 = Usuario (reemplaza a esArea y esCargo)
+  mes: string;
+  coste_pagado?: number;
+  id_asignacion: number;
+  estado_pago?: number; // 0 = pendiente, 1 = pagado, etc.
+  adjunto?: string; // ruta o URL del archivo adjunto
+}
+
+interface FilaArea {
+  esArea: true;
+  id_area: number;
+  area: string;
+  icomost: boolean;
+}
+
+interface FilaCargo {
+  esArea: false;
+  id_area: number;
+  area: string;
+  id_cargo: number;
+  cargo: string;
+  tipo_cargo: number;
+  tipo_cargo_vinculado: boolean;
+  index: number;
+  esActivo: boolean;
+  mostrar: boolean;
+  requerimientoVinculado: boolean;
+}
+
+type Fila = FilaArea | FilaCargo;
 @Component({
   selector: 'app-planillas',
   templateUrl: './planillas.component.html',
@@ -208,6 +264,9 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
   tablaMesUsuario = []
   @ViewChildren(Anchocol2Directive) anchors: QueryList<Anchocol2Directive>;
   @ViewChild("modalDetalleUsuario") modalDetalleUsuario: ModalBasicComponent;
+  @ViewChild("modalvinculo") modalvinculo: ModalBasicComponent;
+  @ViewChild("modalPlanillaAprobada") modalPlanillaAprobada: ModalBasicComponent;
+  @ViewChild("modalPlanillaVinculo") modalPlanillaVinculo: ModalBasicComponent;
   usuarioSeleccionado: any;
   filTabFil = null
   mostrarSelColum: boolean;
@@ -224,8 +283,74 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
   calendarioCompleto
   calendarioFiltrado2
   totalesAcumulados = {}
-  constructor(private recursosHumanosService: RecursosHumanosService, private cdRef: ChangeDetectorRef, private appRef: ApplicationRef, private toaster: ToastrService,
-    public formsService: FormsService, private formulaEvaluator: FormulaEvaluatorService, private procesosRhService: ProcesosRhService) { }
+  cargosFiltrados3 = []
+  fechaMinima = null
+  fechaMaxima = null
+  tablaVinculos = []
+  id_usuario = null
+  searchText: string = '';
+  planillaAprobada = null
+  listaRegistros = []
+  id_registro = null
+
+  tablaRequerimientos = []
+  tablaRegActividades = []
+  tablaRequerimientosCompleto = []
+  buscando3 = false
+  buscando4 = false
+  filSelRegAct = null
+  tablaData = []
+  filSelReq = null
+  requerimientosCargos = []
+  reqcargSeleccionado = null;
+  cargosVinculados = []
+  mostrar_carga: boolean = false;
+  tablaReq = []
+  tablaDes = []
+  tablaPlanXVinc = []
+  reporteEstructurado = []
+  procesadosPlanilla: Set<string>;
+  @Input() set tabproyecto(value: any) {
+
+    this.idProyecto = value.get('id_proyecto').value;
+    const aspectosGen = value.get('aspectos_generales') as UntypedFormGroup;
+    const datosproy = aspectosGen.get('datos_proyecto') as UntypedFormGroup;
+    const datosrec = aspectosGen.get('datos_recuperado') as UntypedFormGroup;
+    // this.id_userproy = datosrec.value.id_usuario;
+    // this.tipoProy = datosproy.get('id_clasificacion').value;
+    // this.colores = value.get('aspectab').value;
+    // this.decima = value.get('decimal').value;
+    // this.solover = value.get('solover').value;
+    // this.moneda = datosproy.get('moneda').value.toString() == '0' ? 'S/' : '$';
+    // this.simbolo = datosrec.value.simbolo;
+    // this.nomproy = this.id_userproy = datosrec.value.descripcion;
+    // this.dec_metrado = this.prueba.value.decimal.split('|')[0] ?? 2;
+    // this.fechas1 = datosrec.value;
+  }
+
+  formvinculo = new UntypedFormGroup({
+    id_area: new UntypedFormControl('', []),
+    id_cargo: new UntypedFormControl('', []),
+    fecha_inicio: new UntypedFormControl('', [Validators.required, this.validarRangoFechasPersonalizado()]),
+    fecha_fin: new UntypedFormControl('', [Validators.required, this.validarRangoFechasPersonalizado()])
+  }, { validators: this.validarRangoEntreFechas() }); // ← Agregar validador aquí
+  get id_area_vinculo(): UntypedFormControl { return this.formvinculo.get('id_area') as UntypedFormControl }
+  get id_cargo_vinculo(): UntypedFormControl { return this.formvinculo.get('id_cargo') as UntypedFormControl }
+  get fecha_inicio_vinculo(): UntypedFormControl { return this.formvinculo.get('fecha_inicio') as UntypedFormControl }
+  get fecha_fin_vinculo(): UntypedFormControl { return this.formvinculo.get('fecha_fin') as UntypedFormControl }
+
+  formPlanillaVinculo = new UntypedFormGroup({
+    id_vinculo: new UntypedFormControl('', []),
+    descripcion: new UntypedFormControl('', [Validators.required]),
+    mes: new UntypedFormControl('', [Validators.required])
+  });
+
+  get id_vinculo(): UntypedFormControl { return this.formPlanillaVinculo.get('id_vinculo') as UntypedFormControl }
+  get descripcion(): UntypedFormControl { return this.formPlanillaVinculo.get('descripcion') as UntypedFormControl }
+  get mes(): UntypedFormControl { return this.formPlanillaVinculo.get('mes') as UntypedFormControl }
+
+  constructor(private ProcesosRhService: ProcesosRhService, private recursosHumanosService: RecursosHumanosService, private cdRef: ChangeDetectorRef, private appRef: ApplicationRef, private toaster: ToastrService,
+    public formsService: FormsService, private formulaEvaluator: FormulaEvaluatorService, private equiposServiciosService: EquiposServiciosService, private _logisticaService: LogisticaService, private procesosRhService: ProcesosRhService, private encriptadorService: EncriptadorService) { }
 
   quitarfoco(element: any) {
     element.target.blur();
@@ -235,14 +360,89 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
   async ngOnInit() {
     try {
       this.mostrar_carga_todo = true
+      this.id_usuario = this.encriptadorService.recuperarlocalstory('idusuario');
       this.inicializarFechaActual()
       await this.listarAsignacionesProyecto()
+      await this.listarAdquisiciones()
+      if (this.listaRegistros?.length > 0) {
+        this.id_registro = this.listaRegistros[0].id_registro
+        await this.cambioDataRegistro()
+      }
+      // this.tablaData = this.generarTablaCompleta(this.areas, this.cargos)
       this.mostrar_carga_todo = false
     } catch (error) {
       this.mostrar_carga_todo = false
       console.log(error)
       SwalService.error()
     }
+  }
+
+  async listarAdquisiciones() {
+    let res = await this._logisticaService.ListarAdquisicionesProy({ id_proyecto: this.idProyecto });
+
+    this.listaRegistros = res
+
+  }
+
+  async cambioDataRegistro() {
+    this.buscando3 = true
+    this.tablaRegActividades = []
+    this.tablaRequerimientos = []
+    this.cargosVinculados = []
+    this.tablaData = []
+    this.filSelRegAct = null
+    this.filSelReq = null
+    this.requerimientosCargos = []
+    this.reqcargSeleccionado = null
+
+    const obj = { id_proyecto: this.idProyecto, id_registro: this.id_registro, tipocontra: 3 }
+    const resp = await this.recursosHumanosService.listarAgrupamientoRequerimientos(obj)
+    if (resp) {
+      this.tablaRegActividades = resp.agrupacion
+      this.tablaRequerimientosCompleto = resp.desagregados
+      await this.listarRequerimientoCargo()
+
+      this.cargosVinculados = this.requerimientosCargos.reduce((acc, ele) => {
+        return acc.concat(ele.cargos.split('|'));
+      }, []);
+
+      if (this.activetab == 1) {
+        this.tablaData = this.generarTablaCompleta(this.areas, this.cargos, this.cargosVinculados)
+      } else if (this.activetab == 5) {
+        await this.vincularReporteConRequerimientos()
+      }
+    }
+    this.buscando3 = false
+  }
+
+
+  async selTablaRegAct(row, i) {
+    this.buscando4 = true
+    this.filSelRegAct = i
+    this.filSelReq = null
+
+    this.tablaRequerimientos = this.tablaRequerimientosCompleto.filter(ele =>
+      ele.id_registro === row.id_registro &&
+      String(ele.idgrupo) === String(row.idgrupo)
+    )
+
+    // await this.listarRequerimientoCargo(row)
+
+    // this.cargosVinculados = this.requerimientosCargos.reduce((acc, ele) => {
+    //   return acc.concat(ele.cargos.split('|'));
+    // }, []);
+
+    // if (this.activetab == 1) {
+    //   this.tablaData = this.generarTablaCompleta(this.areas, this.cargos, this.cargosVinculados)
+    // } else if (this.activetab == 5) {
+    //   await this.vincularReporteConRequerimientos()
+    // }
+
+    this.buscando4 = false
+  }
+
+  clearSearch() {
+    this.searchText = '';
   }
 
   private inicializarFechaActual() {
@@ -266,12 +466,16 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
     }, 100);
   }
 
-  async onNavChange(event) {
+
+  async cambioVista(event) {
     this.mostrar_carga_todo = true
-    if (event.nextId == 3 && !this.areaSeleccionadaPres) {
+    this.activetab = event
+    this.filSelRegAct = null
+    this.filSelReq = null
+    if (event == 2 && !this.areaSeleccionadaPres) {
       this.areaSeleccionadaPres = this.areas.length ? this.areas[0]?.id_area : null
       await this.cambioAreaPres()
-    } else if (event.nextId == 4) {
+    } else if (event == 3 || event == 4) {
       this.mostrar_carga_todo = true
       this.mesSelAcum = null
       this.mesesAcum = []
@@ -289,10 +493,105 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
       this.cargosAcum = consolidado.cargos
       this.consolidado = this.agregarEncabezadosArea(consolidado.consolidadoPorMeses);
       this.calendarioCompleto = consolidado.calendario
-
       this.mostrar_carga_todo = false
+    } else if (event == 5) {
+      this.mostrar_carga_todo = true
+      this.tablaReq = []
+      this.tablaDes = []
+      this.tablaPlanXVinc = []
+      this.reporteEstructurado = []
+      // Cargar tablaRegActividades y tablaRequerimientosCompleto si no existen
+      if (!this.tablaRegActividades || this.tablaRegActividades.length === 0) {
+        const obj = { id_proyecto: this.idProyecto, id_registro: this.id_registro, tipocontra: 3 }
+        const resp = await this.recursosHumanosService.listarAgrupamientoRequerimientos(obj)
+        if (resp) {
+          this.tablaRegActividades = resp.agrupacion
+          this.tablaRequerimientosCompleto = resp.desagregados
+        }
+      }
+
+      // Cargar requerimientosCargos para todas las filas de tablaRegActividades
+      if (this.tablaRegActividades && this.tablaRegActividades.length > 0) {
+        // Cargar relaciones para la primera fila (o para todas)
+        const primeraFila = this.tablaRegActividades[0];
+        // await this.listarRequerimientoCargo(primeraFila);
+      }
+      const data = await this.procesosRhService.listarInformacionRHPlanilla(this.idProyecto)
+      const calendario = await this.procesosRhService.calendarioXAsignaciones(this.idProyecto)
+      const tabla = this.generarTablaCompleta(this.areas, this.cargos, [])
+      const resultadosPorMes = await this.generarPlanillaProyecto(data, calendario, tabla)
+      const reporteEstructurado = this.generarReportePlanillaPlano(resultadosPorMes, tabla);
+      this.reporteEstructurado = reporteEstructurado
+      await this.procesarAcumuladosRegActividades()
+
     }
     this.mostrar_carga_todo = false
+  }
+
+
+  generarTablaCompleta(areas: any[], cargos: any[], cargosVinculados: any[]): Fila[] {
+    const tabla: Fila[] = [];
+
+    areas.forEach(area => {
+      tabla.push({
+        esArea: true,
+        id_area: area.id_area,
+        area: area.descripcion,
+        icomost: true
+      });
+
+      const cargosArea = cargos.filter(cargo => cargo.id_area === area.id_area);
+
+      cargosArea.forEach(cargo => {
+        let maxTipo = 0;
+        const categoriasActivas = [];
+
+        if (cargo.categoria_t1 === 1) {
+          maxTipo = Math.max(maxTipo, 1);
+          categoriasActivas.push(1);
+        }
+        if (cargo.categoria_t2 === 1) {
+          maxTipo = Math.max(maxTipo, 2);
+          categoriasActivas.push(2);
+        }
+        if (cargo.categoria_t3 === 1) {
+          maxTipo = Math.max(maxTipo, 3);
+          categoriasActivas.push(3);
+        }
+        if (cargo.categoria_t4 === 1) {
+          maxTipo = Math.max(maxTipo, 4);
+          categoriasActivas.push(4);
+        }
+        if (cargo.categoria_t5 === 1) {
+          maxTipo = Math.max(maxTipo, 5);
+          categoriasActivas.push(5);
+        }
+
+        for (let tipo = 1; tipo <= maxTipo; tipo++) {
+          // Crear la clave de búsqueda: "id_cargo-tipo"
+          const claveBusqueda = `${cargo.id_cargo}-${tipo}`;
+
+          // Verificar si esta combinación específica existe en cargosVinculados
+          const estaVinculado = cargosVinculados.includes(claveBusqueda);
+
+          tabla.push({
+            esArea: false,
+            id_area: area.id_area,
+            area: area.descripcion,
+            id_cargo: cargo.id_cargo,
+            cargo: cargo.descripcion,
+            tipo_cargo: tipo,
+            tipo_cargo_vinculado: estaVinculado, // Ahora refleja el estado real
+            index: tipo - 1,
+            esActivo: categoriasActivas.includes(tipo),
+            mostrar: true,
+            requerimientoVinculado: estaVinculado,
+          });
+        }
+      });
+    });
+
+    return tabla;
   }
 
   agregarEncabezadosArea(consolidadoData) {
@@ -346,8 +645,6 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
     });
   }
 
-  // Uso:
-
   ngOnDestroy() {
     if (this.temporizador) {
       clearTimeout(this.temporizador);
@@ -370,6 +667,10 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
       id_proyecto: this.idProyecto
     }
     const resp = await this.recursosHumanosService.listarAsignacionesProyecto(obj)
+    this.fechaMinima = resp.fecha_minima
+    this.fechaMaxima = resp.fecha_maxima
+    this.fechaMinima = this.convertirFormatoFecha(resp.fecha_minima);
+    this.fechaMaxima = this.convertirFormatoFecha(resp.fecha_maxima);
     await this.listarAreasYCargos()
     this.asignaciones = resp.asignaciones
     if (resp) {
@@ -382,6 +683,24 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
       // await this.cambioDeMes()
     }
     this.mostrar_carga_todo = false
+  }
+
+  convertirFormatoFecha(fecha: string): string {
+    if (!fecha) return '';
+
+    // Si ya está en formato YYYY-MM-DD, devolver igual
+    if (fecha.match(/^\d{4}-\d{2}-\d{2}$/)) {
+      return fecha;
+    }
+
+    // Convertir de DD-MM-YYYY a YYYY-MM-DD
+    const partes = fecha.split('-');
+    if (partes.length === 3) {
+      // Asumiendo formato DD-MM-YYYY
+      return `${partes[2]}-${partes[1]}-${partes[0]}`;
+    }
+
+    return fecha;
   }
 
   async listarAreasYCargos() {
@@ -520,6 +839,17 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
       for (let i = 0; i < this.calendarioFiltrado[0]?.colspan; i++) {
         diasMesVacios.push(null)
       }
+      const mesesMap = {
+        'Enero': '01', 'Febrero': '02', 'Marzo': '03', 'Abril': '04',
+        'Mayo': '05', 'Junio': '06', 'Julio': '07', 'Agosto': '08',
+        'Septiembre': '09', 'Octubre': '10', 'Noviembre': '11', 'Diciembre': '12'
+      };
+
+      const mesFormateado = this.meses[this.mesSeleccionado].split(' - ')
+        .reverse()
+        .map((part, i) => i === 0 ? mesesMap[part] : part)
+        .join('-');
+      console.log('mesFormateado', mesFormateado)
       let tablaNueva = []
       const montosAreas = await this.listarMontosAreaPresAnaliticoRH()
       if (!this.areaSeleccionada) {
@@ -530,7 +860,8 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
           let areagrupo = []
           for (const cargo of cargos) {
             let cargoTotal = 0
-            const asignaciones = await this.asignaciones.filter(ele => ele.id_area == cargo.id_area && ele.id_cargo == cargo.id_cargo)
+            const asignaciones = await this.asignaciones.filter(ele => ele.id_area == cargo.id_area && ele.id_cargo == cargo.id_cargo && this.verificarAsignacionEnMes(ele, mesFormateado))
+            // console.log('asignaciones', asignaciones)
             if (!areagrupo.length && asignaciones.length) {
               const areadata: filaTabla = {
                 area: area.descripcion,
@@ -561,7 +892,9 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
                 descuentos: null,
                 diasNoLaborables: null,
                 feriadosSoloFecha: null,
-                tipo_cargo: null
+                tipo_cargo: null,
+                estado_pago: null,
+                planilla_mensual_aprobada: null
               }
               areagrupo.push(areadata)
             }
@@ -595,7 +928,9 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
                 descuentos: null,
                 diasNoLaborables: null,
                 feriadosSoloFecha: null,
-                tipo_cargo: null
+                tipo_cargo: null,
+                estado_pago: null,
+                planilla_mensual_aprobada: null
               }
               areagrupo.push(cargoData)
               let j = 1
@@ -629,6 +964,7 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
                 }).map(ele => ele.fecha.split('T')[0]);
                 const resusuario = await this.filtrarPorUsuario(registrosAsistencia, usuario.id_usuario, usuario.id_asignacion, descuentos, diasNoLaborables, feriadosSoloFecha, costeDia)
                 // const existe = registroMes.find(ele => ele.id_control)
+                const planilla_mensual_aprobada = await this.consultarPlanillaAprobada(usuario.id_usuario, usuario.id_proyecto, mesFormateado, usuario.id_area, usuario.id_cargo)
                 const asignacionData: filaTabla = {
                   area: area.descripcion,
                   cargo: cargo.descripcion,
@@ -658,7 +994,9 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
                   descuentos: descuentos,
                   diasNoLaborables: diasNoLaborables,
                   feriadosSoloFecha: feriadosSoloFecha,
-                  tipo_cargo: usuario.tipo_cargo
+                  tipo_cargo: usuario.tipo_cargo,
+                  estado_pago: planilla_mensual_aprobada == null ? 0 : planilla_mensual_aprobada.estado_pago,
+                  planilla_mensual_aprobada: planilla_mensual_aprobada
                 }
                 cargoTotal += resusuario.montoMes
                 areagrupo.push(asignacionData)
@@ -707,7 +1045,9 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
               descuentos: null,
               diasNoLaborables: null,
               feriadosSoloFecha: null,
-              tipo_cargo: null
+              tipo_cargo: null,
+              estado_pago: null,
+              planilla_mensual_aprobada: null
             }
             areaarray.push(areadata)
             const cargos = this.cargos.filter(ele => ele.id_area == area.id_area)
@@ -753,7 +1093,9 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
                 descuentos: null,
                 diasNoLaborables: null,
                 feriadosSoloFecha: null,
-                tipo_cargo: null
+                tipo_cargo: null,
+                estado_pago: null,
+                planilla_mensual_aprobada: null
               }
 
               areaarray.push(cargoData)
@@ -788,6 +1130,8 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
                   return areas && areas.includes(usuario.id_area.toString());
                 }).map(ele => ele.fecha.split('T')[0]);
                 const resusuario = await this.filtrarPorUsuario(registrosAsistencia, usuario.id_usuario, usuario.id_asignacion, descuentos, diasNoLaborables, feriadosSoloFecha, costeDia)
+                const planilla_mensual_aprobada = await this.consultarPlanillaAprobada(usuario.id_usuario, usuario.id_proyecto, mesFormateado, usuario.id_area, usuario.id_cargo)
+
                 const asignacionData: filaTabla = {
                   area: area.descripcion,
                   cargo: cargo.descripcion,
@@ -817,7 +1161,9 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
                   descuentos: descuentos,
                   diasNoLaborables: diasNoLaborables,
                   feriadosSoloFecha: feriadosSoloFecha,
-                  tipo_cargo: usuario.tipo_cargo
+                  tipo_cargo: usuario.tipo_cargo,
+                  estado_pago: planilla_mensual_aprobada == null ? 0 : planilla_mensual_aprobada.estado_pago,
+                  planilla_mensual_aprobada: planilla_mensual_aprobada
                 }
                 cargoTotal += resusuario.montoMes
                 areaarray.push(asignacionData)
@@ -861,6 +1207,7 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
       }
       // this.mostrar_carga_todo = false
       await this.recalcularTotales()
+      console.log('this.tablaFiltrada', this.tablaFiltrada)
     } catch (error) {
       console.error('Error:', error);
     } finally {
@@ -868,7 +1215,48 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
       this.mostrar_carga_todo = false;
       this.cdRef.detectChanges();
     }
+  }
 
+  getEstadoPago(row: any): number {
+    // Si es pendiente sin planilla aprobada
+    if (row.estado_pago === 0 && !row.planilla_mensual_aprobada) {
+      return 0; // Pendiente
+    }
+
+    // Si es 0 pero tiene planilla aprobada, considerarlo como pagado/aprobado
+    if (row.estado_pago === 0 && row.planilla_mensual_aprobada) {
+      return 1; // Pagado
+    }
+
+    // Retornar el estado_pago directamente para otros casos
+    return [1, 2, 3].includes(row.estado_pago) ? row.estado_pago : -1;
+  }
+
+  // Agrega esta función en tu componente
+  verificarAsignacionEnMes(asignacion, mesFormateado) {
+    // Convertir mesFormateado (ej: "08-2024") a fechas de inicio y fin del mes
+    const [mes, anio] = mesFormateado.split('-');
+    const inicioMes = new Date(parseInt(anio), parseInt(mes) - 1, 1);
+    const finMes = new Date(parseInt(anio), parseInt(mes), 0); // Último día del mes
+
+    // Convertir fechas de asignación
+    const inicioAsignacion = new Date(asignacion.fecha_inicio);
+    const finAsignacion = asignacion.fecha_fin ? new Date(asignacion.fecha_fin) : new Date(9999, 11, 31);
+
+    // Verificar si hay intersección de fechas
+    return (inicioAsignacion <= finMes && finAsignacion >= inicioMes);
+  }
+
+  async consultarPlanillaAprobada(id_usuario, id_proyecto, mes, id_area, id_cargo) {
+    const obj = {
+      id_proyecto: id_proyecto,
+      id_usuario: id_usuario,
+      mes: mes,
+      id_area: id_area,
+      id_cargo: id_cargo
+    }
+    const resp = await this.recursosHumanosService.consultarPlanillaAprobada(obj)
+    return resp.length ? resp[0] : null
   }
 
   trackByFn(index: number, item: any): any {
@@ -962,8 +1350,8 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
       // Determinar si es día no laborable o feriado
       const esDiaNoLaborable = diasNoLaborables.includes(diaSemana);
       const esFeriado = feriadosSoloFecha.includes(fechaDiaKey);
-      const esDiaEspecial = esDiaNoLaborable || esFeriado;
-
+      // const esDiaEspecial = esDiaNoLaborable || esFeriado;
+      const esDiaEspecial = false
       // CONTAR DIAS DOMINICALES
       if (diaSemana === 'DOMINGO') {
         dias_dominicales++;
@@ -1322,8 +1710,13 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
     }
 
     // Usar los parámetros que ya están en la fila
-    const descuentos = row.descuentos || [];
-    const diasNoLaborables = row.diasNoLaborables || ['DOMINGO'];
+    const descuentosRaw = row.descuentos || [];
+    const descuentos = typeof descuentosRaw === 'string'
+      ? descuentosRaw.split('|')  // No usar slice(1) porque el primer elemento vacío es para ASISTIO
+      : descuentosRaw;
+
+    // const diasNoLaborables = row.diasNoLaborables || ['DOMINGO'];
+     const diasNoLaborables = []
     const feriadosSoloFecha = row.feriadosSoloFecha || [];
 
     // Crear mapa de tipos con descuentos
@@ -1475,7 +1868,12 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
     }
 
     // Usar los parámetros que ya están en la fila
-    const descuentos = row.descuentos || [];
+    // const descuentos = row.descuentos || [];
+    const descuentosRaw = row.descuentos || [];
+    const descuentos = typeof descuentosRaw === 'string'
+      ? descuentosRaw.split('|')  // No usar slice(1) porque el primer elemento vacío es para ASISTIO
+      : descuentosRaw;
+
 
     // Crear mapa de tipos con descuentos
     const tipoMap = new Map();
@@ -1516,7 +1914,8 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
         const diaSemana = this.getDiaSemanaEspanol(fechaDia);
 
         // Usar los parámetros de la fila
-        const diasNoLaborables = row.diasNoLaborables || ['DOMINGO'];
+        // const diasNoLaborables = row.diasNoLaborables || ['DOMINGO'];
+         const diasNoLaborables = []
         const feriadosSoloFecha = row.feriadosSoloFecha || [];
 
         const esDiaNoLaborable = diasNoLaborables.includes(diaSemana);
@@ -1607,7 +2006,7 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
       }
       const tablaAsistenciaMovil = await this.recursosHumanosService.listarAsistenciaMovil(obj)
       if (!tablaAsistenciaMovil.length) {
-        this.toaster.error(
+        this.toaster.info(
           'No se encontraron registros para esta fecha',
           '',
           {
@@ -1629,10 +2028,126 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
 
   }
 
-  async vincularASistenciaDiaPlanilla() {
+  // async vincularASistenciaDiaPlanilla(tablaAsistenciaMovil) {
+  //   try {
+  //     console.log('vincularASistenciaDiaPlanilla', tablaAsistenciaMovil)
+  //     if (!tablaAsistenciaMovil.length) {
+  //       this.toaster.info(
+  //         'Ningun dato que vincular',
+  //         '',
+  //         {
+  //           closeButton: false,
+  //           positionClass: 'toast-bottom-right',
+  //           timeOut: 4000,
+  //         }
+  //       );
+  //       this.mostrar_carga_todo = false
+  //       return
+  //     }
+  //     // this.mostrar_carga_todo = true
+  //     const data = {
+  //       id_proyecto: this.idProyecto,
+  //       id_area: 0
+  //     }
+  //     const datos = await this.recursosHumanosService.listarHorarioYFeriadosArea(data)
+  //     console.log('horarios', datos)
+  //     let dataAlmacenar = []
+  //     for (const usuario of tablaAsistenciaMovil) {
+  //       let horarioArea = datos[0].find(ele => ele.id_area == usuario.id_area)
+  //       if (!horarioArea) {
+  //         horarioArea = {
+  //           id_configuracion: null,
+  //           id_proyecto: usuario.id_proyecto,
+  //           id_area: usuario.id_area,
+  //           inicio_semana: 'LUNES',
+  //           dias_nolaborables: 'DOMINGO',
+  //           hora_ingreso_manana: '07:30:00|07:30:00|07:30:00|07:30:00|07:30:00|07:30:00|',
+  //           hora_salida_manana: '12:00:00|12:00:00|12:00:00|12:00:00|12:00:00|13:00:00|',
+  //           hora_ingreso_tarde: '14:00:00|14:00:00|14:00:00|14:00:00|14:00:00||',
+  //           hora_salida_tarde: '18:00:00|18:00:00|18:00:00|18:00:00|18:00:00||',
+  //           totales_dia: 48,
+  //           descuentos: '|10|10||100|100|||||||',
+  //           tardanza: 0,
+  //           tiempo_extra: 0
+  //         }
+  //       }
+  //       console.log('horarioArea', horarioArea)
+  //       let feriados = []
+  //       if (datos[1]?.length) {
+  //         feriados = datos[1]
+  //           .filter(ele => {
+  //             const areas = ele.areas?.split('|');
+  //             return areas.includes(usuario.id_area.toString());
+  //           })
+  //           .map(ele => {
+  //             return {
+  //               ...ele,
+  //               fecha_formateada: moment(ele.fecha).format('DD-MM-YYYY')
+  //             };
+  //           });
+  //       }
+  //       const resultado = await this.analizarUsuario(usuario, horarioArea, horarioArea.tardanza ? horarioArea.tardanza : 0)
+  //       const fecha = usuario.tipo_asistencia1 ||
+  //         usuario.tipo_asistencia2 ||
+  //         usuario.tipo_asistencia3 ||
+  //         usuario.tipo_asistencia4
+  //       const convertirFechaMySQL = (fechaStr: string) => {
+  //         if (!fechaStr) return null;
+  //         // Reemplazar T por espacio para formato MySQL
+  //         return fechaStr.replace('T', ' ');
+  //       };
+  //       const obj =
+  //       {
+  //         id_proyecto: usuario.id_proyecto,
+  //         id_usuario: usuario.id_usuario,
+  //         id_area: usuario.id_area,
+  //         id_cargo: usuario.id_cargo,
+  //         id_asignacion: usuario.id_asignacion,
+  //         fecha: moment(fecha).format('YYYY-MM-DD'),
+  //         tipo: resultado.estado || '',
+  //         fuente: 0,
+  //         fecha_registro: null,
+  //         asistencia_1: usuario.tipo_asistencia1 ? convertirFechaMySQL(usuario.tipo_asistencia1) : null,
+  //         asistencia_2: usuario.tipo_asistencia2 ? convertirFechaMySQL(usuario.tipo_asistencia2) : null,
+  //         asistencia_3: usuario.tipo_asistencia3 ? convertirFechaMySQL(usuario.tipo_asistencia3) : null,
+  //         asistencia_4: usuario.tipo_asistencia4 ? convertirFechaMySQL(usuario.tipo_asistencia4) : null,
+  //         horas_extra: 0,
+  //         monto_extra: 0
+  //       }
+  //       dataAlmacenar.push(obj)
+  //     }
+  //     // const datos1 = JSON.stringify(dataAlmacenar);
+  //     // const obj = JSON.stringify({
+  //     //   datos1: datos1,
+  //     // });
+  //     const resp = await this.recursosHumanosService.guardarActualizarRegistrosAsistencia(dataAlmacenar)
+  //     if (resp?.id == "1") {
+  //       this.tablaFiltrada = []
+  //       this.toaster.success(
+  //         resp?.mensaje,
+  //         'Correcto',
+  //         {
+  //           closeButton: false,
+  //           positionClass: 'toast-bottom-right',
+  //           timeOut: 5000,
+  //         }
+  //       );
+  //     } else {
+  //       SwalService.error()
+  //     }
+  //     this.mostrar_carga_todo = false
+  //   } catch (error) {
+  //     console.log(error)
+  //     this.mostrar_carga_todo = false
+  //     SwalService.error()
+  //   }
+  // }
+
+  async vincularASistenciaDiaPlanilla(tablaAsistenciaMovil, obj) {
     try {
-      if (!this.tablaAsistenciaMovil.length) {
-        this.toaster.error(
+
+      if (!tablaAsistenciaMovil.length) {
+        this.toaster.info(
           'Ningun dato que vincular',
           '',
           {
@@ -1641,18 +2156,27 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
             timeOut: 4000,
           }
         );
-        return
+        this.mostrar_carga_todo = false;
+        return;
       }
-      this.mostrar_carga_todo = true
+
       const data = {
         id_proyecto: this.idProyecto,
         id_area: 0
-      }
-      const datos = await this.recursosHumanosService.listarHorarioYFeriadosArea(data)
-      // console.log('horarios', datos[0])
-      let dataAlmacenar = []
-      for (const usuario of this.tablaAsistenciaMovil) {
-        let horarioArea = datos[0].find(ele => ele.id_area == usuario.id_area)
+      };
+
+      const datos = await this.recursosHumanosService.listarHorarioYFeriadosArea(data);
+
+      // Validar la estructura de datos
+      const horarios = datos[0] || []; // Array de horarios
+      const feriadosData = datos[1] || []; // Array de feriados (puede ser vacío)
+
+      let dataAlmacenar = [];
+
+      for (const usuario of tablaAsistenciaMovil) {
+        // Buscar horario del área
+        let horarioArea = horarios.find(ele => ele.id_area == usuario.id_area);
+
         if (!horarioArea) {
           horarioArea = {
             id_configuracion: null,
@@ -1668,32 +2192,58 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
             descuentos: '|10|10||100|100|||||||',
             tardanza: 0,
             tiempo_extra: 0
-          }
+          };
         }
-        const feriados = datos[1]
-          .filter(ele => {
-            const areas = ele.areas.split('|');
-            return areas.includes(usuario.id_area.toString());
-          })
-          .map(ele => {
-            return {
-              ...ele,
-              fecha_formateada: moment(ele.fecha).format('DD-MM-YYYY')
-            };
-          });
 
-        const resultado = await this.analizarUsuario(usuario, horarioArea, horarioArea.tardanza ? horarioArea.tardanza : 0)
+
+        // Procesar feriados - VALIDANDO QUE EXISTAN DATOS
+        let feriados = [];
+
+        // Verificar si feriadosData existe y tiene longitud
+        if (feriadosData && feriadosData.length) {
+          feriados = feriadosData
+            .filter(ele => {
+              // Validar si areas es null o undefined
+              if (!ele.areas) {
+                return false; // Si areas es null, no aplicar a ninguna área
+              }
+
+              // Convertir el string de áreas a array
+              const areas = ele.areas.split('|');
+
+              // Verificar si el área del usuario está incluida
+              return areas.includes(usuario.id_area.toString());
+            })
+            .map(ele => {
+              return {
+                ...ele,
+                fecha_formateada: moment(ele.fecha).format('DD-MM-YYYY')
+              };
+            });
+        }
+
+
+        // Analizar usuario
+        const resultado = await this.analizarUsuario(
+          usuario,
+          horarioArea,
+          horarioArea.tardanza ? horarioArea.tardanza : 0
+        );
+
+        // Obtener fecha de asistencia
         const fecha = usuario.tipo_asistencia1 ||
           usuario.tipo_asistencia2 ||
           usuario.tipo_asistencia3 ||
-          usuario.tipo_asistencia4
+          usuario.tipo_asistencia4;
+
+        // Función para convertir fecha a formato MySQL
         const convertirFechaMySQL = (fechaStr: string) => {
           if (!fechaStr) return null;
           // Reemplazar T por espacio para formato MySQL
           return fechaStr.replace('T', ' ');
         };
-        const obj =
-        {
+
+        const obj = {
           id_proyecto: usuario.id_proyecto,
           id_usuario: usuario.id_usuario,
           id_area: usuario.id_area,
@@ -1709,16 +2259,17 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
           asistencia_4: usuario.tipo_asistencia4 ? convertirFechaMySQL(usuario.tipo_asistencia4) : null,
           horas_extra: 0,
           monto_extra: 0
-        }
-        dataAlmacenar.push(obj)
+        };
+
+        dataAlmacenar.push(obj);
       }
-      // const datos1 = JSON.stringify(dataAlmacenar);
-      // const obj = JSON.stringify({
-      //   datos1: datos1,
-      // });
-      const resp = await this.recursosHumanosService.guardarActualizarRegistrosAsistencia(dataAlmacenar)
+
+      // Guardar registros
+      const resp = await this.recursosHumanosService.guardarActualizarRegistrosAsistencia(dataAlmacenar);
+
       if (resp?.id == "1") {
-        this.tablaFiltrada = []
+        this.tablaFiltrada = [];
+        await this.guardarRegistroVinculoPlanilla(obj)
         this.toaster.success(
           resp?.mensaje,
           'Correcto',
@@ -1729,13 +2280,15 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
           }
         );
       } else {
-        SwalService.error()
+        SwalService.error();
       }
-      this.mostrar_carga_todo = false
+
+      this.mostrar_carga_todo = false;
+      // this.modalvinculo.hide()
     } catch (error) {
-      console.log(error)
-      this.mostrar_carga_todo = false
-      SwalService.error()
+      console.log(error);
+      this.mostrar_carga_todo = false;
+      SwalService.error();
     }
   }
 
@@ -4339,6 +4892,7 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
     }
     this.totalesAcumulados = { acumulados: Object.values(acumulados), totalGeneral }
   }
+
   normalizarNombreMes(nombreMes: string): string {
     const mesesMap: { [key: string]: string } = {
       'ENERO': 'Enero',
@@ -4359,6 +4913,7 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
     const nombreUpper = nombreMes.toUpperCase();
     return mesesMap[nombreUpper] || nombreMes.charAt(0) + nombreMes.slice(1).toLowerCase();
   }
+
   filtrarCalendarioPorMes(mesSeleccionado: any) {
     this.calendarioFiltrado2 = null;
 
@@ -4403,6 +4958,1856 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
       }
     }
   }
+
+  async abrirModalVinculo() {
+    this.mostrar_carga_todo = true
+    await this.listarRegistrosVinculoPlanilla()
+    this.modalvinculo.show()
+    this.formvinculo.reset()
+    this.mostrar_carga_todo = false
+  }
+
+  async listarRegistrosVinculoPlanilla() {
+    const obj = {
+      id_proyecto: this.idProyecto
+    }
+    this.tablaVinculos = await this.recursosHumanosService.listarRegistrosVinculoPlanilla(obj)
+    // const resp = await this.recursosHumanosService.listarRegistrosVinculoPlanilla(obj)
+    // let todosLosRegistros = [];
+    // for (let i = 0; i < 50; i++) {
+    //   todosLosRegistros = todosLosRegistros.concat(resp);
+    // }
+    // this.tablaVinculos = todosLosRegistros;
+  }
+
+  cerrarModalVinculo() {
+    this.modalvinculo.hide()
+  }
+
+
+  cambioSelectAreaVinculo(select) {
+    this.cargosFiltrados3 = this.cargos.filter(ele => Number(ele.id_area) == Number(this.id_area_vinculo.value))
+    this.id_cargo_vinculo.reset()
+    if (!this.id_area_vinculo.value) {
+      this.id_cargo_vinculo.disable()
+    } else {
+      this.id_cargo_vinculo.enable()
+    }
+  }
+
+  async vincularAPlanilla() {
+    try {
+      if (this.formvinculo.invalid) {
+        this.formvinculo.markAllAsTouched()
+        this.toaster.error(
+          'Formulario incompleto o datos no validos',
+          'Error',
+          {
+            closeButton: false,
+            positionClass: 'toast-bottom-right',
+            timeOut: 4000,
+          }
+        );
+        return
+
+      } else {
+        this.mostrar_carga_todo = true
+        const obj = {
+          id_proyecto: this.idProyecto,
+          id_area: this.id_area_vinculo.value || '',
+          id_cargo: this.id_cargo_vinculo.value || '',
+          fecha_inicio: this.fecha_inicio_vinculo.value,
+          fecha_fin: this.fecha_fin_vinculo.value,
+        }
+        const tablaAsistenciaMovil = await this.recursosHumanosService.listarAsistenciaMovil(obj)
+        if (!tablaAsistenciaMovil.length) {
+          this.mostrar_carga_todo = false
+          this.toaster.info(
+            'No se encontraron registros para esta fecha',
+            '',
+            {
+              closeButton: false,
+              positionClass: 'toast-bottom-right',
+              timeOut: 4000,
+            }
+          );
+        } else {
+          const response = await this.agruparPorDia(tablaAsistenciaMovil)
+          await this.vincularASistenciaDiaPlanilla(response, obj)
+          this.formvinculo.reset()
+          this.mostrar_carga_todo = false
+        }
+      }
+    } catch (error) {
+
+    }
+  }
+
+  async guardarRegistroVinculoPlanilla(obj) {
+    const obj2 = {
+      id_proyecto: obj.id_proyecto,
+      id_area: obj.id_area,
+      id_cargo: obj.id_cargo,
+      fecha_inicio: obj.fecha_inicio,
+      fecha_fin: obj.fecha_fin,
+      usuario_registrador: this.id_usuario
+    }
+    const resp = await this.recursosHumanosService.guardarRegistroVinculoPlanilla(obj2)
+    if (resp.length) {
+
+      this.tablaVinculos = resp
+    }
+  }
+
+  validarRangoFechasPersonalizado(): ValidatorFn {
+    return (control: AbstractControl): ValidationErrors | null => {
+      const fecha = control.value;
+
+      if (!fecha) {
+        return null; // Dejar que required valide si es necesario
+      }
+
+      // Validar formato de fecha
+      if (!this.esFechaValida(fecha)) {
+        return { formatoInvalido: true };
+      }
+
+      const fechaDate = new Date(fecha);
+      const minDate = new Date(this.fechaMinima);
+      const maxDate = new Date(this.fechaMaxima);
+
+      // Validar contra fecha mínima
+      if (fechaDate < minDate) {
+        return {
+          fechaMenorQueMinima: {
+            mensaje: `La fecha debe ser posterior o igual a ${this.formatearFechaParaMostrar(this.fechaMinima)}`,
+            minima: this.fechaMinima
+          }
+        };
+      }
+
+      // Validar contra fecha máxima
+      if (fechaDate > maxDate) {
+        return {
+          fechaMayorQueMaxima: {
+            mensaje: `La fecha debe ser anterior o igual a ${this.formatearFechaParaMostrar(this.fechaMaxima)}`,
+            maxima: this.fechaMaxima
+          }
+        };
+      }
+
+      return null;
+    };
+  }
+
+  // Validador para el rango entre fecha inicio y fecha fin
+  validarRangoEntreFechas(): ValidatorFn {
+    return (group: AbstractControl): ValidationErrors | null => {
+      const inicio = group.get('fecha_inicio')?.value;
+      const fin = group.get('fecha_fin')?.value;
+
+      if (inicio && fin) {
+        const fechaInicio = new Date(inicio);
+        const fechaFin = new Date(fin);
+
+        // Validar que las fechas sean válidas
+        if (isNaN(fechaInicio.getTime()) || isNaN(fechaFin.getTime())) {
+          return null;
+        }
+
+        if (fechaInicio > fechaFin) {
+          // Establecer error en fecha_fin
+          group.get('fecha_fin')?.setErrors({
+            fechaMenorQueInicio: {
+              mensaje: `La fecha fin no puede ser menor a la fecha inicio (${this.formatearFechaParaMostrar(inicio)})`
+            }
+          });
+          return { rangoInvalido: true };
+        } else {
+          // Limpiar el error de fecha_fin si existe y la validación pasa
+          const finErrors = group.get('fecha_fin')?.errors;
+          if (finErrors && finErrors['fechaMenorQueInicio']) {
+            const newErrors = { ...finErrors };
+            delete newErrors['fechaMenorQueInicio'];
+            group.get('fecha_fin')?.setErrors(Object.keys(newErrors).length ? newErrors : null);
+          }
+          return null;
+        }
+      }
+
+      return null;
+    };
+  }
+
+  // Validar que la fecha tenga formato correcto
+  esFechaValida(fecha: string): boolean {
+    if (!fecha) return false;
+
+    // Verificar formato YYYY-MM-DD
+    const regex = /^\d{4}-\d{2}-\d{2}$/;
+    if (!regex.test(fecha)) return false;
+
+    // Verificar que sea una fecha real
+    const [anio, mes, dia] = fecha.split('-').map(Number);
+    const fechaObj = new Date(anio, mes - 1, dia);
+
+    return fechaObj.getFullYear() === anio &&
+      fechaObj.getMonth() === mes - 1 &&
+      fechaObj.getDate() === dia;
+  }
+
+  // Formatear fecha para mostrar en mensajes de error
+  formatearFechaParaMostrar(fecha: string): string {
+    if (!fecha) return '';
+    const [anio, mes, dia] = fecha.split('-');
+    return `${dia}/${mes}/${anio}`;
+  }
+
+  // Método para validar en tiempo real mientras escribe
+  onFechaChange(campo: string, event: any) {
+    const valor = event.target.value;
+    const control = this.formvinculo.get(campo);
+
+    if (valor) {
+      control?.updateValueAndValidity();
+    }
+  }
+
+  agruparPorDia(asistencias: Asistencia[]): AsistenciaAgrupadaPorDia[] {
+    const grupos = new Map<string, any>();
+
+    asistencias.forEach(asistencia => {
+      const fecha = asistencia.fecha_hora.split('T')[0];
+      const clave = `${asistencia.id_usuario}_${asistencia.id_proyecto}_${asistencia.id_area}_${asistencia.id_cargo}_${asistencia.id_asignacion}_${fecha}`;
+
+      if (!grupos.has(clave)) {
+        grupos.set(clave, {
+          id_usuario: asistencia.id_usuario,
+          id_proyecto: asistencia.id_proyecto,
+          id_area: asistencia.id_area,
+          id_cargo: asistencia.id_cargo,
+          id_asignacion: asistencia.id_asignacion,
+          fecha: fecha,
+          fecha_display: this.formatearFechaParaMostrar(fecha),
+          nombres_usuario: asistencia.nombres_usuario,
+          apellidos_usuario: asistencia.apellidos_usuario,
+          nombre_completo_usuario: asistencia.nombre_completo_usuario,
+          nombre_area: asistencia.nombre_area,
+          nombre_cargo: asistencia.nombre_cargo,
+          tipo_asistencia1: null,
+          tipo_asistencia2: null,
+          tipo_asistencia3: null,
+          tipo_asistencia4: null,
+          total_registros: 0
+        });
+      }
+
+      const grupo = grupos.get(clave);
+      const propiedad = `tipo_asistencia${asistencia.tipo_asistencia}`;
+      if (grupo.hasOwnProperty(propiedad)) {
+        grupo[propiedad] = asistencia.fecha_hora;
+        grupo.total_registros++;
+      }
+    });
+
+    // Convertir Map a Array y procesar
+    return Array.from(grupos.values()).map(grupo => ({
+      ...grupo,
+      registros_completos: grupo.tipo_asistencia1 !== null &&
+        grupo.tipo_asistencia2 !== null &&
+        grupo.tipo_asistencia3 !== null &&
+        grupo.tipo_asistencia4 !== null,
+      tiene_ingreso: grupo.tipo_asistencia1 !== null,
+      tiene_salida_almuerzo: grupo.tipo_asistencia2 !== null,
+      tiene_retorno_almuerzo: grupo.tipo_asistencia3 !== null,
+      tiene_salida: grupo.tipo_asistencia4 !== null
+    })).sort((a, b) => {
+      if (a.fecha !== b.fecha) return a.fecha.localeCompare(b.fecha);
+      return a.id_usuario - b.id_usuario;
+    });
+  }
+
+
+  // async aprobarPlanilla() {
+  //   try {
+  //     this.mostrar_carga_todo = true;
+  //     const valido = await this.verificarAprobarPlanilla()
+  //     this.mostrar_carga_todo = false;
+  //     if (!valido.valido) {
+  //       this.toaster.error(valido.msj, '', {
+  //         closeButton: false,
+  //         positionClass: 'toast-bottom-right',
+  //         timeOut: 5000,
+  //       });
+  //       return
+  //     }
+  //     SwalService.confirm(
+  //       '¿Está seguro ?',
+  //       'Se aprobará la planilla para el mes de ' + this.meses[this.mesSeleccionado] + ' y el mes ya no sera editable'
+  //     ).then(async (result) => {
+  //       if (result.isConfirmed) {
+  //         try {
+  //           this.mostrar_carga_todo = true;
+  //           let tablaPlanillaAprobada = []
+  //           const mesesMap = {
+  //             'Enero': '01', 'Febrero': '02', 'Marzo': '03', 'Abril': '04',
+  //             'Mayo': '05', 'Junio': '06', 'Julio': '07', 'Agosto': '08',
+  //             'Septiembre': '09', 'Octubre': '10', 'Noviembre': '11', 'Diciembre': '12'
+  //           };
+
+  //           const mesFormateado = this.meses[this.mesSeleccionado].split(' - ')
+  //             .reverse()
+  //             .map((part, i) => i === 0 ? mesesMap[part] : part)
+  //             .join('-');
+  //           for (const element of this.tablaFiltrada) {
+  //             const resultado = this.generarStringRegistros(element.dias);
+  //             // Crear el string único con todos los valores separados por |
+  //             const tipos_dias = [
+  //               element.dias_laborados,
+  //               element.dias_dominicales,
+  //               element.dias_feriados,
+  //               element.dias_tardanzas,
+  //               element.dias_permiso,
+  //               element.dias_faltados,
+  //               element.dias_otros
+  //             ].join('|');
+
+
+  //             let tipo_fila = 0;
+  //             if (element.id_cargo && !element.id_usuario) {
+  //               tipo_fila = 1;  // esCargo
+  //             } else if (element.id_usuario) {
+  //               tipo_fila = 2;  // esUsuario (si aplica)
+  //             } else if (!element.id_cargo && !element.id_usuario) {
+  //               tipo_fila = 0;  // esArea
+  //             }
+
+  //             const obj: planillaAprobada = {
+  //               id_proyecto: this.idProyecto,
+  //               id_usuario: element.id_usuario,
+  //               descripcion_usuario: element.descripcion_usuario,
+  //               id_area: element.id_area,
+  //               area: element.area,
+  //               id_cargo: element.id_cargo,
+  //               cargo: element.cargo,
+  //               tipo_cargo: element.tipo_cargo,
+  //               dias: resultado,
+  //               tipos_dias: tipos_dias,
+  //               coste_dia: element.coste_dia,
+  //               coste_mensual: element.coste_mensual,
+  //               tipo_fila: tipo_fila, // 0 = Area, 1 = Cargo, 2 = Usuario (opcional),
+  //               mes: mesFormateado,
+  //               id_asignacion:row.id_asignacion,
+  //             }
+  //             tablaPlanillaAprobada.push(obj)
+  //           }
+  //         } catch (error) {
+  //           console.error('Error:', error);
+  //           SwalService.error('Error al procesar la eliminación');
+  //           this.mostrar_carga_todo = false;
+  //         } finally {
+  //           this.mostrar_carga_todo = false;
+  //         }
+  //       }
+  //     });
+
+  //   } catch (error) {
+  //     this.mostrar_carga_todo = false
+  //     console.log(error)
+  //     SwalService.error()
+  //   }
+  // }
+
+  generarStringRegistros(data: any[]): string {
+    return data.map(item => {
+      return [
+        item?.fecha || '',
+        item?.costedia || 0,
+        item?.horas_extra || 0,
+        item?.monto || 0,
+        item?.monto_extra || 0,
+        item?.tipo || ''
+      ].join('|');
+    }).join('/');
+  }
+
+  verificarAprobarPlanilla() {
+    let valido = true
+    let msj = ''
+    if (!this.tablaFiltrada.length) {
+      msj = 'Tabla planilla vacia'
+      valido = false
+    } else if (this.tablaFiltrada.some(ele => ele.invalido)) {
+      valido = false
+      msj = 'Existe usuario con Coste mensual no válido'
+    }
+
+    return { valido: valido, msj: msj }
+  }
+
+  async aprobarPlanillaUsuario(row, i) {
+    try {
+      const sw = await SwalService.confirm('Esta seguro?', 'Se ' + (row.planilla_mensual_aprobada == null ? ' almacenará la planilla del mes actual  al usuario' : ' reemplazará la anterior planilla almacenada por los datos actuales del mes'))
+      if (sw.isConfirmed) {
+        console.log('row', row)
+        this.mostrar_carga_todo = true
+        const mesesMap = {
+          'Enero': '01', 'Febrero': '02', 'Marzo': '03', 'Abril': '04',
+          'Mayo': '05', 'Junio': '06', 'Julio': '07', 'Agosto': '08',
+          'Septiembre': '09', 'Octubre': '10', 'Noviembre': '11', 'Diciembre': '12'
+        };
+
+        const mesFormateado = this.meses[this.mesSeleccionado].split(' - ')
+          .reverse()
+          .map((part, i) => i === 0 ? mesesMap[part] : part)
+          .join('-');
+        const resultado = this.generarStringRegistros(row.dias);
+
+        // Crear el string único con todos los valores separados por |
+        const tipos_dias = [
+          row.dias_laborados,
+          row.dias_dominicales,
+          row.dias_feriados,
+          row.dias_tardanzas,
+          row.dias_permiso,
+          row.dias_faltados,
+          row.dias_otros
+        ].join('|');
+
+
+        let tipo_fila = 0;
+        if (row.id_cargo && !row.id_usuario) {
+          tipo_fila = 1;  // esCargo
+        } else if (row.id_usuario) {
+          tipo_fila = 2;  // esUsuario (si aplica)
+        } else if (!row.id_cargo && !row.id_usuario) {
+          tipo_fila = 0;  // esArea
+        }
+        if (row.planilla_mensual_aprobada == null) {
+          const objAgregar: planillaAprobada = {
+            id_proyecto: this.idProyecto,
+            id_usuario: row.id_usuario,
+            descripcion_usuario: row.descripcion_usuario,
+            id_area: row.id_area,
+            area: row.area,
+            id_cargo: row.id_cargo,
+            cargo: row.cargo,
+            tipo_cargo: row.tipo_cargo,
+            dias: resultado, // fecha,costedia,horas_extra, monto, monto_extra, tipo
+            tipos_dias: tipos_dias,  //  Formato: "dias_laborados|dias_dominicales|dias_feriados|dias_tardanzas|dias_permiso|dias_faltados|dias_otros"
+            coste_dia: row.coste_dia,
+            coste_mensual: row.coste_mensual,
+            tipo_fila: 2,  // 0 = Area, 1 = Cargo, 2 = Usuario (reemplaza a esArea y esCargo)
+            mes: mesFormateado,
+            coste_pagado: 0,
+            id_asignacion: row.id_asignacion,
+            estado_pago: 0, // 0 = pendiente, 1 = pagado, etc.
+            adjunto: '', // ruta o URL del archivo adjunto
+          }
+          const resp = await this.recursosHumanosService.guardarPlanillaMensualAprobada(objAgregar)
+          if (resp[0]?.id_aprobado_planilla) {
+            objAgregar['id_aprobado_planilla'] = resp[0]?.id_aprobado_planilla
+            row.planilla_mensual_aprobada = objAgregar
+            this.toaster.success(
+              'Se guardo correctamente',
+              'Correcto',
+              {
+                closeButton: false,
+                positionClass: 'toast-bottom-right',
+                timeOut: 4000,
+              }
+            );
+          } else {
+            this.toaster.error(
+              'No se pudo guardar',
+              'Error',
+              {
+                closeButton: false,
+                positionClass: 'toast-bottom-right',
+                timeOut: 4000,
+              }
+            );
+          }
+        } else {
+          const objActualizar: planillaAprobada = {
+            id_aprobado_planilla: row.planilla_mensual_aprobada.id_aprobado_planilla,
+            id_proyecto: this.idProyecto,
+            id_usuario: row.id_usuario,
+            descripcion_usuario: row.descripcion_usuario,
+            id_area: row.id_area,
+            area: row.area,
+            id_cargo: row.id_cargo,
+            cargo: row.cargo,
+            tipo_cargo: row.tipo_cargo,
+            dias: resultado, // fecha,costedia,horas_extra, monto, monto_extra, tipo
+            tipos_dias: tipos_dias,  //  Formato: "dias_laborados|dias_dominicales|dias_feriados|dias_tardanzas|dias_permiso|dias_faltados|dias_otros"
+            coste_dia: row.coste_dia,
+            coste_mensual: row.coste_mensual,
+            tipo_fila: 2,  // 0 = Area, 1 = Cargo, 2 = Usuario (reemplaza a esArea y esCargo)
+            mes: mesFormateado,
+            coste_pagado: 0,
+            id_asignacion: row.id_asignacion,
+            estado_pago: 0, // 0 = pendiente, 1 = pagado, etc.
+            adjunto: '' // ruta o URL del archivo adjunto
+          }
+          const resp = await this.recursosHumanosService.actualizarPlanillaMensualAprobada(objActualizar)
+          if (resp[0]?.id_aprobado_planilla) {
+            objActualizar['id_aprobado_planilla'] = resp[0]?.id_aprobado_planilla
+            row.planilla_mensual_aprobada = objActualizar
+            this.toaster.success(
+              'Se actualizó correctamente',
+              'Correcto',
+              {
+                closeButton: false,
+                positionClass: 'toast-bottom-right',
+                timeOut: 4000,
+              }
+            );
+          } else {
+            this.toaster.error(
+              'No se pudo guardar',
+              'Error',
+              {
+                closeButton: false,
+                positionClass: 'toast-bottom-right',
+                timeOut: 4000,
+              }
+            );
+          }
+        }
+        this.mostrar_carga_todo = false
+      }
+    } catch (error) {
+      this.mostrar_carga_todo = false
+      console.log(error)
+      SwalService.error()
+    }
+  }
+
+  async eliminarPlanillaAprobado(row, i) {
+    try {
+      const sw = await SwalService.confirm('Esta seguro?', 'Se eliminara la planilla almacenada para el mes del usuario seleccionado')
+      if (sw.isConfirmed) {
+        this.mostrar_carga_todo = true
+        const obj = {
+          id_proyecto: row.planilla_mensual_aprobada.id_proyecto,
+          id_aprobado_planilla: row.planilla_mensual_aprobada.id_aprobado_planilla
+        }
+        const res = await this.recursosHumanosService.eliminarPlanillaMensualAprobada(obj)
+        if (res[0].codigo == 1) {
+          row.planilla_mensual_aprobada = null
+          this.toaster.success(
+            res[0].mensaje,
+            'Correcto',
+            {
+              closeButton: false,
+              positionClass: 'toast-bottom-right',
+              timeOut: 4000,
+            }
+          );
+        } else {
+          this.toaster.error(
+            res[0].mensaje,
+            '',
+            {
+              closeButton: false,
+              positionClass: 'toast-bottom-right',
+              timeOut: 4000,
+            }
+          );
+        }
+        this.mostrar_carga_todo = false
+      }
+    } catch (error) {
+      console.log(error)
+      SwalService.error()
+    }
+  }
+
+  abrirModalPlanillaAprobada(row) {
+    // Asignar los datos originales
+    this.planillaAprobada = row.planilla_mensual_aprobada;
+
+    if (this.planillaAprobada) {
+      // Parsear el string 'dias' a un array de objetos
+      this.planillaAprobada.diasArray = this.parseDiasString(this.planillaAprobada.dias);
+
+      // Parsear el string 'tipos_dias' a un objeto con propiedades
+      const tiposDiasObj = this.parseTiposDiasString(this.planillaAprobada.tipos_dias);
+      this.planillaAprobada.dias_laborados = tiposDiasObj.dias_laborados;
+      this.planillaAprobada.dias_dominicales = tiposDiasObj.dias_dominicales;
+      this.planillaAprobada.dias_feriados = tiposDiasObj.dias_feriados;
+      this.planillaAprobada.dias_tardanzas = tiposDiasObj.dias_tardanzas;
+      this.planillaAprobada.dias_permiso = tiposDiasObj.dias_permiso;
+      this.planillaAprobada.dias_faltados = tiposDiasObj.dias_faltados;
+      this.planillaAprobada.dias_otros = tiposDiasObj.dias_otros;
+
+      // Convertir tipo_fila de booleano/numero a número
+      this.planillaAprobada.tipo_fila = this.planillaAprobada.tipo_fila === true ? 1 :
+        (this.planillaAprobada.tipo_fila === false ? 0 :
+          Number(this.planillaAprobada.tipo_fila) || 0);
+
+      // Convertir estado_pago de booleano a número
+      this.planillaAprobada.estado_pago = this.planillaAprobada.estado_pago === true ? 1 :
+        (this.planillaAprobada.estado_pago === false ? 0 :
+          Number(this.planillaAprobada.estado_pago) || 0);
+    }
+
+    this.modalPlanillaAprobada.show();
+  }
+
+  // Función para parsear el string 'dias' a un array de objetos
+  parseDiasString(diasString: string): any[] {
+    if (!diasString) return [];
+
+    return diasString.split('/').map(item => {
+      const partes = item.split('|');
+      return {
+        fecha: partes[0] || '',
+        costedia: parseFloat(partes[1]) || 0,
+        horas_extra: parseFloat(partes[2]) || 0,
+        monto: parseFloat(partes[3]) || 0,
+        monto_extra: parseFloat(partes[4]) || 0,
+        tipo: partes[5] || ''
+      };
+    });
+  }
+
+  // Función para parsear el string 'tipos_dias' a un objeto con los 7 valores
+  parseTiposDiasString(tiposDiasString: string): any {
+    if (!tiposDiasString) {
+      return {
+        dias_laborados: 0,
+        dias_dominicales: 0,
+        dias_feriados: 0,
+        dias_tardanzas: 0,
+        dias_permiso: 0,
+        dias_faltados: 0,
+        dias_otros: 0
+      };
+    }
+
+    const valores = tiposDiasString.split('|');
+    return {
+      dias_laborados: parseInt(valores[0]) || 0,
+      dias_dominicales: parseInt(valores[1]) || 0,
+      dias_feriados: parseInt(valores[2]) || 0,
+      dias_tardanzas: parseInt(valores[3]) || 0,
+      dias_permiso: parseInt(valores[4]) || 0,
+      dias_faltados: parseInt(valores[5]) || 0,
+      dias_otros: parseInt(valores[6]) || 0
+    };
+  }
+
+
+
+  // Función para generar el string 'tipos_dias' desde un objeto
+  generarStringTiposDias(tipos: any): string {
+    return [
+      tipos?.dias_laborados || 0,
+      tipos?.dias_dominicales || 0,
+      tipos?.dias_feriados || 0,
+      tipos?.dias_tardanzas || 0,
+      tipos?.dias_permiso || 0,
+      tipos?.dias_faltados || 0,
+      tipos?.dias_otros || 0
+    ].join('|');
+  }
+
+  cerrarModalAprobado() {
+    this.planillaAprobada = null
+    this.modalPlanillaAprobada.hide()
+  }
+
+  abrirModalPlanillaVinculo(row?) {
+    this.formPlanillaVinculo.reset()
+    if (row) {
+
+    } else {
+
+    }
+    this.modalPlanillaVinculo.show()
+  }
+
+  cerrarModalPlanillaVinculo() {
+    this.modalPlanillaVinculo.hide()
+  }
+
+  selTablaReq(row, i) {
+    if (i !== this.filSelReq) {
+      this.filSelReq = i;
+      this.reqcargSeleccionado = null;
+    }
+
+    const adqui = this.tablaRegActividades[this.filSelRegAct];
+    this.reqcargSeleccionado = this.requerimientosCargos.find(ele =>
+      ele.idfila_req == adqui.idfila &&
+      ele.idfila_des == row.idfila &&
+      ele.idgrupo == row.idgrupo &&
+      ele.indrep == row.indrep
+    );
+
+    if (!this.reqcargSeleccionado) {
+      // 🔥 NO limpiar filSelReq, mantener la selección
+      console.log('Esta fila no tiene relación con ningún cargo - La tabla se mostrará vacía');
+    } else {
+      console.log('Relación encontrada:', this.reqcargSeleccionado);
+      console.log('Cargos vinculados:', this.reqcargSeleccionado.cargos);
+    }
+
+    // Forzar actualización de la vista
+    this.reporteEstructurado = [...this.reporteEstructurado];
+  }
+
+  async listarRequerimientoCargo() {
+    const obj = {
+      id_proyecto: this.idProyecto,
+      // id_registro: row.id_registro,
+      // idgrupo: row.idgrupo,
+      // idfila: row.idfila,
+    }
+    this.requerimientosCargos = await this.recursosHumanosService.listarRequerimientoCargo(obj)
+    console.log('this.requerimientosCargos', this.requerimientosCargos)
+  }
+
+  // async onVinculadoChange(cargo, event: any) {
+  //   this.mostrar_carga = true
+  //   const isChecked = event.checked;
+  //   const requerimiento = this.tablaRequerimientos[this.filSelReq];
+  //   const adqui = this.tablaRegActividades[this.filSelRegAct];
+  //   let cargosRelacionados = this.reqcargSeleccionado?.cargos
+  //     ? this.reqcargSeleccionado.cargos.split('|').filter(c => c)
+  //     : [];
+
+
+  //   const cargoId = cargo.id_cargo.toString() + '-' + cargo.tipo_cargo;
+  //   const index = cargosRelacionados.indexOf(cargoId);
+
+  //   if (isChecked && index === -1) {
+  //     cargosRelacionados.push(cargoId);
+  //   } else if (!isChecked && index !== -1) {
+  //     cargosRelacionados.splice(index, 1);
+  //   } else {
+  //     console.log('No se realizaron cambios en el array');
+  //   }
+
+  //   try {
+  //     if (cargosRelacionados.length > 0) {
+  //       const obj: any = {
+  //         id_proyecto: this.idProyecto,
+  //         id_registro: requerimiento.id_registro,
+  //         idgrupo: requerimiento.idgrupo,
+  //         idfila_des: requerimiento.idfila,
+  //         idfila_req: adqui.idfila,
+  //         indrep: requerimiento.indrep,
+  //         cargos: cargosRelacionados.join('|')
+  //       };
+
+
+  //       if (this.reqcargSeleccionado) {
+  //         obj.id_relacion = this.reqcargSeleccionado.id_relacion;
+  //         const resp = await this.recursosHumanosService.actualizarRequerimientoCargo(obj);
+  //         console.log('Actualizado:', resp);
+
+  //         this.reqcargSeleccionado.cargos = cargosRelacionados.join('|');
+  //         if (this.reqcargSeleccionado) {
+  //           this.reqcargSeleccionado.cargos = cargosRelacionados.join('|');
+  //         }
+
+  //       } else {
+  //         // Crear nuevo
+  //         console.log('Creando nuevo...');
+  //         const resp = await this.recursosHumanosService.guardarRequerimientoCargo(obj);
+  //         console.log('Creado:', resp);
+
+  //         const nuevoId = resp[0]?.nuevo_id_relacion || resp[0]?.id_relacion;
+
+  //         if (nuevoId) {
+  //           // Asignar el objeto COMPLETO, no solo id_relacion y cargos
+  //           this.reqcargSeleccionado = {
+  //             id_relacion: nuevoId,
+  //             id_proyecto: obj.id_proyecto,
+  //             id_registro: obj.id_registro,
+  //             idgrupo: obj.idgrupo,
+  //             idfila_req: obj.idfila_req,
+  //             idfila_des: obj.idfila_des,
+  //             indrep: obj.indrep,
+  //             cargos: obj.cargos
+  //           };
+  //           console.log('reqcargSeleccionado creado:', this.reqcargSeleccionado);
+  //         }
+  //       }
+  //     } else if (this.reqcargSeleccionado) {
+  //       // Eliminar todos los cargos
+  //       console.log('Eliminando registro completo...');
+  //       const resp = await this.recursosHumanosService.eliminarRequerimientoCargo({
+  //         id_relacion: this.reqcargSeleccionado.id_relacion
+  //       });
+  //       console.log('Eliminado:', resp);
+  //       this.reqcargSeleccionado = null;
+  //       console.log('Objetos limpiados');
+  //     } else {
+  //       console.log('No hay cargos relacionados y no hay registro seleccionado');
+  //     }
+  //     await this.actualizarCargosVinculados();
+  //     // Actualizar el estado del toggle localmente
+  //     cargo.tipo_cargo_vinculado = isChecked;
+
+  //     // Actualizar el estado del toggle localmente
+  //     cargo.tipo_cargo_vinculado = isChecked;
+  //     console.log('Estado del toggle actualizado:', cargo.tipo_cargo_vinculado);
+  //     console.log('this.reqcargSeleccionado', this.reqcargSeleccionado)
+  //     this.mostrar_carga = false
+  //   } catch (error) {
+  //     console.error('Error al procesar el cambio:', error);
+  //     // Revertir el cambio en caso de error
+  //     cargo.tipo_cargo_vinculado = !isChecked;
+  //     // Mostrar mensaje de error al usuario
+  //     alert('Error al guardar los cambios. Intente nuevamente.');
+  //     this.mostrar_carga = false
+  //   }
+  // }
+
+  async onVinculadoChange(cargo, event: any) {
+    this.mostrar_carga = true
+    const isChecked = event.checked;
+    const requerimiento = this.tablaRequerimientos[this.filSelReq];
+    const adqui = this.tablaRegActividades[this.filSelRegAct];
+    let cargosRelacionados = this.reqcargSeleccionado?.cargos
+      ? this.reqcargSeleccionado.cargos.split('|').filter(c => c)
+      : [];
+
+    const cargoId = cargo.id_cargo.toString() + '-' + cargo.tipo_cargo;
+    const index = cargosRelacionados.indexOf(cargoId);
+
+    if (isChecked && index === -1) {
+      cargosRelacionados.push(cargoId);
+    } else if (!isChecked && index !== -1) {
+      cargosRelacionados.splice(index, 1);
+    } else {
+      console.log('No se realizaron cambios en el array');
+    }
+
+    try {
+      if (cargosRelacionados.length > 0) {
+        const obj: any = {
+          id_proyecto: this.idProyecto,
+          id_registro: requerimiento.id_registro,
+          idgrupo: requerimiento.idgrupo,
+          idfila_des: requerimiento.idfila,
+          idfila_req: adqui.idfila,
+          indrep: requerimiento.indrep,
+          cargos: cargosRelacionados.join('|')
+        };
+
+        if (this.reqcargSeleccionado) {
+          obj.id_relacion = this.reqcargSeleccionado.id_relacion;
+          const resp = await this.recursosHumanosService.actualizarRequerimientoCargo(obj);
+
+          this.reqcargSeleccionado.cargos = cargosRelacionados.join('|');
+
+          // ACTUALIZAR el registro en requerimientosCargos
+          const indexEnRequerimientos = this.requerimientosCargos.findIndex(
+            ele => ele.id_relacion === this.reqcargSeleccionado.id_relacion
+          );
+          if (indexEnRequerimientos !== -1) {
+            this.requerimientosCargos[indexEnRequerimientos].cargos = cargosRelacionados.join('|');
+          }
+
+        } else {
+          // CREAR NUEVO
+          const resp = await this.recursosHumanosService.guardarRequerimientoCargo(obj);
+
+          const nuevoId = resp[0]?.nuevo_id_relacion || resp[0]?.id_relacion;
+
+          if (nuevoId) {
+            // Crear el nuevo registro completo
+            const nuevoRegistro = {
+              id_relacion: nuevoId,
+              id_proyecto: obj.id_proyecto,
+              id_registro: obj.id_registro,
+              idgrupo: obj.idgrupo,
+              idfila_req: obj.idfila_req,
+              idfila_des: obj.idfila_des,
+              indrep: obj.indrep,
+              cargos: obj.cargos
+            };
+
+            this.reqcargSeleccionado = nuevoRegistro;
+
+            // AGREGAR el nuevo registro a requerimientosCargos
+            this.requerimientosCargos.push(nuevoRegistro);
+          }
+        }
+      } else if (this.reqcargSeleccionado) {
+        // ELIMINAR todos los cargos
+        const resp = await this.recursosHumanosService.eliminarRequerimientoCargo({
+          id_relacion: this.reqcargSeleccionado.id_relacion
+        });
+
+        // ELIMINAR el registro de requerimientosCargos
+        const indexEnRequerimientos = this.requerimientosCargos.findIndex(
+          ele => ele.id_relacion === this.reqcargSeleccionado.id_relacion
+        );
+        if (indexEnRequerimientos !== -1) {
+          this.requerimientosCargos.splice(indexEnRequerimientos, 1);
+        }
+
+        this.reqcargSeleccionado = null;
+      } else {
+        console.log('No hay cargos relacionados y no hay registro seleccionado');
+      }
+
+      // ACTUALIZAR cargosVinculados basado en requerimientosCargos actualizado
+      this.cargosVinculados = this.requerimientosCargos.reduce((acc, ele) => {
+        if (ele.cargos) {
+          return acc.concat(ele.cargos.split('|'));
+        }
+        return acc;
+      }, []);
+
+      // Actualizar el estado del toggle localmente
+      cargo.tipo_cargo_vinculado = isChecked;
+      this.mostrar_carga = false
+
+    } catch (error) {
+      console.error('Error al procesar el cambio:', error);
+      // Revertir el cambio en caso de error
+      cargo.tipo_cargo_vinculado = !isChecked;
+      alert('Error al guardar los cambios. Intente nuevamente.');
+      this.mostrar_carga = false
+    }
+  }
+
+  verDisabled(cargo) {
+    const cargoId = cargo.id_cargo.toString() + '-' + cargo.tipo_cargo;
+    const row = this.reqcargSeleccionado?.cargos ? this.reqcargSeleccionado?.cargos?.split('|') : []
+    let existe = false
+    if ((this.cargosVinculados.includes(cargoId) && !row.includes(cargoId)) || this.filSelReq == null) {
+      existe = true
+    }
+    return existe
+  }
+
+  async actualizarCargosVinculados() {
+
+    if (this.reqcargSeleccionado?.cargos) {
+      this.cargosVinculados = this.reqcargSeleccionado.cargos.split('|');
+    } else {
+      this.cargosVinculados = [];
+    }
+  }
+
+  // Método único para expandir (maxtodo)
+  maxtodo(index?: number): void {
+    const procesarArea = (fila: any, idx: number) => {
+      fila.icomost = false; // Cambiar a false porque después de expandir, muestra icono de contraer
+      for (let i = idx + 1; i < this.tablaData.length; i++) {
+        const nextRow = this.tablaData[i];
+        if (nextRow.esArea) break;
+        if (!nextRow.esArea) nextRow.mostrar = false; // false = mostrar
+      }
+    };
+
+    if (index !== undefined) {
+      const areaRow = this.tablaData[index];
+      if (areaRow?.esArea) procesarArea(areaRow, index);
+    } else {
+      this.tablaData.forEach((fila, idx) => {
+        if (fila.esArea) procesarArea(fila, idx);
+      });
+    }
+  }
+
+  // Método único para contraer (mintodo)
+  mintodo(index?: number): void {
+    const procesarArea = (fila: any, idx: number) => {
+      fila.icomost = true; // Cambiar a true porque después de contraer, muestra icono de expandir
+      for (let i = idx + 1; i < this.tablaData.length; i++) {
+        const nextRow = this.tablaData[i];
+        if (nextRow.esArea) break;
+        if (!nextRow.esArea) nextRow.mostrar = true; // true = ocultar
+      }
+    };
+
+    if (index !== undefined) {
+      const areaRow = this.tablaData[index];
+      if (areaRow?.esArea) procesarArea(areaRow, index);
+    } else {
+      this.tablaData.forEach((fila, idx) => {
+        if (fila.esArea) procesarArea(fila, idx);
+      });
+    }
+  }
+
+  async generarPlanillaProyecto(data, completo, tabla) {
+    console.log('data', data);
+    console.log('tabla', tabla);
+
+    // 🔥 INICIALIZAR el Set al inicio de cada llamada
+    this.procesadosPlanilla = new Set();
+
+    const montosAreas = await this.listarMontosAreaPresAnaliticoRH();
+    const obj = {
+      id_proyecto: this.idProyecto,
+      id_area: 0
+    };
+    const datos = await this.recursosHumanosService.listarHorarioYFeriadosArea(obj);
+
+    const mesesMap = {
+      'Enero': '01', 'Febrero': '02', 'Marzo': '03', 'Abril': '04',
+      'Mayo': '05', 'Junio': '06', 'Julio': '07', 'Agosto': '08',
+      'Septiembre': '09', 'Octubre': '10', 'Noviembre': '11', 'Diciembre': '12'
+    };
+
+    // Crear un mapa de planillas aprobadas por mes y asignación
+    const planillaAprobadaMap = new Map();
+    if (data.planilla_aprobada && data.planilla_aprobada.length > 0) {
+      data.planilla_aprobada.forEach(planilla => {
+        const key = `${planilla.id_asignacion}_${planilla.mes}`;
+        planillaAprobadaMap.set(key, planilla);
+      });
+    }
+
+    let asistenciaRestante = [...data.asistencia];
+    const resultadosPorMes = {};
+
+    for (const anio of completo.calendario) {
+      for (const mes of anio.meses) {
+        const mesFormat = mesesMap[mes.mes] + '-' + mes.anio;
+        const filtrados = [];
+        const indicesAEliminar = [];
+
+        // Recorrer registros de asistencia
+        for (let i = 0; i < asistenciaRestante.length; i++) {
+          const registro = asistenciaRestante[i];
+          const fecha = new Date(registro.fecha);
+          const mesNumero = String(fecha.getMonth() + 1).padStart(2, '0');
+          const añoNumero = fecha.getFullYear();
+          const mesKey = `${mesNumero}-${añoNumero}`;
+
+          if (mesKey === mesFormat) {
+            // Verificar si existe planilla aprobada para esta asignación y mes
+            const planillaKey = `${registro.id_asignacion}_${mesKey}`;
+            const planillaExistente = planillaAprobadaMap.get(planillaKey);
+
+            if (planillaExistente) {
+              // Verificar si ya procesamos este mes para esta asignación
+              const asignacionMesKey = `${registro.id_asignacion}_${mesFormat}`;
+
+              if (!this.procesadosPlanilla.has(asignacionMesKey)) {
+                this.procesadosPlanilla.add(asignacionMesKey);
+
+                // Determinar estado según estado_pago
+                let estadoPlanilla = '';
+                let estadoNumerico = planillaExistente.estado_pago;
+                if (typeof estadoNumerico === 'boolean') {
+                  estadoNumerico = estadoNumerico ? 1 : 0;
+                }
+
+                switch (estadoNumerico) {
+                  case 0:
+                    estadoPlanilla = 'APROBADO';
+                    break;
+                  case 1:
+                    estadoPlanilla = 'PAGADO';
+                    break;
+                  case 2:
+                    estadoPlanilla = 'RECHAZADO';
+                    break;
+                  default:
+                    estadoPlanilla = 'APROBADO';
+                }
+
+                // Crear UN SOLO registro con el monto TOTAL del mes
+                const registroUnico = {
+                  ...registro,
+                  coste_dia: planillaExistente.coste_dia || 0,
+                  monto_calculado: planillaExistente.coste_mensual || 0,
+                  monto_base: planillaExistente.coste_mensual || 0,
+                  descuento_aplicado: "0",
+                  es_dia_no_laborable: false,
+                  es_feriado: false,
+                  es_dia_especial: false,
+                  tipo_descripcion: 'PLANILLA APROBADA',
+                  dia_semana: this.getDiaSemanaEspanol(moment(registro.fecha)),
+                  es_planilla_aprobada: true,
+                  estado_planilla: estadoPlanilla,
+                  estado_pago: estadoNumerico,
+                  cantidad_dias: 1,
+                  es_registro_mensual: true
+                };
+
+                filtrados.push(registroUnico);
+              }
+
+              // Siempre eliminar el registro de asistencia diaria
+              indicesAEliminar.push(i);
+            } else {
+              // Calcular usando asistencia diaria
+              let dataHorario = datos[0].find(ele => ele.id_area == registro.id_area);
+              if (!dataHorario) {
+                dataHorario = {
+                  id_configuracion: null,
+                  id_proyecto: registro.id_proyecto,
+                  id_area: registro.id_area,
+                  inicio_semana: 'LUNES',
+                  dias_nolaborables: 'DOMINGO',
+                  hora_ingreso_manana: '07:30:00|07:30:00|07:30:00|07:30:00|07:30:00|07:30:00|',
+                  hora_salida_manana: '12:00:00|12:00:00|12:00:00|12:00:00|12:00:00|13:00:00|',
+                  hora_ingreso_tarde: '14:00:00|14:00:00|14:00:00|14:00:00|14:00:00||',
+                  hora_salida_tarde: '18:00:00|18:00:00|18:00:00|18:00:00|18:00:00||',
+                  totales_dia: 48,
+                  descuentos: '|10|10||100|100|||||||',
+                  tardanza: 10,
+                  tiempo_extra: 0
+                };
+              }
+
+              const descuentos = dataHorario?.descuentos.split('|');
+              const diasNoLaborables = dataHorario?.dias_nolaborables.split('|');
+              const feriadosSoloFecha = datos[1].filter(ele => {
+                const areas = ele.areas?.split('|');
+                return areas && areas.includes(registro.id_area.toString());
+              }).map(ele => ele.fecha.split('T')[0]);
+
+              const costesCargoDia = montosAreas.find(ele =>
+                ele.id_area == registro.id_area &&
+                ele.tipo == ('JORNAL CATEGORIA ' + registro.tipo_cargo)
+              )?.cargos.find(ele => ele.id_cargo == registro.id_cargo);
+
+              let costeDia = costesCargoDia ? costesCargoDia.parcial : 0;
+
+              const fechaMoment = moment(registro.fecha);
+              const diaSemana = this.getDiaSemanaEspanol(fechaMoment);
+              const fechaKey = fechaMoment.format('YYYY-MM-DD');
+
+              const esDiaNoLaborable = diasNoLaborables.includes(diaSemana);
+              const esFeriado = feriadosSoloFecha.includes(fechaKey);
+              // const esDiaEspecial = esDiaNoLaborable || esFeriado;
+              const esDiaEspecial = false
+              const tipoCodigo = registro.tipo || '';
+              const tipoInfo = this.obtenerTipoInfo(tipoCodigo);
+
+              let montoDia = 0;
+              let descuentoAplicado = "0";
+
+              if (!esDiaEspecial) {
+                if (tipoInfo && tipoInfo.descuento && tipoInfo.descuento !== "") {
+                  const porcentajeDescuento = parseInt(tipoInfo.descuento) || 0;
+                  const descuentoMonto = costeDia * (porcentajeDescuento / 100);
+                  montoDia = costeDia - descuentoMonto;
+                  descuentoAplicado = tipoInfo.descuento;
+                } else if (tipoCodigo === 'A' || tipoCodigo === 'TEX') {
+                  montoDia = costeDia;
+                  descuentoAplicado = "0";
+                } else if (!tipoCodigo || tipoCodigo === '') {
+                  montoDia = 0;
+                  descuentoAplicado = "100";
+                } else {
+                  montoDia = 0;
+                  descuentoAplicado = "100";
+                }
+              } else {
+                montoDia = 0;
+                descuentoAplicado = "100";
+              }
+
+              const horasExtra = registro.horas_extra || 0;
+              const montoExtra = registro.monto_extra || 0;
+              const montoTotalDia = montoDia + montoExtra;
+
+              const registroEnriquecido = {
+                ...registro,
+                coste_dia: costeDia,
+                monto_calculado: montoTotalDia,
+                monto_base: montoDia,
+                descuento_aplicado: descuentoAplicado,
+                es_dia_no_laborable: esDiaNoLaborable,
+                es_feriado: esFeriado,
+                es_dia_especial: esDiaEspecial,
+                tipo_descripcion: tipoInfo?.tipo || '',
+                dia_semana: diaSemana,
+                es_planilla_aprobada: false,
+                estado_planilla: 'PENDIENTE',
+                estado_pago: null,
+                cantidad_dias: 1
+              };
+
+              filtrados.push(registroEnriquecido);
+              indicesAEliminar.push(i);
+            }
+          }
+        }
+
+        // Eliminar del array (de atrás hacia adelante)
+        for (let i = indicesAEliminar.length - 1; i >= 0; i--) {
+          asistenciaRestante.splice(indicesAEliminar[i], 1);
+        }
+
+        resultadosPorMes[mesFormat] = filtrados;
+        console.log(`Mes ${mesFormat}: ${filtrados.length} registros - Restantes: ${asistenciaRestante.length}`);
+
+        if (asistenciaRestante.length === 0) break;
+      }
+      if (asistenciaRestante.length === 0) break;
+    }
+
+    console.log('resultadosPorMes', resultadosPorMes);
+    return resultadosPorMes;
+  }
+
+  generarReportePlanillaPlano(resultadosPorMes: any, organigrama: any[]) {
+    const filasReporte = [];
+    let totalGeneral = 0;
+
+    const nombreMeses = {
+      '01': 'ENERO', '02': 'FEBRERO', '03': 'MARZO', '04': 'ABRIL',
+      '05': 'MAYO', '06': 'JUNIO', '07': 'JULIO', '08': 'AGOSTO',
+      '09': 'SEPTIEMBRE', '10': 'OCTUBRE', '11': 'NOVIEMBRE', '12': 'DICIEMBRE'
+    };
+
+    const descripcionBase = this.tablaRegActividades[this.filSelRegAct]?.descripcion || 'PLANILLA PERSONAL OBRERO';
+
+    const mesesOrdenados = Object.keys(resultadosPorMes).sort((a, b) => {
+      const [mesA, añoA] = a.split('-');
+      const [mesB, añoB] = b.split('-');
+      if (añoA !== añoB) return parseInt(añoA) - parseInt(añoB);
+      return parseInt(mesA) - parseInt(mesB);
+    });
+
+    let contadorMes = 1;
+
+    for (const mesKey of mesesOrdenados) {
+      const [mesNum, año] = mesKey.split('-');
+      const registros = resultadosPorMes[mesKey];
+
+      if (registros.length === 0) continue;
+
+      // Agrupar por cargo y tipo
+      const acumulado = new Map();
+
+      registros.forEach(registro => {
+        const key = `${registro.id_cargo}_${registro.tipo_cargo}`;
+
+        if (!acumulado.has(key)) {
+          acumulado.set(key, {
+            id_cargo: registro.id_cargo,
+            cargo: registro.descripcion_cargo,
+            tipo_cargo: registro.tipo_cargo,
+            cantidad_asignaciones: 0,
+            monto_total: 0,
+            tieneInvalido: false,
+            estados: new Set(),
+            asignaciones_contadas: new Set()
+          });
+        }
+
+        const item = acumulado.get(key);
+
+        const uniqueKey = `${registro.id_asignacion}_${mesKey}`;
+        if (!item.asignaciones_contadas.has(uniqueKey)) {
+          item.asignaciones_contadas.add(uniqueKey);
+          item.cantidad_asignaciones += 1;
+        }
+
+        item.monto_total += registro.monto_calculado || 0;
+
+        if (registro.tipo === 'IN' || registro.tipo === 'OBS') {
+          item.tieneInvalido = true;
+        }
+
+        if (registro.estado_planilla) {
+          item.estados.add(registro.estado_planilla);
+        }
+        if (registro.estado_pago !== undefined && registro.estado_pago !== null) {
+          item.estado_pago = registro.estado_pago;
+        }
+      });
+
+      const mesNombre = `${nombreMeses[mesNum]} ${año}`;
+      const descripcionCompleta = `${descripcionBase} - ${mesNombre}`;
+
+      filasReporte.push({
+        item: `${contadorMes}`,
+        descripcion: descripcionCompleta,
+        und: '',
+        cantidad: '',
+        registro_planilla: '',
+        pu: '',
+        parcial: '',
+        estado: '',
+        es_cabecera: true,
+        mes_key: mesKey,
+        mes_nombre: mesNombre
+      });
+
+      let totalMes = 0;
+
+      for (const [key, value] of acumulado) {
+        totalMes += value.monto_total;
+
+        let precioUnitario = 0;
+        if (value.cantidad_asignaciones > 0) {
+          precioUnitario = value.monto_total / value.cantidad_asignaciones;
+        }
+
+        let estadoCargo = '';
+        if (value.tieneInvalido) {
+          estadoCargo = 'INVALIDO';
+        } else if (value.estados.has('PENDIENTE')) {
+          estadoCargo = 'PENDIENTE';
+        } else if (value.estados.has('APROBADO')) {
+          estadoCargo = 'APROBADO';
+        } else if (value.estados.has('PAGADO')) {
+          estadoCargo = 'PAGADO';
+        } else {
+          estadoCargo = 'PENDIENTE';
+        }
+
+        // ✅ Aquí ya se incluyen id_cargo y tipo_cargo
+        filasReporte.push({
+          item: `MD-${String(filasReporte.length).padStart(2, '0')}`,
+          descripcion: `${value.cargo} - TIPO ${this.convertirTipoCargo(value.tipo_cargo)}`,
+          und: 'DH',
+          cantidad: value.cantidad_asignaciones,
+          registro_planilla: '',
+          pu: ` ${precioUnitario.toFixed(2)}`,
+          parcial: ` ${value.monto_total.toFixed(2)}`,
+          estado: estadoCargo,
+          es_cabecera: false,
+          id_cargo: value.id_cargo,      // ✅ Ya está
+          tipo_cargo: value.tipo_cargo,  // ✅ Ya está
+          mes_key: mesKey
+        });
+      }
+
+      contadorMes++;
+      totalGeneral += totalMes;
+    }
+
+    // filasReporte.push({
+    //   item: '',
+    //   descripcion: '',
+    //   und: '',
+    //   cantidad: '',
+    //   registro_planilla: '',
+    //   pu: '',
+    //   parcial: `${totalGeneral.toFixed(2)}`,
+    //   estado: '',
+    //   es_total: true
+    // });
+
+    return filasReporte;
+  }
+
+  private obtenerTipoInfo(tipoCodigo: string): { codigo: string, tipo: string, descuento: string } | null {
+    const tipos = [
+      { codigo: 'A', tipo: 'ASISTIO', descuento: "0" },
+      { codigo: 'T', tipo: 'TARDANZA', descuento: "10" },
+      { codigo: 'TI', tipo: 'TARDANZA INJUSTIFICADA', descuento: "10" },
+      { codigo: 'TJ', tipo: 'TARDANZA JUSTIFICADA', descuento: "0" },
+      { codigo: 'F', tipo: 'FALTA', descuento: "100" },
+      { codigo: 'FI', tipo: 'FALTA INJUSTIFICADA', descuento: "100" },
+      { codigo: 'FJ', tipo: 'FALTA JUSTIFICADA', descuento: "0" },
+      { codigo: 'FM', tipo: 'DESCANSO MEDICO', descuento: "0" },
+      { codigo: 'FV', tipo: 'VACACIONES', descuento: "0" },
+      { codigo: 'FC', tipo: 'CITA MEDICA', descuento: "0" },
+      { codigo: 'FD', tipo: 'DUELO', descuento: "0" },
+      { codigo: 'PE', tipo: 'PERMISO', descuento: "0" },
+      { codigo: 'OBS', tipo: 'OBSERVADO', descuento: "100" },
+      { codigo: 'IN', tipo: 'INCOMPLETO', descuento: "100" },
+      { codigo: 'TEX', tipo: 'TEXTRA', descuento: "0" }
+    ];
+
+    const encontrado = tipos.find(t => t.codigo === tipoCodigo);
+    return encontrado || null;
+  }
+
+  private convertirTipoCargo(tipo: number): string {
+    const tipos: { [key: number]: string } = {
+      1: 'I',
+      2: 'II',
+      3: 'III',
+      4: 'IV',
+      5: 'V'
+    };
+    return tipos[tipo] || tipo.toString();
+  }
+
+  vincularReporteConRequerimientos() {
+    console.log('=== INICIO vincularReporteConRequerimientos ===');
+
+    if (!this.reporteEstructurado || this.reporteEstructurado.length === 0) {
+      console.warn('reporteEstructurado está vacío, no se puede vincular');
+      return;
+    }
+
+    // Inicializar los campos en cada fila de tablaRequerimientos
+    this.tablaRequerimientos.forEach(req => {
+      req.parcial_usado = 0;
+      req.cantidad_usado = 0;
+      req.precio_usado = 0;
+      req.estado_global = 'PENDIENTE';
+    });
+
+    // Limpiar los campos en reporteEstructurado
+    this.reporteEstructurado.forEach(fila => {
+      if (!fila.es_cabecera && !fila.es_total) {
+        fila.item_requerimiento = null;
+        fila.tiene_relacion = false;
+      }
+    });
+
+    const filaPrincipal = this.tablaRegActividades[this.filSelRegAct];
+
+    if (!filaPrincipal) {
+      console.warn('No hay fila principal seleccionada');
+      return;
+    }
+
+    const relacionesFiltradas = this.requerimientosCargos.filter(relacion =>
+      relacion.id_registro === filaPrincipal.id_registro &&
+      String(relacion.idgrupo) === String(filaPrincipal.idgrupo)
+    );
+
+    const cargoToItemMap = new Map();
+
+    relacionesFiltradas.forEach(relacion => {
+      const cargosVinculados = relacion.cargos.split('|');
+
+      const filaRequerimiento = this.tablaRequerimientos.find(req =>
+        req.id_registro === relacion.id_registro &&
+        String(req.idgrupo) === String(relacion.idgrupo) &&
+        req.idfila === relacion.idfila_des &&
+        req.indrep === relacion.indrep
+      );
+
+      if (filaRequerimiento) {
+        const itemRequerimiento = `E-${filaRequerimiento.idfila}`;
+
+        cargosVinculados.forEach(cargoStr => {
+          const partes = cargoStr.split('-');
+          const id_cargo = parseInt(partes[0]);
+          const tipo_cargo = parseInt(partes[1]);
+          const key = `${id_cargo}_${tipo_cargo}`;
+          cargoToItemMap.set(key, itemRequerimiento);
+        });
+      }
+    });
+
+    this.reporteEstructurado.forEach(fila => {
+      if (!fila.es_cabecera && !fila.es_total && fila.id_cargo !== undefined && fila.tipo_cargo !== undefined) {
+        const key = `${fila.id_cargo}_${fila.tipo_cargo}`;
+        if (cargoToItemMap.has(key)) {
+          fila.tiene_relacion = true;
+          fila.item_requerimiento = cargoToItemMap.get(key);
+        } else {
+          fila.tiene_relacion = false;
+          fila.item_requerimiento = null;
+        }
+      }
+    });
+
+    // Acumular montos por requerimiento y calcular estado
+    relacionesFiltradas.forEach(relacion => {
+      const cargosVinculados = relacion.cargos.split('|');
+
+      const filaRequerimiento = this.tablaRequerimientos.find(req =>
+        req.id_registro === relacion.id_registro &&
+        String(req.idgrupo) === String(relacion.idgrupo) &&
+        req.idfila === relacion.idfila_des &&
+        req.indrep === relacion.indrep
+      );
+
+      if (filaRequerimiento) {
+        let totalParcial = 0;
+        let totalCantidad = 0;
+
+        // 🔥 Variables para calcular el estado - prioridad: ERROR > PENDIENTE > APROBADO > PAGADO
+        let tieneError = false;
+        let tienePendiente = false;
+        let tieneAprobado = false;
+        let tienePagado = false;
+
+        cargosVinculados.forEach(cargoStr => {
+          const partes = cargoStr.split('-');
+          const id_cargo = parseInt(partes[0]);
+          const tipo_cargo = parseInt(partes[1]);
+
+          this.reporteEstructurado.forEach(fila => {
+            if (!fila.es_cabecera && fila.id_cargo === id_cargo && fila.tipo_cargo === tipo_cargo && fila.tiene_relacion) {
+              let parcial = fila.parcial;
+              if (typeof parcial === 'string') {
+                parcial = parseFloat(parcial.replace('S/', '').replace(' ', '').trim()) || 0;
+              } else {
+                parcial = parseFloat(parcial) || 0;
+              }
+
+              totalParcial += parcial;
+              totalCantidad += fila.cantidad || 0;
+
+              // 🔥 Evaluar estado - prioridad más baja (menos prioritaria) prevalece
+              const estado = fila.estado_planilla || fila.estado;
+              if (estado === 'INVALIDO' || fila.tipo === 'IN' || fila.tipo === 'OBS') {
+                tieneError = true;
+              } else if (estado === 'PENDIENTE') {
+                tienePendiente = true;
+              } else if (estado === 'APROBADO') {
+                tieneAprobado = true;
+              } else if (estado === 'PAGADO') {
+                tienePagado = true;
+              }
+            }
+          });
+        });
+
+        filaRequerimiento.parcial_usado = totalParcial;
+        filaRequerimiento.cantidad_usado = totalCantidad;
+
+        if (filaRequerimiento.cantidad_usado > 0) {
+          filaRequerimiento.precio_usado = parseFloat((filaRequerimiento.parcial_usado / filaRequerimiento.cantidad_usado).toFixed(2));
+        } else {
+          filaRequerimiento.precio_usado = 0;
+        }
+
+        filaRequerimiento.saldo = (filaRequerimiento.parcial || 0) - totalParcial;
+
+        // 🔥 Asignar estado_global según prioridad (el estado menos prioritario prevalece)
+        // Orden de prioridad: ERROR > PENDIENTE > APROBADO > PAGADO
+        if (tieneError) {
+          filaRequerimiento.estado_global = 'ERROR';
+        } else if (tienePendiente) {
+          filaRequerimiento.estado_global = 'PENDIENTE';
+        } else if (tieneAprobado) {
+          filaRequerimiento.estado_global = 'APROBADO';
+        } else if (tienePagado) {
+          filaRequerimiento.estado_global = 'PAGADO';
+        } else {
+          filaRequerimiento.estado_global = 'PENDIENTE';
+        }
+
+        console.log(`Estado para ${filaRequerimiento.descripcion}: ${filaRequerimiento.estado_global}`);
+      }
+    });
+
+    console.log('=== FIN vincularReporteConRequerimientos ===');
+  }
+
+  get reporteEstructuradoFiltrado() {
+    // Si no hay fila seleccionada, mostrar todos
+    if (this.filSelReq === null || this.filSelReq === undefined) {
+      return this.reporteEstructurado;
+    }
+
+    // Obtener la fila seleccionada
+    const filaSeleccionada = this.tablaRequerimientos[this.filSelReq];
+    if (!filaSeleccionada) {
+      return this.reporteEstructurado;
+    }
+
+    // 🔥 Si no hay relación, retornar array vacío
+    if (!this.reqcargSeleccionado) {
+      return [];
+    }
+
+    // Obtener los cargos vinculados de la relación
+    const cargosVinculados = this.reqcargSeleccionado.cargos.split('|');
+
+    // Crear un Set con los cargos vinculados
+    const cargosSet = new Set();
+    cargosVinculados.forEach(cargoStr => {
+      const [id_cargo, tipo_cargo] = cargoStr.split('-').map(Number);
+      cargosSet.add(`${id_cargo}_${tipo_cargo}`);
+    });
+
+    // Filtrar reporteEstructurado
+    const resultado = [];
+    const mesesConDetalle = new Set();
+
+    // Primera pasada: identificar meses que tienen detalle filtrado
+    for (const fila of this.reporteEstructurado) {
+      if (!fila.es_cabecera && !fila.es_total) {
+        const key = `${fila.id_cargo}_${fila.tipo_cargo}`;
+        if (cargosSet.has(key)) {
+          mesesConDetalle.add(fila.mes_key);
+        }
+      }
+    }
+
+    // Segunda pasada: construir resultado
+    for (const fila of this.reporteEstructurado) {
+      if (fila.es_total) {
+        resultado.push(fila);
+      } else if (fila.es_cabecera) {
+        // Solo mostrar cabecera si hay detalle en ese mes
+        if (mesesConDetalle.has(fila.mes_key)) {
+          resultado.push(fila);
+        }
+      } else {
+        const key = `${fila.id_cargo}_${fila.tipo_cargo}`;
+        if (cargosSet.has(key)) {
+          resultado.push(fila);
+        }
+      }
+    }
+
+    return resultado;
+  }
+
+  // async procesarAcumuladosPorFilaRegActividad() {
+  //   for (let i = 0; i < this.tablaRegActividades.length; i++) {
+  //     const filaRegAct = this.tablaRegActividades[i];
+
+  //     // Filtrar requerimientos que pertenecen a esta fila
+  //     const requerimientosFila = this.tablaRequerimientosCompleto.filter(req =>
+  //       req.id_registro === filaRegAct.id_registro &&
+  //       String(req.idgrupo) === String(filaRegAct.idgrupo)
+  //     );
+
+  //     // Calcular el total de parcial_usado sumando todos los requerimientos de esta fila
+  //     let totalPresupuestoEjecutado = 0;
+
+  //     for (const req of requerimientosFila) {
+  //       // Buscar relación para este requerimiento
+  //       const relacion = this.requerimientosCargos.find(rel =>
+  //         rel.id_registro === req.id_registro &&
+  //         String(rel.idgrupo) === String(req.idgrupo) &&
+  //         rel.idfila_des === req.idfila &&
+  //         rel.indrep === req.indrep
+  //       );
+
+  //       if (relacion) {
+  //         // Calcular parcial_usado para este requerimiento
+  //         const cargosVinculados = relacion.cargos.split('|');
+  //         let totalParcial = 0;
+
+  //         cargosVinculados.forEach(cargoStr => {
+  //           const [id_cargo, tipo_cargo] = cargoStr.split('-').map(Number);
+
+  //           // Buscar en reporteEstructurado (si ya existe)
+  //           if (this.reporteEstructurado && this.reporteEstructurado.length > 0) {
+  //             this.reporteEstructurado.forEach(fila => {
+  //               if (!fila.es_cabecera && !fila.es_total &&
+  //                 fila.id_cargo === id_cargo && fila.tipo_cargo === tipo_cargo) {
+  //                 let parcial = fila.parcial;
+  //                 if (typeof parcial === 'string') {
+  //                   parcial = parseFloat(parcial.replace('S/', '').replace(' ', '').trim()) || 0;
+  //                 } else {
+  //                   parcial = parseFloat(parcial) || 0;
+  //                 }
+  //                 totalParcial += parcial;
+  //               }
+  //             });
+  //           }
+  //         });
+
+  //         // Guardar en el requerimiento
+  //         req.parcial_usado = totalParcial;
+  //         totalPresupuestoEjecutado += totalParcial;
+  //       } else {
+  //         req.parcial_usado = 0;
+  //       }
+  //     }
+
+  //     // Asignar valores a la fila de tablaRegActividades
+  //     filaRegAct.presupuestoEjecutado = totalPresupuestoEjecutado;
+  //     filaRegAct.saldo = (filaRegAct.reqsol || 0) - totalPresupuestoEjecutado;
+
+  //     // Calcular porcentaje
+  //     if (filaRegAct.reqsol && filaRegAct.reqsol !== 0) {
+  //       filaRegAct.porcentaje = (filaRegAct.saldo / filaRegAct.reqsol) * 100;
+  //     } else {
+  //       filaRegAct.porcentaje = 0;
+  //     }
+
+  //     // Calcular estado de la fila basado en los requerimientos
+  //     filaRegAct.estadoGlobal = this.calcularEstadoFilaRegActividad(requerimientosFila);
+  //   }
+  // }
+
+  calcularEstadoFilaRegActividad(requerimientos: any[]): string {
+    // Jerarquía: PAGADO > APROBADO > PENDIENTE > INVALIDO
+    let tienePagado = false;
+    let tieneAprobado = false;
+    let tienePendiente = false;
+    let tieneInvalido = false;
+
+    for (const req of requerimientos) {
+      if (req.estado === 2) { // CULMINADO
+        tienePagado = true;
+      } else if (req.estado === 1) { // EJECUCION
+        tienePendiente = true;
+      }
+
+      // Verificar si tiene registros inválidos (IN u OBS)
+      if (this.tieneRegistrosInvalidos(req)) {
+        tieneInvalido = true;
+      }
+    }
+
+    // Retornar según jerarquía
+    if (tienePagado) return 'PAGADO';
+    if (tieneAprobado) return 'APROBADO';
+    if (tienePendiente) return 'PENDIENTE';
+    if (tieneInvalido) return 'INVALIDO';
+    return 'PENDIENTE';
+  }
+
+  tieneRegistrosInvalidos(req: any): boolean {
+    // Buscar si en reporteEstructurado hay registros IN u OBS para los cargos relacionados
+    const relacion = this.requerimientosCargos.find(rel =>
+      rel.id_registro === req.id_registro &&
+      String(rel.idgrupo) === String(req.idgrupo) &&
+      rel.idfila_des === req.idfila &&
+      rel.indrep === req.indrep
+    );
+
+    if (!relacion || !this.reporteEstructurado) return false;
+
+    const cargosVinculados = relacion.cargos.split('|');
+
+    for (const cargoStr of cargosVinculados) {
+      const [id_cargo, tipo_cargo] = cargoStr.split('-').map(Number);
+
+      const tieneInvalido = this.reporteEstructurado.some(fila =>
+        !fila.es_cabecera && !fila.es_total &&
+        fila.id_cargo === id_cargo && fila.tipo_cargo === tipo_cargo &&
+        (fila.estado === 'INVALIDO' || fila.tipo === 'IN' || fila.tipo === 'OBS')
+      );
+
+      if (tieneInvalido) return true;
+    }
+
+    return false;
+  }
+
+  async procesarAcumuladosRegActividades() {
+    if (!this.tablaRegActividades || this.tablaRegActividades.length === 0) return;
+    if (!this.reporteEstructurado || this.reporteEstructurado.length === 0) return;
+    if (!this.requerimientosCargos || this.requerimientosCargos.length === 0) return;
+
+    // Crear un mapa de acumulados por cargo desde reporteEstructurado
+    const acumuladoPorCargo = new Map();
+
+    this.reporteEstructurado.forEach(fila => {
+      if (!fila.es_cabecera && !fila.es_total && fila.id_cargo && fila.tipo_cargo) {
+        const key = `${fila.id_cargo}_${fila.tipo_cargo}`;
+        let parcial = fila.parcial;
+        if (typeof parcial === 'string') {
+          parcial = parseFloat(parcial.replace('S/', '').replace(' ', '').trim()) || 0;
+        } else {
+          parcial = parseFloat(parcial) || 0;
+        }
+
+        if (!acumuladoPorCargo.has(key)) {
+          acumuladoPorCargo.set(key, 0);
+        }
+        acumuladoPorCargo.set(key, acumuladoPorCargo.get(key) + parcial);
+      }
+    });
+
+    // Procesar cada fila de tablaRegActividades
+    for (const row of this.tablaRegActividades) {
+      // Filtrar requerimientos que pertenecen a esta fila desde tablaRequerimientosCompleto
+      const requerimientosFila = this.tablaRequerimientosCompleto.filter(req =>
+        req.id_registro === row.id_registro &&
+        String(req.idgrupo) === String(row.idgrupo)
+      );
+
+      let totalPresupuestoEjecutado = 0;
+
+      // Para cada requerimiento, buscar su relación y sumar los cargos
+      for (const req of requerimientosFila) {
+        // Buscar la relación que corresponde a este requerimiento
+        const relacion = this.requerimientosCargos.find(rel =>
+          rel.id_registro === req.id_registro &&
+          String(rel.idgrupo) === String(req.idgrupo) &&
+          rel.idfila_des === req.idfila &&
+          rel.indrep === req.indrep
+        );
+
+        if (relacion && relacion.cargos) {
+          const cargos = relacion.cargos.split('|');
+          for (const cargoStr of cargos) {
+            const [id_cargo, tipo_cargo] = cargoStr.split('-').map(Number);
+            const key = `${id_cargo}_${tipo_cargo}`;
+            totalPresupuestoEjecutado += acumuladoPorCargo.get(key) || 0;
+          }
+        }
+      }
+
+      // Asignar valores a la fila
+      row.presupuestoEjecutado = totalPresupuestoEjecutado;
+      row.saldo = (row.reqsol || 0) - totalPresupuestoEjecutado;
+
+      // Calcular porcentaje
+      if (row.reqsol && row.reqsol !== 0) {
+        row.porcentaje = (row.saldo / row.reqsol) * 100;
+      } else {
+        row.porcentaje = 0;
+      }
+    }
+
+    console.log('tablaRegActividades actualizada:', this.tablaRegActividades);
+  }
+
+  calcularEstadoRequerimiento(filaRequerimiento: any): string {
+    // Buscar la relación para este requerimiento
+    const adqui = this.tablaRegActividades[this.filSelRegAct];
+    const relacion = this.requerimientosCargos.find(ele =>
+      ele.idfila_req == adqui?.idfila &&
+      ele.idfila_des == filaRequerimiento.idfila &&
+      ele.idgrupo == filaRequerimiento.idgrupo &&
+      ele.indrep == filaRequerimiento.indrep
+    );
+
+    if (!relacion || !relacion.cargos) {
+      return 'PENDIENTE';
+    }
+
+    const cargosVinculados = relacion.cargos.split('|');
+
+    // Jerarquía: PAGADO > APROBADO > PENDIENTE > INVALIDO
+    let tienePagado = false;
+    let tieneAprobado = false;
+    let tienePendiente = false;
+    let tieneInvalido = false;
+
+    for (const cargoStr of cargosVinculados) {
+      const [id_cargo, tipo_cargo] = cargoStr.split('-').map(Number);
+
+      // Buscar en reporteEstructurado todas las filas de este cargo
+      const cargosEnReporte = this.reporteEstructurado.filter(fila =>
+        !fila.es_cabecera && !fila.es_total &&
+        fila.id_cargo === id_cargo &&
+        fila.tipo_cargo === tipo_cargo
+      );
+
+      for (const cargo of cargosEnReporte) {
+        const estado = cargo.estado_planilla || cargo.estado;
+
+        if (estado === 'INVALIDO' || cargo.tipo === 'IN' || cargo.tipo === 'OBS') {
+          tieneInvalido = true;
+        } else if (estado === 'PAGADO') {
+          tienePagado = true;
+        } else if (estado === 'APROBADO') {
+          tieneAprobado = true;
+        } else if (estado === 'PENDIENTE') {
+          tienePendiente = true;
+        }
+      }
+    }
+
+    // Retornar según jerarquía
+    if (tienePagado) return 'PAGADO';
+    if (tieneAprobado) return 'APROBADO';
+    if (tienePendiente) return 'PENDIENTE';
+    if (tieneInvalido) return 'INVALIDO';
+
+    return 'PENDIENTE';
+  }
+
 }
 
 

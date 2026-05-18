@@ -1,5 +1,5 @@
 import { ChangeDetectorRef, Component, HostListener, Input, OnDestroy, OnInit, ViewChild, ViewEncapsulation } from '@angular/core';
-import { UntypedFormArray, UntypedFormControl, UntypedFormGroup, Validators, UntypedFormBuilder, AbstractControl, ValidationErrors, ValidatorFn,FormGroup,FormArray} from '@angular/forms';
+import { UntypedFormArray, UntypedFormControl, UntypedFormGroup, Validators, UntypedFormBuilder, AbstractControl, ValidationErrors, ValidatorFn, FormGroup, FormArray } from '@angular/forms';
 import { MatTableDataSource } from '@angular/material/table';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import * as moment from 'moment';
@@ -58,7 +58,7 @@ export class PrincipalComponent implements OnInit, OnDestroy {
   verMenuProyecto: boolean = false;
   idUsuario: any;
   idUadmin: any;
-  esSecund=false;
+  esSecund = false;
   proyectoSeleccionado: any = null;
   active = 0
   mostrarModal: boolean = false;
@@ -96,25 +96,25 @@ export class PrincipalComponent implements OnInit, OnDestroy {
   mask_parcial = '0.2';
   buscatabla = false;
   //juntarproy
-  fuentesel=1;
-  busquedajun='';
-  datasourcePri=[];
-  buscandojun=false;
-  filaselpri=-1;
-  tiposelj='';
-  tvista=0;
-  datproy1:any;
-  datproy2:any;
-  aspecpr1:any;
-  aspecpr2:any;
-  datacomp=[
-    {nombres:'EDICION DEL PRESUPUESTO',permite:'1',mostrar:'1'},
-    {nombres:'DISEÑO DE COSTOS INDIRECTOS',permite:'0',mostrar:'1'},
+  fuentesel = 1;
+  busquedajun = '';
+  datasourcePri = [];
+  buscandojun = false;
+  filaselpri = -1;
+  tiposelj = '';
+  tvista = 0;
+  datproy1: any;
+  datproy2: any;
+  aspecpr1: any;
+  aspecpr2: any;
+  datacomp = [
+    { nombres: 'EDICION DEL PRESUPUESTO', permite: '1', mostrar: '1' },
+    { nombres: 'DISEÑO DE COSTOS INDIRECTOS', permite: '0', mostrar: '1' },
     /* {nombres:'COTIZACION INSUMOS',permite:'0',mostrar:'0'}, */
-    {nombres:'HOJA DE METRADOS',permite:'0',mostrar:'1'},
-    {nombres:'FÓRMULA POLINÓMICA',permite:'0',mostrar:'1'},
-    {nombres:'PROGRAMACION DE OBRA',permite:'0',mostrar:'1'},
-    {nombres:'ESPECIFICACIONES TECNICAS',permite:'0',mostrar:'1'},
+    { nombres: 'HOJA DE METRADOS', permite: '0', mostrar: '1' },
+    { nombres: 'FÓRMULA POLINÓMICA', permite: '0', mostrar: '1' },
+    { nombres: 'PROGRAMACION DE OBRA', permite: '0', mostrar: '1' },
+    { nombres: 'ESPECIFICACIONES TECNICAS', permite: '0', mostrar: '1' },
     /* {nombres:'GESTION DE PROYECTO',permite:'0',mostrar:'0'} */
   ];
 
@@ -164,7 +164,31 @@ export class PrincipalComponent implements OnInit, OnDestroy {
   ];
   dataSourceColor = [];
   cargocompo = true;
-  arrmenuproy=[1,0,0,0,0,0,0,0,0,0];
+  arrmenuproy = [
+    1,  // ID1  - Configuración General
+    1,  // ID2  - Data del Proyecto
+    1,  // ID3  - Convocatorias RR.HH
+    1,  // ID4  - Planilla de RR.HH
+    1,  // ID5  - Registro de Asistencia
+    1,  // ID6  - Solicitante de Procura
+    1,  // ID7  - Logística y Abastecimiento
+    1,  // ID8  - Ingreso y Salida Materiales
+    1,  // ID9  - Reporte de Almacen
+    1,  // ID10 - Ingreso y Salida Equipos
+    1,  // ID11 - Reporte de Equipos
+    1,  // ID12 - Registro de Pagos
+    1,  // ID13 - Reporte Financiero  
+    1,  // ID14 - Registro Metrado    
+    1,  // ID15 - Vincular Actividades
+    1,  // ID16 - Registro Fotográfico
+    1,  // ID17 - Cuaderno de Incidencias
+    1,  // ID18 - Mejora Continua
+    1,  // ID19 - Reporte Valor Ganado
+    1,  // ID20 - Valorización y Metrados
+    1,  // ID21 - Procura y Almacen
+    1,  // ID22 - Recursos Humanos
+    1   // ID23 - Reporte Físico - Financiero
+  ];
 
   constructor(
     private configuracionService: ConfiguracionService,
@@ -199,8 +223,8 @@ export class PrincipalComponent implements OnInit, OnDestroy {
     this.idUsuario = await this.encriptadorService.recuperarlocalstory('idusuario');
     this.idUadmin = await this.encriptadorService.recuperarlocalstory('id_admin');
     let menproy = await this.encriptadorService.recuperarlocalstory('menu_proy');
-    this.arrmenuproy=menproy?JSON.parse(menproy).split('|'):this.arrmenuproy;
-    this.esSecund=this.idUsuario!=this.idUadmin?true:false;
+    this.arrmenuproy = menproy ? JSON.parse(menproy).split('|') : this.arrmenuproy;
+    this.esSecund = this.idUsuario != this.idUadmin ? true : false;
     this.aspectos = JSON.parse(this.encriptadorService.recuperarlocalstory('aspectostablas'));
     this.pintar();
     let decimales = this.encriptadorService.recuperarlocalstory('decimales');
@@ -233,13 +257,13 @@ export class PrincipalComponent implements OnInit, OnDestroy {
       await this.listarGrupos()
       await tabs.reduce(async (a, tab, currentIndex) => {
         await a;
-        await this.crearFormArrayProyecto(tab, currentIndex,tab.solover,tab.escreador)
+        await this.crearFormArrayProyecto(tab, currentIndex, tab.solover, tab.escreador)
       }, Promise.resolve());
       this.mostrar_carga_todo = false
     }
-    this.accesproy$=this._SignalrcustomService.actaccesoproy.subscribe((mensaje) => {
-      if(this.active>=0){
-        if(mensaje==this.formProyecto.value[this.active]?.id_proyecto && this.formProyecto.value[this.active]?.solover==false){
+    this.accesproy$ = this._SignalrcustomService.actaccesoproy.subscribe((mensaje) => {
+      if (this.active >= 0) {
+        if (mensaje == this.formProyecto.value[this.active]?.id_proyecto && this.formProyecto.value[this.active]?.solover == false) {
           this.close(null, this.active);
           window.location.reload();
         }
@@ -288,36 +312,36 @@ export class PrincipalComponent implements OnInit, OnDestroy {
     this.busqueda4 = '';
   }
   //recuperar datos
-  async onListar(cambiatab=false) {
+  async onListar(cambiatab = false) {
     try {
       this.dataSourceorg = [];
       this.buscando = true;
-      if(this.idUadmin!=this.idUsuario){
+      if (this.idUadmin != this.idUsuario) {
         let tabaux = await this.principalService.ListarProyectosSec(this.idUadmin);
-        for(let a=0;a<tabaux.length;a++){
-          if(tabaux[a].nro!=''){
-            if(a==tabaux.length-1){
-              tabaux.splice(a,1);
+        for (let a = 0; a < tabaux.length; a++) {
+          if (tabaux[a].nro != '') {
+            if (a == tabaux.length - 1) {
+              tabaux.splice(a, 1);
               break;
             }
-            else{
-              if(tabaux[a+1].id_grupo!=tabaux[a].id_grupo){
-                tabaux.splice(a,1);
+            else {
+              if (tabaux[a + 1].id_grupo != tabaux[a].id_grupo) {
+                tabaux.splice(a, 1);
                 a--;
               }
             }
           }
         }
-        this.dataSourceorg=tabaux;
+        this.dataSourceorg = tabaux;
         this.buscando = false;
       }
-      else{
+      else {
         this.dataSourceorg = await this.principalService.ListarProyectos(this.idUsuario);
         this.dataSourceorg = await this.ordenarJerarquia(this.dataSourceorg)
         this.buscando = false;
         //si no hay proyectos mover a la pestana sistema?
-        if(cambiatab && this.dataSourceorg.length<5){
-          this.tabSeleccionado=4;
+        if (cambiatab && this.dataSourceorg.length < 5) {
+          this.tabSeleccionado = 4;
         }
       }
     }
@@ -331,11 +355,11 @@ export class PrincipalComponent implements OnInit, OnDestroy {
     }
     const resultado: any[] = [];
     const principales = arr.filter(item => {
-    const esPrincipal = item.id_principal === null||item.id_proyecto==='';
+      const esPrincipal = item.id_principal === null || item.id_proyecto === '';
       return esPrincipal;
     });
     const hijos = arr.filter(item => {
-      const esHijo = item.id_principal !== null&&item.id_proyecto!=='';
+      const esHijo = item.id_principal !== null && item.id_proyecto !== '';
       return esHijo;
     });
     for (const padre of principales) {
@@ -505,8 +529,8 @@ export class PrincipalComponent implements OnInit, OnDestroy {
         if (row.visual) {
           arrmenu = JSON.parse(row.visual);
         }
-        else{
-          arrmenu=this.arrmenuproy;
+        else {
+          arrmenu = this.arrmenuproy;
         }
         const proyecto = {
           id_proyecto: row.id_proyecto,
@@ -520,23 +544,23 @@ export class PrincipalComponent implements OnInit, OnDestroy {
           await this.listarGrupos()
         }
         //tabs, propio editable, los otros 3 no editable(usuario secundario ve proyectos y datos del principal,los datos editados son para el principal?)
-        let opcver=this.tabSeleccionado==1?false:true;
+        let opcver = this.tabSeleccionado == 1 ? false : true;
         //condicionar estado del proyecto, tipo de usuario para editar proyectos del sistema
-        let creador=false;
+        let creador = false;
         let roleus = this.encriptadorService.recuperarlocalstory('role');
-        if(roleus?.includes('ADMINISTRADOR') && this.tabSeleccionado==4){
-          opcver=false;
-          if(row.id_usuario==this.idUsuario){
-            creador=true;
+        if (roleus?.includes('ADMINISTRADOR') && this.tabSeleccionado == 4) {
+          opcver = false;
+          if (row.id_usuario == this.idUsuario) {
+            creador = true;
           }
         }
-        if(this.tabSeleccionado==1 && row.id_usuario==this.idUsuario){
-          creador=true;
+        if (this.tabSeleccionado == 1 && row.id_usuario == this.idUsuario) {
+          creador = true;
         }
-        if(row.estado=='1'){
-          opcver=true;
+        if (row.estado == '1') {
+          opcver = true;
         }
-        await this.crearFormArrayProyecto(proyecto, this.formProyecto.value.length,opcver,creador)
+        await this.crearFormArrayProyecto(proyecto, this.formProyecto.value.length, opcver, creador)
         this.variablesGlobalesService.arrayTabs.next(this.formArrayProyecto.value)
         localStorage.setItem('tabs', JSON.stringify(this.formProyecto.value))
       }
@@ -579,16 +603,16 @@ export class PrincipalComponent implements OnInit, OnDestroy {
   }
   async openModalProyecto(datos = null, editar = null, ver = null) {
     let maxproys = this.encriptadorService.recuperarlocalstory('maxproy');
-    if(!isNaN(Number(maxproys))){
-      let cont=0;
-      for(let rows1 of this.dataSourceorg){
-        if(rows1.id_proyecto!=''){
+    if (!isNaN(Number(maxproys))) {
+      let cont = 0;
+      for (let rows1 of this.dataSourceorg) {
+        if (rows1.id_proyecto != '') {
           cont++;
         }
       }
-      cont=cont+this.datasourcepap.length;
-      if(cont>=maxproys){
-        this.toaster.error('Ya no puede crear proyectos. Su maximo permitido es '+maxproys+' incluidos los de la papelera.', 'Advertencia', { closeButton: false, positionClass: 'toast-bottom-right', timeOut: 10000 })
+      cont = cont + this.datasourcepap.length;
+      if (cont >= maxproys) {
+        this.toaster.error('Ya no puede crear proyectos. Su maximo permitido es ' + maxproys + ' incluidos los de la papelera.', 'Advertencia', { closeButton: false, positionClass: 'toast-bottom-right', timeOut: 10000 })
         return
       }
     }
@@ -626,7 +650,7 @@ export class PrincipalComponent implements OnInit, OnDestroy {
     }
   }
   async listarGrupos() {
-    const input = { activo: '1', id_usuario: this.idUsuario,fuente:1 }
+    const input = { activo: '1', id_usuario: this.idUsuario, fuente: 1 }
     this.grupos = await this.configuracionService.listarGrupoProyecto(input);
   }
 
@@ -638,7 +662,7 @@ export class PrincipalComponent implements OnInit, OnDestroy {
   async eliminarProyecto(row) {
     try {
       if (row.id_proyecto !== "") {
-        const sw = await SwalService.option3Check('Advertencia', 'Esta seguro que desea eliminar el Proyecto? ', 'Permanente','Papelera')
+        const sw = await SwalService.option3Check('Advertencia', 'Esta seguro que desea eliminar el Proyecto? ', 'Permanente', 'Papelera')
         if (sw.isConfirmed) {//permanente
           let arrproyab = (this.formArrayProyecto.value.formProyecto);
           let exis = arrproyab.findIndex(ele => ele.id_proyecto == row.id_proyecto)
@@ -670,7 +694,7 @@ export class PrincipalComponent implements OnInit, OnDestroy {
       }
     } catch (err) {
       console.log(err)
-      SwalService.error('Advertencia',err.mensaje)
+      SwalService.error('Advertencia', err.mensaje)
     }
   }
   async verDetalleProyecto(row) {
@@ -685,7 +709,8 @@ export class PrincipalComponent implements OnInit, OnDestroy {
     this.modalDetalleProyecto.hide();
   }
   ////////////////////////////////////prueba ////////////////////7
-  async crearFormArrayProyecto(proyecto, nrotab,opcver,creador) {
+  async crearFormArrayProyecto(proyecto, nrotab, opcver, creador) {
+
     const datosProyecto = await this.recuperarDatosProyecto(proyecto.id_proyecto)
     const aspectosGenerales = await this.crearFormAspectosGenerales(datosProyecto, nrotab)
     const datosTab = new UntypedFormGroup({
@@ -698,11 +723,10 @@ export class PrincipalComponent implements OnInit, OnDestroy {
       solover: new UntypedFormControl(opcver),//menu-item
       aspectab: new UntypedFormControl(proyecto.aspectab),//menu-item
       decimal: new UntypedFormControl(proyecto.decimal),//menu-item
-      escreador:new UntypedFormControl(creador)
+      escreador: new UntypedFormControl(creador)
     })
     this.formProyecto.push(datosTab)
     // await this.listarSubmetrado(nrotab)// q tan necesario es el nuevo proyecto
-    // console.log('this.formProyecto', this.formProyecto.value);
   }
   async crearFormAspectosGenerales(datosProyecto, nroProyecto = null): Promise<UntypedFormGroup> {
     const tablaPrueba = new UntypedFormGroup({
@@ -869,10 +893,10 @@ export class PrincipalComponent implements OnInit, OnDestroy {
       let encontrado1 = false
       let encontrado = false
       const aspectos = await this.principalService.ListarAspectosDiasProy({ id_proyecto: formProyecto.value.id_proyecto })
-      if(aspectos[0].length>0){
-        let diasnolabo=aspectos[0][0].nolabo1?(aspectos[0][0].nolabo1.toString().includes('|')?aspectos[0][0].nolabo1.toString().split('|'):[aspectos[0][0].nolabo1.toString()]):[];
+      if (aspectos[0].length > 0) {
+        let diasnolabo = aspectos[0][0].nolabo1 ? (aspectos[0][0].nolabo1.toString().includes('|') ? aspectos[0][0].nolabo1.toString().split('|') : [aspectos[0][0].nolabo1.toString()]) : [];
         if (aspectos[0][0]) {
-          encontrado1 = diasnolabo.find(ele => ele==nombreDia.toUpperCase())?true:false;
+          encontrado1 = diasnolabo.find(ele => ele == nombreDia.toUpperCase()) ? true : false;
         }
       }
       if (aspectos[1]) {
@@ -884,7 +908,7 @@ export class PrincipalComponent implements OnInit, OnDestroy {
         SwalService.error('Advertencia', 'Datos Incompletos')
         return
       } else if (fechainicioInvalida) {
-        this.toaster.error('La Fecha Inicio Seleccionada es  dia no laborable', 'Advertencia', {closeButton: false,positionClass: 'toast-bottom-right',timeOut: 5000})
+        this.toaster.error('La Fecha Inicio Seleccionada es  dia no laborable', 'Advertencia', { closeButton: false, positionClass: 'toast-bottom-right', timeOut: 5000 })
       } else {
         this.mostrar_carga_todo = true;
         const datos_recuperado = (aspectos_generales.get('datos_recuperado') as UntypedFormGroup)
@@ -894,12 +918,12 @@ export class PrincipalComponent implements OnInit, OnDestroy {
           const sw = await SwalService.multiple('Estas seguro?', 'El cambio de fecha inicio modificara la programación')
           if (sw.isConfirmed) {
             let progratemp = await this.principalService.listarCambiosTemporalesProgramacion({ id_proyecto: formProyecto.value.id_proyecto, id_usuario: '' })
-            if(progratemp){
+            if (progratemp) {
               this.toaster.error('Existen cambios que no se guardaron en Programación. No puede hacer cambios hasta guardar los de Programación.', 'Advertencia', { closeButton: false, positionClass: 'toast-bottom-right', timeOut: 5000 });
-              this.mostrar_carga_todo=false;
+              this.mostrar_carga_todo = false;
               return;
             }
-            else{
+            else {
               const objeto = {
                 id_proyecto: formProyecto.value.id_proyecto,
                 duracion: '',
@@ -909,7 +933,7 @@ export class PrincipalComponent implements OnInit, OnDestroy {
               }
               const response = await this.principalService.fechaDespuesDuracion(objeto)
               const diasModificados = fiAnterior < fiform ? Number(response.duracion) * 1 : Number(response.duracion) * -1
-              await this.principalService.desplazarProgramacion({ id_proyecto: formProyecto.value.id_proyecto, diasmodificados: diasModificados,iniproy:datosProyecto.fecha_inicio})
+              await this.principalService.desplazarProgramacion({ id_proyecto: formProyecto.value.id_proyecto, diasmodificados: diasModificados, iniproy: datosProyecto.fecha_inicio })
             }
           } else {
             await this.cancelarEditarDatosProyecto(formProyecto.value.indice_tab, datos_recuperado.value)
@@ -917,7 +941,7 @@ export class PrincipalComponent implements OnInit, OnDestroy {
             return
           }
         }
-        let descpasa=datosProyecto.descripcion.toString().toUpperCase().trim().replace(/\s+/g, ' ')//quitar saltos y espacios, solo mayuscula
+        let descpasa = datosProyecto.descripcion.toString().toUpperCase().trim().replace(/\s+/g, ' ')//quitar saltos y espacios, solo mayuscula
         const modificarProyecto = {
           id_proyecto: formProyecto.value.id_proyecto,
           cui: '',
@@ -949,7 +973,7 @@ export class PrincipalComponent implements OnInit, OnDestroy {
           const aspectos_generales = (formProyecto.get('aspectos_generales') as UntypedFormGroup)
           const datosRecuperado = (aspectos_generales.get('datos_recuperado') as UntypedFormControl)
           datosRecuperado.setValue(response)
-          formProyecto.get('solover').setValue(datosProyecto.estado=='1'?true:false)
+          formProyecto.get('solover').setValue(datosProyecto.estado == '1' ? true : false)
           localStorage.setItem('tabs', JSON.stringify(this.formProyecto.value))
           this.onListar();
         } else {
@@ -986,7 +1010,7 @@ export class PrincipalComponent implements OnInit, OnDestroy {
     }
   }
   async recuperarDatosProyecto(idProyecto) {
-    const detalleProyecto = await this.principalService.recuperarDatosProyecto({id_proyecto: idProyecto})
+    const detalleProyecto = await this.principalService.recuperarDatosProyecto({ id_proyecto: idProyecto })
     return detalleProyecto
   }
   async listarSubmetrado(nroProyecto) {
@@ -1001,16 +1025,16 @@ export class PrincipalComponent implements OnInit, OnDestroy {
       let resind = await this.presuservice.ListarPresuIndirecto({ id_usuario: this.idUsuario, id_proyecto: datos_recuperado.value.id_proyecto, titulo: "0" });
       let arrind = [];
       if (resind.id == "1") {
-        let tablapas=JSON.parse(resind.tabla);
+        let tablapas = JSON.parse(resind.tabla);
         arrind = tablapas[0];
       }
-      for(let row of dataSource){
-        row.manoobra=this.formService.redondeo(Number(row.manoobra),this.dec_parcial)
-        row.equipos=this.formService.redondeo(Number(row.equipos),this.dec_parcial)
-        row.materiales=this.formService.redondeo(Number(row.materiales),this.dec_parcial)
-        row.subcontratos=this.formService.redondeo(Number(row.subcontratos),this.dec_parcial)
-        row.subpartidas=this.formService.redondeo(Number(row.subpartidas),this.dec_parcial)
-        row.total=this.formService.redondeo(Number(row.total),this.dec_parcial)
+      for (let row of dataSource) {
+        row.manoobra = this.formService.redondeo(Number(row.manoobra), this.dec_parcial)
+        row.equipos = this.formService.redondeo(Number(row.equipos), this.dec_parcial)
+        row.materiales = this.formService.redondeo(Number(row.materiales), this.dec_parcial)
+        row.subcontratos = this.formService.redondeo(Number(row.subcontratos), this.dec_parcial)
+        row.subpartidas = this.formService.redondeo(Number(row.subpartidas), this.dec_parcial)
+        row.total = this.formService.redondeo(Number(row.total), this.dec_parcial)
       }
       tabla1.data = dataSource
       tabla.get('data_source').setValue(dataSource)//corregir error stringfy
@@ -1034,12 +1058,12 @@ export class PrincipalComponent implements OnInit, OnDestroy {
         if (row.tipo_registro != '3')
           aux.push(row);
       }
-      tabla.get('totmano').setValue(this.formService.redondeo(tot1,this.dec_parcial));
-      tabla.get('totmat').setValue(this.formService.redondeo(tot2,this.dec_parcial));
-      tabla.get('totequi').setValue(this.formService.redondeo(tot3,this.dec_parcial));
-      tabla.get('totsubc').setValue(this.formService.redondeo(tot4,this.dec_parcial));
-      tabla.get('totsubp').setValue(this.formService.redondeo(tot5,this.dec_parcial));
-      tabla.get('totdir').setValue(this.formService.redondeo(totdir,this.dec_parcial));
+      tabla.get('totmano').setValue(this.formService.redondeo(tot1, this.dec_parcial));
+      tabla.get('totmat').setValue(this.formService.redondeo(tot2, this.dec_parcial));
+      tabla.get('totequi').setValue(this.formService.redondeo(tot3, this.dec_parcial));
+      tabla.get('totsubc').setValue(this.formService.redondeo(tot4, this.dec_parcial));
+      tabla.get('totsubp').setValue(this.formService.redondeo(tot5, this.dec_parcial));
+      tabla.get('totdir').setValue(this.formService.redondeo(totdir, this.dec_parcial));
       tabla.get('totind').setValue(aux);
       //tabla.get('totalproy').setValue(totindir+totdir);
       this.buscatabla = false;
@@ -1155,14 +1179,14 @@ export class PrincipalComponent implements OnInit, OnDestroy {
                   this.ActfilCambios(tabla.value.data_source[i].accion == 1 ? tabla.value.inserta : tabla.value.modifica, tabla.value.data_source[i]);
                 }
               }
-              if(indins==-1){ indins=tabla.value.data_source.length; }
+              if (indins == -1) { indins = tabla.value.data_source.length; }
             }
           }
           let indini = indins;
-          let indmax=0;
-          for (let row of tabla.value.data_source){
-            if(row.indice>indmax)
-              indmax=row.indice;
+          let indmax = 0;
+          for (let row of tabla.value.data_source) {
+            if (row.indice > indmax)
+              indmax = row.indice;
           }
           for (let filaadd of result.datos) {
             /* let filaagrega=this.nuevafilapri(this.ultindice++,itemini,filaadd.descripcion,'','',null,null,0,null,'',null,'',filaadd.id_partida,0,0,1,1,this.id_user,filaadd.descripcion); */
@@ -1271,14 +1295,14 @@ export class PrincipalComponent implements OnInit, OnDestroy {
           filabaj.item = itemsub;
           //fila modificada
           tabla.value.data_source[indact] = filabaj;
-          if(tabla.value.data_source[indact].accion!=1)
+          if (tabla.value.data_source[indact].accion != 1)
             tabla.value.data_source[indact].accion = 2;
           this.ActfilCambios(tabla.value.data_source[indact].accion == 1 ? tabla.value.inserta : tabla.value.modifica, tabla.value.data_source[indact]);
           //fila modificada
           tabla.value.data_source[indact - 1] = filasub;
-          if(tabla.value.data_source[indact - 1].accion!=1)
+          if (tabla.value.data_source[indact - 1].accion != 1)
             tabla.value.data_source[indact - 1].accion = 2;
-          this.ActfilCambios(tabla.value.data_source[indact-1].accion == 1 ? tabla.value.inserta : tabla.value.modifica, tabla.value.data_source[indact - 1]);
+          this.ActfilCambios(tabla.value.data_source[indact - 1].accion == 1 ? tabla.value.inserta : tabla.value.modifica, tabla.value.data_source[indact - 1]);
           tabla.value.filaSeleccionada = indact - 1;
           tabla.value.editado = true;
         }
@@ -1318,12 +1342,12 @@ export class PrincipalComponent implements OnInit, OnDestroy {
           filabaj.item = itemsub;
           //fila modificada
           tabla.value.data_source[indact + 1] = filabaj;
-          if(tabla.value.data_source[indact + 1].accion!=1)
+          if (tabla.value.data_source[indact + 1].accion != 1)
             tabla.value.data_source[indact + 1].accion = 2;
           this.ActfilCambios(tabla.value.data_source[indact + 1].accion == 1 ? tabla.value.inserta : tabla.value.modifica, tabla.value.data_source[indact + 1]);
           //fila modificada
           tabla.value.data_source[indact] = filasub;
-          if(tabla.value.data_source[indact].accion!=1)
+          if (tabla.value.data_source[indact].accion != 1)
             tabla.value.data_source[indact].accion = 2;
           this.ActfilCambios(tabla.value.data_source[indact].accion == 1 ? tabla.value.inserta : tabla.value.modifica, tabla.value.data_source[indact]);
           tabla.value.filaSeleccionada = indact + 1;
@@ -1431,7 +1455,7 @@ export class PrincipalComponent implements OnInit, OnDestroy {
         let resind = await this.presuservice.ListarPresuIndirecto({ id_usuario: this.idUsuario, id_proyecto: datos_recuperado.value.id_proyecto, titulo: "0" });
         let arrind = [];
         if (resind.id == "1") {
-          let tablapas=JSON.parse(resind.tabla);
+          let tablapas = JSON.parse(resind.tabla);
           arrind = tablapas[0];
         }
         let aux = [];
@@ -1480,65 +1504,65 @@ export class PrincipalComponent implements OnInit, OnDestroy {
       this.toaster.error('No se pudo realizar la operación.', 'Advertencia', { closeButton: false, positionClass: 'toast-bottom-right', timeOut: 5000 });
     }
   }
-  async CalculaFechaFin(nrotab: any,valmod:any) {
+  async CalculaFechaFin(nrotab: any, valmod: any) {
     let formProyecto = (this.formProyecto.controls[nrotab] as UntypedFormGroup)
     let aspectos_generales = (formProyecto.get('aspectos_generales') as UntypedFormGroup)
     let datosProyecto = (aspectos_generales.get('datos_proyecto') as UntypedFormGroup)
-    let fiform = datosProyecto.value.fecha_inicio!=''?moment(datosProyecto.value.fecha_inicio).format('YYYY-MM-DD'):'';
-    let fcform = datosProyecto.value.fecha_culmina!=''?moment(datosProyecto.value.fecha_culmina).format('YYYY-MM-DD'):'';
+    let fiform = datosProyecto.value.fecha_inicio != '' ? moment(datosProyecto.value.fecha_inicio).format('YYYY-MM-DD') : '';
+    let fcform = datosProyecto.value.fecha_culmina != '' ? moment(datosProyecto.value.fecha_culmina).format('YYYY-MM-DD') : '';
     let plazoform = datosProyecto.value.plazo
-    if(valmod==0){//plazo
-      let plazores=!isNaN(Number(plazoform))?plazoform:1;
-      if(plazores==null || plazores=='' || plazores==0){
+    if (valmod == 0) {//plazo
+      let plazores = !isNaN(Number(plazoform)) ? plazoform : 1;
+      if (plazores == null || plazores == '' || plazores == 0) {
         datosProyecto.get('fecha_culmina').setValue(moment(fiform).format('YYYY-MM-DD'))
         datosProyecto.get('plazo').setValue(1);
       }
-      else{
-        if(fiform){
-          let fechaf=new Date(fiform);
-          this.calculandofecha=true;
-          fechaf.setDate(fechaf.getDate()+Number(plazores))
-          this.calculandofecha=false;
+      else {
+        if (fiform) {
+          let fechaf = new Date(fiform);
+          this.calculandofecha = true;
+          fechaf.setDate(fechaf.getDate() + Number(plazores))
+          this.calculandofecha = false;
           datosProyecto.get('fecha_culmina').setValue(moment(fechaf).format('YYYY-MM-DD'))
         }
       }
-    }else if(valmod==1){//inicio
-      if(fiform){
+    } else if (valmod == 1) {//inicio
+      if (fiform) {
         const nombDiaFi = moment(fiform).format('dddd').toUpperCase()
         const fechai = moment(fiform).format('YYYY-MM-DD')
- 
-        if(this.listaFeriados.includes(fechai) || this.arrayDiasNoLab.includes(nombDiaFi)) {
+
+        if (this.listaFeriados.includes(fechai) || this.arrayDiasNoLab.includes(nombDiaFi)) {
           datosProyecto.get('fecha_culmina').setValue(this.fechIniAlm)
           this.toaster.error('La fecha ingresada esta registrada como dia no laborable', 'Advertencia', { closeButton: false, positionClass: 'toast-bottom-right', timeOut: 5000 })
           return
         }
 
-        let plazores=!isNaN(Number(plazoform))?plazoform:0;
-        if(plazores==null || plazores==''){
+        let plazores = !isNaN(Number(plazoform)) ? plazoform : 0;
+        if (plazores == null || plazores == '') {
           datosProyecto.get('fecha_culmina').setValue(moment(fiform).format('YYYY-MM-DD'))
         }
-        else{
-          let fechaf=new Date(fiform);
-          this.calculandofecha=true;
-          fechaf.setDate(fechaf.getDate()+Number(plazores))
-          this.calculandofecha=false;
+        else {
+          let fechaf = new Date(fiform);
+          this.calculandofecha = true;
+          fechaf.setDate(fechaf.getDate() + Number(plazores))
+          this.calculandofecha = false;
           datosProyecto.get('fecha_culmina').setValue(moment(fechaf).format('YYYY-MM-DD'))
         }
       }
-    }else if(valmod==2){//culmina
-      if(fcform!=''){
-        if(fiform!=''){
+    } else if (valmod == 2) {//culmina
+      if (fcform != '') {
+        if (fiform != '') {
           //fecha culmina menor, error, asignar fecha actual plazo 1 dia
           let fechaa = moment(fiform);
           let fechab = moment(fcform);
-          let difdias=fechab.diff(fechaa, 'days');
-          if(difdias<0){
+          let difdias = fechab.diff(fechaa, 'days');
+          if (difdias < 0) {
             this.toaster.error('La Fecha de Culminación no puede ser menor a la Fecha Inicial.', 'Advertencia', { closeButton: false, positionClass: 'toast-bottom-right', timeOut: 5000 })
             datosProyecto.get('fecha_culmina').setValue(moment(fiform).format('YYYY-MM-DD'))
             datosProyecto.get('plazo').setValue(1);
           }
-          else{
-            datosProyecto.get('plazo').setValue(difdias+1)
+          else {
+            datosProyecto.get('plazo').setValue(difdias + 1)
           }
         }
       }
@@ -1567,7 +1591,7 @@ export class PrincipalComponent implements OnInit, OnDestroy {
       this.fila_sel2 = -1;
       this.fila_sel4 = -1;
     }
-    else if(event.nextId == 4){
+    else if (event.nextId == 4) {
       this.fila_sel = -1;
       this.fila_sel2 = -1;
       this.fila_sel3 = -1;
@@ -1724,20 +1748,20 @@ export class PrincipalComponent implements OnInit, OnDestroy {
   async DuplicarProye(row: any) {
     try {
       let maxproys = this.encriptadorService.recuperarlocalstory('maxproy');
-      if(!isNaN(Number(maxproys))){
-        let cont=0;
-        for(let rows1 of this.dataSourceorg){
-          if(rows1.id_proyecto!=''){
+      if (!isNaN(Number(maxproys))) {
+        let cont = 0;
+        for (let rows1 of this.dataSourceorg) {
+          if (rows1.id_proyecto != '') {
             cont++;
           }
         }
-        cont=cont+this.datasourcepap.length;
-        if(cont>=maxproys){
-          this.toaster.error('Ya no puede crear proyectos. Su maximo permitido es '+maxproys+' incluidos los de la papelera.', 'Advertencia', { closeButton: false, positionClass: 'toast-bottom-right', timeOut: 10000 })
+        cont = cont + this.datasourcepap.length;
+        if (cont >= maxproys) {
+          this.toaster.error('Ya no puede crear proyectos. Su maximo permitido es ' + maxproys + ' incluidos los de la papelera.', 'Advertencia', { closeButton: false, positionClass: 'toast-bottom-right', timeOut: 10000 })
           return
         }
       }
-      if(this.tabSeleccionado==2){
+      if (this.tabSeleccionado == 2) {
         this.mostrar_carga_todo = true;
         let resp = await this.principalService.FilaProyectoComp({ id_proyecto: row.id_proyecto, id_usuario: row.id_usuario, id_secundario: this.idUsuario });//cambiar con metodo para compartidos
         this.mostrar_carga_todo = false;
@@ -1747,20 +1771,20 @@ export class PrincipalComponent implements OnInit, OnDestroy {
           return
         }
       }
-      this.mostrar_carga_todo=true;
+      this.mostrar_carga_todo = true;
       await this.listarClasificacionProyectos()
       await this.listarGrupos()
       const departamentos = await this.listardepa()
-      this.mostrar_carga_todo=false;
+      this.mostrar_carga_todo = false;
       const modalRef = this.modalService.open(ComparteproyComponent, { size: 'lg', backdrop: 'static', windowClass: 'pcoded', keyboard: false })
       modalRef.componentInstance.rowproy = row;
       modalRef.componentInstance.opcion = "duplica";
-      modalRef.componentInstance.asignaund = this.tabSeleccionado==1?0:1;
+      modalRef.componentInstance.asignaund = this.tabSeleccionado == 1 ? 0 : 1;
       modalRef.componentInstance.clasificaciones = this.clasificaciones
       modalRef.componentInstance.grupos = this.grupos
       modalRef.componentInstance.departamentos = departamentos
       const result = await modalRef.result
-      if(result=='listar'){
+      if (result == 'listar') {
         this.onListar();
       }
     }
@@ -1776,8 +1800,8 @@ export class PrincipalComponent implements OnInit, OnDestroy {
     try {
       this.datasourcesis = [];
       this.buscando4 = true;
-      let res = await this.presuservice.BuscarProyAddPresu({ id_usuario: this.idUsuario,fuente:'0',tipo_proy:'',id_proyecto:'' });//fuente 1 proyectos usuario
-      this.datasourcesis=res??[];
+      let res = await this.presuservice.BuscarProyAddPresu({ id_usuario: this.idUsuario, fuente: '0', tipo_proy: '', id_proyecto: '' });//fuente 1 proyectos usuario
+      this.datasourcesis = res ?? [];
       this.buscando4 = false;
     }
     catch {
@@ -1994,45 +2018,45 @@ export class PrincipalComponent implements OnInit, OnDestroy {
       SwalService.error('Advertencia', 'Ocurrio una excepción al momento de realizar la operación.')
     }
   }
-  reasignarColor(eve:any,ind:any){
-    this.dataSourceColor[ind].presupuestoletra=eve.target.value;
+  reasignarColor(eve: any, ind: any) {
+    this.dataSourceColor[ind].presupuestoletra = eve.target.value;
   }
-  Sincolor1(eve:any,ind:any){
-    if(eve.target.checked){
-      this.dataSourceColor[ind].presupuesto='none';
+  Sincolor1(eve: any, ind: any) {
+    if (eve.target.checked) {
+      this.dataSourceColor[ind].presupuesto = 'none';
     }
-    else{
-      this.dataSourceColor[ind].presupuesto='#ffffff';
+    else {
+      this.dataSourceColor[ind].presupuesto = '#ffffff';
     }
   }
-  reasignarColor1(eve:any,ind:any){
-    this.dataSourceColor[ind].presupuesto=eve.target.value;
+  reasignarColor1(eve: any, ind: any) {
+    this.dataSourceColor[ind].presupuesto = eve.target.value;
   }
   async enviarDataImpresion(index) {
     const tablaprueba = this.formProyecto.value[index].aspectos_generales.tabla_prueba
     const tabla1 = this.formProyecto.value[index].aspectos_generales.tabla_prueba?.data_source
     const arrayHeader = ['ITEM', 'DETALLE DE ESTRUCTURA', 'MANO DE OBRA', 'MATERIALES', 'EQUIPOS', 'SUB CONTRATOS', 'SUB PARTIDAS', 'TOTAL']
     const arrayKeys = ['item', 'descripcion', 'manoobra', 'materiales', 'equipos', 'subcontratos', 'subpartidas', 'total']
-    const arralig=['center','left','right','right','right','right','right','right'];
+    const arralig = ['center', 'left', 'right', 'right', 'right', 'right', 'right', 'right'];
     const tablaSubPresupuesto = tabla1
-    let monedapas=this.formProyecto.value[index].aspectos_generales.datos_recuperado.moneda?(this.formProyecto.value[index].aspectos_generales.datos_recuperado.moneda.toString()=='1'?'$':'S/'):'S/';
+    let monedapas = this.formProyecto.value[index].aspectos_generales.datos_recuperado.moneda ? (this.formProyecto.value[index].aspectos_generales.datos_recuperado.moneda.toString() == '1' ? '$' : 'S/') : 'S/';
     let tablaTotales = []
     const obj = [
-      { text: 'COSTO DIRECTO', colSpan: 2 , tipoletra:'3',color:'',fondo:'',alinea:'left'},
-      { text: tablaprueba.totmano, colSpan: 1, tipoletra:'3',color:'',fondo:'',alinea:'right' },
-      { text: tablaprueba.totmat, colSpan: 1, tipoletra:'3',color:'',fondo:'',alinea:'right' },
-      { text: tablaprueba.totequi, colSpan: 1, tipoletra:'3',color:'',fondo:'',alinea:'right' },
-      { text: tablaprueba.totsubc, colSpan: 1, tipoletra:'3',color:'',fondo:'',alinea:'right' },
-      { text: tablaprueba.totsubp, colSpan: 1, tipoletra:'3',color:'',fondo:'',alinea:'right' },
-      { text: tablaprueba.totdir, colSpan: 1, tipoletra:'3',color:'',fondo:'',alinea:'right' }
+      { text: 'COSTO DIRECTO', colSpan: 2, tipoletra: '3', color: '', fondo: '', alinea: 'left' },
+      { text: tablaprueba.totmano, colSpan: 1, tipoletra: '3', color: '', fondo: '', alinea: 'right' },
+      { text: tablaprueba.totmat, colSpan: 1, tipoletra: '3', color: '', fondo: '', alinea: 'right' },
+      { text: tablaprueba.totequi, colSpan: 1, tipoletra: '3', color: '', fondo: '', alinea: 'right' },
+      { text: tablaprueba.totsubc, colSpan: 1, tipoletra: '3', color: '', fondo: '', alinea: 'right' },
+      { text: tablaprueba.totsubp, colSpan: 1, tipoletra: '3', color: '', fondo: '', alinea: 'right' },
+      { text: tablaprueba.totdir, colSpan: 1, tipoletra: '3', color: '', fondo: '', alinea: 'right' }
     ]
     tablaTotales.push(obj)
     for (const iterator of tablaprueba.totind) {
       const obj2 = [
-        { text: iterator.descripcion, colSpan: 4, tipoletra:iterator.tipo_registro=='2' || iterator.tipo_registro=='3'?'3':'',color:'',fondo:'',alinea:'left' },
-        { text: iterator.abrev, colSpan: 1, tipoletra:iterator.tipo_registro=='2' || iterator.tipo_registro=='3'?'3':'',color:'',fondo:'',alinea:'center' },
-        { text: iterator.formula, colSpan: 1, tipoletra:iterator.tipo_registro=='2' || iterator.tipo_registro=='3'?'3':'',color:'',fondo:'',alinea:'center' },
-        { text: this.formService.redondeo(Number(iterator.monto.toString()),this.dec_parcial), colSpan: 2, tipoletra:iterator.tipo_registro=='2' || iterator.tipo_registro=='3'?'3':'',color:'',fondo:'',alinea:'right' },
+        { text: iterator.descripcion, colSpan: 4, tipoletra: iterator.tipo_registro == '2' || iterator.tipo_registro == '3' ? '3' : '', color: '', fondo: '', alinea: 'left' },
+        { text: iterator.abrev, colSpan: 1, tipoletra: iterator.tipo_registro == '2' || iterator.tipo_registro == '3' ? '3' : '', color: '', fondo: '', alinea: 'center' },
+        { text: iterator.formula, colSpan: 1, tipoletra: iterator.tipo_registro == '2' || iterator.tipo_registro == '3' ? '3' : '', color: '', fondo: '', alinea: 'center' },
+        { text: this.formService.redondeo(Number(iterator.monto.toString()), this.dec_parcial), colSpan: 2, tipoletra: iterator.tipo_registro == '2' || iterator.tipo_registro == '3' ? '3' : '', color: '', fondo: '', alinea: 'right' },
       ]
       tablaTotales.push(obj2)
     }
@@ -2040,152 +2064,152 @@ export class PrincipalComponent implements OnInit, OnDestroy {
       datos_proyecto: this.formProyecto.value[index].aspectos_generales.datos_recuperado,
       header: arrayHeader,
       keys_body: arrayKeys,
-      col_alig:arralig,
+      col_alig: arralig,
       tabla: tablaSubPresupuesto,
       tabla2: tablaTotales,
-      concat_tabla2:true,
-      tipo_reporte:0,
-      moneda:monedapas,
-      titulo:'RESUMEN DEL PROYECTO'
+      concat_tabla2: true,
+      tipo_reporte: 0,
+      moneda: monedapas,
+      titulo: 'RESUMEN DEL PROYECTO'
     }
-    const modalRef = this.modalService.open(ReportesComponent,{size: 'lg modalgrande',backdrop: 'static',windowClass: 'pcoded',keyboard: false});
+    const modalRef = this.modalService.open(ReportesComponent, { size: 'lg modalgrande', backdrop: 'static', windowClass: 'pcoded', keyboard: false });
     modalRef.componentInstance.datos = datos;
     const result = await modalRef.result;
   }
-  async JuntarProy(){
-    this.tvista=0;
-    if((this.fila_sel??-1)!=-1){
-      this.mostrar_carga=true;
+  async JuntarProy() {
+    this.tvista = 0;
+    if ((this.fila_sel ?? -1) != -1) {
+      this.mostrar_carga = true;
       //verificar que tiene permisos de ejecucion
-      const datoaccs = await this.principalService.ConfgsAsignaUserProy({id_proyecto: this.fila_sel,id_usuario:this.idUsuario});
-      if(datoaccs?.length>0){
-        if(datoaccs[0].presu==0){
-          this.mostrar_carga=false;
+      const datoaccs = await this.principalService.ConfgsAsignaUserProy({ id_proyecto: this.fila_sel, id_usuario: this.idUsuario });
+      if (datoaccs?.length > 0) {
+        if (datoaccs[0].presu == 0) {
+          this.mostrar_carga = false;
           this.toaster.error('No tiene permisos de Edición de Presupuesto para este Proyecto.', 'Advertencia', { closeButton: false, positionClass: 'toast-bottom-right', timeOut: 5000 });
           return;
         }
       }
-      this.datasourcePri=JSON.parse(JSON.stringify(this.dataSourceorg));
-      for(let row of this.dataSourceorg){
-        if(row.id_proyecto==this.fila_sel){
-          this.datproy1=row;
+      this.datasourcePri = JSON.parse(JSON.stringify(this.dataSourceorg));
+      for (let row of this.dataSourceorg) {
+        if (row.id_proyecto == this.fila_sel) {
+          this.datproy1 = row;
         }
       }
       const aspectos = await this.principalService.ListarConfigProy({ id_proyecto: this.fila_sel })
-      this.aspecpr1=aspectos;
-      this.mostrar_carga=false;
+      this.aspecpr1 = aspectos;
+      this.mostrar_carga = false;
       this.Modproyjunta.show();
     }
-    else{
+    else {
       this.toaster.error('Seleccione un proyecto al que se adjuntara otro.', 'Advertencia', { closeButton: false, positionClass: 'toast-bottom-right', timeOut: 5000 });
     }
   }
-  async AccJunta(){
-    try{
-      let arrpermite=[];
-      let edpresu=false;
-      for(let ele of this.datacomp){
+  async AccJunta() {
+    try {
+      let arrpermite = [];
+      let edpresu = false;
+      for (let ele of this.datacomp) {
         arrpermite.push(ele.permite);
-        if(ele.nombres=='EDICION DEL PRESUPUESTO' && ele.permite=='1'){
-          edpresu=true;
+        if (ele.nombres == 'EDICION DEL PRESUPUESTO' && ele.permite == '1') {
+          edpresu = true;
         }
       }
-      if(edpresu){
+      if (edpresu) {
         this.mostrar_carga_todo = true;
         console.time('timetemp')
-        let resp=await this.principalService.JuntarPoyecsRap({id_proyecto1:this.fila_sel,id_proyecto2:this.filaselpri,id_usuario:this.idUsuario,asignaund:this.fuentesel==3?'1':'0',admitidos:arrpermite.join('|')});
+        let resp = await this.principalService.JuntarPoyecsRap({ id_proyecto1: this.fila_sel, id_proyecto2: this.filaselpri, id_usuario: this.idUsuario, asignaund: this.fuentesel == 3 ? '1' : '0', admitidos: arrpermite.join('|') });
         console.timeEnd('timetemp')
-        this.mostrar_carga_todo=false;
+        this.mostrar_carga_todo = false;
         if (resp?.id == "1") {
           this.toaster.success('La operacion se realizó con éxito.', 'Correcto', { closeButton: false, positionClass: 'toast-bottom-right', timeOut: 5000 })
           this.cerrarModJunta(1);
         }
         else {
           console.log(resp.mensaje);
-          this.toaster.error(resp.mensaje, 'Error', {closeButton: false,positionClass: 'toast-bottom-right',timeOut: 5000 })
+          this.toaster.error(resp.mensaje, 'Error', { closeButton: false, positionClass: 'toast-bottom-right', timeOut: 5000 })
         }
       }
-      else{
-        this.toaster.error('Seleccione Presupuesto para duplicar los elementos selececcionados.', 'Advertencia', {closeButton: false,positionClass: 'toast-bottom-right',timeOut: 5000 })
+      else {
+        this.toaster.error('Seleccione Presupuesto para duplicar los elementos selececcionados.', 'Advertencia', { closeButton: false, positionClass: 'toast-bottom-right', timeOut: 5000 })
       }
     }
-    catch(ex){
-      this.mostrar_carga_todo=false;
+    catch (ex) {
+      this.mostrar_carga_todo = false;
       console.log(ex)
       SwalService.error('Advertencia', 'Ocurrio una excepción al momento de realizar la operación. ');
     }
   }
-  cerrarModJunta(dir:any){
-    if(this.tvista==0 || (this.tvista==1 && dir==1)){
-      this.datproy1=null;
-      this.aspecpr1=null;
-      this.datproy2=null;
-      this.aspecpr2=null;
-      this.datasourcePri=[];
-      this.filaselpri=-1;
-      this.tiposelj='';
-      this.fuentesel=1;
-      this.busquedajun='';
-      for(let a=0;a<this.datacomp.length;a++){//algunos adaptan a 2 accesos
-        this.datacomp[a].mostrar='1';
-        this.datacomp[a].permite='1';
+  cerrarModJunta(dir: any) {
+    if (this.tvista == 0 || (this.tvista == 1 && dir == 1)) {
+      this.datproy1 = null;
+      this.aspecpr1 = null;
+      this.datproy2 = null;
+      this.aspecpr2 = null;
+      this.datasourcePri = [];
+      this.filaselpri = -1;
+      this.tiposelj = '';
+      this.fuentesel = 1;
+      this.busquedajun = '';
+      for (let a = 0; a < this.datacomp.length; a++) {//algunos adaptan a 2 accesos
+        this.datacomp[a].mostrar = '1';
+        this.datacomp[a].permite = '1';
       }
       this.Modproyjunta.hide();
     }
-    else{
-      this.tvista=0;
-      this.datproy2=null;
-      this.aspecpr2=null;
+    else {
+      this.tvista = 0;
+      this.datproy2 = null;
+      this.aspecpr2 = null;
     }
   }
   limpiarfiljun() {
     this.busquedajun = '';
   }
-  async cambiarFuente(idfuente:any){
-    this.filaselpri=-1;
+  async cambiarFuente(idfuente: any) {
+    this.filaselpri = -1;
     //this.fuentesel=idfuente;
-    if(idfuente=="3"){
-      this.buscandojun=true;
-      this.datasourcePri=[];
-      let rproyectos = await this.principalService.ListarProyCompartidos({id_usuario:this.idUsuario});//cambiar con metodo para compartidos
-      for(let row of rproyectos){
-        if(row.duplica=="1"){
+    if (idfuente == "3") {
+      this.buscandojun = true;
+      this.datasourcePri = [];
+      let rproyectos = await this.principalService.ListarProyCompartidos({ id_usuario: this.idUsuario });//cambiar con metodo para compartidos
+      for (let row of rproyectos) {
+        if (row.duplica == "1") {
           this.datasourcePri.push(row);
         }
       }
-      this.buscandojun=false;
+      this.buscandojun = false;
     }
-    else{
-      this.buscandojun=true;
-      this.datasourcePri=[];
-      let rproyectos = await this.presuservice.BuscarProyAddPresu({ id_usuario: this.idUsuario,fuente:idfuente,tipo_proy:this.tiposelj,id_proyecto:this.fila_sel });//idproyecto1
-      this.datasourcePri=rproyectos;
-      this.buscandojun=false;
+    else {
+      this.buscandojun = true;
+      this.datasourcePri = [];
+      let rproyectos = await this.presuservice.BuscarProyAddPresu({ id_usuario: this.idUsuario, fuente: idfuente, tipo_proy: this.tiposelj, id_proyecto: this.fila_sel });//idproyecto1
+      this.datasourcePri = rproyectos;
+      this.buscandojun = false;
     }
   }
-  async cambiarTipoProy(tipo:any){
-    this.filaselpri=-1;
+  async cambiarTipoProy(tipo: any) {
+    this.filaselpri = -1;
     //this.tiposelj=tipo;
-    if(this.fuentesel.toString()=="3"){
-      this.buscandojun=true;
-      this.datasourcePri=[];
-      let rproyectos = await this.principalService.ListarProyCompartidos({id_usuario:this.idUsuario});//cambiar con metodo para compartidos
-      for(let row of rproyectos){
-        if(row.duplica=="1"){
+    if (this.fuentesel.toString() == "3") {
+      this.buscandojun = true;
+      this.datasourcePri = [];
+      let rproyectos = await this.principalService.ListarProyCompartidos({ id_usuario: this.idUsuario });//cambiar con metodo para compartidos
+      for (let row of rproyectos) {
+        if (row.duplica == "1") {
           this.datasourcePri.push(row);
         }
       }
-      this.buscandojun=false;
+      this.buscandojun = false;
     }
-    else{
-      this.buscandojun=true;
-      this.datasourcePri=[];
-      let rproyectos = await this.presuservice.BuscarProyAddPresu({ id_usuario: this.idUsuario,fuente:this.fuentesel,tipo_proy:this.tiposelj,id_proyecto:this.fila_sel });//idproyecto1
-      this.datasourcePri=rproyectos;
-      this.buscandojun=false;
+    else {
+      this.buscandojun = true;
+      this.datasourcePri = [];
+      let rproyectos = await this.presuservice.BuscarProyAddPresu({ id_usuario: this.idUsuario, fuente: this.fuentesel, tipo_proy: this.tiposelj, id_proyecto: this.fila_sel });//idproyecto1
+      this.datasourcePri = rproyectos;
+      this.buscandojun = false;
     }
   }
-  cambindiceselpri(row:any,ind:any){
+  cambindiceselpri(row: any, ind: any) {
     if (row.nro == "") {
       if (ind == this.filaselpri)
         this.filaselpri = -1;
@@ -2193,80 +2217,80 @@ export class PrincipalComponent implements OnInit, OnDestroy {
         this.filaselpri = row.id_proyecto;
     }
   }
-  async SigJunta(){
-    if((this.filaselpri??-1)!=-1){
-      if(this.fila_sel==this.filaselpri){
+  async SigJunta() {
+    if ((this.filaselpri ?? -1) != -1) {
+      if (this.fila_sel == this.filaselpri) {
         this.toaster.error('No puede adjuntar el mismo proyecto.', 'Advertencia', { closeButton: false, positionClass: 'toast-bottom-right', timeOut: 5000 });
       }
-      else{
+      else {
         //condicionar configuraciones?
-        for(let row of this.datasourcePri){
-          if(row.id_proyecto==this.filaselpri){
-            this.datproy2=row;
+        for (let row of this.datasourcePri) {
+          if (row.id_proyecto == this.filaselpri) {
+            this.datproy2 = row;
           }
         }
         const aspectos = await this.principalService.ListarConfigProy({ id_proyecto: this.filaselpri })
-        this.aspecpr2=aspectos;
-        if(this.aspecpr1.dec_cant==this.aspecpr2.dec_cant && this.aspecpr1.dec_metrado==this.aspecpr2.dec_metrado && this.aspecpr1.dec_precio==this.aspecpr2.dec_precio && this.aspecpr1.dec_parcial==this.aspecpr2.dec_parcial){
-          if(this.fuentesel==3){//solo para compartidos, usar parametro permite
-            let arrpermite=JSON.parse(this.datproy2.permite);
+        this.aspecpr2 = aspectos;
+        if (this.aspecpr1.dec_cant == this.aspecpr2.dec_cant && this.aspecpr1.dec_metrado == this.aspecpr2.dec_metrado && this.aspecpr1.dec_precio == this.aspecpr2.dec_precio && this.aspecpr1.dec_parcial == this.aspecpr2.dec_parcial) {
+          if (this.fuentesel == 3) {//solo para compartidos, usar parametro permite
+            let arrpermite = JSON.parse(this.datproy2.permite);
             let menproy = await this.encriptadorService.recuperarlocalstory('menu_proy');
-            let arrmp=menproy?JSON.parse(menproy).split('|'):[0,0,0,0,0,0,0,0];
-            arrmp.splice(0,1);//datosproy
-            arrmp.splice(4,1);//programacion
-            for(let a=0;a<this.datacomp.length;a++){//algunos adaptan a 2 accesos
-              this.datacomp[a].mostrar=arrmp[a]=='1'?'1':'0';
-              if(this.datacomp[a].nombres == 'FÓRMULA POLINÓMICA'){
-                this.datacomp[a].mostrar='0';
-                this.datacomp[a].permite='2';
+            let arrmp = menproy ? JSON.parse(menproy).split('|') : [0, 0, 0, 0, 0, 0, 0, 0];
+            arrmp.splice(0, 1);//datosproy
+            arrmp.splice(4, 1);//programacion
+            for (let a = 0; a < this.datacomp.length; a++) {//algunos adaptan a 2 accesos
+              this.datacomp[a].mostrar = arrmp[a] == '1' ? '1' : '0';
+              if (this.datacomp[a].nombres == 'FÓRMULA POLINÓMICA') {
+                this.datacomp[a].mostrar = '0';
+                this.datacomp[a].permite = '2';
               }
-              if(this.datacomp[a].nombres == 'DISEÑO DE COSTOS INDIRECTOS'){
-                this.datacomp[a].mostrar='0';
-                this.datacomp[a].permite='2';
+              if (this.datacomp[a].nombres == 'DISEÑO DE COSTOS INDIRECTOS') {
+                this.datacomp[a].mostrar = '0';
+                this.datacomp[a].permite = '2';
               }
-              if(Number(arrpermite[a])==0){
-                this.datacomp[a].permite='2';
+              if (Number(arrpermite[a]) == 0) {
+                this.datacomp[a].permite = '2';
               }
-              else{
-                this.datacomp[a].permite=arrpermite[a];
+              else {
+                this.datacomp[a].permite = arrpermite[a];
               }
             }
-          }else{//habilita todo
-            for(let a=0;a<this.datacomp.length;a++){//algunos adaptan a 2 accesos
-              this.datacomp[a].mostrar='1';
-              this.datacomp[a].permite='1';
-              if(this.datacomp[a].nombres == 'FÓRMULA POLINÓMICA'){
-                this.datacomp[a].mostrar='0';
-                this.datacomp[a].permite='2';
+          } else {//habilita todo
+            for (let a = 0; a < this.datacomp.length; a++) {//algunos adaptan a 2 accesos
+              this.datacomp[a].mostrar = '1';
+              this.datacomp[a].permite = '1';
+              if (this.datacomp[a].nombres == 'FÓRMULA POLINÓMICA') {
+                this.datacomp[a].mostrar = '0';
+                this.datacomp[a].permite = '2';
               }
-              if(this.datacomp[a].nombres == 'DISEÑO DE COSTOS INDIRECTOS'){
-                this.datacomp[a].mostrar='0';
-                this.datacomp[a].permite='2';
+              if (this.datacomp[a].nombres == 'DISEÑO DE COSTOS INDIRECTOS') {
+                this.datacomp[a].mostrar = '0';
+                this.datacomp[a].permite = '2';
               }
             }
           }
-          this.tvista=1;
+          this.tvista = 1;
         }
-        else{
+        else {
           this.toaster.error('Las configuraciones de Decimales deben ser iguales en ambos proyectos.', 'Advertencia', { closeButton: false, positionClass: 'toast-bottom-right', timeOut: 10000 });
         }
       }
     }
-    else{
+    else {
       this.toaster.error('Seleccione el proyecto para adjuntar.', 'Advertencia', { closeButton: false, positionClass: 'toast-bottom-right', timeOut: 5000 });
     }
   }
-  cambioselt2(row:any){
-    if(row.permite==0){
-      row.permite=1;
+  cambioselt2(row: any) {
+    if (row.permite == 0) {
+      row.permite = 1;
     }
-    else{
-      row.permite=0;
+    else {
+      row.permite = 0;
     }
   }
   async onTabChange(nuevoTab: any) {
-    if(nuevoTab.campo==="decimal"){
-      const tabs = JSON.parse(localStorage.getItem('tabs')||'[]')
+    if (nuevoTab.campo === "decimal") {
+      const tabs = JSON.parse(localStorage.getItem('tabs') || '[]')
       let tabIndex = tabs.findIndex((tab: any) => tab.indice_tab === nuevoTab.tab);
       if (tabIndex !== -1) {
         tabs[tabIndex][nuevoTab.campo] = nuevoTab.valor;
@@ -2274,20 +2298,20 @@ export class PrincipalComponent implements OnInit, OnDestroy {
       }
       const existe = this.formProyecto.value.find(tab => Number(tab.indice_tab) === nuevoTab.tab);
       if (existe) {
-          // Obtener el índice del objeto en el FormArray
-          const index = this.formProyecto.value.findIndex(tab => Number(tab.indice_tab) === nuevoTab.tab);
-          // Actualizar el FormControl dentro del FormArray
-          const formControl = (this.formProyecto as FormArray).at(index).get('decimal');
-          if (formControl) {
-              formControl.setValue(nuevoTab.valor);
-          } else {
-              console.error("No se encontró el FormControl 'decimal'");
-          }
+        // Obtener el índice del objeto en el FormArray
+        const index = this.formProyecto.value.findIndex(tab => Number(tab.indice_tab) === nuevoTab.tab);
+        // Actualizar el FormControl dentro del FormArray
+        const formControl = (this.formProyecto as FormArray).at(index).get('decimal');
+        if (formControl) {
+          formControl.setValue(nuevoTab.valor);
+        } else {
+          console.error("No se encontró el FormControl 'decimal'");
+        }
       } else {
-          console.error("No se encontró el proyecto con el índice especificado.");
+        console.error("No se encontró el proyecto con el índice especificado.");
       }
-    }else if(nuevoTab.campo==="aspectab"){
-      const tabs = JSON.parse(localStorage.getItem('tabs')||'[]')
+    } else if (nuevoTab.campo === "aspectab") {
+      const tabs = JSON.parse(localStorage.getItem('tabs') || '[]')
       let tabIndex = tabs.findIndex((tab: any) => tab.indice_tab === nuevoTab.tab);
       if (tabIndex !== -1) {
         tabs[tabIndex][nuevoTab.campo] = nuevoTab.valor
@@ -2295,54 +2319,54 @@ export class PrincipalComponent implements OnInit, OnDestroy {
       }
       const index = this.formProyecto.value.findIndex(tab => Number(tab.indice_tab) === nuevoTab.tab);
       if (index !== -1) {
-          const formGroup = (this.formProyecto as FormArray).at(index) as FormGroup;
-          if (formGroup) {
-            formGroup.get('aspectab').setValue(nuevoTab.valor);
-          } else {
-              console.error("No se encontró el FormGroup en el FormArray");
-          }
+        const formGroup = (this.formProyecto as FormArray).at(index) as FormGroup;
+        if (formGroup) {
+          formGroup.get('aspectab').setValue(nuevoTab.valor);
+        } else {
+          console.error("No se encontró el FormGroup en el FormArray");
+        }
       } else {
-          console.error("No se encontró el proyecto con el índice especificado.");
+        console.error("No se encontró el proyecto con el índice especificado.");
       }
-    }else if(nuevoTab.campo==="datos_recuperado"){
+    } else if (nuevoTab.campo === "datos_recuperado") {
       const formProyecto = (this.formProyecto.controls[nuevoTab.tab] as UntypedFormGroup)
       const aspectos_generales = (formProyecto.get('aspectos_generales') as UntypedFormGroup)
       const datosRecuperado = (aspectos_generales.get('datos_recuperado') as UntypedFormControl)
       datosRecuperado.setValue(nuevoTab.valor)
       localStorage.setItem('tabs', JSON.stringify(this.formProyecto.value))
-      const tabs = JSON.parse(localStorage.getItem('tabs')||'[]')
+      const tabs = JSON.parse(localStorage.getItem('tabs') || '[]')
     }
   }
-  async ImportaBiplan(){
+  async ImportaBiplan() {
     try {
       //debe seleccionar una fila, para juntarlo a su agrupacion
 
       let maxproys = this.encriptadorService.recuperarlocalstory('maxproy');
-      if(!isNaN(Number(maxproys))){
-        let cont=0;
-        for(let rows1 of this.dataSourceorg){
-          if(rows1.id_proyecto!=''){
+      if (!isNaN(Number(maxproys))) {
+        let cont = 0;
+        for (let rows1 of this.dataSourceorg) {
+          if (rows1.id_proyecto != '') {
             cont++;
           }
         }
-        cont=cont+this.datasourcepap.length;
-        if(cont>=maxproys){
-          this.toaster.error('Ya no puede crear proyectos. Su maximo permitido es '+maxproys+' incluidos los de la papelera.', 'Advertencia', { closeButton: false, positionClass: 'toast-bottom-right', timeOut: 10000 })
+        cont = cont + this.datasourcepap.length;
+        if (cont >= maxproys) {
+          this.toaster.error('Ya no puede crear proyectos. Su maximo permitido es ' + maxproys + ' incluidos los de la papelera.', 'Advertencia', { closeButton: false, positionClass: 'toast-bottom-right', timeOut: 10000 })
           return
         }
       }
-      this.mostrar_carga_todo=true;
+      this.mostrar_carga_todo = true;
       await this.listarClasificacionProyectos()
       await this.listarGrupos()
       const departamentos = await this.listardepa()
-      this.mostrar_carga_todo=false;
+      this.mostrar_carga_todo = false;
       const modalRef = this.modalService.open(AddproybiplanComponent, { size: 'lg', backdrop: 'static', windowClass: 'pcoded', keyboard: false })
       modalRef.componentInstance.clasificaciones = this.clasificaciones
       modalRef.componentInstance.grupoprinc = 1//id_de agrupacion, recuperar de la fila seleccionada
       modalRef.componentInstance.idprincipal = 3//id_proyecto principal, recuperar de la fila seleccionada
       modalRef.componentInstance.departamentos = departamentos
       const result = await modalRef.result
-      if(result=='listar'){
+      if (result == 'listar') {
         this.onListar();
       }
     }

@@ -140,3 +140,14 @@ small {
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+.h-mat {
+  height: 38.75px !important;
+}
+
+.h-contenedor {
+  height: calc(100dvh - 150px);
+}
+.highlight2{
+  background-color: yellow !important;
+}

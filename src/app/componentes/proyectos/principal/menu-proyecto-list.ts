@@ -97,7 +97,6 @@
 //     }
 // ]
 
-// Agrupación basada en la imagen de referencia
 export const menuAgrupado = [
   {
     titulo: 'DATA GENERAL',
@@ -109,7 +108,9 @@ export const menuAgrupado = [
   {
     titulo: 'RECURSOS HUMANOS',
     items: [
-      { id: 10, name: "Recursos Humanos", icon: "fa fa-building", imagen: "icprogra1.png", verImagen: true }
+      { id: 10, name: "Configuracion RR.HH", icon: "fa fa-building", imagen: "icprogra1.png", verImagen: true },
+      { id: 13, name: "Planilla RR.HH", icon: "fa fa-building", imagen: "icprogra1.png", verImagen: true },
+      { id: 14, name: "Registro de asistencia", icon: "fa fa-building", imagen: "icprogra1.png", verImagen: true }
     ]
   },
   {

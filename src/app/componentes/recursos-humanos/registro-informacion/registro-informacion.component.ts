@@ -1023,8 +1023,6 @@ export class RegistroInformacionComponent implements OnInit {
       SwalService.error()
       this.mostrar_carga_todo = false
     }
-
-
   }
 
   async listarAsignacionesUsuario(i) {

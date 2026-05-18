@@ -26,11 +26,15 @@ import {MatSliderModule} from '@angular/material/slider';
 import { PlanillasComponent } from './planillas/planillas.component';
 import {MatSlideToggleModule} from '@angular/material/slide-toggle';
 import { QRCodeModule } from 'angularx-qrcode';
+import { ConfiguracionPlanillaComponent } from './configuracion-planilla/configuracion-planilla.component';
+import { ReportesRhComponent } from './reportes-rh/reportes-rh.component';
 @NgModule({
   declarations: [
     PanelRecursosHumanosComponent,
     RegistroInformacionComponent,
-    PlanillasComponent
+    PlanillasComponent,
+    ConfiguracionPlanillaComponent,
+    ReportesRhComponent
   ],
   imports: [
     CommonModule,
@@ -68,6 +72,6 @@ import { QRCodeModule } from 'angularx-qrcode';
     MatSlideToggleModule,
     QRCodeModule
   ],
-  exports: [PanelRecursosHumanosComponent]
+  exports: [PlanillasComponent, ConfiguracionPlanillaComponent, ReportesRhComponent]
 })
 export class RecursosHumanosModule { }

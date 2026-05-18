@@ -1,0 +1,111 @@
+.contendor-fichatecnica {
+    min-height: 268px;
+    height: calc(100dvh - 235px);
+    overflow-x: hidden;
+}
+
+.contendor-fichatecnica-sinimg {
+    min-height: 268px;
+    height: calc(100dvh - 225px);
+    overflow-x: hidden;
+}
+
+.h-prin {
+    height: calc(100dvh - 18dvh);
+}
+
+.h-convocatorias {
+    height: 40dvh;
+}
+
+.h-postulantes {
+    //   height: calc(100dvh - 600px);
+    height: 37dvh;
+}
+
+/* Estilos para campos inválidos */
+.is-invalid {
+    border-color: #dc3545 !important;
+    background-color: #fff0f0 !important;
+    border: 1px solid #dc3545 !important;
+    outline: none !important;
+}
+
+/* Estilo para selects inválidos */
+select.is-invalid {
+    border-color: #dc3545 !important;
+    background-color: #fff0f0 !important;
+}
+
+/* Estilo para inputs de fecha inválidos */
+input[type="date"].is-invalid {
+    border-color: #dc3545 !important;
+    background-color: #fff0f0 !important;
+}
+
+.solapamiento-error {
+    border-color: #ff6b6b !important;
+    background-color: #ffe0e0 !important;
+    border-width: 2px !important;
+    box-shadow: 0 0 0 0.2rem rgba(255, 107, 107, 0.25) !important;
+}
+
+/* Animación para resaltar errores */
+@keyframes highlightError {
+    0% {
+        background-color: #fff0f0;
+    }
+
+    50% {
+        background-color: #ffe0e0;
+    }
+
+    100% {
+        background-color: #fff0f0;
+    }
+}
+
+.is-invalid {
+    animation: highlightError 0.5s ease-in-out;
+}
+
+/* Tooltip para errores */
+.has-error-tooltip {
+    position: relative;
+    cursor: help;
+}
+
+.has-error-tooltip:hover::after {
+    content: attr(data-error);
+    position: absolute;
+    bottom: 100%;
+    left: 0;
+    background-color: #dc3545;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    white-space: nowrap;
+    z-index: 1000;
+}
+
+/* Mensajes de error más visibles */
+.invalid-feedback {
+    display: block;
+    font-size: 11px;
+    color: #dc3545;
+    margin-top: 4px;
+    font-weight: bold;
+}
+
+.text-danger {
+    color: #dc3545 !important;
+    font-size: 11px;
+    font-weight: bold;
+}
+
+.warning-hint {
+    color: orange !important;
+    // position: relative !important;
+    // bottom: 0.5rem !important;
+}

@@ -234,7 +234,7 @@ export class ProcesosRhService {
 
     return {
       id_area: primeraArea.id_area,
-      descripcion_area: null, 
+      descripcion_area: null,
       id_cargo: null,
       descripcion_cargo: 'TOTAL',
       tipo_cargo: '',
@@ -485,11 +485,26 @@ export class ProcesosRhService {
     const cargosPorArea = this.agruparCargosPorArea(cargos);
     const asignacionesPorCargo = this.agruparAsignacionesPorCargo(asignaciones);
     const consolidadoMap = new Map<string, ConsolidadoItem>();
-
     for (const area of areas) {
       if (!area) continue;
-
-      const horarioConfArea = configuracionesMap.get(area.id_area);
+      let horarioConfArea = configuracionesMap.get(area.id_area);
+      if (!horarioConfArea) {
+        horarioConfArea = {
+          id_configuracion: null,
+          id_proyecto: area.id_proyecto,
+          id_area: area.id_area,
+          inicio_semana: 'LUNES',
+          dias_nolaborables: 'DOMINGO',
+          hora_ingreso_manana: '07:30:00|07:30:00|07:30:00|07:30:00|07:30:00|07:30:00|',
+          hora_salida_manana: '12:00:00|12:00:00|12:00:00|12:00:00|12:00:00|13:00:00|',
+          hora_ingreso_tarde: '14:00:00|14:00:00|14:00:00|14:00:00|14:00:00||',
+          hora_salida_tarde: '18:00:00|18:00:00|18:00:00|18:00:00|18:00:00||',
+          totales_dia: 48,
+          descuentos: '|10|10||100|100|||||||',
+          tardanza: 10,
+          tiempo_extra: 0
+        }
+      }
       const areaMontosMap = montosAreasMap.get(area.id_area);
       const cargosArea = cargosPorArea.get(area.id_area) || [];
 
@@ -507,7 +522,6 @@ export class ProcesosRhService {
           }
           asignacionesPorTipo.get(key)!.push(asignacion);
         });
-
         for (const [tipoCargo, asignacionesGrupo] of asignacionesPorTipo) {
           const key = `${area.id_area}_${cargo.id_cargo}_${tipoCargo}`;
 
@@ -561,6 +575,364 @@ export class ProcesosRhService {
     return Array.from(consolidadoMap.values());
   }
 
+  // private procesarDiasCalendarioGrupo(
+  //   calendario: any[],
+  //   asistenciasMap: Map<string, Map<number, any>>,
+  //   costoDia: number,
+  //   horarioConfArea: any,
+  //   feriadosSoloFecha: string[],
+  //   asignacionesGrupo: any[]
+  // ): { calendarioProcesado: CalendarioDia[], costoTotal: number } {
+
+  //   const getDiaSemanaEspanol = (fechaMoment: moment.Moment): string => {
+  //     const diasMap: { [key: string]: string } = {
+  //       'SUNDAY': 'DOMINGO',
+  //       'MONDAY': 'LUNES',
+  //       'TUESDAY': 'MARTES',
+  //       'WEDNESDAY': 'MIÉRCOLES',
+  //       'THURSDAY': 'JUEVES',
+  //       'FRIDAY': 'VIERNES',
+  //       'SATURDAY': 'SÁBADO'
+  //     };
+  //     const diaIngles = fechaMoment.format('dddd').toUpperCase();
+  //     return diasMap[diaIngles] || diaIngles;
+  //   };
+
+  //   const descuentosRaw = horarioConfArea?.descuentos || [];
+
+  //   // const diasNoLaborables = horarioConfArea?.dias_nolaborables?.split('|') || [];
+  //   const diasNoLaborables = []
+  //   const descuentos = typeof descuentosRaw === 'string'
+  //     ? descuentosRaw.split('|')  // No usar slice(1) porque el primer elemento vacío es para ASISTIO
+  //     : descuentosRaw;
+
+  //   const tipos = [
+  //     { codigo: 'A', tipo: 'ASISTIO' },
+  //     { codigo: 'T', tipo: 'TARDANZA' },
+  //     { codigo: 'TI', tipo: 'TARDANZA INJUSTIFICADA' },
+  //     { codigo: 'TJ', tipo: 'TARDANZA JUSTIFICADA' },
+  //     { codigo: 'F', tipo: 'FALTA' },
+  //     { codigo: 'FI', tipo: 'FALTA INJUSTIFICADA' },
+  //     { codigo: 'FJ', tipo: 'FALTA JUSTIFICADA' },
+  //     { codigo: 'FM', tipo: 'DESCANSO MEDICO' },
+  //     { codigo: 'FV', tipo: 'VACACIONES' },
+  //     { codigo: 'FC', tipo: 'CITA MEDICA' },
+  //     { codigo: 'FD', tipo: 'DUELO' },
+  //     { codigo: 'PE', tipo: 'PERMISO' },
+  //     { codigo: 'OBS', tipo: 'OBSERVADO' },
+  //     { codigo: 'IN', tipo: 'INCOMPLETO' },
+  //     { codigo: 'TEX', tipo: 'TEXTRA' }
+  //   ];
+
+  //   const tipoMap = new Map();
+  //   tipos.forEach((tipoObj, index) => {
+  //     const descuentoNumero = parseInt(descuentos[index] || "0", 10) || 0;
+  //     tipoMap.set(tipoObj.codigo, {
+  //       ...tipoObj,
+  //       descuento: descuentoNumero
+  //     });
+  //   });
+  //   const calendarioProcesado: CalendarioDia[] = [];
+  //   let costoTotal = 0;
+
+  //   for (const anio of calendario) {
+  //     if (!anio || !anio.meses) continue;
+
+  //     for (const mes of anio.meses) {
+  //       if (!mes || !mes.dias) continue;
+
+  //       for (const dia of mes.dias) {
+  //         if (!dia || !dia.fecha) continue;
+
+  //         const fechaDia = moment(dia.fecha, 'DD-MM-YYYY');
+  //         const fechaDiaKey = fechaDia.format('DD-MM-YYYY');
+  //         const diaSemana = getDiaSemanaEspanol(fechaDia);
+  //         const fecha = dia.fecha;
+
+  //         const esDiaNoLaborable = diasNoLaborables.includes(diaSemana);
+  //         const esFeriado = feriadosSoloFecha.includes(fechaDiaKey);
+  //         const esDiaEspecial = esDiaNoLaborable || esFeriado;
+
+  //         const detalleAsistencias: AsistenciaDetalle[] = [];
+  //         let montoDia = 0;
+  //         let cantidadAsignacionesConMonto = 0;
+
+  //         const usuariosMap = asistenciasMap.get(fechaDiaKey) || new Map<number, any>();
+  //         for (const asignacion of asignacionesGrupo) {
+  //           if (!asignacion) continue;
+  //           const asistencia = usuariosMap.get(asignacion.id_usuario);
+  //           if (asistencia) {
+  //             const tipoCodigo = asistencia.tipo;
+  //             let montoIndividual = 0;
+  //             let descuentoAplicado = 0;
+
+  //             if (tipoCodigo && tipoCodigo !== '') {
+  //               const tipoInfo = tipoMap.get(tipoCodigo);
+  //               if (tipoInfo) {
+  //                 descuentoAplicado = tipoInfo.descuento;
+  //                 if (!esDiaEspecial) {
+  //                   if (descuentoAplicado > 0) {
+  //                     const descuentoMonto = costoDia * (descuentoAplicado / 100);
+  //                     montoIndividual = costoDia - descuentoMonto;
+  //                   } else {
+  //                     montoIndividual = costoDia;
+  //                   }
+  //                   montoDia += montoIndividual;
+  //                   cantidadAsignacionesConMonto++;
+  //                 }
+
+  //               } else {
+  //                 if (!esDiaEspecial) {
+  //                   montoIndividual = costoDia;
+  //                   montoDia += montoIndividual;
+  //                   cantidadAsignacionesConMonto++;
+  //                 }
+  //               }
+  //             } else {
+  //               if (!esDiaEspecial) {
+  //                 montoIndividual = 0;
+  //               }
+  //             }
+
+
+  //             detalleAsistencias.push({
+  //               id_asignacion: asignacion.id_asignacion || 0,
+  //               id_usuario: asistencia.id_usuario || 0,
+  //               tipo_asistencia: tipoCodigo || '',
+  //               descuento_aplicado: descuentoAplicado,
+  //               monto_individual: montoIndividual
+  //             });
+  //           } else {
+  //             detalleAsistencias.push({
+  //               id_asignacion: asignacion.id_asignacion || 0,
+  //               id_usuario: asignacion.id_usuario || 0,
+  //               tipo_asistencia: '',
+  //               descuento_aplicado: 0,
+  //               monto_individual: 0
+  //             });
+  //           }
+  //         }
+
+  //         costoTotal += montoDia;
+
+  //         calendarioProcesado.push({
+  //           fecha: fecha,
+  //           dia: dia.dia || '',
+  //           laborable: dia.laborable || false,
+  //           feriado: dia.feriado || false,
+  //           esDiaEspecial,
+  //           monto_dia: montoDia,
+  //           cantidad_asignaciones: cantidadAsignacionesConMonto,
+  //           detalle_asistencias: detalleAsistencias
+  //         });
+  //       }
+  //     }
+  //   }
+
+  //   return { calendarioProcesado, costoTotal };
+  // }
+
+  // private procesarDiasCalendarioGrupo(
+  //   calendario: any[],
+  //   asistenciasMap: Map<string, Map<number, any>>,
+  //   costoDia: number,
+  //   horarioConfArea: any,
+  //   feriadosSoloFecha: string[],
+  //   asignacionesGrupo: any[]
+  // ): { calendarioProcesado: CalendarioDia[], costoTotal: number } {
+
+  //   const getDiaSemanaEspanol = (fechaMoment: moment.Moment): string => {
+  //     const diasMap: { [key: string]: string } = {
+  //       'SUNDAY': 'DOMINGO',
+  //       'MONDAY': 'LUNES',
+  //       'TUESDAY': 'MARTES',
+  //       'WEDNESDAY': 'MIÉRCOLES',
+  //       'THURSDAY': 'JUEVES',
+  //       'FRIDAY': 'VIERNES',
+  //       'SATURDAY': 'SÁBADO'
+  //     };
+  //     const diaIngles = fechaMoment.format('dddd').toUpperCase();
+  //     return diasMap[diaIngles] || diaIngles;
+  //   };
+
+
+  //   const descuentosRaw = horarioConfArea?.descuentos || [];
+
+  //   // const diasNoLaborables = horarioConfArea?.dias_nolaborables?.split('|') || [];
+  //   const diasNoLaborables = []
+  //   const descuentos = typeof descuentosRaw === 'string'
+  //     ? descuentosRaw.split('|')  // No usar slice(1) porque el primer elemento vacío es para ASISTIO
+  //     : descuentosRaw;
+
+  //   const tipos = [
+  //     { codigo: 'A', tipo: 'ASISTIO' },
+  //     { codigo: 'T', tipo: 'TARDANZA' },
+  //     { codigo: 'TI', tipo: 'TARDANZA INJUSTIFICADA' },
+  //     { codigo: 'TJ', tipo: 'TARDANZA JUSTIFICADA' },
+  //     { codigo: 'F', tipo: 'FALTA' },
+  //     { codigo: 'FI', tipo: 'FALTA INJUSTIFICADA' },
+  //     { codigo: 'FJ', tipo: 'FALTA JUSTIFICADA' },
+  //     { codigo: 'FM', tipo: 'DESCANSO MEDICO' },
+  //     { codigo: 'FV', tipo: 'VACACIONES' },
+  //     { codigo: 'FC', tipo: 'CITA MEDICA' },
+  //     { codigo: 'FD', tipo: 'DUELO' },
+  //     { codigo: 'PE', tipo: 'PERMISO' },
+  //     { codigo: 'OBS', tipo: 'OBSERVADO' },
+  //     { codigo: 'IN', tipo: 'INCOMPLETO' },
+  //     { codigo: 'TEX', tipo: 'TEXTRA' }
+  //   ];
+
+  //   const tipoMap = new Map();
+  //   tipos.forEach((tipoObj, index) => {
+  //     const descuentoNumero = parseInt(descuentos[index] || "0", 10) || 0;
+  //     tipoMap.set(tipoObj.codigo, {
+  //       ...tipoObj,
+  //       descuento: descuentoNumero
+  //     });
+  //   });
+
+  //   // Función para verificar si una asignación está activa en una fecha específica
+  //   const isAsignacionActivaEnFecha = (asignacion: any, fecha: moment.Moment): boolean => {
+  //     if (!asignacion) return false;
+
+  //     // Si tiene fecha_inicio y fecha_fin
+  //     if (asignacion.fecha_inicio && asignacion.fecha_fin) {
+  //       const fechaInicio = moment(asignacion.fecha_inicio);
+  //       const fechaFin = moment(asignacion.fecha_fin);
+  //       return fecha.isSameOrAfter(fechaInicio, 'day') && fecha.isSameOrBefore(fechaFin, 'day');
+  //     }
+
+  //     // Si solo tiene fecha_inicio
+  //     if (asignacion.fecha_inicio && !asignacion.fecha_fin) {
+  //       const fechaInicio = moment(asignacion.fecha_inicio);
+  //       return fecha.isSameOrAfter(fechaInicio, 'day');
+  //     }
+
+  //     // Si solo tiene fecha_fin
+  //     if (!asignacion.fecha_inicio && asignacion.fecha_fin) {
+  //       const fechaFin = moment(asignacion.fecha_fin);
+  //       return fecha.isSameOrBefore(fechaFin, 'day');
+  //     }
+
+  //     // Si no tiene fechas, asumir que siempre está activa
+  //     return true;
+  //   };
+
+  //   const calendarioProcesado: CalendarioDia[] = [];
+  //   let costoTotal = 0;
+
+  //   for (const anio of calendario) {
+  //     if (!anio || !anio.meses) continue;
+
+  //     for (const mes of anio.meses) {
+  //       if (!mes || !mes.dias) continue;
+
+  //       for (const dia of mes.dias) {
+  //         if (!dia || !dia.fecha) continue;
+
+  //         const fechaDia = moment(dia.fecha, 'DD-MM-YYYY');
+  //         const fechaDiaKey = fechaDia.format('DD-MM-YYYY');
+  //         const diaSemana = getDiaSemanaEspanol(fechaDia);
+  //         const fecha = dia.fecha;
+
+  //         // FILTRO: Solo considerar asignaciones activas en esta fecha
+  //         const asignacionesActivas = asignacionesGrupo.filter(asignacion =>
+  //           isAsignacionActivaEnFecha(asignacion, fechaDia)
+  //         );
+
+  //         // Si no hay asignaciones activas en esta fecha, saltar este día
+  //         // if (asignacionesActivas.length === 0) {
+  //         //   continue; // O puedes agregar el día con monto 0 si lo necesitas
+  //         // }
+
+  //         const esDiaNoLaborable = diasNoLaborables.includes(diaSemana);
+  //         const esFeriado = feriadosSoloFecha.includes(fechaDiaKey);
+  //         const esDiaEspecial = esDiaNoLaborable || esFeriado;
+
+  //         const detalleAsistencias: AsistenciaDetalle[] = [];
+  //         let montoDia = 0;
+  //         let cantidadAsignacionesConMonto = 0;
+
+  //         const usuariosMap = asistenciasMap.get(fechaDiaKey) || new Map<number, any>();
+
+  //         // Procesar solo asignaciones activas
+  //         for (const asignacion of asignacionesActivas) {
+  //           if (!asignacion) continue;
+  //           const asistencia = usuariosMap.get(asignacion.id_usuario);
+
+  //           if (asistencia) {
+  //             const tipoCodigo = asistencia.tipo;
+  //             let montoIndividual = 0;
+  //             let descuentoAplicado = 0;
+
+  //             if (tipoCodigo && tipoCodigo !== '') {
+  //               const tipoInfo = tipoMap.get(tipoCodigo);
+  //               if (tipoInfo) {
+  //                 descuentoAplicado = tipoInfo.descuento;
+  //                 if (!esDiaEspecial) {
+  //                   if (descuentoAplicado > 0) {
+  //                     const descuentoMonto = costoDia * (descuentoAplicado / 100);
+  //                     montoIndividual = costoDia - descuentoMonto;
+  //                   } else {
+  //                     montoIndividual = costoDia;
+  //                   }
+  //                   montoDia += montoIndividual;
+  //                   cantidadAsignacionesConMonto++;
+  //                 }
+  //               } else {
+  //                 if (!esDiaEspecial) {
+  //                   montoIndividual = costoDia;
+  //                   montoDia += montoIndividual;
+  //                   cantidadAsignacionesConMonto++;
+  //                 }
+  //               }
+  //             } else {
+  //               if (!esDiaEspecial) {
+  //                 montoIndividual = 0;
+  //               }
+  //             }
+
+  //             detalleAsistencias.push({
+  //               id_asignacion: asignacion.id_asignacion || 0,
+  //               id_usuario: asistencia.id_usuario || 0,
+  //               tipo_asistencia: tipoCodigo || '',
+  //               descuento_aplicado: descuentoAplicado,
+  //               monto_individual: montoIndividual
+  //             });
+  //           } else {
+  //             // Asignación activa sin registro de asistencia
+  //             detalleAsistencias.push({
+  //               id_asignacion: asignacion.id_asignacion || 0,
+  //               id_usuario: asignacion.id_usuario || 0,
+  //               tipo_asistencia: '',
+  //               descuento_aplicado: 0,
+  //               monto_individual: 0
+  //             });
+  //           }
+  //         }
+
+  //         // Solo agregar al calendario si hay al menos un registro de asistencia o si quieres mostrar días con monto 0
+  //         if (detalleAsistencias.length > 0) {
+  //           costoTotal += montoDia;
+
+  //           calendarioProcesado.push({
+  //             fecha: fecha,
+  //             dia: dia.dia || '',
+  //             laborable: dia.laborable || false,
+  //             feriado: dia.feriado || false,
+  //             esDiaEspecial,
+  //             monto_dia: montoDia,
+  //             cantidad_asignaciones: cantidadAsignacionesConMonto,
+  //             detalle_asistencias: detalleAsistencias
+  //           });
+  //         }
+  //       }
+  //     }
+  //   }
+
+  //   return { calendarioProcesado, costoTotal };
+  // }
+
   private procesarDiasCalendarioGrupo(
     calendario: any[],
     asistenciasMap: Map<string, Map<number, any>>,
@@ -569,6 +941,7 @@ export class ProcesosRhService {
     feriadosSoloFecha: string[],
     asignacionesGrupo: any[]
   ): { calendarioProcesado: CalendarioDia[], costoTotal: number } {
+
     const getDiaSemanaEspanol = (fechaMoment: moment.Moment): string => {
       const diasMap: { [key: string]: string } = {
         'SUNDAY': 'DOMINGO',
@@ -583,8 +956,13 @@ export class ProcesosRhService {
       return diasMap[diaIngles] || diaIngles;
     };
 
-    const descuentos = horarioConfArea?.descuentos || [];
-    const diasNoLaborables = horarioConfArea?.dias_nolaborables?.split('|') || [];
+    const descuentosRaw = horarioConfArea?.descuentos || [];
+
+    // const diasNoLaborables = horarioConfArea?.dias_nolaborables?.split('|') || [];
+    const diasNoLaborables = []
+    const descuentos = typeof descuentosRaw === 'string'
+      ? descuentosRaw.split('|')  // No usar slice(1) porque el primer elemento vacío es para ASISTIO
+      : descuentosRaw;
 
     const tipos = [
       { codigo: 'A', tipo: 'ASISTIO' },
@@ -613,6 +991,33 @@ export class ProcesosRhService {
       });
     });
 
+    // Función para verificar si una asignación está activa en una fecha específica
+    const isAsignacionActivaEnFecha = (asignacion: any, fecha: moment.Moment): boolean => {
+      if (!asignacion) return false;
+
+      // Si tiene fecha_inicio y fecha_fin
+      if (asignacion.fecha_inicio && asignacion.fecha_fin) {
+        const fechaInicio = moment(asignacion.fecha_inicio);
+        const fechaFin = moment(asignacion.fecha_fin);
+        return fecha.isSameOrAfter(fechaInicio, 'day') && fecha.isSameOrBefore(fechaFin, 'day');
+      }
+
+      // Si solo tiene fecha_inicio
+      if (asignacion.fecha_inicio && !asignacion.fecha_fin) {
+        const fechaInicio = moment(asignacion.fecha_inicio);
+        return fecha.isSameOrAfter(fechaInicio, 'day');
+      }
+
+      // Si solo tiene fecha_fin
+      if (!asignacion.fecha_inicio && asignacion.fecha_fin) {
+        const fechaFin = moment(asignacion.fecha_fin);
+        return fecha.isSameOrBefore(fechaFin, 'day');
+      }
+
+      // Si no tiene fechas, asumir que siempre está activa
+      return true;
+    };
+
     const calendarioProcesado: CalendarioDia[] = [];
     let costoTotal = 0;
 
@@ -640,9 +1045,26 @@ export class ProcesosRhService {
 
           const usuariosMap = asistenciasMap.get(fechaDiaKey) || new Map<number, any>();
 
+          // ✅ MODIFICADO: Procesar TODAS las asignaciones del grupo
           for (const asignacion of asignacionesGrupo) {
             if (!asignacion) continue;
 
+            // Verificar si la asignación está activa en esta fecha
+            const estaActiva = isAsignacionActivaEnFecha(asignacion, fechaDia);
+
+            if (!estaActiva) {
+              // Asignación NO activa en esta fecha - agregar detalle vacío
+              detalleAsistencias.push({
+                id_asignacion: asignacion.id_asignacion || 0,
+                id_usuario: asignacion.id_usuario || 0,
+                tipo_asistencia: '',
+                descuento_aplicado: 0,
+                monto_individual: 0
+              });
+              continue;
+            }
+
+            // Asignación activa - procesar asistencia
             const asistencia = usuariosMap.get(asignacion.id_usuario);
 
             if (asistencia) {
@@ -685,6 +1107,7 @@ export class ProcesosRhService {
                 monto_individual: montoIndividual
               });
             } else {
+              // Asignación activa sin registro de asistencia
               detalleAsistencias.push({
                 id_asignacion: asignacion.id_asignacion || 0,
                 id_usuario: asignacion.id_usuario || 0,
@@ -695,6 +1118,7 @@ export class ProcesosRhService {
             }
           }
 
+          // ✅ MODIFICADO: Siempre agregar el día al calendario
           costoTotal += montoDia;
 
           calendarioProcesado.push({
@@ -872,5 +1296,13 @@ export class ProcesosRhService {
     return meses;
   }
 
-  
+
+
+  async listarInformacionRHPlanilla(id_proyecto) {
+    const obj = {
+      id_proyecto: id_proyecto
+    }
+    const resp = await this.recursosHumanosService.listarInformacionRHPlanilla(obj)
+    return resp
+  }
 }

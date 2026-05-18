@@ -598,9 +598,13 @@
                               <app-equipos-herramientas [tabproyecto]="tab"></app-equipos-herramientas>
                             </ng-container>
                             <ng-container *ngIf="tab.get('menu_proyecto_seleccionado').value == 9">
-                              <app-panel-recursos-humanos [idProyecto]="tab.get('id_proyecto').value"
+                              <!-- <app-panel-recursos-humanos [idProyecto]="tab.get('id_proyecto').value"
                                 [tabproyecto]="tab" [ocultarMenu]="ocultarMenu"
-                                [nombreProyecto]="tab.get('nombre_proyecto').value"></app-panel-recursos-humanos>
+                                [nombreProyecto]="tab.get('nombre_proyecto').value"></app-panel-recursos-humanos> -->
+
+                              <app-configuracion-planilla [idProyecto]="tab.get('id_proyecto').value"
+                                [tabproyecto]="tab" [ocultarMenu]="ocultarMenu"
+                                [nombreProyecto]="tab.get('nombre_proyecto').value"></app-configuracion-planilla>
                             </ng-container>
                             <ng-container *ngIf="tab.get('menu_proyecto_seleccionado').value == 10">
                               <!-- <app-panel-recursos-humanos [idProyecto]="tab.get('id_proyecto').value" [tabproyecto]="tab"
@@ -614,6 +618,12 @@
                             </ng-container> -->
                             <ng-container *ngIf="tab.get('menu_proyecto_seleccionado').value ==11">
                               <app-informes-reportes [tabproyecto]="tab"></app-informes-reportes>
+                            </ng-container>
+                            <ng-container *ngIf="tab.get('menu_proyecto_seleccionado').value ==12">
+                              <app-planillas [tabproyecto]="tab"></app-planillas>
+                            </ng-container>
+                            <ng-container *ngIf="tab.get('menu_proyecto_seleccionado').value ==13">
+                              <app-reportes-rh [tabproyecto]="tab"></app-reportes-rh>
                             </ng-container>
                           </app-card>
                         </div>

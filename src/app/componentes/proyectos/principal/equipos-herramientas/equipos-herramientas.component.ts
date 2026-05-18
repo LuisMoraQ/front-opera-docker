@@ -170,6 +170,8 @@ export class EquiposHerramientasComponent implements OnInit {
   todosExpandidos = true
   todosExpandidosNueva = true
   todosExpandidosNueva2 = true
+
+  private evitandoDobleEjecucion = false;
   constructor(private fb: FormBuilder, private cdRef: ChangeDetectorRef, private encriptadorService: EncriptadorService, private _logisticaService: LogisticaService, private toaster: ToastrService, public formService: FormsService, private equiposServiciosService: EquiposServiciosService) { }
 
   async ngOnInit() {
@@ -570,6 +572,14 @@ export class EquiposHerramientasComponent implements OnInit {
   }
 
   async cambioVista(ind: any) {
+    if (ind == this.subvista) {
+      return
+    }
+    if (this.equipoEditado) {
+      this.evitandoDobleEjecucion = true;
+      await this.guardarActualizarCambiosDesagregado(true);
+      this.evitandoDobleEjecucion = false;
+    }
     this.subvista = ind;
     if (this.subvista == 2 || this.subvista == 3) {
       this.mostrar_carga_todo = true
@@ -622,6 +632,11 @@ export class EquiposHerramientasComponent implements OnInit {
   async cambioArea() {
     this.mostrar_carga_todo = true
     setTimeout(async () => {
+      if (this.equipoEditado) {
+        this.evitandoDobleEjecucion = true;
+        await this.guardarActualizarCambiosDesagregado(true);
+        this.evitandoDobleEjecucion = false;
+      }
       this.calendarioFiltrado = this.calendario[this.mesSeleccionado]
       const desagredados = await this.listarDesagregadosEquipos()
       await this.filtrarPlanillaEquiposServicios(desagredados)
@@ -822,6 +837,11 @@ export class EquiposHerramientasComponent implements OnInit {
   async cambioMes() {
     this.mostrar_carga_todo = true
     setTimeout(async () => {
+      if (this.equipoEditado) {
+        this.evitandoDobleEjecucion = true;
+        await this.guardarActualizarCambiosDesagregado(true);
+        this.evitandoDobleEjecucion = false;
+      }
       this.calendarioFiltrado = this.calendario[this.mesSeleccionado]
       const desagredados = await this.listarDesagregadosEquipos()
       await this.filtrarPlanillaEquiposServicios(desagredados)
@@ -1402,9 +1422,19 @@ export class EquiposHerramientasComponent implements OnInit {
   }
 
   async seleccionCelda(i, j) {
+    if (this.evitandoDobleEjecucion) {
+      return;
+    }
+    const tipoFila = this.tablaPlanilla[i]?.tipo;
+    if (tipoFila === 'GLOBAL' || tipoFila === 'MES') {
+      // Para GLOBAL y MES, no hacer nada al hacer clic en celda
+      return;
+    }
     if (this.celdaSel[0] !== i || this.celdaSel[1] !== j) {
       if (this.equipoEditado) {
-        await this.guardarActualizarCambiosDesagregado(true)
+        this.evitandoDobleEjecucion = true;
+        await this.guardarActualizarCambiosDesagregado(true);
+        this.evitandoDobleEjecucion = false;
       }
       this.buscando = true
       this.celdaSel = [i, j]
@@ -1992,11 +2022,17 @@ export class EquiposHerramientasComponent implements OnInit {
   }
 
   async seleccionFilaPlanrow(row, i) {
+    if (this.evitandoDobleEjecucion) {
+      return;
+    }
+
     if (this.selFilPlan == i) {
       return
     }
-    if (this.equipoEditado) {
-      await this.guardarActualizarCambiosDesagregado(true)
+    if (this.equipoEditado && (row.tipo == 'GLOBAL' || row.tipo == 'MES')) {
+      this.evitandoDobleEjecucion = true;
+      await this.guardarActualizarCambiosDesagregado(true);
+      this.evitandoDobleEjecucion = false;
     }
     this.celdaSel = [null, null]
     this.buscando = true
