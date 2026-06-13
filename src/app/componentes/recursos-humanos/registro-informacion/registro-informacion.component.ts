@@ -284,14 +284,19 @@ export class RegistroInformacionComponent implements OnInit {
     { codigo: 'FJ', tipo: 'FALTA JUSTIFICADA', porcentaje: null },
     { codigo: 'FM', tipo: 'DESCANSO MEDICO', porcentaje: null },
     { codigo: 'FV', tipo: 'VACACIONES', porcentaje: null },
-    { codigo: 'FC', tipo: 'CITA MEDICA', porcentaje: null },
-    { codigo: 'FD', tipo: 'DUELO', porcentaje: null },
     { codigo: 'PE', tipo: 'PERMISO', porcentaje: null },
-    // { codigo: 'FS', tipo: 'NO MARCO SALIDA', porcentaje: null },
-    // { codigo: 'OBS', tipo: 'OBSERVADO', porcentaje: null },
-    // { codigo: 'IN', tipo: 'INCOMPLETO', porcentaje: null },
-    // { codigo: 'TEX', tipo: 'TEXTRA', porcentaje: null }
-  ]
+    { codigo: 'D1', tipo: 'DESCUENTO OPCIONAL 1', porcentaje: null },
+    { codigo: 'D2', tipo: 'DESCUENTO OPCIONAL 2', porcentaje: null },
+    { codigo: 'D3', tipo: 'DESCUENTO OPCIONAL 3', porcentaje: null },
+    { codigo: 'OBS', tipo: 'OBSERVADO', porcentaje: null },
+    { codigo: 'IN', tipo: 'INCOMPLETO', porcentaje: null },
+    { codigo: 'TEX', tipo: 'TEXTRA', porcentaje: null },
+    { codigo: 'BN', tipo: 'BONO NO LABORABLE', porcentaje: null },
+    { codigo: 'BF', tipo: 'BONO FERIADO', porcentaje: null },
+    { codigo: 'B1', tipo: 'BONO OPCIONAL 1', porcentaje: null },
+    { codigo: 'B2', tipo: 'BONO OPCIONAL 2', porcentaje: null },
+    { codigo: 'B3', tipo: 'BONO OPCIONAL 3', porcentaje: null },
+  ];
   tablaAsignaciones = []
   filAsignacion = null
 
@@ -2225,7 +2230,7 @@ export class RegistroInformacionComponent implements OnInit {
     this.tipo_cargo.reset()
     // this.tipo_cargo.setValue(null)
     if (!this.id_area_asignacion.value) {
-        this.tipo_cargo.disable()
+      this.tipo_cargo.disable()
       this.id_cargo_asignacion.disable()
     } else {
       this.id_cargo_asignacion.enable()
@@ -2901,7 +2906,7 @@ export class RegistroInformacionComponent implements OnInit {
             hora_ingreso_tarde: '14:00:00|14:00:00|14:00:00|14:00:00|14:00:00||',
             hora_salida_tarde: '18:00:00|18:00:00|18:00:00|18:00:00|18:00:00||',
             totales_dia: 48,
-            descuentos: '|10|10||100|100|||||||',
+            descuentos: "0|10|10|0|100|100|0|0|0|0|0|0|0|100|100|0|0|0|0|0|0",
             tardanza: 10,
             tiempo_extra: 0
           }

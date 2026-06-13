@@ -425,13 +425,18 @@
                     Buscar
                 </button>
             </div>
-            <!-- <div class="col-2 d-flex justify-content-end pr-0">
-                <button  mat-raised-button color="warn" class="h-mat"
+            <div class="col-2 d-flex justify-content-end pr-0">
+                <!-- <button  mat-raised-button color="warn" class="h-mat"
                     style="background-color: green;" (click)="aprobarPlanilla()">
                     <mat-icon>check</mat-icon>
                     APROBAR PLANILLA MES
-                </button>
-            </div> -->
+                </button> -->
+                <span *ngIf="sinPresAnalitico" class="badge bg-danger"
+                    style="height: 35px;align-content: center;cursor: pointer;"
+                    title="Registre un presupuesto analítico primero caso contrario los totales seran un monto de 0">
+                    ⚠️ Sin presupuesto analítico registrado
+                </span>
+            </div>
 
         </div>
         <div class="col-12 position-relative">
@@ -555,7 +560,9 @@
                                                 [ngClass]="row.dias[j].tipo ? getSelectClass(row.dias[j].tipo): 'bg-light text-dark'"
                                                 [(ngModel)]="row.dias[j].tipo"
                                                 (ngModelChange)="onTipoChange($event, i, j)">
-                                                <option value="" disabled selected hidden> </option>
+                                                <option value="" style="background-color: white; color: black;">
+                                                </option>
+                                                <!-- <option value="" disabled selected hidden> </option> -->
                                                 <option *ngFor="let tipo of tipos" [value]="tipo.codigo"
                                                     [ngStyle]="{'background-color': getColor(tipo.codigo), 'color': getTextColor(tipo.codigo)}">
                                                     {{tipo.codigo}} <ng-container
@@ -670,7 +677,7 @@
                             <table class="table table-bordered table-sm m-0">
                                 <tbody>
                                     <tr class="d-table-row">
-                                        <!-- Fila única con todas las celdas -->
+                                        <!-- Fila 1 -->
                                         <td class="p-1">
                                             <div class="d-flex align-items-center">
                                                 <span class="badge bg-success me-1">A</span>
@@ -719,6 +726,9 @@
                                                 <small class="text-muted ml-1">Desc. Médico</small>
                                             </div>
                                         </td>
+                                    </tr>
+                                    <tr class="d-table-row">
+                                        <!-- Fila 2 -->
                                         <td class="p-1">
                                             <div class="d-flex align-items-center">
                                                 <span class="badge bg-info text-white me-1">FV</span>
@@ -727,48 +737,77 @@
                                         </td>
                                         <td class="p-1">
                                             <div class="d-flex align-items-center">
-                                                <span class="badge bg-teal text-white me-1">FC</span>
-                                                <small class="text-muted ml-1">Cita Médica</small>
+                                                <span class="badge bg-secondary text-white me-1">PE</span>
+                                                <small class="text-muted ml-1">Permiso</small>
                                             </div>
                                         </td>
                                         <td class="p-1">
                                             <div class="d-flex align-items-center">
-                                                <span class="badge bg-dark text-white me-1">FD</span>
-                                                <small class="text-muted ml-1">Duelo</small>
+                                                <span class="badge bg-dark text-white me-1">D1</span>
+                                                <small class="text-muted ml-1">Desc. Opc. 1</small>
                                             </div>
                                         </td>
                                         <td class="p-1">
                                             <div class="d-flex align-items-center">
-                                                <span class="badge bg-secondary me-1 text-white">PE</span>
-                                                <small class="text-muted ml-1">permiso</small>
+                                                <span class="badge bg-dark text-white me-1">D2</span>
+                                                <small class="text-muted ml-1">Desc. Opc. 2</small>
                                             </div>
                                         </td>
-                                        <!-- <td class="p-1">
+                                        <td class="p-1">
                                             <div class="d-flex align-items-center">
-                                                <span class="badge bg-light text-dark border me-1">FS</span>
-                                                <small class="text-muted ml-1">Sin Salida</small>
+                                                <span class="badge bg-dark text-white me-1">D3</span>
+                                                <small class="text-muted ml-1">Desc. Opc. 3</small>
                                             </div>
-                                        </td> -->
+                                        </td>
                                         <td class="p-1">
                                             <div class="d-flex align-items-center">
                                                 <span class="badge bg-indigo text-white me-1">OBS</span>
                                                 <small class="text-muted ml-1">Observado</small>
                                             </div>
                                         </td>
-
-                                        <!-- Estado Incompleto -->
                                         <td class="p-1">
                                             <div class="d-flex align-items-center">
                                                 <span class="badge bg-light-blue text-dark border me-1">IN</span>
                                                 <small class="text-muted ml-1">Incompleto</small>
                                             </div>
                                         </td>
-
-                                        <!-- Estado Tiempo Extra -->
                                         <td class="p-1">
                                             <div class="d-flex align-items-center">
                                                 <span class="badge bg-lime text-dark me-1">TEX</span>
                                                 <small class="text-muted ml-1">Tiempo Extra</small>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr class="d-table-row">
+                                        <!-- Fila 3 - Bonificaciones -->
+                                        <td class="p-1">
+                                            <div class="d-flex align-items-center">
+                                                <span class="badge bg-primary text-white me-1">BN</span>
+                                                <small class="text-muted ml-1">Bono No Lab.</small>
+                                            </div>
+                                        </td>
+                                        <td class="p-1">
+                                            <div class="d-flex align-items-center">
+                                                <span class="badge bg-success text-white me-1">BF</span>
+                                                <small class="text-muted ml-1">Bono Feriado</small>
+                                            </div>
+                                        </td>
+                                        <td class="p-1">
+                                            <div class="d-flex align-items-center">
+                                                <span class="badge bg-teal text-white me-1">B1</span>
+                                                <small class="text-muted ml-1">Bono Opc. 1</small>
+                                            </div>
+                                        </td>
+                                        <td class="p-1">
+                                            <div class="d-flex align-items-center">
+                                                <span class="badge bg-teal text-white me-1">B2</span>
+                                                <small class="text-muted ml-1">Bono Opc. 2</small>
+                                            </div>
+                                        </td>
+                                        <td class="p-1">
+                                            <div class="d-flex align-items-center">
+                                                <span class="badge bg-teal text-white me-1">B3</span>
+                                                <small class="text-muted ml-1">Bono Opc. 3</small>
                                             </div>
                                         </td>
                                     </tr>

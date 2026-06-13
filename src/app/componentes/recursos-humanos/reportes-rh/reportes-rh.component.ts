@@ -11,6 +11,37 @@ import { ProcesosRhService } from 'src/app/servicios/procesos-rh.service';
 import { RecursosHumanosService } from 'src/app/servicios/recursoshumanos.service';
 import { SwalService } from 'src/app/servicios/swal.service';
 import { ModalBasicComponent } from 'src/app/shared/modal-basic/modal-basic.component';
+interface DataHeader {
+  nombre: string;
+  cantidad: number;
+  width: number | null;
+}
+
+interface Partida {
+  descripcion: string;
+  item: string;
+  unidad: string;
+  inicio: string;
+  fin: string;
+  [key: string]: any;
+}
+
+interface Insumo {
+  descripcion: string;
+  id_tipo_insumo: number | string;
+  partidas: Partida[];
+  [key: string]: any;
+}
+
+interface RangoFecha {
+  inicio: Date;
+  fin: Date;
+}
+
+interface RangoDia {
+  inicio: number;
+  fin: number;
+}
 
 interface FilaArea {
   esArea: true;
@@ -122,7 +153,8 @@ interface IAgrupamiento {
   mostrar: number;
   icomost: number;
   estado: number | null;
-  abrev: string
+  abrev: string,
+  porcentajeTot: number
 }
 
 interface filaTabla {
@@ -324,6 +356,8 @@ export class ReportesRhComponent implements OnInit {
   tablaAcumFiltrada = []
   totalesAcumulados = {}
   calendarioFiltrado2
+  dataCalendMat = null
+  id_reg = null
 
   formElementos = new UntypedFormGroup({
     anio: new UntypedFormControl('', [Validators.required]),
@@ -352,7 +386,7 @@ export class ReportesRhComponent implements OnInit {
       this.mostrar_carga_todo = true
       this.id_usuario = this._EncriptadorService.recuperarlocalstory('idusuario');
       await this.cargarInfoRH()
-      // await this.cargarProgramacion()
+      await this.cargarProgramacion()
       await this.estructurarTabla()
       this.mostrar_carga_todo = false
     } catch (error) {
@@ -370,32 +404,29 @@ export class ReportesRhComponent implements OnInit {
   async cargarProgramacion() {
     await this.recuperarDatosProyecto(this.idProyecto)
     await this.listarVersiones()
+    await this.cargarDatos();
+    await this.listaFeriados();
     await this.listarProgramacion()
     const feriados = await this.fechasLimitesGraficos(this.dataPrincipal);
+    await this.recuperarCalendario(this.fechaIniGrafico, this.fechaFinalGrafico)
     let formattedDate = moment(this.fechaIniGrafico).format('YYYY-MM-DD');
     let inicio = new Date(formattedDate + 'T00:00:00');
-    // const inicio = new Date(moment(fechaini).format('YYYY-MM-DD'));
-    // const fin = new Date(moment(fechafin).format('YYYY-MM-DD'));
+
     let formattedDate2 = moment(this.fechaFinalGrafico).format('YYYY-MM-DD');
     let fin = new Date(formattedDate2 + 'T00:00:00');
-    let step = null;
-    let column_width = null;
+
     let fiLimite = null;
     let ffLimite = null;
-    step = 24;
-    column_width = 18;
+
     fiLimite = moment(inicio).subtract(6, 'days');
     ffLimite = moment(fin).add(15, 'days');
-
     this.fiLimite = moment(fiLimite).format('YYYY-MM-DD');
     this.ffLimite = moment(ffLimite).format('YYYY-MM-DD');
-
-
-
     await this.generarTablaDesembolso();
 
-    await this.generarCalendarioMateriales();
-
+    // Esta ya la tienes, solo asegúrate de tener la versión actualizada que filtra por "total"
+    this.dataCalendMat = await this.generarCalendarioMaterialesPorTipo('MANO DE OBRA');
+    console.log('Resultado final:', this.dataCalendMat);
   }
 
   async fechasLimitesGraficos(tablagantt) {
@@ -486,10 +517,6 @@ export class ReportesRhComponent implements OnInit {
 
     // Generar reporte con detalle
     const { resumenMensual, detallePorDia } = await this.generarReporteMensualConDetalle(data, calendario);
-
-    console.log(resumenMensual);
-
-    console.log(detallePorDia);
 
     // Guardar en variables para mostrar en la vista
     this.reporteMensual = resumenMensual;
@@ -611,7 +638,76 @@ export class ReportesRhComponent implements OnInit {
     });
   }
 
-  // Método para calcular el monto de una asistencia (copiado de tu generarPlanillaProyecto)
+  // // Método para calcular el monto de una asistencia (copiado de tu generarPlanillaProyecto)
+  // private async calcularMontoAsistencia(asistencia: any): Promise<number> {
+  //   // Obtener horario del área
+  //   let dataHorario = this.horariosFeriadosCache?.[0]?.find(ele => ele.id_area == asistencia.id_area);
+  //   if (!dataHorario) {
+  //     dataHorario = {
+  //       id_configuracion: null,
+  //       id_proyecto: asistencia.id_proyecto,
+  //       id_area: asistencia.id_area,
+  //       inicio_semana: 'LUNES',
+  //       dias_nolaborables: 'DOMINGO',
+  //       hora_ingreso_manana: '07:30:00|07:30:00|07:30:00|07:30:00|07:30:00|07:30:00|',
+  //       hora_salida_manana: '12:00:00|12:00:00|12:00:00|12:00:00|12:00:00|13:00:00|',
+  //       hora_ingreso_tarde: '14:00:00|14:00:00|14:00:00|14:00:00|14:00:00||',
+  //       hora_salida_tarde: '18:00:00|18:00:00|18:00:00|18:00:00|18:00:00||',
+  //       totales_dia: 48,
+  //       descuentos: '0|10|10|0|100|100|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0',
+  //       tardanza: 10,
+  //       tiempo_extra: 0
+  //     };
+  //   }
+
+  //   const diasNoLaborables = dataHorario?.dias_nolaborables?.split('|') || [];
+  //   const feriadosSoloFecha = this.horariosFeriadosCache?.[1]?.filter(ele => {
+  //     const areas = ele.areas?.split('|');
+  //     return areas && areas.includes(asistencia.id_area.toString());
+  //   }).map(ele => ele.fecha.split('T')[0]) || [];
+
+  //   // Obtener coste por día
+  //   const costesCargoDia = this.montosAreasCache.find(ele =>
+  //     ele.id_area == asistencia.id_area &&
+  //     ele.tipo == ('JORNAL CATEGORIA ' + asistencia.tipo_cargo)
+  //   )?.cargos.find(ele => ele.id_cargo == asistencia.id_cargo);
+
+  //   let costeDia = costesCargoDia ? costesCargoDia.parcial : 0;
+
+  //   const fechaMoment = moment(asistencia.fecha);
+  //   const diaSemana = this.getDiaSemanaEspanol(fechaMoment);
+  //   const fechaKey = fechaMoment.format('YYYY-MM-DD');
+
+  //   const esDiaNoLaborable = diasNoLaborables.includes(diaSemana);
+  //   const esFeriado = feriadosSoloFecha.includes(fechaKey);
+  //   const esDiaEspecial = false;
+  //   const tipoCodigo = asistencia.tipo || '';
+  //   const tipoInfo = this.obtenerTipoInfo(tipoCodigo);
+
+  //   let montoDia = 0;
+
+  //   if (!esDiaEspecial) {
+  //     if (tipoInfo && tipoInfo.descuento && tipoInfo.descuento !== "") {
+  //       const porcentajeDescuento = parseInt(tipoInfo.descuento) || 0;
+  //       const descuentoMonto = costeDia * (porcentajeDescuento / 100);
+  //       montoDia = costeDia - descuentoMonto;
+  //     } else if (tipoCodigo === 'A' || tipoCodigo === 'TEX') {
+  //       montoDia = costeDia;
+  //     } else if (!tipoCodigo || tipoCodigo === '') {
+  //       montoDia = 0;
+  //     } else {
+  //       montoDia = 0;
+  //     }
+  //   } else {
+  //     montoDia = 0;
+  //   }
+
+  //   const horasExtra = asistencia.horas_extra || 0;
+  //   const montoExtra = asistencia.monto_extra || 0;
+
+  //   return montoDia + montoExtra;
+  // }
+
   private async calcularMontoAsistencia(asistencia: any): Promise<number> {
     // Obtener horario del área
     let dataHorario = this.horariosFeriadosCache?.[0]?.find(ele => ele.id_area == asistencia.id_area);
@@ -627,12 +723,11 @@ export class ReportesRhComponent implements OnInit {
         hora_ingreso_tarde: '14:00:00|14:00:00|14:00:00|14:00:00|14:00:00||',
         hora_salida_tarde: '18:00:00|18:00:00|18:00:00|18:00:00|18:00:00||',
         totales_dia: 48,
-        descuentos: '|10|10||100|100|||||||',
+        descuentos: "0|10|10|0|100|100|0|0|0|0|0|0|0|100|100|0|0|0|0|0|0",
         tardanza: 10,
         tiempo_extra: 0
       };
     }
-
     const diasNoLaborables = dataHorario?.dias_nolaborables?.split('|') || [];
     const feriadosSoloFecha = this.horariosFeriadosCache?.[1]?.filter(ele => {
       const areas = ele.areas?.split('|');
@@ -653,17 +748,35 @@ export class ReportesRhComponent implements OnInit {
 
     const esDiaNoLaborable = diasNoLaborables.includes(diaSemana);
     const esFeriado = feriadosSoloFecha.includes(fechaKey);
-    const esDiaEspecial = false;
+    // const esDiaEspecial = esDiaNoLaborable || esFeriado; 
+    const esDiaEspecial = false
     const tipoCodigo = asistencia.tipo || '';
-    const tipoInfo = this.obtenerTipoInfo(tipoCodigo);
-
+    const tipoInfo = this.obtenerTipoInfoConDescuentos(tipoCodigo, dataHorario.descuentos);
     let montoDia = 0;
 
     if (!esDiaEspecial) {
-      if (tipoInfo && tipoInfo.descuento && tipoInfo.descuento !== "") {
-        const porcentajeDescuento = parseInt(tipoInfo.descuento) || 0;
-        const descuentoMonto = costeDia * (porcentajeDescuento / 100);
-        montoDia = costeDia - descuentoMonto;
+      if (tipoInfo && tipoInfo.valor !== undefined && tipoInfo.tipoValor) {
+        const porcentaje = parseInt(tipoInfo.valor) || 0;
+
+        if (tipoInfo.tipoValor === 'descuento') {
+          // Descuento: resta del costo del día
+          if (porcentaje > 0) {
+            const descuentoMonto = costeDia * (porcentaje / 100);
+            montoDia = costeDia - descuentoMonto;
+          } else {
+            montoDia = costeDia;
+          }
+        } else if (tipoInfo.tipoValor === 'bonificacion') {
+          // Bonificación: suma al costo del día
+          if (porcentaje > 0) {
+            const bonificacionMonto = costeDia * (porcentaje / 100);
+            montoDia = costeDia + bonificacionMonto;
+          } else {
+            montoDia = costeDia;
+          }
+        } else {
+          montoDia = costeDia;
+        }
       } else if (tipoCodigo === 'A' || tipoCodigo === 'TEX') {
         montoDia = costeDia;
       } else if (!tipoCodigo || tipoCodigo === '') {
@@ -672,13 +785,64 @@ export class ReportesRhComponent implements OnInit {
         montoDia = 0;
       }
     } else {
-      montoDia = 0;
+      // Días especiales (no laborables o feriados)
+      // Aquí puedes definir si se paga o no
+      montoDia = 0; // O costeDia si se paga igual
     }
 
     const horasExtra = asistencia.horas_extra || 0;
     const montoExtra = asistencia.monto_extra || 0;
 
     return montoDia + montoExtra;
+  }
+
+  private obtenerTipoInfoConDescuentos(tipoCodigo: string, descuentosString: string): any {
+    // Definir los tipos en orden (debe coincidir con el orden de la cadena de descuentos)
+    const tipos = [
+      { codigo: 'A', tipo: 'ASISTIO', tipoValor: 'descuento' },
+      { codigo: 'T', tipo: 'TARDANZA', tipoValor: 'descuento' },
+      { codigo: 'TI', tipo: 'TARDANZA INJUSTIFICADA', tipoValor: 'descuento' },
+      { codigo: 'TJ', tipo: 'TARDANZA JUSTIFICADA', tipoValor: 'descuento' },
+      { codigo: 'F', tipo: 'FALTA', tipoValor: 'descuento' },
+      { codigo: 'FI', tipo: 'FALTA INJUSTIFICADA', tipoValor: 'descuento' },
+      { codigo: 'FJ', tipo: 'FALTA JUSTIFICADA', tipoValor: 'descuento' },
+      { codigo: 'FM', tipo: 'DESCANSO MEDICO', tipoValor: 'descuento' },
+      { codigo: 'FV', tipo: 'VACACIONES', tipoValor: 'descuento' },
+      { codigo: 'PE', tipo: 'PERMISO', tipoValor: 'descuento' },        // ← Cambió: ahora índice 9
+      { codigo: 'D1', tipo: 'DESCUENTO OPCIONAL 1', tipoValor: 'descuento' }, // índice 10
+      { codigo: 'D2', tipo: 'DESCUENTO OPCIONAL 2', tipoValor: 'descuento' }, // índice 11
+      { codigo: 'D3', tipo: 'DESCUENTO OPCIONAL 3', tipoValor: 'descuento' }, // índice 12
+      { codigo: 'OBS', tipo: 'OBSERVADO', tipoValor: 'descuento' },      // índice 13
+      { codigo: 'IN', tipo: 'INCOMPLETO', tipoValor: 'descuento' },      // índice 14
+      { codigo: 'TEX', tipo: 'TEXTRA', tipoValor: 'descuento' },         // índice 15
+      { codigo: 'BN', tipo: 'BONO NO LABORABLE', tipoValor: 'bonificacion' }, // índice 16
+      { codigo: 'BF', tipo: 'BONO FERIADO', tipoValor: 'bonificacion' },      // índice 17
+      { codigo: 'B1', tipo: 'BONO OPCIONAL 1', tipoValor: 'bonificacion' },   // índice 18
+      { codigo: 'B2', tipo: 'BONO OPCIONAL 2', tipoValor: 'bonificacion' },   // índice 19
+      { codigo: 'B3', tipo: 'BONO OPCIONAL 3', tipoValor: 'bonificacion' }    // índice 20
+    ];
+
+    // Dividir la cadena de descuentos
+    const valoresDescuento = descuentosString?.split('|') || [];
+
+    // Encontrar el índice del tipo
+    const index = tipos.findIndex(t => t.codigo === tipoCodigo);
+
+    if (index !== -1 && index < valoresDescuento.length) {
+      const tipoBase = tipos[index];
+      return {
+        ...tipoBase,
+        valor: valoresDescuento[index] || "0"
+      };
+    }
+
+    // Si no se encuentra, retornar un objeto por defecto
+    return {
+      codigo: tipoCodigo,
+      tipo: 'DESCONOCIDO',
+      tipoValor: 'descuento',
+      valor: '0'
+    };
   }
 
   private getDiaSemanaEspanol(fecha: moment.Moment): string {
@@ -695,26 +859,34 @@ export class ReportesRhComponent implements OnInit {
     return diasMap[diaIngles] || diaIngles;
   }
 
-  private obtenerTipoInfo(tipoCodigo: string): { codigo: string, tipo: string, descuento: string } | null {
-    const tipos = [
-      { codigo: 'A', tipo: 'ASISTIO', descuento: "0" },
-      { codigo: 'T', tipo: 'TARDANZA', descuento: "10" },
-      { codigo: 'TI', tipo: 'TARDANZA INJUSTIFICADA', descuento: "10" },
-      { codigo: 'TJ', tipo: 'TARDANZA JUSTIFICADA', descuento: "0" },
-      { codigo: 'F', tipo: 'FALTA', descuento: "100" },
-      { codigo: 'FI', tipo: 'FALTA INJUSTIFICADA', descuento: "100" },
-      { codigo: 'FJ', tipo: 'FALTA JUSTIFICADA', descuento: "0" },
-      { codigo: 'FM', tipo: 'DESCANSO MEDICO', descuento: "0" },
-      { codigo: 'FV', tipo: 'VACACIONES', descuento: "0" },
-      { codigo: 'FC', tipo: 'CITA MEDICA', descuento: "0" },
-      { codigo: 'FD', tipo: 'DUELO', descuento: "0" },
-      { codigo: 'PE', tipo: 'PERMISO', descuento: "0" },
-      { codigo: 'OBS', tipo: 'OBSERVADO', descuento: "100" },
-      { codigo: 'IN', tipo: 'INCOMPLETO', descuento: "100" },
-      { codigo: 'TEX', tipo: 'TEXTRA', descuento: "0" }
-    ];
-    return tipos.find(t => t.codigo === tipoCodigo) || null;
-  }
+  // private obtenerTipoInfo(tipoCodigo: string): { codigo: string, tipo: string, descuento: string } | null {
+  //   const tipos = [
+  //     { codigo: 'A', tipo: 'ASISTIO', descuento: "0" },
+  //     { codigo: 'T', tipo: 'TARDANZA', descuento: "10" },
+  //     { codigo: 'TI', tipo: 'TARDANZA INJUSTIFICADA', descuento: "10" },
+  //     { codigo: 'TJ', tipo: 'TARDANZA JUSTIFICADA', descuento: "0" },
+  //     { codigo: 'F', tipo: 'FALTA', descuento: "100" },
+  //     { codigo: 'FI', tipo: 'FALTA INJUSTIFICADA', descuento: "100" },
+  //     { codigo: 'FJ', tipo: 'FALTA JUSTIFICADA', descuento: "0" },
+  //     { codigo: 'FM', tipo: 'DESCANSO MEDICO', descuento: "0" },
+  //     { codigo: 'FV', tipo: 'VACACIONES', descuento: "0" },
+  //     { codigo: 'FC', tipo: 'CITA MEDICA', descuento: "0" },
+  //     { codigo: 'FD', tipo: 'DUELO', descuento: "0" },
+  //     { codigo: 'PE', tipo: 'PERMISO', descuento: "0" },
+  //     { codigo: 'D1', tipo: 'DESCUENTO OPCIONAL 1', descuento: "0" },
+  //     { codigo: 'D2', tipo: 'DESCUENTO OPCIONAL 2', descuento: "0" },
+  //     { codigo: 'D3', tipo: 'DESCUENTO OPCIONAL 3', descuento: "0" },
+  //     { codigo: 'OBS', tipo: 'OBSERVADO', descuento: "100" },
+  //     { codigo: 'IN', tipo: 'INCOMPLETO', descuento: "100" },
+  //     { codigo: 'TEX', tipo: 'TEXTRA', descuento: "0" },
+  //     { codigo: 'BN', tipo: 'BONO NO LABORABLE', descuento: "0" },
+  //     { codigo: 'BF', tipo: 'BONO FERIADO', descuento: "0" },
+  //     { codigo: 'B1', tipo: 'BONO OPCIONAL 1', descuento: "0" },
+  //     { codigo: 'B2', tipo: 'BONO OPCIONAL 2', descuento: "0" },
+  //     { codigo: 'B3', tipo: 'BONO OPCIONAL 3', descuento: "0" }
+  //   ];
+  //   return tipos.find(t => t.codigo === tipoCodigo) || null;
+  // }
 
   async listarMontosAreaPresAnaliticoRH() {
     let montos = []
@@ -979,8 +1151,25 @@ export class ReportesRhComponent implements OnInit {
       // }
       this.ultimoidGantt = ultimo;
     }
-  }
 
+
+    if (!this.dataPrincipal.length) {
+      this.mostrar_carga_todo = false;
+    }
+    // console.table(this.dataPrincipal, [
+    //   'uid',
+    //   'idgantt',
+    //   'item',
+    //   'fechaini',
+    //   'fechafin',
+    //   'referencia',
+    //   'referenciados',
+    //   'hijos',
+    //   'hijos_uid',
+    //   'condini',
+    //   'condfin',
+    // ]);
+  }
   async referenciasCorrectas() {
     let guardar = false;
     for (const iterator of this.dataPrincipal) {
@@ -1283,6 +1472,48 @@ export class ReportesRhComponent implements OnInit {
     this.plazoHabil = this.dataProyecto.plazo - this.noLaborables.length;
   }
 
+  async cargarDatos() {
+    let resulta = await this.principalService.ListarAspectosDiasProy({
+      id_proyecto: this.idProyecto,
+    });
+
+    if (resulta.length > 0) {
+      this.aspectosdias = resulta[0];
+      for (const iterator of resulta[1]) {
+        iterator.fecha = moment(iterator.fecha).format('YYYY-MM-DD');
+      }
+      this.tablaferiados = resulta[1];
+      const nolab1 =
+        this.aspectosdias[0]?.nolabo1 != null
+          ? this.aspectosdias[0].nolabo1
+          : '';
+      const coloresString =
+        this.aspectosdias[0]?.nolabo2 != null
+          ? this.aspectosdias[0].nolabo2
+          : '';
+      const arrayColores = coloresString.split('|');
+      // this.colorNoLabo = arrayColores[0] ? arrayColores[0] : 'color_1';
+      // this.colorFeriado = arrayColores[1] ? arrayColores[1] : 'color_1';
+      // this.colorActual = arrayColores[2] ? arrayColores[2] : 'color_1';
+
+      // const encontrado1 = this.coloresProgra.find(
+      //   (ele) => ele.nombre == this.colorFeriado
+      // );
+      // const encontrado2 = this.coloresProgra.find(
+      //   (ele) => ele.nombre == this.colorNoLabo
+      // );
+      // const encontrado3 = this.coloresProgra.find(
+      //   (ele) => ele.nombre == this.colorActual
+      // );
+
+      // this.colorFeriadosLey = encontrado1 ? encontrado1.id : '#ccc3a980';
+      // this.colorNoLaboLey = encontrado2 ? encontrado2.id : '#ccc3a980';
+      // this.colorDiaActLey = encontrado3 ? encontrado3.id : '#ccc3a980';
+
+      this.arrayDiasNoLabEdit = nolab1 == '' ? [] : nolab1.split('|');
+    }
+  }
+
   async calcularFechaComplemento(duracion, fechaini, fechafin) {
     let diasTotales = null;
     let diasHabiles = duracion ? duracion : null;
@@ -1542,11 +1773,14 @@ export class ReportesRhComponent implements OnInit {
       this.tablaDesembolso = tablaDesembolso;
       var fecha1 = moment(this.fiLimite);
       var fecha2 = moment(this.ffLimite);
+
       const meses = this.dataHeader.length;
       const anioInicio = moment(fecha1).format('yy');
       const anioFin = moment(fecha2).format('yy');
       const years = Number(anioFin) - Number(anioInicio);
+
       const mesInicio = moment(fecha1).format('MM');
+
       this.mesesHeader = [];
       this.yearsHeader = [];
       for (let i = 0; i <= years; i++) {
@@ -1883,7 +2117,6 @@ export class ReportesRhComponent implements OnInit {
       };
       const response = await this.principalService.relacionInsumosProy(obj);
       this.listaInsumos = response.length ? response : [];
-      console.log('this.listaInsumos', this.listaInsumos)
     } catch (error) {
       this.mostrar_carga_todo = false;
       SwalService.error(error)
@@ -1902,7 +2135,23 @@ export class ReportesRhComponent implements OnInit {
     }
     return dias;
   }
+  // async generarCalendarioMaterialesPorTipo(tipo: 'MANO DE OBRA' | 'MATERIALES' | 'EQUIPOS' | 'SUBCONTRATOS') {
+  //   try {
+  //     // Primero genera el calendario completo
+  //     await this.generarCalendarioMateriales();
 
+  //     // Luego formatea para el tipo específico
+  //     const diasPorMes = this.calcularDiasUnicosPorMesOptimized(
+  //       this.calendarioMateriales,
+  //       "1",
+  //       this.dataHeader
+  //     );
+  //     console.log('diasPorMes', diasPorMes)
+  //   } catch (error) {
+  //     console.error(`Error al generar calendario para ${tipo}:`, error);
+  //     return {};
+  //   }
+  // }
 
   async generarCalendarioMateriales() {
     this.totalColumna = null;
@@ -1964,6 +2213,8 @@ export class ReportesRhComponent implements OnInit {
               indice_partida: element.indice,
               unidad_partida: element.unidad,
               operador: iterator.operador,
+              inicio: element.fechaini,
+              fin: element.fechafin,
             };
             insumos.push(obj);
           });
@@ -1981,6 +2232,8 @@ export class ReportesRhComponent implements OnInit {
         unidad: element.unidad,
         meses: element.meses,
         insumos: insumos,
+        inicio: element.fechaini,
+        fin: element.fechafin
       };
       formatPresu.push(partida);
     }
@@ -2052,6 +2305,9 @@ export class ReportesRhComponent implements OnInit {
           meses: row.meses,
           cantidades: row.cantidades,
           parcial: this.formsService.redondeo(row.parcial, this.dec_parcial),
+          inicio: row.inicio || iterator.inicio,
+          fin: row.fin || iterator.fin,
+          diasPorMes: [] // Aquí guardaremos los días calculados para cada columna de mes
         };
         partidas.push(objPart);
         for (const mes of row.meses) {
@@ -2309,12 +2565,32 @@ export class ReportesRhComponent implements OnInit {
     return prueba;
   }
 
-
   async estructurarTabla() {
     await this.listarPresInd();
-    await this.listarPanel();
-    await this.listarAgrupamientos();
+    const suma = await this.listarProcuAsignado()
+    await this.listarPanel(suma);
+    await this.listarAgrupamientos(suma);
+
   }
+
+  async listarProcuAsignado() {
+    let suma = 0
+    const res = await this._logisticaService.ListarAdquisicionesProy({ id_proyecto: this.idProyecto });
+    console.log('res', res)
+    if (res?.length) {
+      this.id_reg = res[0].id_registro
+    }
+    console.log('this.id_reg', this.id_reg)
+    let res2 = await this._logisticaService.listarRelinsAdqui({ id_proyecto: this.idProyecto, id_registro: this.id_reg, conrelins: '0' });
+    console.log('res2', res2)
+    if (res2[0]?.length) {
+      suma = res2[0]
+        .filter(ele => ele.id_filadetalle == null && ele.tipocontra == 3)
+        .reduce((total, ele) => total + ele.reqsol, 0);
+    }
+    return suma
+  }
+
 
   async listarPresInd() {
     let res = await this.presuservice.ListarPresuIndirecto({
@@ -2328,7 +2604,7 @@ export class ReportesRhComponent implements OnInit {
     }
   }
 
-  async listarPanel() {
+  async listarPanel(suma) {
     this.tablaAgrupamientos = []
     // this.anios = []
     const enc = this.tablaPresInd.find(ele => ele.abrev == 'CD' && ele.descripcion == 'COSTO DIRECTO')
@@ -2343,7 +2619,7 @@ export class ReportesRhComponent implements OnInit {
       abreviatura: enc.abrev,
       descripcion_costo: enc?.descripcion,
       id_indice: enc?.id_indice,
-      monto_presupuesto: enc?.monto,
+      monto_presupuesto: this.dataCalendMat?.parcial,
       dias_eje: 0,
       dias_pres: 0,
       ejecucion_presu: 0,
@@ -2354,9 +2630,9 @@ export class ReportesRhComponent implements OnInit {
       mostrar: 1,
       icomost: 1,
       estado: null,
-      abrev: enc.abrev
+      abrev: enc.abrev,
+      porcentajeTot: 0
     }
-    console.log('cd', cd)
 
     const obj = {
       id_proyecto: this.idProyecto
@@ -2380,18 +2656,19 @@ export class ReportesRhComponent implements OnInit {
           abreviatura: agrupActual?.abrev,
           descripcion_costo: encontrado?.descripcion,
           id_indice: encontrado?.id_indice,
-          monto_presupuesto: encontrado?.monto,
+          monto_presupuesto: element.abrev == 'CD' ? element.monto_presupuesto : encontrado?.monto,
           dias_eje: 0,
           ejecucion_presu: 0,
           dias_pres: 0,
           porcentaje: 0,
-          pres_asignado: 0,
+          pres_asignado: element.abrev == 'CD' ? suma : 0,
           variacion_plazo: 0,
           variacion_presu: 0,
           mostrar: 1,
           icomost: 1,
           estado: element.estado,
-          abrev: encontrado?.abrev
+          abrev: encontrado?.abrev,
+          porcentajeTot: 100
         }
         this.tablaAgrupamientos.push(obj)
       }
@@ -2644,11 +2921,10 @@ export class ReportesRhComponent implements OnInit {
   async guardarElemento(row) {
     try {
       const res = await this.recursosHumanosService.guardarElementoAgrupamiento(row);
-
-
       await this.listarPresInd();
-      await this.listarPanel();
-      await this.listarAgrupamientos();
+      const suma = await this.listarProcuAsignado()
+      await this.listarPanel(suma);
+      await this.listarAgrupamientos(suma);
       this.cerrarModal3();
     } catch (error) {
       console.log(error);
@@ -2749,63 +3025,13 @@ export class ReportesRhComponent implements OnInit {
 
   }
 
-  // async listarAgrupamientos() {
-  //   const input = { id_proyecto: this.idProyecto };
-  //   const response = await this.recursosHumanosService.listarPrograConFechasLimite(
-  //     input
-  //   );
-  //   this.anios = this.obtenerArrayAñosConMargen(response.calendario)
-  //   let tablaNueva = []
-  //   let activo = false
-  //   console.log('this.tablaAgrupamientos', this.tablaAgrupamientos)
-  //   console.log('this.reporteMensual', this.reporteMensual)
-  //   for (const element of this.tablaAgrupamientos) {
 
-  //     tablaNueva.push(element)
-  //     // if (activo && !element.id_elemento && element.abrev !== 'CD') {
-  //     //   activo = false
-  //     // } else if (!element.id_elemento && element.abrev == 'CD') {
-  //     //   activo = true
-  //     // }
-
-  //     // if (activo) {
-  //     const monto = response.calendario.length > 0 ? (element.monto_presupuesto / response.calendario.length) : 0
-  //     console.log('monto', element)
-  //     console.log('response.calendario', response.calendario)
-  //     response.calendario.map((ele, index) => {
-
-  //       const obj: IAgrupamiento = {
-  //         id_agrupamiento: element.id_agrupamiento,
-  //         id_elemento: 1,
-  //         id_proyecto: element.id_proyecto,
-  //         descripcion: ele.mes + '-' + ele.anio,
-  //         indice: null,
-  //         orden: index + 1,
-  //         abreviatura: '',
-  //         descripcion_costo: '',
-  //         id_indice: null,
-  //         monto_presupuesto: monto,
-  //         dias_eje: 0,
-  //         ejecucion_presu:0,
-  //         dias_pres: 0,
-  //         porcentaje: 0,
-  //         pres_asignado: 0,
-  //         variacion_plazo: 0,
-  //         variacion_presu: 0,
-  //         mostrar: 1,
-  //         icomost: 1,
-  //         estado: element.estado,
-  //         abrev: element.abrev
-  //       }
-  //       tablaNueva.push(obj)
-  //     })
-  //     // }
-  //   }
-  //   this.tablaAgrupamientos = tablaNueva
-  //   console.log(this.tablaAgrupamientos)
-  // }
-
-  async listarAgrupamientos() {
+  async listarAgrupamientos(suma) {
+    const mesesMap: { [key: string]: string } = {
+      'ENERO': '01', 'FEBRERO': '02', 'MARZO': '03', 'ABRIL': '04',
+      'MAYO': '05', 'JUNIO': '06', 'JULIO': '07', 'AGOSTO': '08',
+      'SEPTIEMBRE': '09', 'OCTUBRE': '10', 'NOVIEMBRE': '11', 'DICIEMBRE': '12'
+    };
     const input = { id_proyecto: this.idProyecto };
     const response = await this.recursosHumanosService.listarPrograConFechasLimite(input);
     console.log('response', response)
@@ -2820,19 +3046,25 @@ export class ReportesRhComponent implements OnInit {
 
     const tablaNueva = [];
     for (const element of this.tablaAgrupamientos) {
+      console.log('element', element)
       tablaNueva.push(element);
       // const montoMensual = element.monto_presupuesto / response.calendario.length;
-      const montoMensual = 0
+      let montoMensual = 0
       const pres_asignado = 0
-      const dias_presu = 0
+      let dias_presu = 0
       response.calendario.forEach((ele, index) => {
         const key = `${ele.mes}-${ele.anio}`;
+
+        const encontrado = this.dataCalendMat?.detalle[mesesMap[ele.mes] + '-' + ele.anio]
+        montoMensual = encontrado ? encontrado?.monto : 0
+        dias_presu = encontrado ? encontrado?.dias : 0
         const reporte = reporteMap.get(key) || { dias: 0, monto: 0 };
 
-        const variacion_presu = pres_asignado - reporte.monto;
+        const variacion_presu = montoMensual - reporte.monto;
         const variacion_plazo = dias_presu - reporte.dias; // 0 = dias_pres (expediente técnico)
-        const porcentaje = pres_asignado !== 0 ? (variacion_presu / pres_asignado) * 100 : (reporte.monto !== 0 ? 100 : 0);
-
+        const porcentaje = montoMensual !== 0 ? (variacion_presu / montoMensual) * 100 : (reporte.monto !== 0 ? 100 : 0);
+        const procentaje_proporcion = (montoMensual / element.monto_presupuesto) * 100;
+        const montoPresAsign = (suma * procentaje_proporcion) / 100;
         tablaNueva.push({
           ...element,
           id_elemento: 1,
@@ -2841,13 +3073,14 @@ export class ReportesRhComponent implements OnInit {
           monto_presupuesto: montoMensual,
           dias_eje: reporte.dias,
           ejecucion_presu: reporte.monto,
-          dias_pres: 0,
-          pres_asignado: 0,
+          dias_pres: dias_presu,
+          pres_asignado: montoPresAsign,
           variacion_plazo: variacion_plazo,
           variacion_presu: variacion_presu,
           porcentaje: porcentaje,
           mostrar: 1,
-          icomost: 1
+          icomost: 1,
+          porcentajeTot: procentaje_proporcion
         });
       });
     }
@@ -2920,14 +3153,11 @@ export class ReportesRhComponent implements OnInit {
 
   async filtrarPorMes(row) {
     const consolidado = await this.procesosRhService.calendarioXAsignaciones(this.idProyecto)
-    console.log('consolidado', consolidado)
     this.mesesAcum = consolidado.consolidadoPorMeses?.map(ele => { return ele.mes_key })
     this.areasAcum = consolidado.areas
     this.cargosAcum = consolidado.cargos
     this.consolidado = this.agregarEncabezadosArea(consolidado.consolidadoPorMeses);
-    console.log('this.consolidado', this.consolidado)
     this.mesSelAcum = this.consolidado.findIndex(ele => ele.mes_key == row.descripcion)
-    console.log('mesSelAcum', this.mesSelAcum)
     this.calendarioCompleto = consolidado.calendario
   }
 
@@ -3019,7 +3249,6 @@ export class ReportesRhComponent implements OnInit {
         .reverse()
         .map((part, i) => i === 0 ? mesesMap[part] : part)
         .join('-');
-      console.log('mesFormateado', mesFormateado)
       let tablaNueva = []
       const montosAreas = await this.listarMontosAreaPresAnaliticoRH()
       // if (!this.areaSeleccionada) {
@@ -3031,7 +3260,6 @@ export class ReportesRhComponent implements OnInit {
         for (const cargo of cargos) {
           let cargoTotal = 0
           const asignaciones = await this.asignaciones.filter(ele => ele.id_area == cargo.id_area && ele.id_cargo == cargo.id_cargo && this.verificarAsignacionEnMes(ele, mesFormateado))
-          // console.log('asignaciones', asignaciones)
           if (!areagrupo.length && asignaciones.length) {
             const areadata: filaTabla = {
               area: area.descripcion,
@@ -3118,7 +3346,7 @@ export class ReportesRhComponent implements OnInit {
                   hora_ingreso_tarde: '14:00:00|14:00:00|14:00:00|14:00:00|14:00:00||',
                   hora_salida_tarde: '18:00:00|18:00:00|18:00:00|18:00:00|18:00:00||',
                   totales_dia: 48,
-                  descuentos: '|10|10||100|100|||||||',
+                  descuentos: "0|10|10|0|100|100|0|0|0|0|0|0|0|100|100|0|0|0|0|0|0",
                   tardanza: 10,
                   tiempo_extra: 0
                 }
@@ -3486,12 +3714,18 @@ export class ReportesRhComponent implements OnInit {
       { codigo: 'FJ', tipo: 'FALTA JUSTIFICADA' },
       { codigo: 'FM', tipo: 'DESCANSO MEDICO' },
       { codigo: 'FV', tipo: 'VACACIONES' },
-      { codigo: 'FC', tipo: 'CITA MEDICA' },
-      { codigo: 'FD', tipo: 'DUELO' },
       { codigo: 'PE', tipo: 'PERMISO' },
+      { codigo: 'D1', tipo: 'DESCUENTO OPCIONAL 1' },
+      { codigo: 'D2', tipo: 'DESCUENTO OPCIONAL 2' },
+      { codigo: 'D3', tipo: 'DESCUENTO OPCIONAL 3' },
       { codigo: 'OBS', tipo: 'OBSERVADO' },
       { codigo: 'IN', tipo: 'INCOMPLETO' },
-      { codigo: 'TEX', tipo: 'TEXTRA' }
+      { codigo: 'TEX', tipo: 'TEXTRA' },
+      { codigo: 'BN', tipo: 'BONO NO LABORABLE' },
+      { codigo: 'BF', tipo: 'BONO FERIADO' },
+      { codigo: 'B1', tipo: 'BONO OPCIONAL 1' },
+      { codigo: 'B2', tipo: 'BONO OPCIONAL 2' },
+      { codigo: 'B3', tipo: 'BONO OPCIONAL 3' },
     ];
 
     // Crear un mapa para búsqueda rápida de tipos
@@ -3943,6 +4177,594 @@ export class ReportesRhComponent implements OnInit {
     };
 
     return romanNumerals[num] || num.toString();
+  }
+
+
+  async recuperarCalendario(fechaIniGrafico, fechaFinGrafico) {
+    let data = []
+    if (fechaIniGrafico && fechaFinGrafico) {
+
+      const objeto = {
+        id_proyecto: this.idProyecto,
+        diasanterior: 7,
+        diasposterior: 14, //agregar mas 1 dia por la libreria ,
+        fechaini: fechaIniGrafico,
+        fechafin: fechaFinGrafico
+      }
+      const response = await this.principalService.calendarioProgra2Fechas(objeto)
+      if (!response) {
+        this.dataHeader = []
+        return
+      }
+      // response.map(ele => {
+      //   ele.class = ''
+      //   const fecha = ele.anio + '-' + ((ele.mes.length == 1) ? 0 + ele.mes : ele.mes) + '-' + ele.dia
+      //   if (fecha == this.fechaActual) {
+      //     ele.diaActual = true
+      //     if (this.view_mode == 'Day') {
+      //       ele.class = this.color_actual
+      //     }
+      //   } else {
+      //     ele.diaActual = false
+      //     if (ele.feriado && this.view_mode == 'Day') {
+      //       ele.class = this.color_feriado
+      //     }
+      //     if (ele.nolabor && this.view_mode == 'Day') {
+      //       ele.class = this.color_noLabo
+      //     }
+      //   }
+      //   ele.width = 18
+      // })
+      this.dataHeader = await this.mesesCant(response)
+
+
+    } else {
+      data = []
+      this.dataHeader = []
+    }
+  }
+
+  async mesesCant(response) {
+    let nuevoArray = []
+    let mesAnio
+    let cantidad = 0
+    response.map((ele, index) => {
+      if (index == 0) {
+        mesAnio = ele.nom_mes + ` - ` + ele.anio
+        cantidad++
+        return
+      }
+      const fecha = ele.nom_mes + ` - ` + ele.anio
+      if (mesAnio == fecha) {
+        cantidad++
+      } else {
+        const objeto = {
+          nombre: mesAnio,
+          cantidad: cantidad,
+          width: cantidad * ele.width
+        }
+        nuevoArray.push(objeto)
+        mesAnio = fecha
+        cantidad = 1
+      }
+      if (index == response.length - 1) {
+        if (!nuevoArray.length) {
+          const objeto = {
+            nombre: mesAnio,
+            cantidad: cantidad,
+            width: cantidad * ele.width
+          }
+          nuevoArray.push(objeto)
+        }
+        if (nuevoArray[nuevoArray.length - 1].nombre !== mesAnio) {
+          const objeto = {
+            nombre: mesAnio,
+            cantidad: cantidad,
+            width: cantidad * ele.width
+          }
+          nuevoArray.push(objeto)
+        }
+      }
+    })
+    return nuevoArray
+  }
+
+  transformarCalendarioMaterialesCompleto(): { meses: { [key: string]: number }, total: number } {
+    const resultado: { [key: string]: number } = {};
+    let total = 0;
+
+    const totalItem = this.calendarioMateriales.find(item => item.descripcion === 'total');
+
+    if (totalItem && totalItem.meses) {
+      for (let i = 0; i < totalItem.meses.length; i++) {
+        // Usar mesesHeader que tiene la información del mes
+        if (this.mesesHeader && this.mesesHeader[i]) {
+          const mes = this.mesesHeader[i].mes;
+          const anio = this.yearsHeader.find(y => y.col > i)?.year || new Date().getFullYear();
+          const mesKey = `${mes.toString().padStart(2, '0')}-${anio}`;
+          resultado[mesKey] = parseFloat(totalItem.meses[i]);
+        } else {
+          // Fallback si no hay datos
+          resultado[`mes_${i + 1}`] = parseFloat(totalItem.meses[i]);
+        }
+      }
+      total = parseFloat(totalItem.parcial);
+    }
+
+    return { meses: resultado, total: total };
+  }
+
+  obtenerDiasPorMesDesdeTablaDesembolso(): { [key: string]: number } {
+    const resultado: { [key: string]: number } = {};
+
+    // Recorrer tablaDesembolso
+    for (const partida of this.tablaDesembolso) {
+      if (!partida.unidad || !partida.meses) continue;
+
+      for (let i = 0; i < partida.meses.length; i++) {
+        const mesData = partida.meses[i];
+        if (mesData && mesData.dias && mesData.dias > 0) {
+          // Obtener la clave del mes
+          let mesKey = `mes_${i + 1}`;
+          if (this.mesesHeader && this.mesesHeader[i]) {
+            const mesNum = this.mesesHeader[i].mes;
+            let yearIndex = 0;
+            let acumulado = 0;
+            for (let y = 0; y < this.yearsHeader.length; y++) {
+              acumulado += this.yearsHeader[y].col;
+              if (i < acumulado) {
+                yearIndex = y;
+                break;
+              }
+            }
+            const anio = this.yearsHeader[yearIndex]?.year || new Date().getFullYear();
+            mesKey = `${mesNum.toString().padStart(2, '0')}-${anio}`;
+          }
+
+          resultado[mesKey] = (resultado[mesKey] || 0) + mesData.dias;
+        }
+      }
+    }
+
+    return resultado;
+  }
+
+  obtenerMontosPorMes(): { [key: string]: number } {
+    const resultado: { [key: string]: number } = {};
+
+    // Buscar el total de MANO DE OBRA en calendarioMateriales
+    const totalItem = this.calendarioMateriales?.find(item =>
+      item.descripcion === 'total' && item.id_tipo_insumo === 1
+    );
+
+    if (totalItem && totalItem.meses) {
+      for (let i = 0; i < totalItem.meses.length; i++) {
+        const monto = parseFloat(totalItem.meses[i]);
+        if (monto !== 0) {
+          let mesKey = `mes_${i + 1}`;
+          if (this.mesesHeader && this.mesesHeader[i]) {
+            const mesNum = this.mesesHeader[i].mes;
+            let yearIndex = 0;
+            let acumulado = 0;
+            for (let y = 0; y < this.yearsHeader.length; y++) {
+              acumulado += this.yearsHeader[y].col;
+              if (i < acumulado) {
+                yearIndex = y;
+                break;
+              }
+            }
+            const anio = this.yearsHeader[yearIndex]?.year || new Date().getFullYear();
+            mesKey = `${mesNum.toString().padStart(2, '0')}-${anio}`;
+          }
+          resultado[mesKey] = monto;
+        }
+      }
+    }
+
+    return resultado;
+  }
+  calcularDiasUnicosPorMes(
+    calendariomateriales: Insumo[],
+    idTipoInsumo: number | string,
+    dataHeader: DataHeader[]
+  ): number[] {
+
+    // Buscar el insumo del tipo específico
+    const insumoFiltrado = calendariomateriales.find(
+      item => item.id_tipo_insumo == idTipoInsumo
+    );
+
+    // Recoger todas las partidas con fechas
+    let todasLasPartidas: Partida[] = [];
+
+    if (insumoFiltrado?.partidas?.length) {
+      // Si el insumo tiene partidas, usarlas
+      todasLasPartidas = insumoFiltrado.partidas.filter(
+        partida => partida.inicio && partida.fin
+      );
+    } else {
+      // Buscar en todos los calendariomateriales las partidas con fechas
+      for (const item of calendariomateriales) {
+        if (item.partidas?.length) {
+          for (const partida of item.partidas) {
+            if (partida.inicio && partida.fin) {
+              todasLasPartidas.push(partida);
+            }
+          }
+        }
+      }
+    }
+
+    if (todasLasPartidas.length === 0) {
+      return new Array(dataHeader.length).fill(0);
+    }
+
+    // Precalcular rangos mensuales
+    const rangosMensuales = this.precalcularRangosMensuales(dataHeader);
+
+    // Usar Set para almacenar días únicos por mes
+    const diasPorMesSet: Set<number>[] = dataHeader.map(() => new Set<number>());
+
+
+    // Procesar cada partida
+    for (const partida of todasLasPartidas) {
+      if (!partida.inicio || !partida.fin) continue;
+
+      const partidaInicio = new Date(partida.inicio);
+      const partidaFin = new Date(partida.fin);
+
+      if (isNaN(partidaInicio.getTime()) || isNaN(partidaFin.getTime())) {
+        continue;
+      }
+
+
+      // Para cada mes que intersecta
+      for (let i = 0; i < rangosMensuales.length; i++) {
+        const mes = rangosMensuales[i];
+
+        const interseccionInicio = new Date(Math.max(partidaInicio.getTime(), mes.inicio.getTime()));
+        const interseccionFin = new Date(Math.min(partidaFin.getTime(), mes.fin.getTime()));
+
+        if (interseccionInicio <= interseccionFin) {
+          const startDay = interseccionInicio.getDate();
+          const endDay = interseccionFin.getDate();
+
+          for (let dia = startDay; dia <= endDay; dia++) {
+            diasPorMesSet[i].add(dia);
+          }
+        }
+      }
+    }
+
+    const resultados = diasPorMesSet.map(set => set.size);
+
+    return resultados;
+  }
+
+  /**
+   * Precalcula los rangos de fechas para cada mes según dataHeader
+   */
+  precalcularRangosMensuales(dataHeader: DataHeader[]): { inicio: Date; fin: Date }[] {
+    const mesesMap: Record<string, number> = {
+      'ENERO': 0, 'FEBRERO': 1, 'MARZO': 2, 'ABRIL': 3,
+      'MAYO': 4, 'JUNIO': 5, 'JULIO': 6, 'AGOSTO': 7,
+      'SETIEMBRE': 8, 'OCTUBRE': 9, 'NOVIEMBRE': 10, 'DICIEMBRE': 11
+    };
+
+    return dataHeader.map(header => {
+      const [nombreMes, añoStr] = header.nombre.split(' - ');
+      const mes = mesesMap[nombreMes];
+      const año = parseInt(añoStr);
+
+      const ultimoDiaMes = new Date(año, mes + 1, 0);
+      let inicio: Date, fin: Date;
+
+      if (header.cantidad >= 28) {
+        // Mes completo
+        inicio = new Date(año, mes, 1);
+        fin = ultimoDiaMes;
+      } else {
+        // Mes parcial (últimos N días)
+        inicio = new Date(año, mes + 1, 0);
+        inicio.setDate(ultimoDiaMes.getDate() - header.cantidad + 1);
+        fin = ultimoDiaMes;
+      }
+
+      return { inicio, fin };
+    });
+  }
+  async generarCalendarioMaterialesPorTipo(tipo: 'MANO DE OBRA' | 'MATERIALES' | 'EQUIPOS' | 'SUBCONTRATOS') {
+    try {
+      const tipoMap: Record<string, number> = {
+        'MANO DE OBRA': 1,
+        'MATERIALES': 2,
+        'EQUIPOS': 3,
+        'SUBCONTRATOS': 4
+      };
+
+      const idTipo = tipoMap[tipo];
+      // Asegurar que el calendario esté generado con los días calculados
+      if (!this.calendarioMateriales || this.calendarioMateriales.length === 0) {
+        await this.generarCalendarioMaterialesConDias(); // Usar la versión que calcula días
+      }
+
+      // Buscar la fila "total" para este tipo
+      const insumoBase = this.calendarioMateriales.find(
+        item => item.id_tipo_insumo === idTipo && item.descripcion === "total"
+      );
+
+      if (!insumoBase) {
+        console.warn(`No se encontró fila "total" para tipo ${tipo} con id ${idTipo}`);
+
+        return {
+          tipo,
+          idTipo,
+          parcial: 0,
+          detalle: {}
+        };
+      }
+
+
+
+      // Calcular días por mes usando las partidas
+      const diasPorMes = this.calcularDiasUnicosPorMes(
+        this.calendarioMateriales,
+        idTipo,
+        this.dataHeader
+      );
+
+      // Obtener montos y parcial desde la fila "total"
+      const meses = insumoBase.meses || new Array(this.dataHeader.length).fill("0.00");
+      const parcial = insumoBase.parcial || "0";
+
+      // Crear detalle con formato MM-YYYY
+      const detalle: Record<string, { dias: number; monto: number }> = {};
+
+      this.dataHeader.forEach((header, index) => {
+        const mesFormateado = this.formatearMes(header.nombre);
+        const montoMensual = parseFloat(meses[index] || "0");
+
+        detalle[mesFormateado] = {
+          dias: diasPorMes[index],
+          monto: montoMensual
+        };
+      });
+
+
+
+      return {
+        tipo,
+        idTipo,
+        parcial: parseFloat(parcial),
+        detalle
+      };
+    } catch (error) {
+      console.error(`Error al generar calendario para ${tipo}:`, error);
+      return {
+        tipo,
+        parcial: 0,
+        detalle: {}
+      };
+    }
+  }
+
+  async generarCalendarioMaterialesConDias() {
+    // Llamar a tu función original
+    await this.generarCalendarioMateriales();
+
+    // Calcular los días por mes para todas las partidas
+    this.calcularDiasPorMesEnPartidas();
+
+  }
+
+  calcularDiasPorMesEnPartidas() {
+    if (!this.calendarioMateriales || !this.dataHeader) return;
+
+    // Recorrer todos los items del calendario
+    for (const item of this.calendarioMateriales) {
+      // Si tiene partidas, calcular días para cada una
+      if (item.partidas && item.partidas.length > 0) {
+        for (const partida of item.partidas) {
+          if (partida.inicio && partida.fin) {
+            partida.diasPorMes = this.calcularDiasPorPartida(partida, this.dataHeader);
+          } else {
+            partida.diasPorMes = new Array(this.dataHeader.length).fill(0);
+          }
+        }
+      }
+    }
+
+  }
+
+  async obtenerFilaTotalPorTipo(idTipo: number) {
+    if (!this.calendarioMateriales || this.calendarioMateriales.length === 0) {
+      await this.generarCalendarioMateriales();
+    }
+
+    // Buscar específicamente la fila con id_tipo_insumo y descripcion "total"
+    const filaTotal = this.calendarioMateriales.find(
+      item => item.id_tipo_insumo === idTipo && item.descripcion === "total"
+    );
+
+    if (filaTotal) {
+
+      return filaTotal;
+    } else {
+      console.warn(`No se encontró fila con descripcion "total" para id_tipo_insumo ${idTipo}`);
+      return null;
+    }
+  }
+
+  async generarDiasPorMesParaTodosLosTipos() {
+    try {
+      if (!this.calendarioMateriales || this.calendarioMateriales.length === 0) {
+        await this.generarCalendarioMateriales();
+      }
+
+      const tipos = ['MANO DE OBRA', 'MATERIALES', 'EQUIPOS', 'SUBCONTRATOS'];
+      const resultados: Record<string, any> = {};
+
+      for (const tipo of tipos) {
+        const idTipo = tipo === 'MANO DE OBRA' ? 1 : tipo === 'MATERIALES' ? 2 : tipo === 'EQUIPOS' ? 3 : 4;
+
+        // IMPORTANTE: Filtrar la fila que tiene id_tipo_insumo Y descripcion = "total"
+        const insumoFiltrado = this.calendarioMateriales.find(
+          item => item.id_tipo_insumo == idTipo && item.descripcion === "total"
+        );
+
+        // Si no encuentra la fila de total, buscar cualquier otra con ese id_tipo_insumo
+        const insumoAlternativo = !insumoFiltrado ? this.calendarioMateriales.find(
+          item => item.id_tipo_insumo == idTipo
+        ) : null;
+
+        const insumoBase = insumoFiltrado || insumoAlternativo;
+
+        // Calcular días por mes
+        const diasPorMes = this.calcularDiasUnicosPorMes(
+          this.calendarioMateriales,
+          idTipo,
+          this.dataHeader
+        );
+
+        // Obtener los montos mensuales del insumo filtrado (fila de total)
+        const meses = insumoBase?.meses || new Array(this.dataHeader.length).fill("0.00");
+        const parcial = insumoBase?.parcial || "0";
+
+        // Crear detalle con formato MM-YYYY y valores combinados
+        const detalle: Record<string, { dias: number; monto: number }> = {};
+
+        this.dataHeader.forEach((header, index) => {
+          // Convertir "MES - AÑO" a "MM-YYYY"
+          const mesFormateado = this.formatearMes(header.nombre);
+          const montoMensual = parseFloat(meses[index] || "0");
+
+          detalle[mesFormateado] = {
+            dias: diasPorMes[index],
+            monto: montoMensual
+          };
+        });
+
+        resultados[tipo] = {
+          idTipo,
+          parcial: parseFloat(parcial),
+          detalle,
+          // Información adicional para depuración
+          _debug: {
+            encontradoFilaTotal: !!insumoFiltrado,
+            descripcion: insumoBase?.descripcion,
+            cantidad: insumoBase?.cantidad
+          }
+        };
+      }
+
+      return resultados;
+    } catch (error) {
+      console.error('Error al generar días por mes:', error);
+      return {};
+    }
+  }
+
+  /**
+   * Actualiza los objetos de calendario agregando los días por mes calculados
+   */
+  actualizarCalendarioConDiasPorMes() {
+    if (!this.calendarioMateriales || !this.dataHeader) return;
+
+    for (const item of this.calendarioMateriales) {
+      if (item.id_tipo_insumo && typeof item.id_tipo_insumo === 'number') {
+        const diasPorMes = this.calcularDiasUnicosPorMes(
+          this.calendarioMateriales,
+          item.id_tipo_insumo,
+          this.dataHeader
+        );
+
+        item.diasPorMes = diasPorMes;
+        item.diasPorMesDetalle = this.dataHeader.reduce((acc, header, idx) => {
+          acc[header.nombre] = diasPorMes[idx];
+          return acc;
+        }, {} as Record<string, number>);
+      }
+
+      // También actualizar las partidas individuales si es necesario
+      if (item.partidas) {
+        for (const partida of item.partidas) {
+          if (partida.inicio && partida.fin) {
+            partida.diasPorMes = this.calcularDiasPorPartida(partida, this.dataHeader);
+          }
+        }
+      }
+    }
+
+  }
+
+  /**
+   * Calcula los días por mes para una partida específica
+   */
+  calcularDiasPorPartida(partida: Partida, dataHeader: DataHeader[]): number[] {
+    if (!partida.inicio || !partida.fin) return new Array(dataHeader.length).fill(0);
+
+    const rangosMensuales = this.precalcularRangosMensuales(dataHeader);
+    const partidaInicio = new Date(partida.inicio);
+    const partidaFin = new Date(partida.fin);
+    const diasPorMes: number[] = new Array(dataHeader.length).fill(0);
+
+    for (let i = 0; i < rangosMensuales.length; i++) {
+      const mes = rangosMensuales[i];
+      const interseccionInicio = new Date(Math.max(partidaInicio.getTime(), mes.inicio.getTime()));
+      const interseccionFin = new Date(Math.min(partidaFin.getTime(), mes.fin.getTime()));
+
+      if (interseccionInicio <= interseccionFin) {
+        const diffTime = Math.abs(interseccionFin.getTime() - interseccionInicio.getTime());
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+        diasPorMes[i] = diffDays;
+      }
+    }
+
+    return diasPorMes;
+  }
+
+  formatearMes(nombreMes: string): string {
+    const mesesMap: Record<string, string> = {
+      'ENERO': '01',
+      'FEBRERO': '02',
+      'MARZO': '03',
+      'ABRIL': '04',
+      'MAYO': '05',
+      'JUNIO': '06',
+      'JULIO': '07',
+      'AGOSTO': '08',
+      'SETIEMBRE': '09',
+      'OCTUBRE': '10',
+      'NOVIEMBRE': '11',
+      'DICIEMBRE': '12'
+    };
+
+    const [mes, anio] = nombreMes.split(' - ');
+    const mesNumero = mesesMap[mes];
+    return `${mesNumero}-${anio}`;
+  }
+
+  async obtenerCalendarioCompletoPorTipo(tipo: 'MANO DE OBRA' | 'MATERIALES' | 'EQUIPOS' | 'SUBCONTRATOS') {
+    const resultado = await this.generarCalendarioMaterialesPorTipo(tipo);
+
+    // Validación adicional para asegurar que los montos son correctos
+    const montosArray = Object.values(resultado.detalle).map(item => item.monto);
+    const sumaMontos = montosArray.reduce((sum, monto) => sum + monto, 0);
+    const parcialNumerico = resultado.parcial;
+
+
+    if (Math.abs(sumaMontos - parcialNumerico) > 0.01) {
+      console.warn(`⚠️ Discrepancia en montos para ${tipo}`);
+    }
+
+    return {
+      ...resultado,
+      validacion: {
+        sumaMontos: sumaMontos,
+        parcialRegistrado: parcialNumerico,
+        esConsistente: Math.abs(sumaMontos - parcialNumerico) <= 0.01
+      }
+    };
   }
 }
 

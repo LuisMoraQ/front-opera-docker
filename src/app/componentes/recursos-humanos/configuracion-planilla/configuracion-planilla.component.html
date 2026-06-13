@@ -20,7 +20,7 @@
             style="padding: 4px 8px" [ngClass]="{ active: subvista === 5 }" (click)="cambioVista(5)">
             <i class="fa fa-list"></i> PRESUPUESTO ANALITICO
         </button>
-      
+
     </div>
 </div>
 
@@ -884,9 +884,9 @@
                     </tbody>
                 </table>
             </div>
-            <div class="col-4  overflow-auto ">
-                <div class="card-header mt-1">
-                    <h5> PORCENTAJE DE DESCUENTOS POR TIPOS ASISTENCIA</h5>
+            <div class="col-4  overflow-auto " style="position: relative; bottom: 2rem;">
+                <!-- <div class="card-header mt-1">
+                    <h5> PORCENTAJE DE DESCUENTOS y BONOS POR TIPOS ASISTENCIA</h5>
                 </div>
                 <table class="table-bordered tab-10 ">
                     <thead class="text-center">
@@ -922,7 +922,94 @@
 
                         </tr>
                     </tbody>
-                </table>
+                </table> -->
+                <div class="mb-4">
+                    <h5 class="text-danger font-weight-bold">Configuración de Descuentos</h5>
+                    <table class="table-bordered tab-10">
+                        <thead class="text-center bg-light">
+                            <tr style="height: 22px;">
+                                <th appAnchocol [ancho]="30">Código</th>
+                                <th appAnchocol [ancho]="80">Tipo de Incidencia</th>
+                                <th appAnchocol [ancho]="130">
+                                    <div class="d-flex justify-content-center align-items-center">
+                                        <div>Porcentaje Descuento (día)</div>
+                                        <i class="fa fa-pencil ml-2" [ngbTooltip]="'editable'" container="body"></i>
+                                    </div>
+                                </th>
+                                <th appAnchocol [ancho]="100">% Efectivo (Paga Dia)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <ng-container *ngFor="let row of tiposAsistencia; let i = index">
+                                <tr *ngIf="row.codigo !== 'BF' && row.codigo !== 'BN' && row.codigo !== 'B1' && row.codigo !== 'B2' && row.codigo !== 'B3' && row.codigo !== 'OBS' && row.codigo !== 'IN' && row.codigo !== 'TEX'"
+                                    style="height: 29.5px;">
+                                    <td class="text-center">{{row.codigo}}</td>
+                                    <td class="text-left px-2">{{row.tipo}}</td>
+                                    <td class="text-center">
+                                        <div
+                                            style="display: flex; height: 100%; align-items: center; justify-content: center;">
+                                            <input type="number" class="form-control"
+                                                style="width: 60px; height: 24px; padding: 0 5px; text-align: right; border: 1px solid #ccc; border-right: none; border-radius: 4px 0 0 4px;"
+                                                autocomplete="off" maxlength="3" (blur)="actualizarHorario()"
+                                                [(ngModel)]="tiposAsistencia[i].porcentaje" [min]="0">
+                                            <span
+                                                style="height: 24px; padding: 0 8px; display: flex; align-items: center; justify-content: center; border: 1px solid #ccc; border-left: none; border-radius: 0 4px 4px 0; background-color: #f8f9fa;">
+                                                %
+                                            </span>
+                                        </div>
+                                    </td>
+                                    <td class="text-center" style="background-color: #f0f0f0;">
+                                        <strong>{{ 100 - (tiposAsistencia[i].porcentaje || 0) }}%</strong>
+                                    </td>
+                                </tr>
+                            </ng-container>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="mb-4">
+                    <h5 class="text-success font-weight-bold">Configuración de Bonificaciones</h5>
+                    <table class="table-bordered tab-10">
+                        <thead class="text-center bg-light">
+                            <tr style="height: 22px;">
+                                <th appAnchocol [ancho]="30">Código</th>
+                                <th appAnchocol [ancho]="80">Tipo de Bono</th>
+                                <th appAnchocol [ancho]="130">
+                                    <div class="d-flex justify-content-center align-items-center">
+                                        <div>Porcentaje Bono (día)</div>
+                                        <i class="fa fa-pencil ml-2" [ngbTooltip]="'editable'" container="body"></i>
+                                    </div>
+                                </th>
+                                <th appAnchocol [ancho]="100">% Efectivo (Paga Dia)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <ng-container *ngFor="let row of tiposAsistencia; let i = index">
+                                <tr *ngIf="row.codigo === 'BN' || row.codigo === 'BF' || row.codigo === 'B1' || row.codigo === 'B2' || row.codigo === 'B3'"
+                                    style="height: 29.5px;">
+                                    <td class="text-center">{{row.codigo}}</td>
+                                    <td class="text-left px-2">{{row.tipo}}</td>
+                                    <td class="text-center">
+                                        <div
+                                            style="display: flex; height: 100%; align-items: center; justify-content: center;">
+                                            <input type="number" class="form-control"
+                                                style="width: 60px; height: 24px; padding: 0 5px; text-align: right; border: 1px solid #28a745; border-right: none; border-radius: 4px 0 0 4px;"
+                                                autocomplete="off" maxlength="3" (blur)="actualizarHorario()"
+                                                [(ngModel)]="tiposAsistencia[i].porcentaje" [min]="0">
+                                            <span
+                                                style="height: 24px; padding: 0 8px; display: flex; align-items: center; justify-content: center; border: 1px solid #28a745; border-left: none; border-radius: 0 4px 4px 0; background-color: #e8f5e9; color: #28a745;">
+                                                %
+                                            </span>
+                                        </div>
+                                    </td>
+                                    <td class="text-center" style="background-color: #e8f5e9;">
+                                        <strong>{{ calcularValorConBono(tiposAsistencia[i].porcentaje) }}%</strong>
+                                    </td>
+                                </tr>
+                            </ng-container>
+                        </tbody>
+                    </table>
+                </div>
                 <div class="d-flex mt-3">
                     <mat-form-field appearance="outline" class="mff-reduc col-6">
                         <mat-label>Tardanza(minutos)</mat-label>
@@ -1099,51 +1186,7 @@
 
     </ng-container>
     <ng-container *ngIf="subvista == 6">
-        <div class="row px-0 h-100 bg-warning">
-            <div class="6">
-                
-            </div>
-            <div class="6">
-                <h4>REGISTRO DE ACTIVIDADES QUE VINCULAN LOS RECURSOS</h4>
-                <table class="table-bordered tab-10">
-                    <thead>
-                        <tr>
-                            <th>Descripcion</th>
-                            <th>Tipo</th>
-                            <th>Vinculado</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <ng-container *ngFor="let fila of tablaData">
-                            <!-- Fila de cabecera de área -->
-                            <tr *ngIf="fila.esArea" class="fila-area">
-                                <td colspan="3">
-                                    <strong>{{ fila.area }}</strong>
-                                </td>
-                            </tr>
 
-                            <!-- Fila de cargo -->
-                            <tr *ngIf="!fila.esArea">
-                                <td>{{ fila.cargo }}</td>
-                                <td>Tipo {{ fila.tipo_cargo }}</td>
-                                <td>
-                                    <!-- Slider (Toggle Switch) -->
-                                    <mat-slide-toggle [(ngModel)]="fila.tipo_cargo_vinculado"
-                                        [disabled]="!fila.esActivo" (change)="onVinculadoChange(fila)" color="primary">
-                                        {{ fila.tipo_cargo_vinculado ? 'Vinculado' : 'No vinculado' }}
-                                    </mat-slide-toggle>
-                                </td>
-                            </tr>
-                        </ng-container>
-
-                        <!-- Mensaje cuando no hay datos -->
-                        <tr *ngIf="tablaData.length === 0">
-                            <td colspan="3" class="text-center">No hay datos disponibles</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
     </ng-container>
 </div>
 

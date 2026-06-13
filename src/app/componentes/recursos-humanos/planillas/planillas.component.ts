@@ -229,14 +229,19 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
     { codigo: 'FJ', tipo: 'FALTA JUSTIFICADA' },
     { codigo: 'FM', tipo: 'DESCANSO MEDICO' },
     { codigo: 'FV', tipo: 'VACACIONES' },
-    { codigo: 'FC', tipo: 'CITA MEDICA' },
-    { codigo: 'FD', tipo: 'DUELO' },
-    // { codigo: 'FE', tipo: 'NO MARCO ENTRADA' },
-    // { codigo: 'FS', tipo: 'NO MARCO SALIDA' },
+    { codigo: 'PE', tipo: 'PERMISO' },
+    { codigo: 'D1', tipo: 'DESCUENTO OPCIONAL 1' },
+    { codigo: 'D2', tipo: 'DESCUENTO OPCIONAL 2' },
+    { codigo: 'D3', tipo: 'DESCUENTO OPCIONAL 3' },
     { codigo: 'OBS', tipo: 'OBSERVADO' },
     { codigo: 'IN', tipo: 'INCOMPLETO' },
-    { codigo: 'TEX', tipo: 'TEXTRA' }
-  ]
+    { codigo: 'TEX', tipo: 'TEXTRA' },
+    { codigo: 'BN', tipo: 'BONO NO LABORABLE' },
+    { codigo: 'BF', tipo: 'BONO FERIADO' },
+    { codigo: 'B1', tipo: 'BONO OPCIONAL 1' },
+    { codigo: 'B2', tipo: 'BONO OPCIONAL 2' },
+    { codigo: 'B3', tipo: 'BONO OPCIONAL 3' },
+  ];
   ocultarSinAsistencia: boolean = false;
   activetab = 1
   diaSeleccionado = ''
@@ -310,6 +315,7 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
   tablaPlanXVinc = []
   reporteEstructurado = []
   procesadosPlanilla: Set<string>;
+  sinPresAnalitico = false
   @Input() set tabproyecto(value: any) {
 
     this.idProyecto = value.get('id_proyecto').value;
@@ -488,12 +494,14 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
       this.totalesAcumulados = {}
       this.areaSelAcum = null
       const consolidado = await this.procesosRhService.calendarioXAsignaciones(this.idProyecto)
+      console.log('consolidado', consolidado)
       this.mesesAcum = consolidado.consolidadoPorMeses?.map(ele => { return ele.mes_key })
       this.areasAcum = consolidado.areas
       this.cargosAcum = consolidado.cargos
       this.consolidado = this.agregarEncabezadosArea(consolidado.consolidadoPorMeses);
       this.calendarioCompleto = consolidado.calendario
       this.mostrar_carga_todo = false
+      this.sinPresAnalitico = consolidado.sinPresAnalitico
     } else if (event == 5) {
       this.mostrar_carga_todo = true
       this.tablaReq = []
@@ -849,7 +857,6 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
         .reverse()
         .map((part, i) => i === 0 ? mesesMap[part] : part)
         .join('-');
-      console.log('mesFormateado', mesFormateado)
       let tablaNueva = []
       const montosAreas = await this.listarMontosAreaPresAnaliticoRH()
       if (!this.areaSeleccionada) {
@@ -948,7 +955,7 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
                     hora_ingreso_tarde: '14:00:00|14:00:00|14:00:00|14:00:00|14:00:00||',
                     hora_salida_tarde: '18:00:00|18:00:00|18:00:00|18:00:00|18:00:00||',
                     totales_dia: 48,
-                    descuentos: '|10|10||100|100|||||||',
+                    descuentos: "0|10|10|0|100|100|0|0|0|0|0|0|0|100|100|0|0|0|0|0|0",
                     tardanza: 10,
                     tiempo_extra: 0
                   }
@@ -1114,7 +1121,7 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
                     hora_ingreso_tarde: '14:00:00|14:00:00|14:00:00|14:00:00|14:00:00||',
                     hora_salida_tarde: '18:00:00|18:00:00|18:00:00|18:00:00|18:00:00||',
                     totales_dia: 48,
-                    descuentos: '|10|10||100|100|||||||',
+                    descuentos: "0|10|10|0|100|100|0|0|0|0|0|0|0|100|100|0|0|0|0|0|0",
                     tardanza: 10,
                     tiempo_extra: 0
                   }
@@ -1207,7 +1214,7 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
       }
       // this.mostrar_carga_todo = false
       await this.recalcularTotales()
-      console.log('this.tablaFiltrada', this.tablaFiltrada)
+      // console.log('this.tablaFiltrada', this.tablaFiltrada)
     } catch (error) {
       console.error('Error:', error);
     } finally {
@@ -1267,27 +1274,259 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
     return index;
   }
 
+  // filtrarPorUsuario(registrosAsistencia: any[], id_usuario: number, id_asignacion: number, descuentos: string[], diasNoLaborables: string[], feriadosSoloFecha: string[], costedia) {
+
+  //   const dias = this.calendarioFiltrado[0].dias;
+
+  //   // Tipos de asistencia con sus códigos
+  //   const tipos = [
+  //     { codigo: 'A', tipo: 'ASISTIO' },
+  //     { codigo: 'T', tipo: 'TARDANZA' },
+  //     { codigo: 'TI', tipo: 'TARDANZA INJUSTIFICADA' },
+  //     { codigo: 'TJ', tipo: 'TARDANZA JUSTIFICADA' },
+  //     { codigo: 'F', tipo: 'FALTA' },
+  //     { codigo: 'FI', tipo: 'FALTA INJUSTIFICADA' },
+  //     { codigo: 'FJ', tipo: 'FALTA JUSTIFICADA' },
+  //     { codigo: 'FM', tipo: 'DESCANSO MEDICO' },
+  //     { codigo: 'FV', tipo: 'VACACIONES' },
+  //     { codigo: 'PE', tipo: 'PERMISO' },
+  //     { codigo: 'D1', tipo: 'DESCUENTO OPCIONAL 1' },
+  //     { codigo: 'D2', tipo: 'DESCUENTO OPCIONAL 2' },
+  //     { codigo: 'D3', tipo: 'DESCUENTO OPCIONAL 3' },
+  //     { codigo: 'OBS', tipo: 'OBSERVADO' },
+  //     { codigo: 'IN', tipo: 'INCOMPLETO' },
+  //     { codigo: 'TEX', tipo: 'TEXTRA' },
+  //     { codigo: 'BN', tipo: 'BONO NO LABORABLE' },
+  //     { codigo: 'BF', tipo: 'BONO FERIADO' },
+  //     { codigo: 'B1', tipo: 'BONO OPCIONAL 1' },
+  //     { codigo: 'B2', tipo: 'BONO OPCIONAL 2' },
+  //     { codigo: 'B3', tipo: 'BONO OPCIONAL 3' },
+  //   ];
+
+  //   // Crear un mapa para búsqueda rápida de tipos
+  //   const tipoMap = new Map();
+  //   tipos.forEach((tipoObj, index) => {
+  //     tipoMap.set(tipoObj.codigo, {
+  //       ...tipoObj,
+  //       descuento: descuentos[index] || "0"
+  //     });
+  //   });
+
+  //   // Crear un mapa de registros para búsqueda más rápida
+  //   const registroMap = new Map();
+
+  //   registrosAsistencia.forEach(registro => {
+  //     if (registro.id_usuario == id_usuario && registro.id_asignacion == id_asignacion) {
+  //       const clave = moment(registro.fecha).format('YYYY-MM-DD');
+  //       registroMap.set(clave, registro);
+  //     }
+  //   });
+
+  //   // Función para obtener día de la semana en español
+  //   const getDiaSemanaEspanol = (fechaMoment: moment.Moment): string => {
+  //     const diasMap: { [key: string]: string } = {
+  //       'SUNDAY': 'DOMINGO',
+  //       'MONDAY': 'LUNES',
+  //       'TUESDAY': 'MARTES',
+  //       'WEDNESDAY': 'MIÉRCOLES',
+  //       'THURSDAY': 'JUEVES',
+  //       'FRIDAY': 'VIERNES',
+  //       'SATURDAY': 'SÁBADO'
+  //     };
+
+  //     const diaIngles = fechaMoment.format('dddd').toUpperCase();
+  //     return diasMap[diaIngles] || diaIngles;
+  //   };
+
+  //   // Variables para acumular
+  //   let montoTotal = 0;
+  //   let tieneInvalido = false;
+
+  //   // Inicializar contadores
+  //   let dias_laborados = 0;
+  //   let dias_dominicales = 0;
+  //   let dias_feriados = 0;
+  //   let dias_tardanzas = 0;
+  //   let dias_permiso = 0;
+  //   let dias_faltados = 0;
+  //   let dias_otros = 0;
+
+  //   // Procesar cada día
+  //   const registroMes = dias.map(dia => {
+  //     const fechaDia = moment(dia.fecha, 'DD-MM-YYYY');
+  //     const fechaDiaKey = fechaDia.format('YYYY-MM-DD');
+  //     const diaSemana = getDiaSemanaEspanol(fechaDia);
+
+  //     const encontrado = registroMap.get(fechaDiaKey);
+  //     const tipoCodigo = encontrado?.tipo || '';
+
+  //     // Determinar si es día no laborable o feriado
+  //     const esDiaNoLaborable = diasNoLaborables.includes(diaSemana);
+  //     const esFeriado = feriadosSoloFecha.includes(fechaDiaKey);
+  //     // const esDiaEspecial = esDiaNoLaborable || esFeriado;
+  //     const esDiaEspecial = false
+  //     // CONTAR DIAS DOMINICALES
+  //     if (diaSemana === 'DOMINGO') {
+  //       dias_dominicales++;
+  //     }
+
+  //     // CONTAR DIAS FERIADOS
+  //     if (esFeriado) {
+  //       dias_feriados++;
+  //     }
+
+  //     // Verificar si el tipo es inválido (IN o OBS)
+  //     if (tipoCodigo === 'IN' || tipoCodigo === 'OBS') {
+  //       tieneInvalido = true;
+  //     }
+
+  //     // CONTAR POR TIPO DE ASISTENCIA (solo si es día laborable)
+  //     if (!esDiaEspecial) {
+  //       // DIAS LABORADOS: 'A', 'TEX'
+  //       if (tipoCodigo === 'A' || tipoCodigo === 'TEX') {
+  //         dias_laborados++;
+  //       }
+  //       // DIAS TARDANZAS: 'T', 'TI', 'TJ'
+  //       else if (tipoCodigo === 'T' || tipoCodigo === 'TI' || tipoCodigo === 'TJ') {
+  //         dias_tardanzas++;
+  //       }
+  //       // DIAS PERMISO: 'PE'
+  //       else if (tipoCodigo === 'PE') {
+  //         dias_permiso++;
+  //       }
+  //       // DIAS FALTADOS: 'F', 'FI', 'FJ', 'FM', 'FV', 'FC', 'FD'
+  //       else if (['F', 'FI', 'FJ', 'FM', 'FV', 'FC', 'FD', '', null].includes(tipoCodigo)) {
+  //         dias_faltados++;
+  //       }
+  //       // DIAS OTROS: 'OBS', 'IN' y cualquier otro código no categorizado
+  //       else if (tipoCodigo === 'OBS' || tipoCodigo === 'IN' || (tipoCodigo && !tipoMap.has(tipoCodigo))) {
+  //         dias_otros++;
+  //       }
+  //     }
+
+  //     // Inicializar valores
+  //     let monto = 0;
+  //     let descuentoAplicado = "0";
+  //     let tipoDescripcion = '';
+
+  //     // Obtener información del tipo si existe
+  //     if (tipoCodigo && tipoCodigo !== '') {
+  //       const tipoInfo = tipoMap.get(tipoCodigo);
+
+  //       if (tipoInfo) {
+  //         tipoDescripcion = tipoInfo.tipo;
+  //         descuentoAplicado = tipoInfo.descuento;
+
+  //         // Calcular monto con descuento (solo si no es día especial)
+  //         if (!esDiaEspecial) {
+  //           if (descuentoAplicado && descuentoAplicado !== "") {
+  //             const porcentajeDescuento = parseInt(descuentoAplicado) || 0;
+  //             const descuentoMonto = costedia * (porcentajeDescuento / 100);
+  //             monto = costedia - descuentoMonto;
+  //           } else {
+  //             monto = costedia; // Sin descuento
+  //           }
+  //         }
+  //         // Si es día especial, monto ya está en 0
+  //       } else {
+  //         // Tipo no encontrado en la lista
+  //         tipoDescripcion = 'TIPO DESCONOCIDO';
+  //         if (!esDiaEspecial) {
+  //           monto = costedia;
+  //         }
+  //       }
+  //     } else {
+  //       // Tipo vacío
+  //       tipoDescripcion = '';
+  //       if (!esDiaEspecial) {
+  //         monto = 0; // Tipo vacío en día laborable = 0
+  //       }
+  //     }
+
+  //     // Si es día especial, mostrar descripción especial pero mantener el tipo original
+  //     let descripcionMostrar = tipoDescripcion;
+  //     if (esDiaEspecial && !tipoDescripcion) {
+  //       descripcionMostrar = esFeriado ? 'FERIADO' : 'DIA NO LABORABLE';
+  //     }
+
+  //     // Acumular el monto total
+  //     montoTotal += monto;
+
+  //     return {
+  //       tipo: tipoCodigo, // Mantener el tipo original
+  //       tipoDescripcion: descripcionMostrar,
+  //       fecha: dia.fecha,
+  //       fuente: encontrado?.fuente || null,
+  //       habilitado: true,
+  //       asistencia1: encontrado?.asistencia_1,
+  //       asistencia2: encontrado?.asistencia_2,
+  //       asistencia3: encontrado?.asistencia_3,
+  //       asistencia4: encontrado?.asistencia_4,
+  //       monto_extra: encontrado?.monto_extra || 0,
+  //       horas_extra: encontrado?.horas_extra || 0,
+  //       id_control: encontrado?.id_control || null,
+  //       // Campos nuevos para la funcionalidad
+  //       monto: monto, // Será 0 si es día especial
+  //       costedia: costedia,
+  //       descuento: descuentoAplicado, // Mantener el descuento original
+  //       esDiaNoLaborable: esDiaNoLaborable,
+  //       esFeriado: esFeriado,
+  //       esDiaEspecial: esDiaEspecial,
+  //       // Datos adicionales del registro
+  //       ...(encontrado ? {
+  //         id_proyecto: encontrado.id_proyecto,
+  //         id_usuario: encontrado.id_usuario,
+  //         id_asignacion: encontrado.id_asignacion,
+  //         fecha_registro: encontrado.fecha_registro
+  //       } : {})
+  //     };
+  //   });
+
+  //   // Retornar objeto con registroMes, montoMes e invalido
+  //   return {
+  //     registroMes: registroMes,
+  //     montoMes: montoTotal,
+  //     invalido: tieneInvalido,
+  //     // Nuevos contadores
+  //     conteos: {
+  //       dias_laborados: dias_laborados,
+  //       dias_dominicales: dias_dominicales,
+  //       dias_feriados: dias_feriados,
+  //       dias_tardanzas: dias_tardanzas,
+  //       dias_permiso: dias_permiso,
+  //       dias_faltados: dias_faltados,
+  //       dias_otros: dias_otros
+  //     }
+  //   };
+  // }
+
   filtrarPorUsuario(registrosAsistencia: any[], id_usuario: number, id_asignacion: number, descuentos: string[], diasNoLaborables: string[], feriadosSoloFecha: string[], costedia) {
 
     const dias = this.calendarioFiltrado[0].dias;
 
-    // Tipos de asistencia con sus códigos
+    // Tipos de asistencia con sus códigos y tipoValor (descuento o bonificacion)
     const tipos = [
-      { codigo: 'A', tipo: 'ASISTIO' },
-      { codigo: 'T', tipo: 'TARDANZA' },
-      { codigo: 'TI', tipo: 'TARDANZA INJUSTIFICADA' },
-      { codigo: 'TJ', tipo: 'TARDANZA JUSTIFICADA' },
-      { codigo: 'F', tipo: 'FALTA' },
-      { codigo: 'FI', tipo: 'FALTA INJUSTIFICADA' },
-      { codigo: 'FJ', tipo: 'FALTA JUSTIFICADA' },
-      { codigo: 'FM', tipo: 'DESCANSO MEDICO' },
-      { codigo: 'FV', tipo: 'VACACIONES' },
-      { codigo: 'FC', tipo: 'CITA MEDICA' },
-      { codigo: 'FD', tipo: 'DUELO' },
-      { codigo: 'PE', tipo: 'PERMISO' },
-      { codigo: 'OBS', tipo: 'OBSERVADO' },
-      { codigo: 'IN', tipo: 'INCOMPLETO' },
-      { codigo: 'TEX', tipo: 'TEXTRA' }
+      { codigo: 'A', tipo: 'ASISTIO', tipoValor: 'descuento' },
+      { codigo: 'T', tipo: 'TARDANZA', tipoValor: 'descuento' },
+      { codigo: 'TI', tipo: 'TARDANZA INJUSTIFICADA', tipoValor: 'descuento' },
+      { codigo: 'TJ', tipo: 'TARDANZA JUSTIFICADA', tipoValor: 'descuento' },
+      { codigo: 'F', tipo: 'FALTA', tipoValor: 'descuento' },
+      { codigo: 'FI', tipo: 'FALTA INJUSTIFICADA', tipoValor: 'descuento' },
+      { codigo: 'FJ', tipo: 'FALTA JUSTIFICADA', tipoValor: 'descuento' },
+      { codigo: 'FM', tipo: 'DESCANSO MEDICO', tipoValor: 'descuento' },
+      { codigo: 'FV', tipo: 'VACACIONES', tipoValor: 'descuento' },
+      { codigo: 'PE', tipo: 'PERMISO', tipoValor: 'descuento' },
+      { codigo: 'D1', tipo: 'DESCUENTO OPCIONAL 1', tipoValor: 'descuento' },
+      { codigo: 'D2', tipo: 'DESCUENTO OPCIONAL 2', tipoValor: 'descuento' },
+      { codigo: 'D3', tipo: 'DESCUENTO OPCIONAL 3', tipoValor: 'descuento' },
+      { codigo: 'OBS', tipo: 'OBSERVADO', tipoValor: 'descuento' },
+      { codigo: 'IN', tipo: 'INCOMPLETO', tipoValor: 'descuento' },
+      { codigo: 'TEX', tipo: 'TEXTRA', tipoValor: 'descuento' },
+      { codigo: 'BN', tipo: 'BONO NO LABORABLE', tipoValor: 'bonificacion' },
+      { codigo: 'BF', tipo: 'BONO FERIADO', tipoValor: 'bonificacion' },
+      { codigo: 'B1', tipo: 'BONO OPCIONAL 1', tipoValor: 'bonificacion' },
+      { codigo: 'B2', tipo: 'BONO OPCIONAL 2', tipoValor: 'bonificacion' },
+      { codigo: 'B3', tipo: 'BONO OPCIONAL 3', tipoValor: 'bonificacion' },
     ];
 
     // Crear un mapa para búsqueda rápida de tipos
@@ -1295,7 +1534,7 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
     tipos.forEach((tipoObj, index) => {
       tipoMap.set(tipoObj.codigo, {
         ...tipoObj,
-        descuento: descuentos[index] || "0"
+        valor: descuentos[index] || "0"  // valor puede ser descuento o bonificación
       });
     });
 
@@ -1337,6 +1576,7 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
     let dias_permiso = 0;
     let dias_faltados = 0;
     let dias_otros = 0;
+    let dias_bonificados = 0;  // Nuevo contador para bonificaciones
 
     // Procesar cada día
     const registroMes = dias.map(dia => {
@@ -1350,8 +1590,8 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
       // Determinar si es día no laborable o feriado
       const esDiaNoLaborable = diasNoLaborables.includes(diaSemana);
       const esFeriado = feriadosSoloFecha.includes(fechaDiaKey);
-      // const esDiaEspecial = esDiaNoLaborable || esFeriado;
-      const esDiaEspecial = false
+      const esDiaEspecial = false; // o esDiaNoLaborable || esFeriado según necesidad
+
       // CONTAR DIAS DOMINICALES
       if (diaSemana === 'DOMINGO') {
         dias_dominicales++;
@@ -1366,6 +1606,11 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
       if (tipoCodigo === 'IN' || tipoCodigo === 'OBS') {
         tieneInvalido = true;
       }
+
+      // Obtener información del tipo
+      const tipoInfo = tipoMap.get(tipoCodigo);
+      const tipoValor = tipoInfo?.tipoValor || '';
+      const valorPorcentaje = parseInt(tipoInfo?.valor || "0");
 
       // CONTAR POR TIPO DE ASISTENCIA (solo si es día laborable)
       if (!esDiaEspecial) {
@@ -1385,6 +1630,10 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
         else if (['F', 'FI', 'FJ', 'FM', 'FV', 'FC', 'FD', '', null].includes(tipoCodigo)) {
           dias_faltados++;
         }
+        // DIAS BONIFICADOS: 'BN', 'BF', 'B1', 'B2', 'B3'
+        else if (tipoValor === 'bonificacion') {
+          dias_bonificados++;
+        }
         // DIAS OTROS: 'OBS', 'IN' y cualquier otro código no categorizado
         else if (tipoCodigo === 'OBS' || tipoCodigo === 'IN' || (tipoCodigo && !tipoMap.has(tipoCodigo))) {
           dias_otros++;
@@ -1393,28 +1642,41 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
 
       // Inicializar valores
       let monto = 0;
-      let descuentoAplicado = "0";
+      let valorAplicado = "0";
       let tipoDescripcion = '';
+      let tipoAplicado = ''; // 'descuento' o 'bonificacion'
 
       // Obtener información del tipo si existe
       if (tipoCodigo && tipoCodigo !== '') {
-        const tipoInfo = tipoMap.get(tipoCodigo);
-
         if (tipoInfo) {
           tipoDescripcion = tipoInfo.tipo;
-          descuentoAplicado = tipoInfo.descuento;
+          valorAplicado = tipoInfo.valor;
+          tipoAplicado = tipoInfo.tipoValor;
 
-          // Calcular monto con descuento (solo si no es día especial)
+          // Calcular monto (solo si no es día especial)
           if (!esDiaEspecial) {
-            if (descuentoAplicado && descuentoAplicado !== "") {
-              const porcentajeDescuento = parseInt(descuentoAplicado) || 0;
-              const descuentoMonto = costedia * (porcentajeDescuento / 100);
-              monto = costedia - descuentoMonto;
+            const porcentaje = parseInt(valorAplicado) || 0;
+
+            if (tipoAplicado === 'descuento') {
+              // Descuento: resta del costo del día
+              if (porcentaje > 0) {
+                const descuentoMonto = costedia * (porcentaje / 100);
+                monto = costedia - descuentoMonto;
+              } else {
+                monto = costedia;
+              }
+            } else if (tipoAplicado === 'bonificacion') {
+              // Bonificación: suma al costo del día
+              if (porcentaje > 0) {
+                const bonificacionMonto = costedia * (porcentaje / 100);
+                monto = costedia + bonificacionMonto;
+              } else {
+                monto = costedia;
+              }
             } else {
-              monto = costedia; // Sin descuento
+              monto = costedia;
             }
           }
-          // Si es día especial, monto ya está en 0
         } else {
           // Tipo no encontrado en la lista
           tipoDescripcion = 'TIPO DESCONOCIDO';
@@ -1442,6 +1704,7 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
       return {
         tipo: tipoCodigo, // Mantener el tipo original
         tipoDescripcion: descripcionMostrar,
+        tipoAplicado: tipoAplicado, // 'descuento' o 'bonificacion'
         fecha: dia.fecha,
         fuente: encontrado?.fuente || null,
         habilitado: true,
@@ -1453,9 +1716,9 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
         horas_extra: encontrado?.horas_extra || 0,
         id_control: encontrado?.id_control || null,
         // Campos nuevos para la funcionalidad
-        monto: monto, // Será 0 si es día especial
+        monto: monto,
         costedia: costedia,
-        descuento: descuentoAplicado, // Mantener el descuento original
+        valorAplicado: valorAplicado, // Puede ser descuento o bonificación
         esDiaNoLaborable: esDiaNoLaborable,
         esFeriado: esFeriado,
         esDiaEspecial: esDiaEspecial,
@@ -1482,13 +1745,14 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
         dias_tardanzas: dias_tardanzas,
         dias_permiso: dias_permiso,
         dias_faltados: dias_faltados,
-        dias_otros: dias_otros
+        dias_otros: dias_otros,
+        dias_bonificados: dias_bonificados  // Nuevo contador
       }
     };
   }
-
   getSelectClass(tipoCodigo: string): string {
     const clases: { [key: string]: string } = {
+      // Tipos originales
       'A': 'bg-success',
       'T': 'bg-warning text-dark',
       'TI': 'bg-orange text-white',
@@ -1498,21 +1762,31 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
       'FJ': 'bg-pink text-white',
       'FM': 'bg-purple text-white',
       'FV': 'bg-info text-white',
-      'FC': 'bg-teal text-white',
-      'FD': 'bg-dark text-white',
       'PE': 'bg-secondary text-white',
-      // 'FS': 'bg-light text-dark border',
 
-      // Nuevos estados con colores únicos
-      'OBS': 'bg-indigo text-white',        // Violeta para observado
-      'IN': 'bg-light-blue text-dark border',     // Cian para incompleto
-      'TEX': 'bg-lime text-dark'  // Verde suave para tiempo extra
+      // Descuentos opcionales
+      'D1': 'bg-dark text-white',
+      'D2': 'bg-dark text-white',
+      'D3': 'bg-dark text-white',
+
+      // Nuevos estados
+      'OBS': 'bg-indigo text-white',           // Violeta para observado
+      'IN': 'bg-light-blue text-dark border',   // Cian para incompleto
+      'TEX': 'bg-lime text-dark',               // Verde para tiempo extra
+
+      // Bonificaciones
+      'BN': 'bg-primary text-white',            // Azul para bono no laborable
+      'BF': 'bg-success text-white',            // Verde para bono feriado
+      'B1': 'bg-teal text-white',               // Verde azulado para bono opcional 1
+      'B2': 'bg-teal text-white',               // Verde azulado para bono opcional 2
+      'B3': 'bg-teal text-white'                // Verde azulado para bono opcional 3
     };
     return clases[tipoCodigo] || 'bg-light text-dark';
   }
 
   getColor(codigo: string): string {
     const colores: { [key: string]: string } = {
+      // Tipos originales
       'A': '#28a745',
       'T': '#ffc107',
       'TI': '#fd7e14',
@@ -1522,15 +1796,24 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
       'FJ': '#e83e8c',
       'FM': '#6f42c1',
       'FV': '#17a2b8',
-      'FC': '#20c997',
-      'FD': '#343a40',
       'PE': '#6c757d',
-      // 'FS': '#f8f9fa',
 
-      // Colores alternativos
+      // Descuentos opcionales
+      'D1': '#343a40',
+      'D2': '#343a40',
+      'D3': '#343a40',
+
+      // Nuevos estados
       'OBS': '#8b5cf6',    // Violeta - Observado
       'IN': '#06b6d4',     // Cian - Incompleto
-      'TEX': '#22c55e'     // Verde - Tiempo extra
+      'TEX': '#22c55e',    // Verde - Tiempo extra
+
+      // Bonificaciones
+      'BN': '#0d6efd',     // Azul - Bono no laborable
+      'BF': '#198754',     // Verde - Bono feriado
+      'B1': '#20c997',     // Teal - Bono opcional 1
+      'B2': '#20c997',     // Teal - Bono opcional 2
+      'B3': '#20c997'      // Teal - Bono opcional 3
     };
     return colores[codigo] || '#f8f9fa';
   }
@@ -1538,12 +1821,17 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
   getTextColor(codigo: string): string {
     // Definir los grupos de colores de texto
     const textoBlanco = new Set([
-      'TI', 'FI', 'FJ', 'FM', 'FV', 'FC', 'FD', 'OBS', // Fondos oscuros
-      'A', 'F', 'PE'                                    // Variables con fondo oscuro
+      // Fondos oscuros
+      'TI', 'FI', 'FJ', 'FM', 'FV', 'PE',
+      'A', 'F',
+      'OBS',
+      'D1', 'D2', 'D3',
+      'BN', 'BF', 'B1', 'B2', 'B3'
     ]);
 
     const textoNegro = new Set([
-      'T', 'TJ', 'IN', 'TEX'  // Fondos claros
+      // Fondos claros
+      'T', 'TJ', 'IN', 'TEX'
     ]);
 
     // Si está en el grupo de texto blanco, retornar 'white'
@@ -1570,7 +1858,13 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
 
       this.recalcularTodoFila(fila)
     } else {
-      this.actualizarRegistro(row, row.dias[columna], nuevoValor, row.dias[columna].id_control, fila, columna)
+      console.log('nuevoValor', nuevoValor, fila, columna)
+      if (!nuevoValor) {
+        this.eliminarRegistro(row.dias[columna].id_control, fila)
+      } else {
+        this.actualizarRegistro(row, row.dias[columna], nuevoValor, row.dias[columna].id_control, fila, columna)
+      }
+
     }
 
     // }
@@ -1660,6 +1954,88 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
     }
   }
 
+  async eliminarRegistro(id_control, fila) {
+    try {
+      const obj = {
+        id_proyecto: this.idProyecto.toString(),
+        id_control: id_control.toString()
+      }
+      const resp = await this.recursosHumanosService.eliminarRegistrosAsistencia(obj)
+      console.log('eliminarRegistro', resp)
+
+      // Para Opción 1 o 2: resp será un array de resultados
+      if (resp && resp.length > 0) {
+        const idsEliminados = resp; // Array de objetos con id_eliminado
+        console.log('IDs eliminados:', idsEliminados);
+
+        if (idsEliminados.length === 0) {
+          SwalService.error('No se encontraron registros para eliminar');
+        } else {
+          // Buscar qué día(s) tienen este id_control y limpiarlos
+          const filaActual = this.tablaFiltrada[fila];
+          if (filaActual && filaActual.dias) {
+            filaActual.dias.forEach(dia => {
+              // Si el id_control del día coincide con el eliminado
+              if (dia.id_control == id_control) {
+                // Limpiar todos los campos relevantes
+                dia.tipo = "";
+                dia.fuente = null;
+                dia.id_control = null;
+                dia.horas_extra = 0;
+                dia.monto = 0;
+                dia.monto_extra = 0;
+                // Mantener los siguientes campos como están:
+                // dia.fecha
+                // dia.esDiaEspecial
+                // dia.esDiaNoLaborable
+                // dia.esFeriado
+                // dia.habilitado
+              }
+            });
+          }
+
+          console.log('this.tablaFiltrada[fila]', this.tablaFiltrada[fila])
+          this.recalcularTodoFila(fila);
+
+          this.toaster.info(
+            'Se eliminó el registro de asistencia',
+            '',
+            {
+              closeButton: false,
+              positionClass: 'toast-bottom-right',
+              timeOut: 4000,
+            }
+          );
+        }
+      } else if (resp && resp.ids_eliminados) { // Para Opción 3
+        console.log('IDs eliminados:', resp.ids_eliminados);
+
+        // Si tienes múltiples IDs, limpiar todos los que coincidan
+        const idsArray = resp.ids_eliminados.split(',');
+        const filaActual = this.tablaFiltrada[fila];
+        if (filaActual && filaActual.dias) {
+          filaActual.dias.forEach(dia => {
+            if (idsArray.includes(String(dia.id_control))) {
+              dia.tipo = "";
+              dia.fuente = null;
+              dia.id_control = null;
+              dia.horas_extra = 0;
+              dia.monto = 0;
+              dia.monto_extra = 0;
+            }
+          });
+        }
+
+        this.recalcularTodoFila(fila);
+      } else {
+        SwalService.error();
+      }
+    } catch (error) {
+      console.log(error)
+      SwalService.error()
+    }
+  }
+
   async actualizarRegistro(row, dataDia, tipo, id_control, fila, columna) {
     try {
       const partesFecha = dataDia.fecha.split('-');
@@ -1716,7 +2092,7 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
       : descuentosRaw;
 
     // const diasNoLaborables = row.diasNoLaborables || ['DOMINGO'];
-     const diasNoLaborables = []
+    const diasNoLaborables = []
     const feriadosSoloFecha = row.feriadosSoloFecha || [];
 
     // Crear mapa de tipos con descuentos
@@ -1731,12 +2107,18 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
       { codigo: 'FJ', tipo: 'FALTA JUSTIFICADA' },
       { codigo: 'FM', tipo: 'DESCANSO MEDICO' },
       { codigo: 'FV', tipo: 'VACACIONES' },
-      { codigo: 'FC', tipo: 'CITA MEDICA' },
-      { codigo: 'FD', tipo: 'DUELO' },
       { codigo: 'PE', tipo: 'PERMISO' },
+      { codigo: 'D1', tipo: 'DESCUENTO OPCIONAL 1' },
+      { codigo: 'D2', tipo: 'DESCUENTO OPCIONAL 2' },
+      { codigo: 'D3', tipo: 'DESCUENTO OPCIONAL 3' },
       { codigo: 'OBS', tipo: 'OBSERVADO' },
       { codigo: 'IN', tipo: 'INCOMPLETO' },
-      { codigo: 'TEX', tipo: 'TEXTRA' }
+      { codigo: 'TEX', tipo: 'TEXTRA' },
+      { codigo: 'BN', tipo: 'BONO NO LABORABLE' },
+      { codigo: 'BF', tipo: 'BONO FERIADO' },
+      { codigo: 'B1', tipo: 'BONO OPCIONAL 1' },
+      { codigo: 'B2', tipo: 'BONO OPCIONAL 2' },
+      { codigo: 'B3', tipo: 'BONO OPCIONAL 3' },
     ];
 
     tipos.forEach((tipoObj, index) => {
@@ -1887,12 +2269,18 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
       { codigo: 'FJ', tipo: 'FALTA JUSTIFICADA' },
       { codigo: 'FM', tipo: 'DESCANSO MEDICO' },
       { codigo: 'FV', tipo: 'VACACIONES' },
-      { codigo: 'FC', tipo: 'CITA MEDICA' },
-      { codigo: 'FD', tipo: 'DUELO' },
       { codigo: 'PE', tipo: 'PERMISO' },
+      { codigo: 'D1', tipo: 'DESCUENTO OPCIONAL 1' },
+      { codigo: 'D2', tipo: 'DESCUENTO OPCIONAL 2' },
+      { codigo: 'D3', tipo: 'DESCUENTO OPCIONAL 3' },
       { codigo: 'OBS', tipo: 'OBSERVADO' },
       { codigo: 'IN', tipo: 'INCOMPLETO' },
-      { codigo: 'TEX', tipo: 'TEXTRA' }
+      { codigo: 'TEX', tipo: 'TEXTRA' },
+      { codigo: 'BN', tipo: 'BONO NO LABORABLE' },
+      { codigo: 'BF', tipo: 'BONO FERIADO' },
+      { codigo: 'B1', tipo: 'BONO OPCIONAL 1' },
+      { codigo: 'B2', tipo: 'BONO OPCIONAL 2' },
+      { codigo: 'B3', tipo: 'BONO OPCIONAL 3' },
     ];
 
     tipos.forEach((tipoObj, index) => {
@@ -1915,7 +2303,7 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
 
         // Usar los parámetros de la fila
         // const diasNoLaborables = row.diasNoLaborables || ['DOMINGO'];
-         const diasNoLaborables = []
+        const diasNoLaborables = []
         const feriadosSoloFecha = row.feriadosSoloFecha || [];
 
         const esDiaNoLaborable = diasNoLaborables.includes(diaSemana);
@@ -2189,7 +2577,7 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
             hora_ingreso_tarde: '14:00:00|14:00:00|14:00:00|14:00:00|14:00:00||',
             hora_salida_tarde: '18:00:00|18:00:00|18:00:00|18:00:00|18:00:00||',
             totales_dia: 48,
-            descuentos: '|10|10||100|100|||||||',
+            descuentos: "0|10|10|0|100|100|0|0|0|0|0|0|0|100|100|0|0|0|0|0|0",
             tardanza: 0,
             tiempo_extra: 0
           };
@@ -5649,10 +6037,10 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
 
     if (!this.reqcargSeleccionado) {
       // 🔥 NO limpiar filSelReq, mantener la selección
-      console.log('Esta fila no tiene relación con ningún cargo - La tabla se mostrará vacía');
+      // console.log('Esta fila no tiene relación con ningún cargo - La tabla se mostrará vacía');
     } else {
-      console.log('Relación encontrada:', this.reqcargSeleccionado);
-      console.log('Cargos vinculados:', this.reqcargSeleccionado.cargos);
+      // console.log('Relación encontrada:', this.reqcargSeleccionado);
+      // console.log('Cargos vinculados:', this.reqcargSeleccionado.cargos);
     }
 
     // Forzar actualización de la vista
@@ -5667,7 +6055,7 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
       // idfila: row.idfila,
     }
     this.requerimientosCargos = await this.recursosHumanosService.listarRequerimientoCargo(obj)
-    console.log('this.requerimientosCargos', this.requerimientosCargos)
+    // console.log('this.requerimientosCargos', this.requerimientosCargos)
   }
 
   // async onVinculadoChange(cargo, event: any) {
@@ -5941,9 +6329,6 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   async generarPlanillaProyecto(data, completo, tabla) {
-    console.log('data', data);
-    console.log('tabla', tabla);
-
     // 🔥 INICIALIZAR el Set al inicio de cada llamada
     this.procesadosPlanilla = new Set();
 
@@ -6058,7 +6443,7 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
                   hora_ingreso_tarde: '14:00:00|14:00:00|14:00:00|14:00:00|14:00:00||',
                   hora_salida_tarde: '18:00:00|18:00:00|18:00:00|18:00:00|18:00:00||',
                   totales_dia: 48,
-                  descuentos: '|10|10||100|100|||||||',
+                  descuentos: "0|10|10|0|100|100|0|0|0|0|0|0|0|100|100|0|0|0|0|0|0",
                   tardanza: 10,
                   tiempo_extra: 0
                 };
@@ -6146,14 +6531,14 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
         }
 
         resultadosPorMes[mesFormat] = filtrados;
-        console.log(`Mes ${mesFormat}: ${filtrados.length} registros - Restantes: ${asistenciaRestante.length}`);
+        // console.log(`Mes ${mesFormat}: ${filtrados.length} registros - Restantes: ${asistenciaRestante.length}`);
 
         if (asistenciaRestante.length === 0) break;
       }
       if (asistenciaRestante.length === 0) break;
     }
 
-    console.log('resultadosPorMes', resultadosPorMes);
+    // console.log('resultadosPorMes', resultadosPorMes);
     return resultadosPorMes;
   }
 
@@ -6315,9 +6700,17 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
       { codigo: 'FC', tipo: 'CITA MEDICA', descuento: "0" },
       { codigo: 'FD', tipo: 'DUELO', descuento: "0" },
       { codigo: 'PE', tipo: 'PERMISO', descuento: "0" },
+      { codigo: 'D1', tipo: 'DESCUENTO OPCIONAL 1', descuento: "0" },
+      { codigo: 'D2', tipo: 'DESCUENTO OPCIONAL 2', descuento: "0" },
+      { codigo: 'D3', tipo: 'DESCUENTO OPCIONAL 3', descuento: "0" },
       { codigo: 'OBS', tipo: 'OBSERVADO', descuento: "100" },
       { codigo: 'IN', tipo: 'INCOMPLETO', descuento: "100" },
-      { codigo: 'TEX', tipo: 'TEXTRA', descuento: "0" }
+      { codigo: 'TEX', tipo: 'TEXTRA', descuento: "0" },
+      { codigo: 'BN', tipo: 'BONO NO LABORABLE', descuento: "0" },
+      { codigo: 'BF', tipo: 'BONO FERIADO', descuento: "0" },
+      { codigo: 'B1', tipo: 'BONO OPCIONAL 1', descuento: "0" },
+      { codigo: 'B2', tipo: 'BONO OPCIONAL 2', descuento: "0" },
+      { codigo: 'B3', tipo: 'BONO OPCIONAL 3', descuento: "0" }
     ];
 
     const encontrado = tipos.find(t => t.codigo === tipoCodigo);
@@ -6487,11 +6880,11 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
           filaRequerimiento.estado_global = 'PENDIENTE';
         }
 
-        console.log(`Estado para ${filaRequerimiento.descripcion}: ${filaRequerimiento.estado_global}`);
+        // console.log(`Estado para ${filaRequerimiento.descripcion}: ${filaRequerimiento.estado_global}`);
       }
     });
 
-    console.log('=== FIN vincularReporteConRequerimientos ===');
+    // console.log('=== FIN vincularReporteConRequerimientos ===');
   }
 
   get reporteEstructuradoFiltrado() {
@@ -6749,7 +7142,7 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
       }
     }
 
-    console.log('tablaRegActividades actualizada:', this.tablaRegActividades);
+    // console.log('tablaRegActividades actualizada:', this.tablaRegActividades);
   }
 
   calcularEstadoRequerimiento(filaRequerimiento: any): string {

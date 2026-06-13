@@ -43,8 +43,9 @@ interface AsistenciaDetalle {
   id_asignacion: number;
   id_usuario: number;
   tipo_asistencia: string;
-  descuento_aplicado: number;
+  valor_aplicado: number;  // Puede ser descuento o bonificación
   monto_individual: number;
+  tipo_valor: string;  // 'descuento' o 'bonificacion'
 }
 
 interface TotalesMes {
@@ -94,7 +95,6 @@ export class ProcesosRhService {
         id_area: 0
       })
     ]);
-
     const asistenciasMap = this.crearMapaAsistenciasPorUsuario(asistencias);
     const configuracionesMap = this.crearMapaConfiguraciones(configuraciones);
     const montosAreasMap = this.crearMapaMontosPorArea(montosAreas);
@@ -124,7 +124,8 @@ export class ProcesosRhService {
       calendario,
       areas,
       cargos,
-      totales_globales: totalesGlobales // Nuevo objeto con totales
+      totales_globales: totalesGlobales, // Nuevo objeto con totales
+      sinPresAnalitico: montosAreas.length ? false : true
     };
   }
 
@@ -500,7 +501,7 @@ export class ProcesosRhService {
           hora_ingreso_tarde: '14:00:00|14:00:00|14:00:00|14:00:00|14:00:00||',
           hora_salida_tarde: '18:00:00|18:00:00|18:00:00|18:00:00|18:00:00||',
           totales_dia: 48,
-          descuentos: '|10|10||100|100|||||||',
+          descuentos: "0|10|10|0|100|100|0|0|0|0|0|0|0|100|100|0|0|0|0|0|0",
           tardanza: 10,
           tiempo_extra: 0
         }
@@ -616,12 +617,18 @@ export class ProcesosRhService {
   //     { codigo: 'FJ', tipo: 'FALTA JUSTIFICADA' },
   //     { codigo: 'FM', tipo: 'DESCANSO MEDICO' },
   //     { codigo: 'FV', tipo: 'VACACIONES' },
-  //     { codigo: 'FC', tipo: 'CITA MEDICA' },
-  //     { codigo: 'FD', tipo: 'DUELO' },
   //     { codigo: 'PE', tipo: 'PERMISO' },
+  //     { codigo: 'D1', tipo: 'DESCUENTO OPCIONAL 1' },
+  //     { codigo: 'D2', tipo: 'DESCUENTO OPCIONAL 2' },
+  //     { codigo: 'D3', tipo: 'DESCUENTO OPCIONAL 3' },
   //     { codigo: 'OBS', tipo: 'OBSERVADO' },
   //     { codigo: 'IN', tipo: 'INCOMPLETO' },
-  //     { codigo: 'TEX', tipo: 'TEXTRA' }
+  //     { codigo: 'TEX', tipo: 'TEXTRA' },
+  //     { codigo: 'BN', tipo: 'BONO NO LABORABLE' },
+  //     { codigo: 'BF', tipo: 'BONO FERIADO' },
+  //     { codigo: 'B1', tipo: 'BONO OPCIONAL 1' },
+  //     { codigo: 'B2', tipo: 'BONO OPCIONAL 2' },
+  //     { codigo: 'B3', tipo: 'BONO OPCIONAL 3' },
   //   ];
 
   //   const tipoMap = new Map();
@@ -632,165 +639,9 @@ export class ProcesosRhService {
   //       descuento: descuentoNumero
   //     });
   //   });
-  //   const calendarioProcesado: CalendarioDia[] = [];
-  //   let costoTotal = 0;
-
-  //   for (const anio of calendario) {
-  //     if (!anio || !anio.meses) continue;
-
-  //     for (const mes of anio.meses) {
-  //       if (!mes || !mes.dias) continue;
-
-  //       for (const dia of mes.dias) {
-  //         if (!dia || !dia.fecha) continue;
-
-  //         const fechaDia = moment(dia.fecha, 'DD-MM-YYYY');
-  //         const fechaDiaKey = fechaDia.format('DD-MM-YYYY');
-  //         const diaSemana = getDiaSemanaEspanol(fechaDia);
-  //         const fecha = dia.fecha;
-
-  //         const esDiaNoLaborable = diasNoLaborables.includes(diaSemana);
-  //         const esFeriado = feriadosSoloFecha.includes(fechaDiaKey);
-  //         const esDiaEspecial = esDiaNoLaborable || esFeriado;
-
-  //         const detalleAsistencias: AsistenciaDetalle[] = [];
-  //         let montoDia = 0;
-  //         let cantidadAsignacionesConMonto = 0;
-
-  //         const usuariosMap = asistenciasMap.get(fechaDiaKey) || new Map<number, any>();
-  //         for (const asignacion of asignacionesGrupo) {
-  //           if (!asignacion) continue;
-  //           const asistencia = usuariosMap.get(asignacion.id_usuario);
-  //           if (asistencia) {
-  //             const tipoCodigo = asistencia.tipo;
-  //             let montoIndividual = 0;
-  //             let descuentoAplicado = 0;
-
-  //             if (tipoCodigo && tipoCodigo !== '') {
-  //               const tipoInfo = tipoMap.get(tipoCodigo);
-  //               if (tipoInfo) {
-  //                 descuentoAplicado = tipoInfo.descuento;
-  //                 if (!esDiaEspecial) {
-  //                   if (descuentoAplicado > 0) {
-  //                     const descuentoMonto = costoDia * (descuentoAplicado / 100);
-  //                     montoIndividual = costoDia - descuentoMonto;
-  //                   } else {
-  //                     montoIndividual = costoDia;
-  //                   }
-  //                   montoDia += montoIndividual;
-  //                   cantidadAsignacionesConMonto++;
-  //                 }
-
-  //               } else {
-  //                 if (!esDiaEspecial) {
-  //                   montoIndividual = costoDia;
-  //                   montoDia += montoIndividual;
-  //                   cantidadAsignacionesConMonto++;
-  //                 }
-  //               }
-  //             } else {
-  //               if (!esDiaEspecial) {
-  //                 montoIndividual = 0;
-  //               }
-  //             }
-
-
-  //             detalleAsistencias.push({
-  //               id_asignacion: asignacion.id_asignacion || 0,
-  //               id_usuario: asistencia.id_usuario || 0,
-  //               tipo_asistencia: tipoCodigo || '',
-  //               descuento_aplicado: descuentoAplicado,
-  //               monto_individual: montoIndividual
-  //             });
-  //           } else {
-  //             detalleAsistencias.push({
-  //               id_asignacion: asignacion.id_asignacion || 0,
-  //               id_usuario: asignacion.id_usuario || 0,
-  //               tipo_asistencia: '',
-  //               descuento_aplicado: 0,
-  //               monto_individual: 0
-  //             });
-  //           }
-  //         }
-
-  //         costoTotal += montoDia;
-
-  //         calendarioProcesado.push({
-  //           fecha: fecha,
-  //           dia: dia.dia || '',
-  //           laborable: dia.laborable || false,
-  //           feriado: dia.feriado || false,
-  //           esDiaEspecial,
-  //           monto_dia: montoDia,
-  //           cantidad_asignaciones: cantidadAsignacionesConMonto,
-  //           detalle_asistencias: detalleAsistencias
-  //         });
-  //       }
-  //     }
-  //   }
-
-  //   return { calendarioProcesado, costoTotal };
-  // }
-
-  // private procesarDiasCalendarioGrupo(
-  //   calendario: any[],
-  //   asistenciasMap: Map<string, Map<number, any>>,
-  //   costoDia: number,
-  //   horarioConfArea: any,
-  //   feriadosSoloFecha: string[],
-  //   asignacionesGrupo: any[]
-  // ): { calendarioProcesado: CalendarioDia[], costoTotal: number } {
-
-  //   const getDiaSemanaEspanol = (fechaMoment: moment.Moment): string => {
-  //     const diasMap: { [key: string]: string } = {
-  //       'SUNDAY': 'DOMINGO',
-  //       'MONDAY': 'LUNES',
-  //       'TUESDAY': 'MARTES',
-  //       'WEDNESDAY': 'MIÉRCOLES',
-  //       'THURSDAY': 'JUEVES',
-  //       'FRIDAY': 'VIERNES',
-  //       'SATURDAY': 'SÁBADO'
-  //     };
-  //     const diaIngles = fechaMoment.format('dddd').toUpperCase();
-  //     return diasMap[diaIngles] || diaIngles;
-  //   };
-
-
-  //   const descuentosRaw = horarioConfArea?.descuentos || [];
-
-  //   // const diasNoLaborables = horarioConfArea?.dias_nolaborables?.split('|') || [];
-  //   const diasNoLaborables = []
-  //   const descuentos = typeof descuentosRaw === 'string'
-  //     ? descuentosRaw.split('|')  // No usar slice(1) porque el primer elemento vacío es para ASISTIO
-  //     : descuentosRaw;
-
-  //   const tipos = [
-  //     { codigo: 'A', tipo: 'ASISTIO' },
-  //     { codigo: 'T', tipo: 'TARDANZA' },
-  //     { codigo: 'TI', tipo: 'TARDANZA INJUSTIFICADA' },
-  //     { codigo: 'TJ', tipo: 'TARDANZA JUSTIFICADA' },
-  //     { codigo: 'F', tipo: 'FALTA' },
-  //     { codigo: 'FI', tipo: 'FALTA INJUSTIFICADA' },
-  //     { codigo: 'FJ', tipo: 'FALTA JUSTIFICADA' },
-  //     { codigo: 'FM', tipo: 'DESCANSO MEDICO' },
-  //     { codigo: 'FV', tipo: 'VACACIONES' },
-  //     { codigo: 'FC', tipo: 'CITA MEDICA' },
-  //     { codigo: 'FD', tipo: 'DUELO' },
-  //     { codigo: 'PE', tipo: 'PERMISO' },
-  //     { codigo: 'OBS', tipo: 'OBSERVADO' },
-  //     { codigo: 'IN', tipo: 'INCOMPLETO' },
-  //     { codigo: 'TEX', tipo: 'TEXTRA' }
-  //   ];
-
-  //   const tipoMap = new Map();
-  //   tipos.forEach((tipoObj, index) => {
-  //     const descuentoNumero = parseInt(descuentos[index] || "0", 10) || 0;
-  //     tipoMap.set(tipoObj.codigo, {
-  //       ...tipoObj,
-  //       descuento: descuentoNumero
-  //     });
-  //   });
-
+  //   console.log('descuentos', descuentos)
+  //   console.log('tipos', tipos)
+  //   console.log('tipoMap', tipoMap)
   //   // Función para verificar si una asignación está activa en una fecha específica
   //   const isAsignacionActivaEnFecha = (asignacion: any, fecha: moment.Moment): boolean => {
   //     if (!asignacion) return false;
@@ -835,16 +686,6 @@ export class ProcesosRhService {
   //         const diaSemana = getDiaSemanaEspanol(fechaDia);
   //         const fecha = dia.fecha;
 
-  //         // FILTRO: Solo considerar asignaciones activas en esta fecha
-  //         const asignacionesActivas = asignacionesGrupo.filter(asignacion =>
-  //           isAsignacionActivaEnFecha(asignacion, fechaDia)
-  //         );
-
-  //         // Si no hay asignaciones activas en esta fecha, saltar este día
-  //         // if (asignacionesActivas.length === 0) {
-  //         //   continue; // O puedes agregar el día con monto 0 si lo necesitas
-  //         // }
-
   //         const esDiaNoLaborable = diasNoLaborables.includes(diaSemana);
   //         const esFeriado = feriadosSoloFecha.includes(fechaDiaKey);
   //         const esDiaEspecial = esDiaNoLaborable || esFeriado;
@@ -855,18 +696,37 @@ export class ProcesosRhService {
 
   //         const usuariosMap = asistenciasMap.get(fechaDiaKey) || new Map<number, any>();
 
-  //         // Procesar solo asignaciones activas
-  //         for (const asignacion of asignacionesActivas) {
+  //         // ✅ MODIFICADO: Procesar TODAS las asignaciones del grupo
+  //         for (const asignacion of asignacionesGrupo) {
   //           if (!asignacion) continue;
+
+  //           // Verificar si la asignación está activa en esta fecha
+  //           const estaActiva = isAsignacionActivaEnFecha(asignacion, fechaDia);
+
+  //           if (!estaActiva) {
+  //             // Asignación NO activa en esta fecha - agregar detalle vacío
+  //             detalleAsistencias.push({
+  //               id_asignacion: asignacion.id_asignacion || 0,
+  //               id_usuario: asignacion.id_usuario || 0,
+  //               tipo_asistencia: '',
+  //               descuento_aplicado: 0,
+  //               monto_individual: 0
+  //             });
+  //             continue;
+  //           }
+
+  //           // Asignación activa - procesar asistencia
   //           const asistencia = usuariosMap.get(asignacion.id_usuario);
 
   //           if (asistencia) {
   //             const tipoCodigo = asistencia.tipo;
+  //             console.log('asistencia', asistencia)
   //             let montoIndividual = 0;
   //             let descuentoAplicado = 0;
 
   //             if (tipoCodigo && tipoCodigo !== '') {
   //               const tipoInfo = tipoMap.get(tipoCodigo);
+  //               console.log('tipoInfo', tipoInfo)
   //               if (tipoInfo) {
   //                 descuentoAplicado = tipoInfo.descuento;
   //                 if (!esDiaEspecial) {
@@ -911,28 +771,25 @@ export class ProcesosRhService {
   //           }
   //         }
 
-  //         // Solo agregar al calendario si hay al menos un registro de asistencia o si quieres mostrar días con monto 0
-  //         if (detalleAsistencias.length > 0) {
-  //           costoTotal += montoDia;
+  //         // ✅ MODIFICADO: Siempre agregar el día al calendario
+  //         costoTotal += montoDia;
 
-  //           calendarioProcesado.push({
-  //             fecha: fecha,
-  //             dia: dia.dia || '',
-  //             laborable: dia.laborable || false,
-  //             feriado: dia.feriado || false,
-  //             esDiaEspecial,
-  //             monto_dia: montoDia,
-  //             cantidad_asignaciones: cantidadAsignacionesConMonto,
-  //             detalle_asistencias: detalleAsistencias
-  //           });
-  //         }
+  //         calendarioProcesado.push({
+  //           fecha: fecha,
+  //           dia: dia.dia || '',
+  //           laborable: dia.laborable || false,
+  //           feriado: dia.feriado || false,
+  //           esDiaEspecial,
+  //           monto_dia: montoDia,
+  //           cantidad_asignaciones: cantidadAsignacionesConMonto,
+  //           detalle_asistencias: detalleAsistencias
+  //         });
   //       }
   //     }
   //   }
 
   //   return { calendarioProcesado, costoTotal };
   // }
-
   private procesarDiasCalendarioGrupo(
     calendario: any[],
     asistenciasMap: Map<string, Map<number, any>>,
@@ -958,63 +815,64 @@ export class ProcesosRhService {
 
     const descuentosRaw = horarioConfArea?.descuentos || [];
 
-    // const diasNoLaborables = horarioConfArea?.dias_nolaborables?.split('|') || [];
     const diasNoLaborables = []
     const descuentos = typeof descuentosRaw === 'string'
-      ? descuentosRaw.split('|')  // No usar slice(1) porque el primer elemento vacío es para ASISTIO
+      ? descuentosRaw.split('|')
       : descuentosRaw;
 
     const tipos = [
-      { codigo: 'A', tipo: 'ASISTIO' },
-      { codigo: 'T', tipo: 'TARDANZA' },
-      { codigo: 'TI', tipo: 'TARDANZA INJUSTIFICADA' },
-      { codigo: 'TJ', tipo: 'TARDANZA JUSTIFICADA' },
-      { codigo: 'F', tipo: 'FALTA' },
-      { codigo: 'FI', tipo: 'FALTA INJUSTIFICADA' },
-      { codigo: 'FJ', tipo: 'FALTA JUSTIFICADA' },
-      { codigo: 'FM', tipo: 'DESCANSO MEDICO' },
-      { codigo: 'FV', tipo: 'VACACIONES' },
-      { codigo: 'FC', tipo: 'CITA MEDICA' },
-      { codigo: 'FD', tipo: 'DUELO' },
-      { codigo: 'PE', tipo: 'PERMISO' },
-      { codigo: 'OBS', tipo: 'OBSERVADO' },
-      { codigo: 'IN', tipo: 'INCOMPLETO' },
-      { codigo: 'TEX', tipo: 'TEXTRA' }
+      { codigo: 'A', tipo: 'ASISTIO', tipoValor: 'descuento' },
+      { codigo: 'T', tipo: 'TARDANZA', tipoValor: 'descuento' },
+      { codigo: 'TI', tipo: 'TARDANZA INJUSTIFICADA', tipoValor: 'descuento' },
+      { codigo: 'TJ', tipo: 'TARDANZA JUSTIFICADA', tipoValor: 'descuento' },
+      { codigo: 'F', tipo: 'FALTA', tipoValor: 'descuento' },
+      { codigo: 'FI', tipo: 'FALTA INJUSTIFICADA', tipoValor: 'descuento' },
+      { codigo: 'FJ', tipo: 'FALTA JUSTIFICADA', tipoValor: 'descuento' },
+      { codigo: 'FM', tipo: 'DESCANSO MEDICO', tipoValor: 'descuento' },
+      { codigo: 'FV', tipo: 'VACACIONES', tipoValor: 'descuento' },
+      { codigo: 'PE', tipo: 'PERMISO', tipoValor: 'descuento' },
+      { codigo: 'D1', tipo: 'DESCUENTO OPCIONAL 1', tipoValor: 'descuento' },
+      { codigo: 'D2', tipo: 'DESCUENTO OPCIONAL 2', tipoValor: 'descuento' },
+      { codigo: 'D3', tipo: 'DESCUENTO OPCIONAL 3', tipoValor: 'descuento' },
+      { codigo: 'OBS', tipo: 'OBSERVADO', tipoValor: 'descuento' },
+      { codigo: 'IN', tipo: 'INCOMPLETO', tipoValor: 'descuento' },
+      { codigo: 'TEX', tipo: 'TEXTRA', tipoValor: 'descuento' },
+      { codigo: 'BN', tipo: 'BONO NO LABORABLE', tipoValor: 'bonificacion' },
+      { codigo: 'BF', tipo: 'BONO FERIADO', tipoValor: 'bonificacion' },
+      { codigo: 'B1', tipo: 'BONO OPCIONAL 1', tipoValor: 'bonificacion' },
+      { codigo: 'B2', tipo: 'BONO OPCIONAL 2', tipoValor: 'bonificacion' },
+      { codigo: 'B3', tipo: 'BONO OPCIONAL 3', tipoValor: 'bonificacion' },
     ];
 
     const tipoMap = new Map();
     tipos.forEach((tipoObj, index) => {
-      const descuentoNumero = parseInt(descuentos[index] || "0", 10) || 0;
+      const valorNumero = parseInt(descuentos[index] || "0", 10) || 0;
       tipoMap.set(tipoObj.codigo, {
         ...tipoObj,
-        descuento: descuentoNumero
+        valor: valorNumero  // Puede ser descuento o bonificación según tipoValor
       });
     });
 
-    // Función para verificar si una asignación está activa en una fecha específica
+
     const isAsignacionActivaEnFecha = (asignacion: any, fecha: moment.Moment): boolean => {
       if (!asignacion) return false;
 
-      // Si tiene fecha_inicio y fecha_fin
       if (asignacion.fecha_inicio && asignacion.fecha_fin) {
         const fechaInicio = moment(asignacion.fecha_inicio);
         const fechaFin = moment(asignacion.fecha_fin);
         return fecha.isSameOrAfter(fechaInicio, 'day') && fecha.isSameOrBefore(fechaFin, 'day');
       }
 
-      // Si solo tiene fecha_inicio
       if (asignacion.fecha_inicio && !asignacion.fecha_fin) {
         const fechaInicio = moment(asignacion.fecha_inicio);
         return fecha.isSameOrAfter(fechaInicio, 'day');
       }
 
-      // Si solo tiene fecha_fin
       if (!asignacion.fecha_inicio && asignacion.fecha_fin) {
         const fechaFin = moment(asignacion.fecha_fin);
         return fecha.isSameOrBefore(fechaFin, 'day');
       }
 
-      // Si no tiene fechas, asumir que siempre está activa
       return true;
     };
 
@@ -1045,41 +903,50 @@ export class ProcesosRhService {
 
           const usuariosMap = asistenciasMap.get(fechaDiaKey) || new Map<number, any>();
 
-          // ✅ MODIFICADO: Procesar TODAS las asignaciones del grupo
           for (const asignacion of asignacionesGrupo) {
             if (!asignacion) continue;
 
-            // Verificar si la asignación está activa en esta fecha
             const estaActiva = isAsignacionActivaEnFecha(asignacion, fechaDia);
 
             if (!estaActiva) {
-              // Asignación NO activa en esta fecha - agregar detalle vacío
               detalleAsistencias.push({
                 id_asignacion: asignacion.id_asignacion || 0,
                 id_usuario: asignacion.id_usuario || 0,
                 tipo_asistencia: '',
-                descuento_aplicado: 0,
-                monto_individual: 0
+                valor_aplicado: 0,
+                monto_individual: 0,
+                tipo_valor: ''
               });
               continue;
             }
 
-            // Asignación activa - procesar asistencia
             const asistencia = usuariosMap.get(asignacion.id_usuario);
 
             if (asistencia) {
               const tipoCodigo = asistencia.tipo;
               let montoIndividual = 0;
-              let descuentoAplicado = 0;
+              let valorAplicado = 0;
+              let tipoValor = '';
 
               if (tipoCodigo && tipoCodigo !== '') {
                 const tipoInfo = tipoMap.get(tipoCodigo);
                 if (tipoInfo) {
-                  descuentoAplicado = tipoInfo.descuento;
+                  valorAplicado = tipoInfo.valor;
+                  tipoValor = tipoInfo.tipoValor;
+
                   if (!esDiaEspecial) {
-                    if (descuentoAplicado > 0) {
-                      const descuentoMonto = costoDia * (descuentoAplicado / 100);
-                      montoIndividual = costoDia - descuentoMonto;
+                    if (tipoValor === 'descuento') {
+                      // Descuento: resta del costo del día
+                      if (valorAplicado > 0) {
+                        const descuentoMonto = costoDia * (valorAplicado / 100);
+                        montoIndividual = costoDia - descuentoMonto;
+                      } else {
+                        montoIndividual = costoDia;
+                      }
+                    } else if (tipoValor === 'bonificacion') {
+                      // Bonificación: suma adicional al costo del día
+                      const bonificacionMonto = costoDia * (valorAplicado / 100);
+                      montoIndividual = costoDia + bonificacionMonto;
                     } else {
                       montoIndividual = costoDia;
                     }
@@ -1103,22 +970,22 @@ export class ProcesosRhService {
                 id_asignacion: asignacion.id_asignacion || 0,
                 id_usuario: asistencia.id_usuario || 0,
                 tipo_asistencia: tipoCodigo || '',
-                descuento_aplicado: descuentoAplicado,
-                monto_individual: montoIndividual
+                valor_aplicado: valorAplicado,
+                monto_individual: montoIndividual,
+                tipo_valor: tipoValor
               });
             } else {
-              // Asignación activa sin registro de asistencia
               detalleAsistencias.push({
                 id_asignacion: asignacion.id_asignacion || 0,
                 id_usuario: asignacion.id_usuario || 0,
                 tipo_asistencia: '',
-                descuento_aplicado: 0,
-                monto_individual: 0
+                valor_aplicado: 0,
+                monto_individual: 0,
+                tipo_valor: ''
               });
             }
           }
 
-          // ✅ MODIFICADO: Siempre agregar el día al calendario
           costoTotal += montoDia;
 
           calendarioProcesado.push({
@@ -1137,7 +1004,6 @@ export class ProcesosRhService {
 
     return { calendarioProcesado, costoTotal };
   }
-
   private agruparCargosPorArea(cargos: any[]): Map<number, any[]> {
     const mapa = new Map<number, any[]>();
     if (!cargos || !Array.isArray(cargos)) {

@@ -68,25 +68,7 @@ interface cargoFila {
   editable?: boolean
 }
 
-interface FilaArea {
-  esArea: true;
-  id_area: number;
-  area: string;
-}
 
-interface FilaCargo {
-  esArea: false;
-  id_area: number;
-  area: string;
-  id_cargo: number;
-  cargo: string;
-  tipo_cargo: number;
-  tipo_cargo_vinculado: boolean;
-  index: number;
-  esActivo: boolean;
-}
-
-type Fila = FilaArea | FilaCargo;
 
 @Component({
   selector: 'app-configuracion-planilla',
@@ -144,6 +126,21 @@ export class ConfiguracionPlanillaComponent implements OnInit {
   areaSelecHorarios = null
   dataHorario = null
   inicioSemana = null
+  // tipos = [
+  //   { codigo: 'A', tipo: 'ASISTIO', porcentaje: null },
+  //   { codigo: 'T', tipo: 'TARDANZA', porcentaje: 10 },
+  //   { codigo: 'TI', tipo: 'TARDANZA INJUSTIFICADA', porcentaje: 10 },
+  //   { codigo: 'TJ', tipo: 'TARDANZA JUSTIFICADA', porcentaje: null },
+  //   { codigo: 'F', tipo: 'FALTA', porcentaje: 100 },
+  //   { codigo: 'FI', tipo: 'FALTA INJUSTIFICADA', porcentaje: 100 },
+  //   { codigo: 'FJ', tipo: 'FALTA JUSTIFICADA', porcentaje: null },
+  //   { codigo: 'FM', tipo: 'DESCANSO MEDICO', porcentaje: null },
+  //   { codigo: 'FV', tipo: 'VACACIONES', porcentaje: null },
+  //   { codigo: 'FC', tipo: 'CITA MEDICA', porcentaje: null },
+  //   { codigo: 'FD', tipo: 'DUELO', porcentaje: null },
+  //   { codigo: 'PE', tipo: 'PERMISO', porcentaje: null },
+  //   { codigo: 'BF', tipo: 'BONO FERIADO O NO LABORABLE', porcentaje: null },
+  // ]
   tipos = [
     { codigo: 'A', tipo: 'ASISTIO', porcentaje: null },
     { codigo: 'T', tipo: 'TARDANZA', porcentaje: 10 },
@@ -154,14 +151,19 @@ export class ConfiguracionPlanillaComponent implements OnInit {
     { codigo: 'FJ', tipo: 'FALTA JUSTIFICADA', porcentaje: null },
     { codigo: 'FM', tipo: 'DESCANSO MEDICO', porcentaje: null },
     { codigo: 'FV', tipo: 'VACACIONES', porcentaje: null },
-    { codigo: 'FC', tipo: 'CITA MEDICA', porcentaje: null },
-    { codigo: 'FD', tipo: 'DUELO', porcentaje: null },
     { codigo: 'PE', tipo: 'PERMISO', porcentaje: null },
-    // { codigo: 'FS', tipo: 'NO MARCO SALIDA', porcentaje: null },
-    // { codigo: 'OBS', tipo: 'OBSERVADO', porcentaje: null },
-    // { codigo: 'IN', tipo: 'INCOMPLETO', porcentaje: null },
-    // { codigo: 'TEX', tipo: 'TEXTRA', porcentaje: null }
-  ]
+    { codigo: 'D1', tipo: 'DESCUENTO OPCIONAL 1', porcentaje: null },
+    { codigo: 'D2', tipo: 'DESCUENTO OPCIONAL 2', porcentaje: null },
+    { codigo: 'D3', tipo: 'DESCUENTO OPCIONAL 3', porcentaje: null },
+    { codigo: 'OBS', tipo: 'OBSERVADO', porcentaje: 100 },
+    { codigo: 'IN', tipo: 'INCOMPLETO', porcentaje: 100 },
+    { codigo: 'TEX', tipo: 'TEXTRA', porcentaje: null },
+    { codigo: 'BN', tipo: 'BONO NO LABORABLE', porcentaje: null },
+    { codigo: 'BF', tipo: 'BONO FERIADO', porcentaje: null },
+    { codigo: 'B1', tipo: 'BONO OPCIONAL 1', porcentaje: null },
+    { codigo: 'B2', tipo: 'BONO OPCIONAL 2', porcentaje: null },
+    { codigo: 'B3', tipo: 'BONO OPCIONAL 3', porcentaje: null },
+  ];
   dias = [
     "LUNES",
     "MARTES",
@@ -449,11 +451,7 @@ export class ConfiguracionPlanillaComponent implements OnInit {
       console.log('this.areaSeleccionadaPres', this.areaSeleccionadaPres)
       await this.cambioAreaPres()
     } else if (this.subvista == 6) {
-      this.tablaData = []
-      console.log('this.areas', this.areas)
-      console.log('this.cargos', this.cargos)
-      this.tablaData = this.generarTablaCompleta(this.areas, this.cargos)
-      console.log('arrayOrganigrama', this.tablaData)
+
     }
     this.mostrar_carga_todo = false
   }
@@ -2432,6 +2430,13 @@ export class ConfiguracionPlanillaComponent implements OnInit {
       }
     } else {
       this.nombre_proyecto.setValue(this.nombreProyecto)
+      const fechaActual = new Date();
+      const fechaFormateada = fechaActual.toISOString().split('T')[0];
+      console.log('fechaFormateada', fechaFormateada)
+      this.fechaConvocatoria.setValue(fechaFormateada);
+      this.duracionConvocatoria.setValue(1);
+      this.fecha_culmina_convocatoria.setValue(fechaFormateada);
+      console.log('formConvocatoria', this.formConvocatoria.getRawValue())
     }
     this.modalConvocatoria.show()
     this.mostrar_carga_todo = false
@@ -2722,7 +2727,9 @@ export class ConfiguracionPlanillaComponent implements OnInit {
         descripcion: this.descripcionConvocatoria.value,
         estado: parseInt(this.estadoConvocatoria.value) || 0 // convertir a número
       }
+      console.log('obj', obj)
       const resp = await this.recursosHumanosService.guardarConvocatoriaRecursosHumanos(obj)
+      console.log('resp', resp)
       await this.listarConvocatorias()
       this.detalleConvocatoria = []
       this.tablaPostulantes = []
@@ -3099,7 +3106,7 @@ export class ConfiguracionPlanillaComponent implements OnInit {
             hora_ingreso_tarde: '14:00:00|14:00:00|14:00:00|14:00:00|14:00:00||',
             hora_salida_tarde: '18:00:00|18:00:00|18:00:00|18:00:00|18:00:00||',
             totales_dia: 48,
-            descuentos: '|10|10||100|100|||||||',
+            descuentos: '0|10|10|0|100|100|0|0|0|0|0|0|0|0|0|100|100|0|0|0|0|0|0',
             tardanza: 10,
             tiempo_extra: 0
           }
@@ -3132,7 +3139,7 @@ export class ConfiguracionPlanillaComponent implements OnInit {
       this.cantHorasSemana = this.calcularTotalHorasSemana(horario.hora_ingreso_manana, horario.hora_salida_manana, horario.hora_ingreso_tarde, horario.hora_salida_tarde)
       const porcentajes = horario.descuentos.split('|')
       if (porcentajes.length) {
-
+        console.log('')
         this.tiposAsistencia = this.tipos.map((ele, index) => { ele.porcentaje = porcentajes[index]; return ele })
       } else {
         this.tiposAsistencia = JSON.parse(JSON.stringify(this.tipos))
@@ -3151,7 +3158,7 @@ export class ConfiguracionPlanillaComponent implements OnInit {
       const d = horario.hora_salida_tarde.split('|')
       d.unshift('Hora salida tarde')
       this.tablaHorario.push(d)
-
+      console.log('this.tiposAsistencia', this.tiposAsistencia)
       this.mostrar_carga_todo = false
     } catch (error) {
       this.mostrar_carga_todo = false
@@ -3260,6 +3267,8 @@ export class ConfiguracionPlanillaComponent implements OnInit {
     const hora_salida_tarde = this.tablaHorario[4].filter((ele, index) => index > 0).join('|')
     const descuentos = this.tiposAsistencia.map((ele, index) => ele.porcentaje).join('|')
     if (this.dataHorario.id_configuracion) {
+      console.log('descuentos', descuentos)
+      console.log('this.tiposAsistencia', this.tiposAsistencia)
       const obj = {
         id_configuracion: this.dataHorario.id_configuracion,
         id_proyecto: this.dataHorario.id_proyecto,
@@ -3278,7 +3287,8 @@ export class ConfiguracionPlanillaComponent implements OnInit {
 
       const resp = await this.recursosHumanosService.actualizarHorarioArea(obj)
     } else {
-
+      console.log('descuentos', descuentos)
+      console.log('this.tiposAsistencia', this.tiposAsistencia)
       const obj = {
         id_proyecto: this.dataHorario.id_proyecto,
         id_area: this.dataHorario.id_area,
@@ -5000,67 +5010,9 @@ export class ConfiguracionPlanillaComponent implements OnInit {
     return '';
   }
 
-
-  generarTablaCompleta(areas: any[], cargos: any[]): Fila[] {
-    const tabla: Fila[] = [];
-
-    // Procesar cada área
-    areas.forEach(area => {
-      // 1. Agregar fila de cabecera del área
-      tabla.push({
-        esArea: true,
-        id_area: area.id_area,
-        area: area.descripcion
-      });
-
-      // Filtrar cargos de esta área
-      const cargosArea = cargos.filter(cargo => cargo.id_area === area.id_area);
-
-      // 2. Procesar cada cargo del área
-      cargosArea.forEach(cargo => {
-        // Encontrar el tipo máximo (categoría más alta con valor 1)
-        let maxTipo = 0;
-        const categoriasActivas = [];
-
-        if (cargo.categoria_t1 === 1) {
-          maxTipo = Math.max(maxTipo, 1);
-          categoriasActivas.push(1);
-        }
-        if (cargo.categoria_t2 === 1) {
-          maxTipo = Math.max(maxTipo, 2);
-          categoriasActivas.push(2);
-        }
-        if (cargo.categoria_t3 === 1) {
-          maxTipo = Math.max(maxTipo, 3);
-          categoriasActivas.push(3);
-        }
-        if (cargo.categoria_t4 === 1) {
-          maxTipo = Math.max(maxTipo, 4);
-          categoriasActivas.push(4);
-        }
-        if (cargo.categoria_t5 === 1) {
-          maxTipo = Math.max(maxTipo, 5);
-          categoriasActivas.push(5);
-        }
-
-        // Generar filas desde tipo 1 hasta maxTipo
-        for (let tipo = 1; tipo <= maxTipo; tipo++) {
-          tabla.push({
-            esArea: false,
-            id_area: area.id_area,
-            area: area.descripcion,
-            id_cargo: cargo.id_cargo,
-            cargo: cargo.descripcion,
-            tipo_cargo: tipo,
-            tipo_cargo_vinculado: false,
-            index: tipo - 1,
-            esActivo: categoriasActivas.includes(tipo)
-          });
-        }
-      });
-    });
-
-    return tabla;
+  calcularValorConBono(porcentaje: any): number {
+    const valor = Number(porcentaje) || 0;
+    return 100 + valor;
   }
 
 }

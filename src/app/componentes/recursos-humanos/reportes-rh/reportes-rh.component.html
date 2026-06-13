@@ -20,10 +20,10 @@
 <ng-container *ngIf="subvista == 1">
     <div class=" px-0 " style="height: calc(100dvh - 150px);">
         <div class="col-12 d-flex justify-content-end">
-            <button type="button" class="btn btn-success btn-sm light ripple m-b-10" (click)="openModal()"
+            <!-- <button type="button" class="btn btn-success btn-sm light ripple m-b-10" (click)="openModal()"
                 (mouseup)="quitarfoco($event);">
                 <i class="fa fa-plus"></i>Agregar
-            </button>
+            </button> -->
         </div>
         <div class="col-12 overflow-auto h-content">
             <table class="table-bordered tab-10">
@@ -33,7 +33,7 @@
                         <th rowspan="2" appAnchocol [ancho]="200" [detalle]="true">Insumos Agrupados</th>
                         <th rowspan="2" appAnchocol [ancho]="40">Rubro</th>
                         <th colspan="2"> Expediente tecnico</th>
-                        <th rowspan="2"> Presupuesto Asignado</th>
+                        <th colspan="2"> Presupuesto Asignado</th>
                         <th colspan="2">Ejecucion</th>
                         <th colspan="3">Variacion</th>
                         <th rowspan="2" appAnchocol [ancho]="80">Edicion</th>
@@ -41,6 +41,8 @@
                     <tr>
                         <th appAnchocol [ancho]="100">Presupuesto</th>
                         <th appAnchocol [ancho]="80">Dias Programados</th>
+                        <th appAnchocol [ancho]="100">Presupuesto</th>
+                        <th appAnchocol [ancho]="80">Dias Utilizado</th>
                         <th appAnchocol [ancho]="100">Presupuesto</th>
                         <th appAnchocol [ancho]="80">Dias Utilizado</th>
                         <th appAnchocol [ancho]="100">Presupuesto</th>
@@ -94,8 +96,17 @@
 
                                 </td>
                                 <td class="text-center">
+
+                                    <ng-container *ngIf="row.id_agrupamiento == 0 ||row.id_elemento ">
+                                        <div class="d-flex justify-content-between">
+                                            <div style="opacity: 0.5;">S/</div>
+                                            <div>{{row.pres_asignado | number:'0.2-2'}}</div>
+                                        </div>
+                                    </ng-container>
+                                </td>
+                                <td class="text-center">
                                     <ng-container *ngIf="row.id_elemento">
-                                        {{row.pres_asignado | number:'0.2-2'}}
+                                        {{row.dias_pres}} dias
                                     </ng-container>
 
                                 </td>
@@ -311,107 +322,107 @@
         </button>
     </div>
     <div class="app-modal-body">
-         <table class="table-bordered tab-10">
-                <thead class="text-center">
-                    <tr>
-                        <!-- <th rowspan="3"></th> -->
-                        <!-- <th rowspan="3">Area</th> -->
-                        <th rowspan="3">Cargo</th>
-                        <th rowspan="3">Categoria</th>
-                        <!-- <th rowspan="3">Cantidad</th> -->
-                        <th [colSpan]="calendarioFiltrado2?.dias?.length * 2">
-                            {{calendarioFiltrado2?.mes}} - {{calendarioFiltrado2?.anio}}
+        <table class="table-bordered tab-10">
+            <thead class="text-center">
+                <tr>
+                    <!-- <th rowspan="3"></th> -->
+                    <!-- <th rowspan="3">Area</th> -->
+                    <th rowspan="3">Cargo</th>
+                    <th rowspan="3">Categoria</th>
+                    <!-- <th rowspan="3">Cantidad</th> -->
+                    <th [colSpan]="calendarioFiltrado2?.dias?.length * 2">
+                        {{calendarioFiltrado2?.mes}} - {{calendarioFiltrado2?.anio}}
+                    </th>
+                    <th rowspan="3">Total Mes</th>
+                </tr>
+                <tr>
+                    <ng-container *ngFor="let dia of calendarioFiltrado2?.dias">
+                        <th colspan="2">
+                            <div class="dia-numero">{{dia.numero_dia_mes}} - {{dia.abreviatura}}</div>
+                            <!-- <div class="dia-abreviatura"></div> -->
                         </th>
-                        <th rowspan="3">Total Mes</th>
-                    </tr>
-                    <tr>
-                        <ng-container *ngFor="let dia of calendarioFiltrado2?.dias">
-                            <th colspan="2">
-                                <div class="dia-numero">{{dia.numero_dia_mes}} - {{dia.abreviatura}}</div>
-                                <!-- <div class="dia-abreviatura"></div> -->
-                            </th>
-                        </ng-container>
-                    </tr>
-                    <tr>
-                        <ng-container *ngFor="let dia of calendarioFiltrado2?.dias">
-                            <th appAnchocol [ancho]="40">
-                                Cant.
-                            </th>
-                            <th appAnchocol [ancho]="70">
-                                Monto
-                            </th>
-                        </ng-container>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr *ngFor="let row of tablaAcumFiltrada; let i = index"
-                        [ngClass]="{ 
+                    </ng-container>
+                </tr>
+                <tr>
+                    <ng-container *ngFor="let dia of calendarioFiltrado2?.dias">
+                        <th appAnchocol [ancho]="40">
+                            Cant.
+                        </th>
+                        <th appAnchocol [ancho]="70">
+                            Monto
+                        </th>
+                    </ng-container>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let row of tablaAcumFiltrada; let i = index"
+                    [ngClass]="{ 
                                         'font-weight-bolder': row.es_encabezado_area || row.es_total_area, 'bg-area':row.es_encabezado_area, 'bg-total': row.es_total_area}">
-                        <!-- <td class="text-center">{{i+1}}</td> -->
-                        <!-- <td>{{row.descripcion_area}}</td> -->
-                        <td [ngClass]="{'pl-3':!row.es_encabezado_area && !row.es_total_area}">
-                            {{row.descripcion_cargo}}
-                        </td>
-                        <td class="text-center">{{getRomanNumeral(row.tipo_cargo)}}</td>
-                        <!-- <td>{{row.cantidad}}</td> -->
-                        <ng-container *ngFor="let dia of row.calendario">
-                            <ng-container>
-                                <td class="text-center">
-                                    <ng-container
-                                        *ngIf="dia.cantidad_asignaciones && !row.es_encabezado_area && !row.es_total_area">{{dia.cantidad_asignaciones}}</ng-container>
+                    <!-- <td class="text-center">{{i+1}}</td> -->
+                    <!-- <td>{{row.descripcion_area}}</td> -->
+                    <td [ngClass]="{'pl-3':!row.es_encabezado_area && !row.es_total_area}">
+                        {{row.descripcion_cargo}}
+                    </td>
+                    <td class="text-center">{{getRomanNumeral(row.tipo_cargo)}}</td>
+                    <!-- <td>{{row.cantidad}}</td> -->
+                    <ng-container *ngFor="let dia of row.calendario">
+                        <ng-container>
+                            <td class="text-center">
+                                <ng-container
+                                    *ngIf="dia.cantidad_asignaciones && !row.es_encabezado_area && !row.es_total_area">{{dia.cantidad_asignaciones}}</ng-container>
 
-                                </td>
-                                <td>
-                                    <div class="d-flex justify-content-between align-items-center"
-                                        *ngIf="dia.monto_dia && !row.es_encabezado_area && !row.es_total_area">
-                                        <!-- Símbolo izquierdo -->
-                                        <span class="text-muted small">S/.</span>
-
-                                        <!-- Monto -->
-                                        <span>{{dia.monto_dia | number:'0.2-2'}}</span>
-                                    </div>
-                                </td>
-                            </ng-container>
-                        </ng-container>
-                        <td>
-                            <!-- {{row.costo_total| number:'0.2-2'}} -->
-                            <div class="d-flex justify-content-between align-items-center" *ngIf="row.costo_total">
-                                <!-- Símbolo izquierdo -->
-                                <span class="text-muted small">S/.</span>
-
-                                <!-- Monto -->
-                                <span>{{row.costo_total | number:'0.2-2'}}</span>
-                            </div>
-                        </td>
-                    </tr>
-                </tbody>
-                <tfoot>
-                    <tr *ngIf="tablaAcumFiltrada.length">
-                        <th colspan="2" class="text-center">TOTAL </th>
-                        <ng-container *ngFor="let diaAcumulado of totalesAcumulados?.acumulados">
-                            <th></th>
-                            <th>
-                                <div class="d-flex justify-content-between align-items-center">
+                            </td>
+                            <td>
+                                <div class="d-flex justify-content-between align-items-center"
+                                    *ngIf="dia.monto_dia && !row.es_encabezado_area && !row.es_total_area">
                                     <!-- Símbolo izquierdo -->
-                                    <span class="text-muted small text-white">S/.</span>
+                                    <span class="text-muted small">S/.</span>
 
                                     <!-- Monto -->
-                                    <span>{{diaAcumulado | number:'0.2-2'}}</span>
+                                    <span>{{dia.monto_dia | number:'0.2-2'}}</span>
                                 </div>
-                            </th>
+                            </td>
                         </ng-container>
+                    </ng-container>
+                    <td>
+                        <!-- {{row.costo_total| number:'0.2-2'}} -->
+                        <div class="d-flex justify-content-between align-items-center" *ngIf="row.costo_total">
+                            <!-- Símbolo izquierdo -->
+                            <span class="text-muted small">S/.</span>
+
+                            <!-- Monto -->
+                            <span>{{row.costo_total | number:'0.2-2'}}</span>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+            <tfoot>
+                <tr *ngIf="tablaAcumFiltrada.length">
+                    <th colspan="2" class="text-center">TOTAL </th>
+                    <ng-container *ngFor="let diaAcumulado of totalesAcumulados?.acumulados">
+                        <th></th>
                         <th>
                             <div class="d-flex justify-content-between align-items-center">
                                 <!-- Símbolo izquierdo -->
                                 <span class="text-muted small text-white">S/.</span>
 
                                 <!-- Monto -->
-                                <span>{{totalesAcumulados?.totalGeneral | number:'0.2-2'}}</span>
+                                <span>{{diaAcumulado | number:'0.2-2'}}</span>
                             </div>
                         </th>
-                    </tr>
-                </tfoot>
-            </table>
+                    </ng-container>
+                    <th>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <!-- Símbolo izquierdo -->
+                            <span class="text-muted small text-white">S/.</span>
+
+                            <!-- Monto -->
+                            <span>{{totalesAcumulados?.totalGeneral | number:'0.2-2'}}</span>
+                        </div>
+                    </th>
+                </tr>
+            </tfoot>
+        </table>
     </div>
     <div class="app-modal-footer w-100">
         <div class="row px-3 justify-content-between">

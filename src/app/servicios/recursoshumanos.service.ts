@@ -1312,22 +1312,13 @@ export class RecursosHumanosService {
                     throw new Error('No se recibieron datos');
                 }
 
-                // La respuesta tendrá dos arrays
                 const datosPrincipales = res[0];  // Primer SELECT
                 const datosDesagregados = res[1]; // Segundo SELECT
 
-                // Puedes estructurar la respuesta como prefieras
                 return {
                     agrupacion: datosPrincipales,
                     desagregados: datosDesagregados,
-                    // O si necesitas combinarlos de alguna manera específica
-                    // combinado: datosPrincipales.map(principal => ({
-                    //   ...principal,
-                    //   detalles: datosDesagregados.filter(d => 
-                    //     d.idgrupo === principal.idgrupo && 
-                    //     d.idfila === principal.idfila
-                    //   )
-                    // }))
+                 
                 };
             }),
             catchError(err => {
