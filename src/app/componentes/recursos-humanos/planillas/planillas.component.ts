@@ -494,7 +494,6 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
       this.totalesAcumulados = {}
       this.areaSelAcum = null
       const consolidado = await this.procesosRhService.calendarioXAsignaciones(this.idProyecto)
-      console.log('consolidado', consolidado)
       this.mesesAcum = consolidado.consolidadoPorMeses?.map(ele => { return ele.mes_key })
       this.areasAcum = consolidado.areas
       this.cargosAcum = consolidado.cargos
@@ -1858,7 +1857,6 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
 
       this.recalcularTodoFila(fila)
     } else {
-      console.log('nuevoValor', nuevoValor, fila, columna)
       if (!nuevoValor) {
         this.eliminarRegistro(row.dias[columna].id_control, fila)
       } else {
@@ -1961,12 +1959,10 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
         id_control: id_control.toString()
       }
       const resp = await this.recursosHumanosService.eliminarRegistrosAsistencia(obj)
-      console.log('eliminarRegistro', resp)
 
       // Para Opción 1 o 2: resp será un array de resultados
       if (resp && resp.length > 0) {
         const idsEliminados = resp; // Array de objetos con id_eliminado
-        console.log('IDs eliminados:', idsEliminados);
 
         if (idsEliminados.length === 0) {
           SwalService.error('No se encontraron registros para eliminar');
@@ -1994,7 +1990,6 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
             });
           }
 
-          console.log('this.tablaFiltrada[fila]', this.tablaFiltrada[fila])
           this.recalcularTodoFila(fila);
 
           this.toaster.info(
@@ -2008,7 +2003,6 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
           );
         }
       } else if (resp && resp.ids_eliminados) { // Para Opción 3
-        console.log('IDs eliminados:', resp.ids_eliminados);
 
         // Si tienes múltiples IDs, limpiar todos los que coincidan
         const idsArray = resp.ids_eliminados.split(',');
@@ -5737,7 +5731,6 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
     try {
       const sw = await SwalService.confirm('Esta seguro?', 'Se ' + (row.planilla_mensual_aprobada == null ? ' almacenará la planilla del mes actual  al usuario' : ' reemplazará la anterior planilla almacenada por los datos actuales del mes'))
       if (sw.isConfirmed) {
-        console.log('row', row)
         this.mostrar_carga_todo = true
         const mesesMap = {
           'Enero': '01', 'Febrero': '02', 'Marzo': '03', 'Abril': '04',
@@ -6729,7 +6722,6 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   vincularReporteConRequerimientos() {
-    console.log('=== INICIO vincularReporteConRequerimientos ===');
 
     if (!this.reporteEstructurado || this.reporteEstructurado.length === 0) {
       console.warn('reporteEstructurado está vacío, no se puede vincular');

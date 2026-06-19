@@ -19,7 +19,18 @@
 <app-cargando [bloquearTodo]="true" *ngIf="mostrar_carga_todo"></app-cargando>
 <ng-container *ngIf="subvista == 1">
     <div class=" px-0 " style="height: calc(100dvh - 150px);">
-        <div class="col-12 d-flex justify-content-end">
+        <div class="col-12 d-flex justify-content-between">
+            <div class="col-12 d-flex px-0">
+                <mat-form-field appearance="outline" class="mff-reduc col-8">
+                    <mat-label>Adquisiciones</mat-label>
+                    <mat-select [(ngModel)]="id_registro" (ngModelChange)="cambioDataRegistro()"
+                        name="adquisicionSelect">
+                        <mat-option *ngFor="let registro of listaRegistros" [value]="registro.id_registro">
+                            {{registro.detalle}}
+                        </mat-option>
+                    </mat-select>
+                </mat-form-field>
+            </div>
             <!-- <button type="button" class="btn btn-success btn-sm light ripple m-b-10" (click)="openModal()"
                 (mouseup)="quitarfoco($event);">
                 <i class="fa fa-plus"></i>Agregar

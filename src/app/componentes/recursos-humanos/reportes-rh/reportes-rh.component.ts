@@ -426,7 +426,6 @@ export class ReportesRhComponent implements OnInit {
 
     // Esta ya la tienes, solo asegúrate de tener la versión actualizada que filtra por "total"
     this.dataCalendMat = await this.generarCalendarioMaterialesPorTipo('MANO DE OBRA');
-    console.log('Resultado final:', this.dataCalendMat);
   }
 
   async fechasLimitesGraficos(tablagantt) {
@@ -537,7 +536,6 @@ export class ReportesRhComponent implements OnInit {
     this.mostrar_carga_todo = true
   }
 
-  cambioDataRegistro() { }
 
   async generarReporteMensual(data: any, calendario: any): Promise<any[]> {
     // Mapa para almacenar qué asignaciones ya fueron procesadas por planilla en cada fecha
@@ -1089,7 +1087,6 @@ export class ReportesRhComponent implements OnInit {
 
   async listarProgramacion(inicio = false) {
     const input = { id_proyecto: this.idProyecto, version: this.version };
-
     const response = await this.principalService.listarProgramacionProyecto(
       input
     );
@@ -1170,6 +1167,7 @@ export class ReportesRhComponent implements OnInit {
     //   'condfin',
     // ]);
   }
+
   async referenciasCorrectas() {
     let guardar = false;
     for (const iterator of this.dataPrincipal) {
@@ -1980,6 +1978,7 @@ export class ReportesRhComponent implements OnInit {
       await this.listarInsumosXProyecto();
     }
     catch (e) {
+      console.error('Error:', e);
       this.mostrar_carga_todo = false;
       SwalService.error();
     }
@@ -2118,6 +2117,7 @@ export class ReportesRhComponent implements OnInit {
       const response = await this.principalService.relacionInsumosProy(obj);
       this.listaInsumos = response.length ? response : [];
     } catch (error) {
+      console.error('Error:', error);
       this.mostrar_carga_todo = false;
       SwalService.error(error)
     }
@@ -2574,23 +2574,92 @@ export class ReportesRhComponent implements OnInit {
   }
 
   async listarProcuAsignado() {
-    let suma = 0
-    const res = await this._logisticaService.ListarAdquisicionesProy({ id_proyecto: this.idProyecto });
-    console.log('res', res)
-    if (res?.length) {
-      this.id_reg = res[0].id_registro
+    let suma = 0;
+    try {
+      const res = await this._logisticaService.ListarAdquisicionesProy({
+        id_proyecto: this.idProyecto
+      });
+
+      if (res?.length) {
+        this.listaRegistros = res;
+        this.id_registro = res[0].id_registro;  // Asignar el valor
+
+        // Forzar detección de cambios
+        setTimeout(() => {
+          this.cdRef.detectChanges();
+        });
+      }
+
+      // Cargar datos relacionados
+      let res2 = await this._logisticaService.listarRelinsAdqui({
+        id_proyecto: this.idProyecto,
+        id_registro: this.id_registro,
+        conrelins: '0'
+      });
+
+      if (res2[0]?.length) {
+        suma = res2[0]
+          .filter(ele => ele.id_filadetalle == null && ele.tipocontra == 3)
+          .reduce((total, ele) => total + ele.reqsol, 0);
+      }
+    } catch (error) {
+      console.error('Error en listarProcuAsignado:', error);
     }
-    console.log('this.id_reg', this.id_reg)
-    let res2 = await this._logisticaService.listarRelinsAdqui({ id_proyecto: this.idProyecto, id_registro: this.id_reg, conrelins: '0' });
-    console.log('res2', res2)
-    if (res2[0]?.length) {
-      suma = res2[0]
-        .filter(ele => ele.id_filadetalle == null && ele.tipocontra == 3)
-        .reduce((total, ele) => total + ele.reqsol, 0);
+    return suma;
+  }
+  async cambioDataRegistro() {
+    this.mostrar_carga_todo = true
+    // Calcular la nueva suma
+    let nuevaSuma = 0;
+    try {
+      const res2 = await this._logisticaService.listarRelinsAdqui({
+        id_proyecto: this.idProyecto,
+        id_registro: this.id_registro,
+        conrelins: '0'
+      });
+
+      if (res2[0]?.length) {
+        nuevaSuma = res2[0]
+          .filter(ele => ele.id_filadetalle == null && ele.tipocontra == 3)
+          .reduce((total, ele) => total + ele.reqsol, 0);
+      }
+
+      // Actualizar los pres_asignado en this.tablaAgrupamientos
+      await this.actualizarPresAsignadoEnTabla(nuevaSuma);
+      this.mostrar_carga_todo = false
+    } catch (error) {
+      console.error('Error al cambiar registro:', error);
+      this.mostrar_carga_todo = false
     }
-    return suma
   }
 
+  private actualizarPresAsignadoEnTabla(nuevaSuma: number) {
+    // Actualizar cada elemento de la tabla
+    this.tablaAgrupamientos = this.tablaAgrupamientos.map(item => {
+      // Si es el elemento padre (COSTO DIRECTO) - id_elemento === null
+      if (item.id_elemento === null) {
+        return {
+          ...item,
+          pres_asignado: nuevaSuma
+        };
+      }
+      // Si es un elemento hijo (meses)
+      else {
+        // Calcular el pres_asignado basado en porcentajeTot
+        const porcentajeTot = item.porcentajeTot || 0;
+        const nuevoPresAsignado = (nuevaSuma * porcentajeTot) / 100;
+
+        return {
+          ...item,
+          pres_asignado: nuevoPresAsignado
+        };
+      }
+    });
+
+
+    // Forzar detección de cambios si es necesario
+    this.cdRef.detectChanges();
+  }
 
   async listarPresInd() {
     let res = await this.presuservice.ListarPresuIndirecto({
@@ -3034,7 +3103,6 @@ export class ReportesRhComponent implements OnInit {
     };
     const input = { id_proyecto: this.idProyecto };
     const response = await this.recursosHumanosService.listarPrograConFechasLimite(input);
-    console.log('response', response)
     this.anios = this.obtenerArrayAñosConMargen(response.calendario);
 
     // Crear mapa de reporte mensual
@@ -3046,7 +3114,6 @@ export class ReportesRhComponent implements OnInit {
 
     const tablaNueva = [];
     for (const element of this.tablaAgrupamientos) {
-      console.log('element', element)
       tablaNueva.push(element);
       // const montoMensual = element.monto_presupuesto / response.calendario.length;
       let montoMensual = 0
@@ -3085,7 +3152,6 @@ export class ReportesRhComponent implements OnInit {
       });
     }
     this.tablaAgrupamientos = tablaNueva;
-    // console.log('this.tablaAgrupamientos', this.tablaAgrupamientos)
   }
 
   private obtenerNombreMes(numeroMes: string): string {

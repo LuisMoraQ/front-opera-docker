@@ -405,7 +405,6 @@ export class ConfiguracionPlanillaComponent implements OnInit {
   async ngOnInit() {
     try {
       this.mostrar_carga_todo = true
-      console.log('tabproyecto', this.tabproyecto)
       this.id_usuario = this.encriptadorService.recuperarlocalstory('idusuario');
       await this.listarCargosPorArea()
       this.mostrar_carga_todo = false
@@ -446,9 +445,7 @@ export class ConfiguracionPlanillaComponent implements OnInit {
         await this.listarHorarioYFeriadosArea()
       }
     } else if (this.subvista == 5) {
-      console.log('this.areas', this.areas)
       this.areaSeleccionadaPres = this.areas.length ? this.areas[0]?.id_area : null
-      console.log('this.areaSeleccionadaPres', this.areaSeleccionadaPres)
       await this.cambioAreaPres()
     } else if (this.subvista == 6) {
 
@@ -1017,7 +1014,6 @@ export class ConfiguracionPlanillaComponent implements OnInit {
     this.formSubmitted = false;
 
     if (usuario) {
-      console.log('usuario', usuario)
       // Cargar datos del usuario
       this.formUsuario.patchValue(usuario);
 
@@ -1142,7 +1138,6 @@ export class ConfiguracionPlanillaComponent implements OnInit {
     this.asignaciones.valueChanges.subscribe(() => {
       this.haySolapamiento();
     });
-    console.log('this.tabla', this.formUsuario.value)
     this.mostrar_carga_todo = false
   }
 
@@ -1568,11 +1563,9 @@ export class ConfiguracionPlanillaComponent implements OnInit {
           id_asignaciones_eliminar: idsEliminar
         };
 
-        console.log('Payload a enviar:', payload);
 
         // Llamar al endpoint unificado
         const response = await this.recursosHumanosService.actualizarUsuarioCompleto(payload)
-        console.log('response', response)
         if (response[0]) {
           this.cerrarModal2()
           this.tablaUsuarios[this.filUsuario].nombres = objUsuario.nombres
@@ -1657,10 +1650,6 @@ export class ConfiguracionPlanillaComponent implements OnInit {
         const fechiniProy = this.tabproyecto.value.aspectos_generales.datos_recuperado.fecha_inicio?.split('T')[0];
         const fechfinProy = this.tabproyecto.value.aspectos_generales.datos_recuperado.fecha_culmina?.split('T')[0];
 
-        console.log('fechiniProy limpio:', fechiniProy);
-        console.log('this.fecha_asignacion.value:', this.fecha_asignacion.value);
-        console.log('fechfinProy limpio:', fechfinProy);
-        console.log('this.fecha_culminacion.value:', this.fecha_culminacion.value);
 
         // Ahora compara correctamente
         if (fechiniProy > this.fecha_asignacion.value || fechfinProy < this.fecha_culminacion.value) {
@@ -1674,7 +1663,6 @@ export class ConfiguracionPlanillaComponent implements OnInit {
         }
         const asignaciones = [];
         for (const element of this.asignaciones.value) {
-          console.log('element', JSON.parse(JSON.stringify(element)))
           let numeroTipo = 0;
           if (element.tipo_cargo) {
             const match = element.tipo_cargo.match(/\d+$/); // Busca números al final
@@ -1688,7 +1676,6 @@ export class ConfiguracionPlanillaComponent implements OnInit {
             fecha_fin: element.fecha_fin,
             estado: 1,
           };
-          console.log('obj', obj)
           asignaciones.push(obj);
         }
 
@@ -1708,7 +1695,6 @@ export class ConfiguracionPlanillaComponent implements OnInit {
 
         // Llamar al nuevo servicio que guarda usuario con asignaciones
         const response = await this.recursosHumanosService.guardarUsuarioConAsignaciones(usuarioData);
-        console.log('response', response)
         if (response && response.success) {
           this.cerrarModal2();
           const i = this.filUsuario
@@ -2432,11 +2418,9 @@ export class ConfiguracionPlanillaComponent implements OnInit {
       this.nombre_proyecto.setValue(this.nombreProyecto)
       const fechaActual = new Date();
       const fechaFormateada = fechaActual.toISOString().split('T')[0];
-      console.log('fechaFormateada', fechaFormateada)
       this.fechaConvocatoria.setValue(fechaFormateada);
       this.duracionConvocatoria.setValue(1);
       this.fecha_culmina_convocatoria.setValue(fechaFormateada);
-      console.log('formConvocatoria', this.formConvocatoria.getRawValue())
     }
     this.modalConvocatoria.show()
     this.mostrar_carga_todo = false
@@ -2448,7 +2432,6 @@ export class ConfiguracionPlanillaComponent implements OnInit {
       this.buscando = true
       this.filConv = i
       const row = this.tablaConvocatorias[i]
-      console.log('rw', row)
       this.listarDetalleConvocatoria(row.id_convocatoria, row.id_proyecto)
       const obj = {
         id_proyecto: row.id_proyecto,
@@ -2727,9 +2710,7 @@ export class ConfiguracionPlanillaComponent implements OnInit {
         descripcion: this.descripcionConvocatoria.value,
         estado: parseInt(this.estadoConvocatoria.value) || 0 // convertir a número
       }
-      console.log('obj', obj)
       const resp = await this.recursosHumanosService.guardarConvocatoriaRecursosHumanos(obj)
-      console.log('resp', resp)
       await this.listarConvocatorias()
       this.detalleConvocatoria = []
       this.tablaPostulantes = []
@@ -3139,7 +3120,6 @@ export class ConfiguracionPlanillaComponent implements OnInit {
       this.cantHorasSemana = this.calcularTotalHorasSemana(horario.hora_ingreso_manana, horario.hora_salida_manana, horario.hora_ingreso_tarde, horario.hora_salida_tarde)
       const porcentajes = horario.descuentos.split('|')
       if (porcentajes.length) {
-        console.log('')
         this.tiposAsistencia = this.tipos.map((ele, index) => { ele.porcentaje = porcentajes[index]; return ele })
       } else {
         this.tiposAsistencia = JSON.parse(JSON.stringify(this.tipos))
@@ -3158,7 +3138,6 @@ export class ConfiguracionPlanillaComponent implements OnInit {
       const d = horario.hora_salida_tarde.split('|')
       d.unshift('Hora salida tarde')
       this.tablaHorario.push(d)
-      console.log('this.tiposAsistencia', this.tiposAsistencia)
       this.mostrar_carga_todo = false
     } catch (error) {
       this.mostrar_carga_todo = false
@@ -3267,8 +3246,7 @@ export class ConfiguracionPlanillaComponent implements OnInit {
     const hora_salida_tarde = this.tablaHorario[4].filter((ele, index) => index > 0).join('|')
     const descuentos = this.tiposAsistencia.map((ele, index) => ele.porcentaje).join('|')
     if (this.dataHorario.id_configuracion) {
-      console.log('descuentos', descuentos)
-      console.log('this.tiposAsistencia', this.tiposAsistencia)
+
       const obj = {
         id_configuracion: this.dataHorario.id_configuracion,
         id_proyecto: this.dataHorario.id_proyecto,
@@ -3287,8 +3265,7 @@ export class ConfiguracionPlanillaComponent implements OnInit {
 
       const resp = await this.recursosHumanosService.actualizarHorarioArea(obj)
     } else {
-      console.log('descuentos', descuentos)
-      console.log('this.tiposAsistencia', this.tiposAsistencia)
+
       const obj = {
         id_proyecto: this.dataHorario.id_proyecto,
         id_area: this.dataHorario.id_area,
@@ -3562,8 +3539,7 @@ export class ConfiguracionPlanillaComponent implements OnInit {
 
 
       this.mostrar_carga_todo = true
-      console.log('this.areaSelecHorarios', this.areaSelecHorarios)
-      console.log('row', i, row, event.target.checked)
+ 
       let areasIncluidas = row.areas ? row.areas?.split('|').map(Number) : []
 
       if (event.target.checked) {
@@ -3575,10 +3551,8 @@ export class ConfiguracionPlanillaComponent implements OnInit {
           areasIncluidas = areasIncluidas.filter(area => area !== this.areaSelecHorarios)
         }
       }
-      console.log('areasIncluidas', areasIncluidas)
       row.areas = areasIncluidas.join('|')
 
-      console.log('row', row)
       const obj = {
         id_feriado: row.id_feriado,
         id_proyecto: row.id_proyecto,
@@ -3586,9 +3560,7 @@ export class ConfiguracionPlanillaComponent implements OnInit {
         fecha_asignacion: (row.fecha).split('T')[0],
         descripcion: row.descripcion,
       }
-      console.log('areas', obj)
       const response = await this.recursosHumanosService.actualizarFeriadoRecursosHumanos(obj)
-      console.log('respobnse', response)
       if (response) {
         this.toaster.success(
           'Se actualizo correctamente',
@@ -4725,14 +4697,12 @@ export class ConfiguracionPlanillaComponent implements OnInit {
   // Eliminar fila
   eliminarAsignacionFila(i: number) {
     const idAsignacion = this.asignaciones.at(i).get('id_asignacion')?.value;
-    console.log('this.id_asig', idAsignacion)
     if (idAsignacion && idAsignacion !== null && idAsignacion !== '') {
       this.id_asig_eliminar.push(idAsignacion);
     }
     this.asignaciones.removeAt(i);
     this.cargosPorFila.splice(i, 1);
     this.tiposPorFila.splice(i, 1);
-    console.log('this.id_asig_eliminar', this.id_asig_eliminar)
   }
 
   // Cambio de área
@@ -4864,7 +4834,6 @@ export class ConfiguracionPlanillaComponent implements OnInit {
         fecha_inicio: asig.fecha_inicio?.split('T')[0] || asig.fecha_inicio,
         fecha_fin: asig.fecha_fin?.split('T')[0] || asig.fecha_fin
       };
-      console.log('asignacionData', asignacionData)
       const nuevaAsignacion = this.crearAsignacion(asignacionData);
 
       this.asignaciones.push(nuevaAsignacion);
