@@ -785,9 +785,9 @@ export class ModalimportaproyComponent implements OnInit {
             }
             let result=this.cargartabla(aux,arrindpasa,this.filapresu.nombre)//verificar que existan todos los items
             if(result==''){
-              if(this.datapresu.length>4500){
+              if(this.datapresu.length>5500){
                 this.mostrar_carga_todo=false;
-                this.toaster.error('La cantidad de partidas a importar no puede ser mayor a 4500.', 'Advertencia', { closeButton: false, positionClass: 'toast-bottom-right', timeOut: 10000 })
+                this.toaster.error('La cantidad de partidas a importar no puede ser mayor a 5500.', 'Advertencia', { closeButton: false, positionClass: 'toast-bottom-right', timeOut: 10000 })
                 return;
               }
               for(let filaar of arrdet){
@@ -2376,8 +2376,8 @@ export class ModalimportaproyComponent implements OnInit {
           }
           let result=this.cargartabla(aux,arrindpasa,this.filapresu.nombre)//verificar que existan todos los items
           if(result==''){
-            if(this.datapresu.length>4500){
-              this.toaster.error('La cantidad de partidas a importar no puede ser mayor a 4500.', 'Advertencia', { closeButton: false, positionClass: 'toast-bottom-right', timeOut: 10000 })
+            if(this.datapresu.length>5500){
+              this.toaster.error('La cantidad de partidas a importar no puede ser mayor a 5500.', 'Advertencia', { closeButton: false, positionClass: 'toast-bottom-right', timeOut: 10000 })
               return;
             }
             for(let filaar of arrdet){
