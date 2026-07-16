@@ -1318,7 +1318,7 @@ export class RecursosHumanosService {
                 return {
                     agrupacion: datosPrincipales,
                     desagregados: datosDesagregados,
-                 
+
                 };
             }),
             catchError(err => {
@@ -1411,5 +1411,17 @@ export class RecursosHumanosService {
             }),
             catchError(err => throwError(err))
         ).toPromise()
+    }
+
+    guardarPlanillaCompleta(planilla: any): Promise<any> {
+        const url = `${this.enviUrl}/api/recursoshumanos/guardarPlanillaCompleta`;
+        // Enviamos como Application/JSON por defecto
+        return this.http.post<any>(url, planilla).pipe(
+            map(res => {
+                if (!res) throw new Error();
+                return res;
+            }),
+            catchError(err => throwError(err))
+        ).toPromise();
     }
 }

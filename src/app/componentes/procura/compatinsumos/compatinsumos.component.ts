@@ -115,6 +115,7 @@ export class CompatinsumosComponent implements OnInit {
     //listar datos
     this.buscando6=true;
     let res=await this._logisticaService.listarRelinsAdqui({id_proyecto:this.id_proyecto,id_registro:this.id_reg,conrelins:'0'});
+    console.log('res', res)
     console.table( res [0],['id_comple', 'nomgrupo','descripcion','indice'])
     this.buscando6=false;
     if(res?.length>0){

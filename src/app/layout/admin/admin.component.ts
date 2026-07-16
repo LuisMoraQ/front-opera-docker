@@ -909,7 +909,7 @@ export class AdminComponent implements OnInit, OnDestroy {
       this.mostrar_carga_todo=true;
       await this.servicioLogin.LogoutSis({id_usuario:this.id_usuario,token:''});//dinamico
       let res=await this._SignalrcustomService.Desconectar();
-      console.log(res)
+      // console.log(res)
       localStorage.clear();
       if((res??'')=='login'){
         this.router.navigate(['/']);

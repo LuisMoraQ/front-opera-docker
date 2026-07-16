@@ -1215,14 +1215,14 @@ export class ReportesRhComponent implements OnInit {
     if (partidaReferente.unidad) {
       indiceCreacion = partidaReferente.ind + 1;
     } else {
-      const nivel = partidaReferente.item.split('.').length;
+      const nivel = partidaReferente.item?.split('.').length;
       let encontrado2;
       for (
         let i = partidaReferente.ind + 1;
         i < this.dataPrincipal.length;
         i++
       ) {
-        const nivel2 = this.dataPrincipal[i].item.split('.').length;
+        const nivel2 = this.dataPrincipal[i].item?.split('.').length;
         if (nivel2 <= nivel) {
           encontrado2 = this.dataPrincipal[i];
           break;
@@ -1261,7 +1261,7 @@ export class ReportesRhComponent implements OnInit {
     const fechaiFin = JSON.parse(
       JSON.stringify(this.dataPrincipal[indice].fechafin)
     );
-    const arrayItem = this.dataPrincipal[indice].item.split('.');
+    const arrayItem = this.dataPrincipal[indice].item?.split('.');
     const encontrados = await this.dataPrincipal.filter((ele) => {
       const arrayItem2 = ele.item.split('.');
       arrayItem2.pop();
@@ -1728,8 +1728,8 @@ export class ReportesRhComponent implements OnInit {
           this.dec_parcial
         );
         if (!iterator.unidad) {
-          const cant = iterator.item.split('.');
-          if (cant.length == 1) {
+          const cant = iterator.item?.split('.');
+          if (cant?.length == 1) {
             fi = !fi
               ? iterator.fechaini
               : fi < iterator.fechaini

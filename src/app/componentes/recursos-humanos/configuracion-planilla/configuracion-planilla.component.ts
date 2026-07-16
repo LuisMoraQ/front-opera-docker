@@ -28,7 +28,8 @@ interface DetalleAgrupamientoCargo {
   id_cargo?: number;
   habilitado?: boolean;
   texto?: string;
-  item?: number | null
+  item?: number | null,
+  ind_gp?: number | null;
 }
 export interface Cargo {
   id_cargo?: number;
@@ -43,6 +44,7 @@ export interface Cargo {
   categoria_t5: number; // 0 | 1
   habilitado: number;   // 0 | 1
   texto: string;
+  ind_gp?: number | null;
 }
 
 export interface archivoimg {
@@ -68,7 +70,29 @@ interface cargoFila {
   editable?: boolean
 }
 
+export interface CargoPlanilla {
+  id_cargo?: number | null;
+  descripcion: string;
+  abreviatura: string;
+  categoria_seleccionada: string; // 'Categoria t1', 'Categoria t2', etc.
+  categoria_t1?: number;
+  categoria_t2?: number;
+  categoria_t3?: number;
+  categoria_t4?: number;
+  categoria_t5?: number;
+  habilitado?: number;
+  texto: string;
+  ind_gp?: number | null;
+}
 
+export interface AreaPlanilla {
+  id_area?: number | null;
+  descripcion: string;
+  abreviatura: string;
+  id_responsable?: number | null;
+  cargos: CargoPlanilla[];
+  ind_gp?: number | null;
+}
 
 @Component({
   selector: 'app-configuracion-planilla',
@@ -204,6 +228,7 @@ export class ConfiguracionPlanillaComponent implements OnInit {
   @ViewChild("modalDetalleConvocatoria") modalDetalleConvocatoria: ModalBasicComponent;
   @ViewChild("modalPostulante") modalPostulante: ModalBasicComponent;
   @ViewChild("modalFeriado") modalFeriado: ModalBasicComponent;
+  @ViewChild("modalPlanillaBase") modalPlanillaBase: ModalBasicComponent;
   @Input() idProyecto = null
   @Input() tabproyecto = null
   @Input() ocultarMenu = null
@@ -395,8 +420,48 @@ export class ConfiguracionPlanillaComponent implements OnInit {
   get fechaFeriado(): UntypedFormControl { return this.formFeriado.get('fecha') as UntypedFormControl }
   get descripcionFeriado(): UntypedFormControl { return this.formFeriado.get('descripcion') as UntypedFormControl }
 
+  areaSeleccionada: string | number = 'TODOS';
+  cargoSeleccionado: string | number = 'TODOS';
+  tablaUsuariosMaster: any[] = [];
+  listaAsignacionesProyecto: any[] = [];
+  listaCargosFiltrados: any[] = [];
+  filtroAreaSel: string | number = 'TODOS';
+  filtroCargoSel: string | number = 'TODOS';
 
 
+  // Estructura dinámica de la Planilla en edición
+  planillaBase: AreaPlanilla[] = [];
+
+
+  filtroCargo: string = '';
+  areaSeleccionadaMaster: string | null = null;
+  cargoSeleccionadoMaster: string | null = null;
+  areasDisponiblesModal: any[] = [];
+  cargosFiltradosModal: string[] = [];
+
+  listaCompletaAreasMaestras: string[] = [
+    'PERSONAL DIRECTIVO',
+    'ESPECIALISTAS TECNICOS',
+    'PERSONAL TECNICO',
+    'PERSONAL OBRERO'
+  ];
+
+  listaCompletaCargosMaestros: string[] = [
+    'GERENTE GENERAL', 'COORDINADOR GENERAL', 'JEFE DE OFICINA TECNICA', 'JEFE DE PRODUCCION',
+    'RESPONSABLE DE CONTABILIDAD Y PRESUPUESTO', 'RESPONSABLE DE LOGISTICA Y PROCURA',
+    'RESPONSABLE DE ALMACEN', 'RESPONSABLE RECURSOS HUMANOS', 'RESPONSABLE EQUIPO MECANICO',
+    'GERENTE DEL PROYECTO', 'DIRECTOR DE PROYECTO', 'COORDINADOR DE PROYECTO',
+    'INGENIERO RESIDENTE DE OBRA', 'ESPECIALISTA DE ESTRUCTURAS', 'ESPECIALISTA DE ARQUITECTURA',
+    'ESPECIALISTA EN INST. SANITARIAS', 'ESPECIALISTA EN INST. ELECTRICAS', 'ESPECIALISTA EN INST. MECANICAS',
+    'ESPECIALISTA EN INST. COMUNICACIONES', 'ESPECIALISTA EN MEDIO AMBIENTE', 'ESPECIALISTA EN SEGURIDAD SALUD EN EL TRABAJO',
+    'ESPECIALISTA EN PAVIMENTOS', 'ESPECIALISTA EN GEOTECNIA', 'ESPECIALISTA EN HIDRAULICA',
+    'ESPECIALISTA EN TOPOGRAFIA', 'ESPECIALISTA EN OBRAS CIVILES', 'ESPECIALISTA EN PUENTES',
+    'ESPECIALISTA EN EQUIPAMIENTO HOSPITALARIO', 'ESPECIALISTA DE COSTOS, METRADOS Y VALORIZACIONES',
+    'ESPECIALISTA DE CONTROL Y ASEGURAMIENTO DE LA CALIDAD', 'ESPECIALISTA DE CONTROL DE PROYECTOS',
+    'ESPECIALISTA BIM', 'ARQUEOLOGO', 'ASISTENTE DE RESIDENTE', 'ASISTENTE DE COSTOS, METRADOS Y VALORIZACIONES',
+    'ADMINISTRADOR', 'MODELADOR BIM', 'TOPOGRAFO', 'DIBUJANTE', 'GUARDIAN', 'ALMACENERO',
+    'CHOFER', 'COCINERO', 'PREVENCIONISTA', 'MAESTRO DE OBRA', 'CAPATAZ', 'OPERARIO', 'OFICIAL', 'PEON'
+  ];
   constructor(private recursosHumanosService: RecursosHumanosService, public formsService: FormsService, private formulaEvaluator: FormulaEvaluatorService, private encriptadorService: EncriptadorService, private toaster: ToastrService, private sanitizer: DomSanitizer, private modalService: NgbModal,) {
     this.formUsuario.get('fecha_asignacion')?.valueChanges.subscribe(() => this.revalidarTodo());
     this.formUsuario.get('fecha_culminacion')?.valueChanges.subscribe(() => this.revalidarTodo());
@@ -432,9 +497,20 @@ export class ConfiguracionPlanillaComponent implements OnInit {
       this.filPostulante = null
       await this.listarConvocatorias()
     } else if (this.subvista == 3) {
+      // this.tablaAsignaciones = []
+      // this.filUsuario = null
+      // this.filAsignacion = null
+      // await this.generarTablaUsuarios()
       this.tablaAsignaciones = []
       this.filUsuario = null
       this.filAsignacion = null
+
+      // Inicializamos los valores de los filtros en TODOS
+      this.filtroAreaSel = 'TODOS'
+      this.filtroCargoSel = 'TODOS'
+      this.listaCargosFiltrados = [] // Al estar en TODOS, no filtramos subcargos aún
+
+      // Llamamos al generador de tabla
       await this.generarTablaUsuarios()
     } else if (this.subvista == 4) {
       // this.areaSelecHorarios = null
@@ -636,31 +712,111 @@ export class ConfiguracionPlanillaComponent implements OnInit {
     }
   }
 
+  // async listarCargosPorArea() {
+  //   const obj = {
+  //     id_proyecto: this.idProyecto
+  //   }
+  //   const resp = await this.recursosHumanosService.listarCargosPorArea(obj)
+  //   console.log('resp', resp)
+  //   this.tablaCargos = []
+  //   this.tablaUsuarios = []
+  //   let j = 1
+  //   for (const filaArea of resp[0]) {
+  //     let arraygrupo = []
+  //     arraygrupo.push(filaArea)
+  //     const encontrados = [];
+  //     for (let i = resp[1].length - 1; i >= 0; i--) {
+  //       if (resp[1][i].id_area == filaArea.id_area) {
+  //         // Agregar a encontrados y eliminar del array original
+  //         encontrados.push(resp[1][i]);
+  //         resp[1].splice(i, 1);
+  //       }
+  //     }
+  //     if (encontrados.length) {
+  //       arraygrupo = arraygrupo.concat(encontrados)
+  //     }
+  //     // const existe = this.tablaPresInd.find(ele => ele.indice == filaArea.indice)
+  //     const existe = null
+  //     let k = 1
+  //      console.log('arraygrupo', arraygrupo)
+  //     for (const element of arraygrupo) {
+  //       const obj: DetalleAgrupamientoCargo = {
+  //         abreviatura: element?.abreviatura,
+  //         descripcion: element?.descripcion,
+  //         area_descripcion: filaArea?.descripcion,
+  //         area_abreviatura: filaArea?.abreviatura,
+  //         id_area: filaArea?.id_area,
+  //         id_proyecto: filaArea?.id_proyecto,
+  //         categoria_t1: element?.categoria_t1,
+  //         categoria_t2: element?.categoria_t2,
+  //         categoria_t3: element?.categoria_t3,
+  //         categoria_t4: element?.categoria_t4,
+  //         categoria_t5: element?.categoria_t5,
+  //         id_cargo: element?.id_cargo,
+  //         habilitado: element?.habilitado == 1 || element?.habilitado == '1' ? true : false,
+  //         texto: element?.texto ? element.texto : '',
+  //         item: element.id_cargo ? k : j
+  //       }
+  //       this.tablaCargos.push(obj)
+  //       k++
+  //     }
+  //     j++
+  //   }
+  //   this.tablaCargos2 = this.tablaCargos
+  //    console.log('arraygrupo', this.tablaCargos)
+  // }
+
   async listarCargosPorArea() {
     const obj = {
       id_proyecto: this.idProyecto
-    }
-    const resp = await this.recursosHumanosService.listarCargosPorArea(obj)
-    this.tablaCargos = []
-    this.tablaUsuarios = []
-    let j = 1
+    };
+
+    const resp = await this.recursosHumanosService.listarCargosPorArea(obj);
+
+    this.tablaCargos = [];
+    this.tablaUsuarios = [];
+    let j = 1;
+
     for (const filaArea of resp[0]) {
-      let arraygrupo = []
-      arraygrupo.push(filaArea)
+      let arraygrupo = [];
+      arraygrupo.push(filaArea); // El primer elemento siempre es la cabecera del área
+
       const encontrados = [];
+
+      // 1. Extraer los cargos que pertenecen al área actual
       for (let i = resp[1].length - 1; i >= 0; i--) {
         if (resp[1][i].id_area == filaArea.id_area) {
-          // Agregar a encontrados y eliminar del array original
           encontrados.push(resp[1][i]);
           resp[1].splice(i, 1);
         }
       }
-      if (encontrados.length) {
-        arraygrupo = arraygrupo.concat(encontrados)
+
+      // 2. ORDENAR los cargos encontrados según 'ind_gp'
+      if (encontrados.length > 0) {
+        encontrados.sort((a, b) => {
+          const valA = a.ind_gp;
+          const valB = b.ind_gp;
+
+          // Si ambos son null, mantener su orden original
+          if (valA === null || valA === undefined) {
+            if (valB === null || valB === undefined) return 0;
+            return 1; // Mover 'a' al final si 'b' tiene valor
+          }
+          if (valB === null || valB === undefined) {
+            return -1; // Mover 'b' al final si 'a' tiene valor
+          }
+
+          // Ordenar numéricamente de forma ascendente
+          return valA - valB;
+        });
+
+        // Unir la cabecera del área con sus cargos ya ordenados
+        arraygrupo = arraygrupo.concat(encontrados);
       }
-      // const existe = this.tablaPresInd.find(ele => ele.indice == filaArea.indice)
-      const existe = null
-      let k = 1
+
+      let k = 1;
+
+      // 3. Mapear y registrar en tablaCargos
       for (const element of arraygrupo) {
         const obj: DetalleAgrupamientoCargo = {
           abreviatura: element?.abreviatura,
@@ -677,14 +833,17 @@ export class ConfiguracionPlanillaComponent implements OnInit {
           id_cargo: element?.id_cargo,
           habilitado: element?.habilitado == 1 || element?.habilitado == '1' ? true : false,
           texto: element?.texto ? element.texto : '',
-          item: element.id_cargo ? k : j
-        }
-        this.tablaCargos.push(obj)
-        k++
+          item: element.id_cargo ? k : j,
+          ind_gp: element?.id_cargo ? element?.ind_gp : null
+        };
+
+        this.tablaCargos.push(obj);
+        k++;
       }
-      j++
+      j++;
     }
-    this.tablaCargos2 = this.tablaCargos
+
+    this.tablaCargos2 = this.tablaCargos;
   }
 
   async actualizarArea() {
@@ -747,40 +906,48 @@ export class ConfiguracionPlanillaComponent implements OnInit {
   }
 
   async eliminarCargo(row, i) {
-    const sw = await SwalService.confirm('Estas seguro?', 'Se eliminarà el cargo seleccionado')
+    const sw = await SwalService.confirm('¿Estás seguro?', 'Se eliminará el cargo seleccionado');
     if (sw.isConfirmed) {
-      this.mostrar_carga_todo = true
-      const obj = {
-        id_cargo: row.id_cargo,
-        id_proyecto: row.id_proyecto,
-        id_area: row.id_area
-      }
-      const resp = await this.recursosHumanosService.eliminarCargoArea(obj)
-      if (resp[0].id == 1) {
-        this.tablaCargos.splice(i, 1)
-        this.filSel = null
-        this.mostrar_carga_todo = false
-        this.toaster.success(
-          resp[0].mensaje,
-          'Correcto',
-          {
-            closeButton: false,
-            positionClass: 'toast-bottom-right',
-            timeOut: 4000,
-          }
-        );
+      try {
+        this.mostrar_carga_todo = true;
+        const obj = {
+          id_cargo: row.id_cargo,
+          id_proyecto: row.id_proyecto,
+          id_area: row.id_area
+        };
 
-      } else {
-        this.mostrar_carga_todo = false
-        this.toaster.error(
-          resp[0].mensaje,
-          '',
-          {
-            closeButton: false,
-            positionClass: 'toast-bottom-right',
-            timeOut: 4000,
-          }
-        );
+        const resp = await this.recursosHumanosService.eliminarCargoArea(obj);
+
+        if (resp[0].id == 1) {
+          // En lugar de hacer un .splice, volvemos a listar para traer el nuevo orden secuencial del back
+          await this.listarCargosPorArea();
+
+          this.filSel = null;
+          this.toaster.success(
+            resp[0].mensaje,
+            'Correcto',
+            {
+              closeButton: false,
+              positionClass: 'toast-bottom-right',
+              timeOut: 4000,
+            }
+          );
+        } else {
+          this.toaster.error(
+            resp[0].mensaje,
+            '',
+            {
+              closeButton: false,
+              positionClass: 'toast-bottom-right',
+              timeOut: 4000,
+            }
+          );
+        }
+      } catch (error) {
+        console.error(error);
+        SwalService.error();
+      } finally {
+        this.mostrar_carga_todo = false;
       }
     }
   }
@@ -1180,24 +1347,51 @@ export class ConfiguracionPlanillaComponent implements OnInit {
     }
   }
 
+  // async generarTablaUsuarios() {
+  //   try {
+  //     const obj = {
+  //       id_proyecto: this.idProyecto
+  //     }
+  //     const resp = await this.recursosHumanosService.listarUsuariosRecursosHumanos(obj)
+  //     this.tablaUsuarios = []
+  //     let tablaNueva = []
+  //     let areaActual = null
+  //     let cargoActual = null
+  //     console.log('resp', resp)
+  //     this.tablaUsuarios = resp
+  //   } catch (error) {
+  //     console.log(error)
+  //     SwalService.error()
+  //     this.mostrar_carga_todo = false
+  //   }
+
+  // }
   async generarTablaUsuarios() {
     try {
+      this.mostrar_carga_todo = true
       const obj = {
         id_proyecto: this.idProyecto
       }
-      const resp = await this.recursosHumanosService.listarUsuariosRecursosHumanos(obj)
-      this.tablaUsuarios = []
-      let tablaNueva = []
-      let areaActual = null
-      let cargoActual = null
 
-      this.tablaUsuarios = resp
+      // 1. Traemos la lista de usuarios
+      const resp = await this.recursosHumanosService.listarUsuariosRecursosHumanos(obj)
+      this.tablaUsuariosMaster = resp || []
+      this.tablaUsuarios = [...this.tablaUsuariosMaster] // Hacemos una copia para mostrar
+
+      // 2. Traemos TODAS las asignaciones del proyecto para cruzarlas en los filtros
+      // Nota: Si no tienes este método en tu service, puedes crear un endpoint rápido o usar el que ya tienes pasando id_usuario: null o id_usuario: 0 si tu backend lo permite.
+      const respAsig = await this.recursosHumanosService.listarAsignacionesUsuario({
+        id_proyecto: this.idProyecto,
+        id_usuario: 0 // Enviando 0 o null para que el backend retorne todas las asignaciones del proyecto
+      })
+      this.listaAsignacionesProyecto = respAsig || []
+
+      this.mostrar_carga_todo = false
     } catch (error) {
       console.log(error)
       SwalService.error()
       this.mostrar_carga_todo = false
     }
-
   }
 
   async abrirModalAsignacion(row?) {
@@ -1365,11 +1559,76 @@ export class ConfiguracionPlanillaComponent implements OnInit {
     this.modalQRAsignacion.show()
   }
 
+  // async agregarCargo() {
+  //   try {
+  //     this.mostrar_carga_todo = true
+  //     if (this.formCargo.invalid) {
+  //       this.mostrar_carga_todo = false
+  //       this.toaster.error(
+  //         'Formulario incompleto',
+  //         'Error',
+  //         {
+  //           closeButton: false,
+  //           positionClass: 'toast-bottom-right',
+  //           timeOut: 4000,
+  //         }
+  //       );
+  //       return
+  //     }
+  //     const categorias = [{ value: 'Categoria t1', key: 'categoria_t1' }, { value: 'Categoria t2', key: 'categoria_t2' }, { value: 'Categoria t3', key: 'categoria_t3' }, { value: 'Categoria t4', key: 'categoria_t4' }, { value: 'Categoria t5', key: 'categoria_t5' }]
+
+  //     const fila = this.tablaCargos[this.filSel]
+
+  //     for (let i = this.filSel; i < this.tablaCargos.length; i++) {
+  //       const element = this.tablaCargos[i];
+
+  //     }
+  //     const obj: Cargo = {
+  //       id_proyecto: this.idProyecto,
+  //       id_area: fila.id_area,
+  //       descripcion: this.descripcion.value.trim().toUpperCase(),
+  //       abreviatura: this.abreviatura.value.trim().toUpperCase(),
+  //       categoria_t1: 0,
+  //       categoria_t2: 0,
+  //       categoria_t3: 0,
+  //       categoria_t4: 0,
+  //       categoria_t5: 0,
+  //       habilitado: 1,
+  //       texto: '',
+  //       ind_gp: 
+  //     }
+  //     for (const element of categorias) {
+  //       if (element.value == this.categorias.value) {
+  //         obj[element.key] = 1
+  //       } else {
+  //         obj[element.key] = 0
+  //       }
+  //     }
+  //     const response = await this.recursosHumanosService.guardarCargoArea(obj)
+  //     await this.listarCargosPorArea()
+  //     this.cerrarModal()
+  //     this.toaster.success(
+  //       'Se agrego Correctamente',
+  //       'Correcto',
+  //       {
+  //         closeButton: false,
+  //         positionClass: 'toast-bottom-right',
+  //         timeOut: 4000,
+  //       }
+  //     );
+  //     this.mostrar_carga_todo = false
+  //   } catch (error) {
+  //     this.mostrar_carga_todo = false
+  //     console.log(error)
+  //     SwalService.error()
+  //   }
+  // }
   async agregarCargo() {
     try {
-      this.mostrar_carga_todo = true
+      this.mostrar_carga_todo = true;
+
       if (this.formCargo.invalid) {
-        this.mostrar_carga_todo = false
+        this.mostrar_carga_todo = false;
         this.toaster.error(
           'Formulario incompleto',
           'Error',
@@ -1379,14 +1638,42 @@ export class ConfiguracionPlanillaComponent implements OnInit {
             timeOut: 4000,
           }
         );
-        return
+        return;
       }
-      const categorias = [{ value: 'Categoria t1', key: 'categoria_t1' }, { value: 'Categoria t2', key: 'categoria_t2' }, { value: 'Categoria t3', key: 'categoria_t3' }, { value: 'Categoria t4', key: 'categoria_t4' }, { value: 'Categoria t5', key: 'categoria_t5' }]
 
-      const fila = this.tablaCargos[this.filSel]
-      const obj: Cargo = {
+      const categorias = [
+        { value: 'Categoria t1', key: 'categoria_t1' },
+        { value: 'Categoria t2', key: 'categoria_t2' },
+        { value: 'Categoria t3', key: 'categoria_t3' },
+        { value: 'Categoria t4', key: 'categoria_t4' },
+        { value: 'Categoria t5', key: 'categoria_t5' }
+      ];
+
+      const fila = this.tablaCargos[this.filSel];
+      const idAreaActual = fila.id_area;
+
+      // --- CÁLCULO DEL IND_GP CORRELATIVO ---
+      // 1. Filtramos todos los cargos existentes en la tabla que pertenezcan a la misma área
+      const cargosDeEstaArea = this.tablaCargos.filter(
+        item => item.id_area === idAreaActual && item.id_cargo
+      );
+
+      // 2. Buscamos el mayor "ind_gp" registrado actualmente en esos cargos
+      let maxIndGp = 0;
+      cargosDeEstaArea.forEach(item => {
+        const val = Number(item.ind_gp);
+        if (!isNaN(val) && val > maxIndGp) {
+          maxIndGp = val;
+        }
+      });
+
+      // 3. El nuevo cargo toma el número siguiente (si no hay ninguno anterior, empezará en 1)
+      const nuevoIndGp = maxIndGp + 1;
+
+      // Construimos el objeto del nuevo Cargo
+      const obj: any = { // Usamos 'any' o tu interfaz 'Cargo' adaptada para soportar ind_gp
         id_proyecto: this.idProyecto,
-        id_area: fila.id_area,
+        id_area: idAreaActual,
         descripcion: this.descripcion.value.trim().toUpperCase(),
         abreviatura: this.abreviatura.value.trim().toUpperCase(),
         categoria_t1: 0,
@@ -1395,20 +1682,28 @@ export class ConfiguracionPlanillaComponent implements OnInit {
         categoria_t4: 0,
         categoria_t5: 0,
         habilitado: 1,
-        texto: ''
-      }
+        texto: '',
+        ind_gp: nuevoIndGp // <-- ASIGNACIÓN DEL ÍNDICE CORRELATIVO CALCULADO
+      };
+
+      // Mapeamos el flag de la categoría seleccionada
       for (const element of categorias) {
-        if (element.value == this.categorias.value) {
-          obj[element.key] = 1
+        if (element.value === this.categorias.value) {
+          obj[element.key] = 1;
         } else {
-          obj[element.key] = 0
+          obj[element.key] = 0;
         }
       }
-      const response = await this.recursosHumanosService.guardarCargoArea(obj)
-      await this.listarCargosPorArea()
-      this.cerrarModal()
+
+      // Enviamos a la base de datos
+      const response = await this.recursosHumanosService.guardarCargoArea(obj);
+
+      // Refrescamos y cerramos
+      await this.listarCargosPorArea();
+      this.cerrarModal();
+
       this.toaster.success(
-        'Se agrego Correctamente',
+        'Se agregó Correctamente',
         'Correcto',
         {
           closeButton: false,
@@ -1416,14 +1711,13 @@ export class ConfiguracionPlanillaComponent implements OnInit {
           timeOut: 4000,
         }
       );
-      this.mostrar_carga_todo = false
+      this.mostrar_carga_todo = false;
     } catch (error) {
-      this.mostrar_carga_todo = false
-      console.log(error)
-      SwalService.error()
+      this.mostrar_carga_todo = false;
+      console.error(error);
+      SwalService.error();
     }
   }
-
   async actualizarCargo() {
     try {
       this.mostrar_carga_todo = true
@@ -1440,7 +1734,8 @@ export class ConfiguracionPlanillaComponent implements OnInit {
         categoria_t4: 0,
         categoria_t5: 0,
         habilitado: row.habilitado ? 1 : 0,
-        texto: row.texto ? row.texto : ''
+        texto: row.texto ? row.texto : '',
+        ind_gp: row.ind_gp
       }
       const categorias = [{ value: 'Categoria t1', key: 'categoria_t1' }, { value: 'Categoria t2', key: 'categoria_t2' }, { value: 'Categoria t3', key: 'categoria_t3' }, { value: 'Categoria t4', key: 'categoria_t4' }, { value: 'Categoria t5', key: 'categoria_t5' }]
       for (const element of categorias) {
@@ -3539,7 +3834,7 @@ export class ConfiguracionPlanillaComponent implements OnInit {
 
 
       this.mostrar_carga_todo = true
- 
+
       let areasIncluidas = row.areas ? row.areas?.split('|').map(Number) : []
 
       if (event.target.checked) {
@@ -4984,6 +5279,440 @@ export class ConfiguracionPlanillaComponent implements OnInit {
     return 100 + valor;
   }
 
+  onAreaChange() {
+    this.filtroCargoSel = 'TODOS'; // Reseteamos el filtro de cargo al cambiar de área
+
+    if (this.filtroAreaSel === 'TODOS') {
+      this.listaCargosFiltrados = []; // Si elige TODOS, el select de cargo solo mostrará "-- TODOS --"
+    } else {
+      // Filtramos la lista de cargos global para que solo aparezcan los que pertenezcan al id_area seleccionado
+      const idAreaNum = Number(this.filtroAreaSel);
+      this.listaCargosFiltrados = this.cargos.filter(c => c.id_area === idAreaNum);
+    }
+
+    this.filtrarUsuariosLocal();
+  }
+
+  filtrarUsuariosLocal() {
+    // 1. Limpiamos las selecciones de asignación actuales a la derecha para evitar bugs visuales
+    this.filUsuario = null;
+    this.tablaAsignaciones = [];
+
+    // 2. Si ambos están en TODOS, restauramos la lista completa
+    if (this.filtroAreaSel === 'TODOS' && this.filtroCargoSel === 'TODOS') {
+      this.tablaUsuarios = [...this.tablaUsuariosMaster];
+      return;
+    }
+
+    // 3. Filtramos los usuarios activos basándonos en sus asignaciones cargadas en memoria
+    this.tablaUsuarios = this.tablaUsuariosMaster.filter(usuario => {
+      // Obtenemos todas las asignaciones que pertenecen a este usuario actual en evaluación
+      const asignacionesDelUsuario = this.listaAsignacionesProyecto.filter(
+        // Usamos Number() para asegurar que la comparación de estado no falle por el tipo de dato
+        asig => asig.id_usuario === usuario.id_usuario && Number(asig.estado) === 1
+      );
+
+      // Comprobamos si cumple con el filtro de Área
+      const cumpleArea = this.filtroAreaSel === 'TODOS' ||
+        asignacionesDelUsuario.some(asig => asig.id_area === Number(this.filtroAreaSel));
+
+      // Comprobamos si cumple con el filtro de Cargo
+      const cumpleCargo = this.filtroCargoSel === 'TODOS' ||
+        asignacionesDelUsuario.some(asig => asig.id_cargo === Number(this.filtroCargoSel));
+
+      return cumpleArea && cumpleCargo;
+    });
+  }
+
+
+  abrirModalPlanillaBase() {
+
+    this.planillaBase = []; // Empezar limpio
+    this.areaSeleccionadaMaster = null;
+    this.cargoSeleccionadoMaster = null;
+    this.cargosFiltradosModal = [];
+
+    const areasMap = new Map<string, any>();
+
+    // 1. PRIMERO: Extraer y agregar las áreas reales existentes desde 'tablaCargos'
+    if (this.tablaCargos && this.tablaCargos.length > 0) {
+      this.tablaCargos.forEach(item => {
+        // Es un área si no tiene id_cargo (o es null/undefined) y tiene id_area asignado
+        if (!item.id_cargo && item.id_area) {
+          const descMayuscula = item.descripcion.trim().toUpperCase();
+
+          areasMap.set(descMayuscula, {
+            descripcion: descMayuscula,
+            id_area: item.id_area,
+            abreviatura: item.abreviatura || item.area_abreviatura || descMayuscula.substring(0, 3),
+            cargosCargadosBD: [] // Guardaremos los cargos reales existentes para calcular los ind_gp después
+          });
+        }
+      });
+
+      // Llenar los cargos existentes que provienen de la BD en su área correspondiente
+      this.tablaCargos.forEach((item: any) => {
+        if (item.id_cargo && item.id_area) {
+          // Buscamos el área correspondiente en el map
+          for (let [key, area] of areasMap.entries()) {
+            if (area.id_area === item.id_area) {
+              area.cargosCargadosBD.push({
+                id_cargo: item.id_cargo,
+                descripcion: item.descripcion.toUpperCase(),
+                abreviatura: item.abreviatura,
+                // Conservamos el flag de categorías y el ind_gp original de la BD
+                categoria_seleccionada: item.categoria_seleccionada || 'Categoria t1',
+                categoria_t1: item.categoria_t1 || 0,
+                categoria_t2: item.categoria_t2 || 0,
+                categoria_t3: item.categoria_t3 || 0,
+                categoria_t4: item.categoria_t4 || 0,
+                categoria_t5: item.categoria_t5 || 0,
+                habilitado: item.habilitado ?? 1,
+                texto: item.texto || "",
+                ind_gp: item.ind_gp !== undefined ? item.ind_gp : null // <-- Guardamos ind_gp de BD
+              });
+            }
+          }
+        }
+      });
+    }
+
+    // 2. SEGUNDO: Procesar las 4 áreas maestras por defecto
+    this.listaCompletaAreasMaestras.forEach(nombre => {
+      const descMayuscula = nombre.trim().toUpperCase();
+
+      if (!areasMap.has(descMayuscula)) {
+        areasMap.set(descMayuscula, {
+          descripcion: descMayuscula,
+          id_area: null,
+          abreviatura: descMayuscula.substring(0, 3),
+          cargosCargadosBD: [] // Nueva área maestra empieza sin cargos
+        });
+      }
+    });
+
+    // Convertimos el Map a la lista plana ordenada para el selector HTML
+    this.areasDisponiblesModal = Array.from(areasMap.values());
+
+    this.modalPlanillaBase.show();
+  }
+
+  // 3. Método ejecutado al seleccionar un Área en la izquierda
+  seleccionarAreaMaster(area: any) {
+    this.areaSeleccionadaMaster = area;
+    this.cargoSeleccionadoMaster = null;
+
+    this.cargosFiltradosModal = [...this.listaCompletaCargosMaestros];
+  }
+
+
+  agregarAsignacionDerecha() {
+    if (!this.areaSeleccionadaMaster || !this.cargoSeleccionadoMaster) return;
+
+    const areaSeleccionada: any = this.areaSeleccionadaMaster;
+    const cargoSeleccionado: any = this.cargoSeleccionadoMaster;
+
+    // Verificar si el contenedor del área ya existe en el lado derecho comparando la DESCRIPCIÓN
+    let areaDerecha = this.planillaBase.find(a => a.descripcion.toUpperCase() === areaSeleccionada.descripcion.toUpperCase());
+
+    if (!areaDerecha) {
+      // Si el área no existe en el lado derecho, la creamos arrastrando su id_area y sus cargos pre-existentes
+      areaDerecha = {
+        id_area: areaSeleccionada.id_area,
+        descripcion: areaSeleccionada.descripcion.toUpperCase(),
+        abreviatura: areaSeleccionada.abreviatura || areaSeleccionada.descripcion.substring(0, 3).toUpperCase(),
+        id_responsable: null,
+        // Cargamos los cargos que ya existían físicamente de este área en la base de datos
+        cargos: areaSeleccionada.cargosCargadosBD ? [...areaSeleccionada.cargosCargadosBD] : []
+      };
+      this.planillaBase.push(areaDerecha);
+    }
+
+    // Evitar agregar el mismo cargo dentro de esta misma área
+    const existeCargo = areaDerecha.cargos.find(c => c.descripcion.toUpperCase() === cargoSeleccionado.toUpperCase());
+    if (existeCargo) {
+      alert(`El cargo "${cargoSeleccionado}" ya está asignado al área "${areaSeleccionada.descripcion}".`);
+      return;
+    }
+
+    // --- CÁLCULO DE IND_GP CORRELATIVO ---
+    // Buscamos el mayor "ind_gp" que tengan actualmente los cargos en esta área
+    let maxIndGp = 0;
+    if (areaDerecha.cargos && areaDerecha.cargos.length > 0) {
+      areaDerecha.cargos.forEach(c => {
+        const val = Number(c.ind_gp);
+        if (!isNaN(val) && val > maxIndGp) {
+          maxIndGp = val;
+        }
+      });
+    }
+    const nuevoIndGp = maxIndGp + 1; // Incrementa correlativamente (ej: si el max es 2, será 3)
+
+    // Obtener la abreviatura inicial del cargo
+    const abrevBase = cargoSeleccionado
+      .split(' ')
+      .filter(w => w.length > 2)
+      .map(w => w[0])
+      .join('')
+      .substring(0, 3)
+      .toUpperCase();
+
+    // Agregar el cargo con el nuevo correlativo asignado
+    areaDerecha.cargos.push({
+      id_cargo: null,
+      descripcion: cargoSeleccionado.toUpperCase(),
+      abreviatura: abrevBase,
+      categoria_seleccionada: this.tipos_cargos && this.tipos_cargos.length > 0 ? this.tipos_cargos[0] : 'Categoria t1',
+      categoria_t1: 0,
+      categoria_t2: 0,
+      categoria_t3: 0,
+      categoria_t4: 0,
+      categoria_t5: 0,
+      habilitado: 1,
+      texto: "",
+      ind_gp: nuevoIndGp // <-- ASIGNACIÓN DEL CORRELATIVO CALCULADO
+    });
+
+    this.recalcularAbreviaturas();
+    this.cargoSeleccionadoMaster = null;
+  }
+
+  eliminarCargoDeArea(indexArea: number, indexCargo: number) {
+    this.planillaBase[indexArea].cargos.splice(indexCargo, 1);
+    this.recalcularAbreviaturas();
+  }
+
+  eliminarArea2(indexArea: number) {
+    this.planillaBase.splice(indexArea, 1);
+    this.recalcularAbreviaturas();
+  }
+
+  obtenerTotalCargosAsignados(): number {
+    return this.planillaBase.reduce((acc, area) => acc + (area.cargos ? area.cargos.length : 0), 0);
+  }
+
+  recalcularAbreviaturas() {
+    const conteoGlobal: { [key: string]: number } = {};
+
+    this.planillaBase.forEach(area => {
+      if (area.cargos) {
+        area.cargos.forEach(cargo => {
+          const abrevBase = cargo.descripcion
+            .split(' ')
+            .filter(palabra => palabra.length > 2)
+            .map(palabra => palabra[0])
+            .join('')
+            .toUpperCase();
+
+          const key = abrevBase || 'CG';
+
+          if (!conteoGlobal[key]) {
+            conteoGlobal[key] = 1;
+            cargo.abreviatura = key;
+          } else {
+            conteoGlobal[key]++;
+            cargo.abreviatura = `${key}${conteoGlobal[key]}`;
+          }
+        });
+      }
+    });
+  }
+
+  cerrarModalPlanillaBase() {
+    this.modalPlanillaBase.hide();
+  }
+
+  async guardarPlanillaCompleta() {
+    if (this.planillaBase.length === 0) {
+      this.toaster.error('La estructura de la planilla no puede estar vacía.');
+      return;
+    }
+
+    try {
+      this.mostrar_carga_todo = true;
+
+      const payload = {
+        id_proyecto: this.idProyecto,
+        areas: this.planillaBase.map(area => ({
+          id_area: area.id_area || null,
+          id_responsable: area.id_responsable || null,
+          descripcion: area.descripcion,
+          abreviatura: area.abreviatura,
+          cargos: area.cargos.map(cargo => ({
+            id_cargo: cargo.id_cargo || null,
+            descripcion: cargo.descripcion,
+            abreviatura: cargo.abreviatura,
+            categoria_t1: cargo.categoria_seleccionada === 'Categoria t1' ? 1 : 0,
+            categoria_t2: cargo.categoria_seleccionada === 'Categoria t2' ? 1 : 0,
+            categoria_t3: cargo.categoria_seleccionada === 'Categoria t3' ? 1 : 0,
+            categoria_t4: cargo.categoria_seleccionada === 'Categoria t4' ? 1 : 0,
+            categoria_t5: cargo.categoria_seleccionada === 'Categoria t5' ? 1 : 0,
+            habilitado: 1,
+            ind_gp: cargo.ind_gp !== undefined ? cargo.ind_gp : null // <-- ENVIADO EN EL PAYLOAD JSON
+          }))
+        }))
+      };
+
+
+      const response = await this.recursosHumanosService.guardarPlanillaCompleta(payload);
+
+      this.toaster.success('¡Planilla Base procesada y guardada con éxito!');
+      this.cerrarModalPlanillaBase();
+      await this.listarCargosPorArea();
+
+    } catch (error: any) {
+      console.error(error);
+      this.toaster.error(error?.error || 'Error al intentar guardar el bloque de la planilla.');
+    } finally {
+      this.mostrar_carga_todo = false;
+    }
+  }
+
+  onAreaSeleccionadaChange() {
+    this.cargoSeleccionadoMaster = null;
+
+    if (!this.areaSeleccionadaMaster) {
+      this.cargosFiltradosModal = [];
+      return;
+    }
+
+    const area: any = this.areaSeleccionadaMaster;
+
+    const cargosExistentesEnArea = this.tablaCargos
+      .filter(item => item.id_cargo && item.id_area === area.id_area)
+      .map(item => item.descripcion.toUpperCase());
+
+    if (cargosExistentesEnArea.length > 0) {
+      this.cargosFiltradosModal = [...new Set([...cargosExistentesEnArea, ...this.listaCompletaCargosMaestros])];
+    } else {
+      this.cargosFiltradosModal = [...this.listaCompletaCargosMaestros];
+    }
+  }
+
+  // Si usas este método para agregar de forma directa
+  agregarCargoAPlanilla() {
+    if (!this.areaSeleccionadaMaster || !this.cargoSeleccionadoMaster) return;
+
+    const areaPadre: any = this.areaSeleccionadaMaster;
+
+    // Calcular el ind_gp correlativo en base a lo que ya existe
+    let maxIndGp = 0;
+    const cargosDelArea = this.planillaBase.filter(c => c.id_area === areaPadre.id_area);
+    cargosDelArea.forEach(c => {
+      const val = Number(c.ind_gp);
+      if (!isNaN(val) && val > maxIndGp) {
+        maxIndGp = val;
+      }
+    });
+    const nuevoIndGp = maxIndGp + 1;
+
+    const nuevoCargo: any = {
+      id_area: areaPadre.id_area,
+      area_descripcion: areaPadre.descripcion,
+      area_abreviatura: areaPadre.abreviatura,
+      descripcion: this.cargoSeleccionadoMaster.toUpperCase(),
+      abreviatura: this.cargoSeleccionadoMaster.substring(0, 3).toUpperCase(),
+      id_cargo: null,
+      id_proyecto: this.idProyecto || 352,
+      categoria_t1: 0,
+      categoria_t2: 0,
+      categoria_t3: 0,
+      categoria_t4: 0,
+      categoria_t5: 0,
+      habilitado: true,
+      texto: "",
+      ind_gp: nuevoIndGp // <-- ASIGNADO AQUÍ TAMBIÉN
+    };
+
+    this.planillaBase.push(nuevoCargo);
+  }
+
+
+
+  esPrimerCargo(row: any, index: number): boolean {
+    if (!row || !row.id_cargo) return true;
+    return Number(row.ind_gp) <= 1;
+  }
+
+  esUltimoCargo(row: any, index: number): boolean {
+    if (!row || !row.id_cargo) return true;
+    const siguienteFila = this.tablaCargos[index + 1];
+    // Si no hay siguiente fila, o la siguiente fila es la cabecera de un Área nueva
+    if (!siguienteFila || !siguienteFila.id_cargo) {
+      return true;
+    }
+    return false;
+  }
+
+  /**
+ * Realiza el desplazamiento y la actualización silenciosa en cascada
+ * @param index Fila actual en la tabla
+ * @param direccion -1 para subir, 1 para bajar
+ */
+  async desplazarCargo(index: number, direccion: number) {
+    try {
+      this.mostrar_carga_todo = true;
+
+      const cargoActual = this.tablaCargos[index];
+      const cargoDestino = this.tablaCargos[index + direccion];
+
+      // Doble validación de seguridad para asegurar que no se crucen áreas
+      if (!cargoDestino || !cargoDestino.id_cargo || cargoActual.id_area !== cargoDestino.id_area) {
+        this.mostrar_carga_todo = false;
+        return;
+      }
+
+      // Guardamos los índices originales para el intercambio directo
+      const indGpActual = cargoActual.ind_gp;
+      const indGpDestino = cargoDestino.ind_gp;
+
+      // Construimos los payloads respetando las propiedades originales de tus registros
+      const prepararPayload = (row: any, nuevoIndGp: number) => {
+        return {
+          id_cargo: row.id_cargo,
+          id_proyecto: row.id_proyecto,
+          id_area: row.id_area,
+          descripcion: row.descripcion,
+          abreviatura: row.abreviatura,
+          categoria_t1: row.categoria_t1 || 0,
+          categoria_t2: row.categoria_t2 || 0,
+          categoria_t3: row.categoria_t3 || 0,
+          categoria_t4: row.categoria_t4 || 0,
+          categoria_t5: row.categoria_t5 || 0,
+          habilitado: row.habilitado ? 1 : 0,
+          texto: row.texto ? row.texto : '',
+          ind_gp: nuevoIndGp // <-- Asignamos la nueva posición intercambiada
+        };
+      };
+
+      const payloadActual = prepararPayload(cargoActual, indGpDestino);
+      const payloadDestino = prepararPayload(cargoDestino, indGpActual);
+
+      // Ejecutamos ambas solicitudes concurrentemente aprovechando tu backend actual
+      await Promise.all([
+        this.recursosHumanosService.actualizarCargoArea(payloadActual),
+        this.recursosHumanosService.actualizarCargoArea(payloadDestino)
+      ]);
+
+      // Refrescamos la lista completa para reflejar el nuevo orden en el cliente
+      await this.listarCargosPorArea();
+
+      this.toaster.success(
+        'Posición actualizada',
+        'Correcto',
+        {
+          closeButton: false,
+          positionClass: 'toast-bottom-right',
+          timeOut: 2000,
+        }
+      );
+    } catch (error) {
+      console.error('Error al reordenar los cargos:', error);
+      SwalService.error();
+    } finally {
+      this.mostrar_carga_todo = false;
+    }
+  }
 }
 
 

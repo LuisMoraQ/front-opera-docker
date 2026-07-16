@@ -1052,4 +1052,23 @@ export class MetradoService {
       catchError(err => throwError(err))
     ).toPromise()
   }
+
+  generarCalendarioProyecto(params: { id_proyecto: string }): Promise<any> {
+    let formData: FormData = new FormData();
+    Object.entries(params).forEach(([key, value]) => {
+      formData.append(key, value as string);
+    });
+
+    const url = this.enviUrl + '/api/metrados/generarCalendarioProyecto';
+
+    return this.http.post<any>(url, formData).pipe(
+      map(res => {
+        if (!res) {
+          throw new Error("No se pudo generar el calendario.");
+        }
+        return res; // Retorna el JSON estructurado por meses y días
+      }),
+      catchError(err => throwError(err))
+    ).toPromise();
+  }
 }

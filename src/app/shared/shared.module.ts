@@ -43,6 +43,7 @@ import { MatRadioModule } from '@angular/material/radio';
 import { FormsModule } from '@angular/forms';
 import { FiltroTablaColPipe } from './elements/filtro-tabla-col.pipe';
 import { SearchFilterPipe } from './elements/search-filter.pipe';
+import { FiltroNivelesPipe } from './elements/filtro-niveles.pipe';
 
 const DEFAULT_PERFECT_SCROLLBAR_CONFIG: PerfectScrollbarConfigInterface = {
   suppressScrollX: true
@@ -97,7 +98,8 @@ const DEFAULT_PERFECT_SCROLLBAR_CONFIG: PerfectScrollbarConfigInterface = {
     NombreProyectoPipe,
     AgrupamientoPipe,
     FiltroTablaColPipe,
-    SearchFilterPipe
+    SearchFilterPipe,
+    FiltroNivelesPipe
   ],
   declarations: [
     ToggleFullScreenDirective,
@@ -133,7 +135,8 @@ const DEFAULT_PERFECT_SCROLLBAR_CONFIG: PerfectScrollbarConfigInterface = {
     OfflinepageComponent,
     AddImgUrlComponent,
     FiltroTablaColPipe,
-    SearchFilterPipe
+    SearchFilterPipe,
+    FiltroNivelesPipe
   ],
   providers: [
     {

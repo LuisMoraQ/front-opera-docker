@@ -248,6 +248,7 @@ export class PrincipalComponent implements OnInit, OnDestroy {
       } else {
         this.verMenuProyecto = true
       }
+      console.log('e')
     })
     await this.listarDepartamentos()
     const tabs = JSON.parse(localStorage.getItem('tabs'))
@@ -388,6 +389,7 @@ export class PrincipalComponent implements OnInit, OnDestroy {
     }
     if (!this.formProyecto.length) {
       this.variablesGlobalesService.menuPrincipal.next(true)
+      console.log('d')
       this.variablesGlobalesService.arrayTabs.next([])
       localStorage.setItem('tabs', JSON.stringify([]))
       this.verMenuProyecto = false
@@ -503,6 +505,7 @@ export class PrincipalComponent implements OnInit, OnDestroy {
       this.mostrar_carga_todo = true
       const existe = this.formProyecto.value.find(tab => Number(row.id_proyecto) === tab.id_proyecto)
       this.variablesGlobalesService.menuPrincipal.next(false)
+      console.log('c')
       this.variablesGlobalesService.mantenerPrincipal.next(false)
       localStorage.setItem('principal', JSON.stringify(false))
       this.verMenuProyecto = true
@@ -571,6 +574,7 @@ export class PrincipalComponent implements OnInit, OnDestroy {
   verProyectosAbiertos() {
     this.verMenuProyecto = true
     this.variablesGlobalesService.menuPrincipal.next(false)
+    console.log('b')
     localStorage.setItem('principal', JSON.stringify(false))
   }
 
@@ -580,6 +584,7 @@ export class PrincipalComponent implements OnInit, OnDestroy {
     this.accesproy$.unsubscribe();
     this.variablesGlobalesService.arrayTabs.next([])
     this.variablesGlobalesService.menuPrincipal.next(true)
+    console.log('a')
     if (this.cargocompo) {
       this.encriptadorService.guardarlocalstory('bloqueaproy', JSON.stringify(false));
     }

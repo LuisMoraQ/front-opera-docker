@@ -136,7 +136,7 @@ export const menuAgrupado = [
     titulo: 'REGISTRO EJECUCION',
     items: [
       { id: 4, name: "Registro de Metrados", icon: "fa fa-building", imagen: "", verImagen: true },
-      { id: 3, name: "Registro de Actividades", icon: "fa fa-building", imagen: "icpresind1.png", verImagen: true },
+      { id: 3, name: "Insumos por partidas", icon: "fa fa-building", imagen: "icpresind1.png", verImagen: true },
       { id: 11, name: "Cuaderno de Obra", icon: "fa fa-building", imagen: "icespe1.png", verImagen: true }
     ]
   },

@@ -8,6 +8,7 @@ import { PrincipalService } from 'src/app/servicios/principal.service';
 import { SwalService } from 'src/app/servicios/swal.service';
 import { ModalBasicComponent } from 'src/app/shared/modal-basic/modal-basic.component';
 import { ChangeDetectorRef } from '@angular/core';
+import { RecursosHumanosService } from 'src/app/servicios/recursoshumanos.service';
 
 @Component({
   selector: 'app-registro-actividades',
@@ -73,6 +74,8 @@ export class RegistroActividadesComponent implements OnInit {
   calendarioBase = []
   calendarioSemana = [[], []];
   calendarioMes = [[], []];
+  versions = []
+  version = null
   @Input() set tabproyecto(value: any) {
     this.prueba = value;
     this.id_proyecto = value.get('id_proyecto').value;
@@ -111,6 +114,7 @@ export class RegistroActividadesComponent implements OnInit {
     public principalService: PrincipalService,
     public formsService: FormsService,
     public metradoService: MetradoService,
+    private recursosHumanosService: RecursosHumanosService,
     private cdr: ChangeDetectorRef) { }
 
   private nombresDiasMap: { [key: string]: number } = {
@@ -170,13 +174,32 @@ export class RegistroActividadesComponent implements OnInit {
     }
   }
 
+  async listarVersiones() {
+    this.versions = []
+    const obj = {
+      id_proyecto: this.id_proyecto
+    }
+    const res = await this.recursosHumanosService.listarVersionProgramacion(obj)
+    this.versions.push({ descripcion: 'Base (No Editable)', id_version: 0, id_proyecto: this.id_proyecto })
+    this.versions = this.versions.concat(res)
+    if (this.versions.length > 0) {
+      this.version = this.versions[this.versions.length - 1].id_version
+
+    } else {
+
+      this.version = 0
+    }
+  }
+
   async listarPresu(bool = false) {
     try {
       this.tablaRegistroMetrados = await this.metradoService.listarRegistroMetrados({
         id_proyecto: this.id_proyecto,
       });
+      console.log('tablaRegistroMetrados', this.tablaRegistroMetrados)
       if (this.tablaRegistroMetrados.length) {
         this.metradoMes = this.tablaRegistroMetrados[0].id_registro
+        console.log('this.metradoMes', this.metradoMes)
         this.metradoMes2 = 0
         await this.generarCalendario(this.tablaRegistroMetrados[0])
         await this.generarTablaPresuMetradoXRegistro(this.metradoMes)
@@ -223,6 +246,7 @@ export class RegistroActividadesComponent implements OnInit {
       //   this.indiceTitulo = this.titulos[0].indice
       //   await this.filtroTitulo(this.indiceTitulo, this.tablaPresCompleto)
       // }
+      console.log('this.titulos', this.titulos)
       await this.filtroTitulo(null, this.tablaPresCompleto)
       await this.listarRegistroSaldoXProy(id_registro)
     }
@@ -253,6 +277,7 @@ export class RegistroActividadesComponent implements OnInit {
     }
     // console.log('resultado', resultado)
     this.tablaPresupuesto = resultado;
+    console.log('this.tablaPresupuesto', this.tablaPresupuesto)
   }
 
 
@@ -319,6 +344,8 @@ export class RegistroActividadesComponent implements OnInit {
     }
     this.estadoXPart = estadoXPart
     this.estadoXReg = this.diasCalendario.map((ele, index) => { return { estado: estados[index], fecha: moment(ele.fecha).format('DD-MM-YYYY'), bloqueado: ele.bloqueado } })
+    console.log('this.estadoXPart', this.estadoXPart)
+    console.log('this.estadoXReg', this.estadoXReg)
   }
 
   async cambioFechasMetrado() {
@@ -440,7 +467,7 @@ export class RegistroActividadesComponent implements OnInit {
 
   async selPartida(index, row) {
     this.filaSeleccionada = row
-    
+
     if (this.fechaselecionada && this.filaSeleccionada) {
       await this.actualizarTablaAlmacen()
     }
@@ -608,6 +635,7 @@ export class RegistroActividadesComponent implements OnInit {
         }
       }
     }
+    console.log('this.saldosRegistros', this.saldosRegistros)
   }
 
   presenter1(event: any, ind: any) {
@@ -706,7 +734,9 @@ export class RegistroActividadesComponent implements OnInit {
     this.calendarioProgra = []
     const obj = { id_proyecto: this.id_proyecto }
     const res = await this.principalService.listarProgramacionProyecto(obj)
+    console.log('res', res)
     this.tablaProgramacion = res[0]
+    console.log('aspectosdias', this.aspectosdias)
     const horario = {
       horaIngreso: this.aspectosdias[0]?.horaIngreso ? this.aspectosdias[0]?.horaIngreso.split('|') : ['', '', '', '', '', '', ''],
       horaSalida: this.aspectosdias[0]?.horaSalida ? this.aspectosdias[0]?.horaSalida?.split('|') : ['', '', '', '', '', '', ''],

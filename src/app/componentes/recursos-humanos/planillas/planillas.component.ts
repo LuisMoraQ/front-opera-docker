@@ -403,6 +403,7 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
 
     const obj = { id_proyecto: this.idProyecto, id_registro: this.id_registro, tipocontra: 3 }
     const resp = await this.recursosHumanosService.listarAgrupamientoRequerimientos(obj)
+    console.log('resp', resp)
     if (resp) {
       this.tablaRegActividades = resp.agrupacion
       this.tablaRequerimientosCompleto = resp.desagregados
@@ -443,7 +444,7 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
     // } else if (this.activetab == 5) {
     //   await this.vincularReporteConRequerimientos()
     // }
-
+    console.log('this.tablaRequerimientos', this.tablaRequerimientos)
     this.buscando4 = false
   }
 
@@ -511,6 +512,7 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
       if (!this.tablaRegActividades || this.tablaRegActividades.length === 0) {
         const obj = { id_proyecto: this.idProyecto, id_registro: this.id_registro, tipocontra: 3 }
         const resp = await this.recursosHumanosService.listarAgrupamientoRequerimientos(obj)
+        console.log('resp', resp)
         if (resp) {
           this.tablaRegActividades = resp.agrupacion
           this.tablaRequerimientosCompleto = resp.desagregados
@@ -717,6 +719,7 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
         id_proyecto: this.idProyecto
       }
       const resp = await this.recursosHumanosService.listarCargosPorArea(obj)
+      console.log('resp', resp)
       this.areas = resp[0]
       this.cargos = resp[1]
     } catch (e) {
@@ -862,7 +865,9 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
         let totalMes = 0
         for (const area of this.areas) {
           let letTotalAreas = 0
-          const cargos = this.cargos.filter(ele => ele.id_area == area.id_area)
+          const cargos = this.cargos
+            .filter(ele => ele.id_area == area.id_area)
+            .sort((a, b) => Number(a.ind_gp) - Number(b.ind_gp));
           let areagrupo = []
           for (const cargo of cargos) {
             let cargoTotal = 0
@@ -1056,7 +1061,9 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
               planilla_mensual_aprobada: null
             }
             areaarray.push(areadata)
-            const cargos = this.cargos.filter(ele => ele.id_area == area.id_area)
+            const cargos = this.cargos
+              .filter(ele => ele.id_area == area.id_area)
+              .sort((a, b) => Number(a.ind_gp) - Number(b.ind_gp));
             let cargosBuscar = []
             if (this.cargoSeleccionada) {
               const encontrado = cargos.find(ele => ele.id_cargo == this.cargoSeleccionada)
@@ -6021,22 +6028,24 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
     }
 
     const adqui = this.tablaRegActividades[this.filSelRegAct];
+
+    // BÚSQUEDA FLEXIBLE: Encuentra la relación sin importar si en la BD se guardó invertido
     this.reqcargSeleccionado = this.requerimientosCargos.find(ele =>
-      ele.idfila_req == adqui.idfila &&
-      ele.idfila_des == row.idfila &&
-      ele.idgrupo == row.idgrupo &&
-      ele.indrep == row.indrep
+      ele.idgrupo.toString() === row.idgrupo.toString() &&
+      ele.indrep == row.indrep &&
+      (
+        // Caso correcto: req es insumo (1) y des es cabecera (0)
+        (ele.idfila_req == row.idfila && ele.idfila_des == adqui.idfila) ||
+        // Caso invertido histórico de BD: req es cabecera (0) y des es insumo (1)
+        (ele.idfila_req == adqui.idfila && ele.idfila_des == row.idfila)
+      )
     );
 
-    if (!this.reqcargSeleccionado) {
-      // 🔥 NO limpiar filSelReq, mantener la selección
-      // console.log('Esta fila no tiene relación con ningún cargo - La tabla se mostrará vacía');
-    } else {
-      // console.log('Relación encontrada:', this.reqcargSeleccionado);
-      // console.log('Cargos vinculados:', this.reqcargSeleccionado.cargos);
-    }
+    console.log("=== CLICK EN FILA REQUERIMIENTO ===");
+    console.log("Fila elegida (row):", { idgrupo: row.idgrupo, idfila: row.idfila, indrep: row.indrep });
+    console.log("Relación encontrada (reqcargSeleccionado):", this.reqcargSeleccionado);
+    console.log("Lista global de cargos vinculados:", this.cargosVinculados);
 
-    // Forzar actualización de la vista
     this.reporteEstructurado = [...this.reporteEstructurado];
   }
 
@@ -6048,7 +6057,8 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
       // idfila: row.idfila,
     }
     this.requerimientosCargos = await this.recursosHumanosService.listarRequerimientoCargo(obj)
-    // console.log('this.requerimientosCargos', this.requerimientosCargos)
+    console.log('this.requerimientosCargos', this.requerimientosCargos)
+
   }
 
   // async onVinculadoChange(cargo, event: any) {
@@ -6150,16 +6160,22 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
   // }
 
   async onVinculadoChange(cargo, event: any) {
-    this.mostrar_carga = true
+    this.mostrar_carga = true;
     const isChecked = event.checked;
-    const requerimiento = this.tablaRequerimientos[this.filSelReq];
-    const adqui = this.tablaRegActividades[this.filSelRegAct];
+
+    const requerimiento = this.tablaRequerimientos[this.filSelReq]; // Detalle/Insumo (row)
+    console.log('requerimiento', requerimiento);
+    const adqui = this.tablaRegActividades[this.filSelRegAct];     // Cabecera (adqui)
+    console.log('adqui', adqui);
+
     let cargosRelacionados = this.reqcargSeleccionado?.cargos
       ? this.reqcargSeleccionado.cargos.split('|').filter(c => c)
       : [];
 
+    console.log('cargo', cargo);
     const cargoId = cargo.id_cargo.toString() + '-' + cargo.tipo_cargo;
     const index = cargosRelacionados.indexOf(cargoId);
+    console.log('index', index);
 
     if (isChecked && index === -1) {
       cargosRelacionados.push(cargoId);
@@ -6171,18 +6187,20 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
 
     try {
       if (cargosRelacionados.length > 0) {
+        // CORRECCIÓN AQUÍ: Alineamos las filas con la estructura real de la BD
         const obj: any = {
           id_proyecto: this.idProyecto,
           id_registro: requerimiento.id_registro,
           idgrupo: requerimiento.idgrupo,
-          idfila_des: requerimiento.idfila,
-          idfila_req: adqui.idfila,
+          idfila_req: requerimiento.idfila,  // <-- CORREGIDO: El insumo real (ej: 1)
+          idfila_des: adqui.idfila,         // <-- CORREGIDO: La cabecera/actividad (ej: 0)
           indrep: requerimiento.indrep,
           cargos: cargosRelacionados.join('|')
         };
 
         if (this.reqcargSeleccionado) {
           obj.id_relacion = this.reqcargSeleccionado.id_relacion;
+          console.log('actualizarRequerimientoCargo', obj);
           const resp = await this.recursosHumanosService.actualizarRequerimientoCargo(obj);
 
           this.reqcargSeleccionado.cargos = cargosRelacionados.join('|');
@@ -6197,19 +6215,20 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
 
         } else {
           // CREAR NUEVO
+          console.log('guardarRequerimientoCargo', obj);
           const resp = await this.recursosHumanosService.guardarRequerimientoCargo(obj);
 
           const nuevoId = resp[0]?.nuevo_id_relacion || resp[0]?.id_relacion;
 
           if (nuevoId) {
-            // Crear el nuevo registro completo
+            // Crear el nuevo registro completo respetando el nuevo orden
             const nuevoRegistro = {
               id_relacion: nuevoId,
               id_proyecto: obj.id_proyecto,
               id_registro: obj.id_registro,
               idgrupo: obj.idgrupo,
-              idfila_req: obj.idfila_req,
-              idfila_des: obj.idfila_des,
+              idfila_req: obj.idfila_req,  // <-- Guardado consistente
+              idfila_des: obj.idfila_des,  // <-- Guardado consistente
               indrep: obj.indrep,
               cargos: obj.cargos
             };
@@ -6222,6 +6241,7 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
         }
       } else if (this.reqcargSeleccionado) {
         // ELIMINAR todos los cargos
+        console.log('eliminarRequerimientoCargo', this.reqcargSeleccionado.id_relacion);
         const resp = await this.recursosHumanosService.eliminarRequerimientoCargo({
           id_relacion: this.reqcargSeleccionado.id_relacion
         });
@@ -6249,25 +6269,29 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
 
       // Actualizar el estado del toggle localmente
       cargo.tipo_cargo_vinculado = isChecked;
-      this.mostrar_carga = false
+      this.mostrar_carga = false;
 
     } catch (error) {
       console.error('Error al procesar el cambio:', error);
       // Revertir el cambio en caso de error
       cargo.tipo_cargo_vinculado = !isChecked;
       alert('Error al guardar los cambios. Intente nuevamente.');
-      this.mostrar_carga = false
+      this.mostrar_carga = false;
     }
   }
-
   verDisabled(cargo) {
+    if (this.filSelReq == null) return true;
+
     const cargoId = cargo.id_cargo.toString() + '-' + cargo.tipo_cargo;
-    const row = this.reqcargSeleccionado?.cargos ? this.reqcargSeleccionado?.cargos?.split('|') : []
-    let existe = false
-    if ((this.cargosVinculados.includes(cargoId) && !row.includes(cargoId)) || this.filSelReq == null) {
-      existe = true
-    }
-    return existe
+
+    const cargosDelRequerimientoActual = this.reqcargSeleccionado?.cargos
+      ? this.reqcargSeleccionado.cargos.split('|').map(c => c.trim()).filter(c => c)
+      : [];
+
+    const existeEnOtroRequerimiento = this.cargosVinculados.map(c => c.trim()).includes(cargoId);
+    const resultadoDisabled = existeEnOtroRequerimiento && !cargosDelRequerimientoActual.includes(cargoId);
+
+    return resultadoDisabled;
   }
 
   async actualizarCargosVinculados() {

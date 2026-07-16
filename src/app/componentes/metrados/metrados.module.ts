@@ -20,12 +20,14 @@ import { PintarfilapreModule } from 'src/app/directivas/pintarfilapre.module';
 import { MetradosRoutingModule } from './metrados-routing.module';
 import { MetradosdiariosComponent } from './metradosdiarios/metradosdiarios.component';
 import { RegistroActividadesComponent } from './registro-actividades/registro-actividades.component';
+import { InsumosPorPartidaComponent } from './insumos-por-partida/insumos-por-partida.component';
 
 
 @NgModule({
   declarations: [
     MetradosdiariosComponent,
-    RegistroActividadesComponent
+    RegistroActividadesComponent,
+    InsumosPorPartidaComponent
   ],
   imports: [
     CommonModule,
@@ -48,7 +50,8 @@ import { RegistroActividadesComponent } from './registro-actividades/registro-ac
     AutoFocusModule,
     TextMaskModule,
     PintarfilapreModule,
+    
   ],
-  exports: [MetradosdiariosComponent, RegistroActividadesComponent]
+  exports: [MetradosdiariosComponent, RegistroActividadesComponent, InsumosPorPartidaComponent]
 })
 export class MetradosModule { }

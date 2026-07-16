@@ -33,6 +33,10 @@
                         (mouseup)="quitarfoco($event);">
                         <i class="fa fa-plus"></i>Area
                     </button>
+                    <button type="button" class="btn btn-secondary btn-sm light ripple m-b-10 ml-1"
+                        (click)="abrirModalPlanillaBase()" (mouseup)="quitarfoco($event);">
+                        <i class="fa fa-plus"></i>Planilla Base
+                    </button>
                 </div>
                 <div class="col-12 px-0">
                     <table class="table-bordered tab-10">
@@ -56,7 +60,7 @@
                             <ng-container *ngIf="tablaCargos.length; else nodataArea">
                                 <tr *ngFor="let row of this.tablaCargos; let i = index" (click)="seleccionFila(i)"
                                     [ngClass]="{'font-weight-bolder': !row.id_cargo, 'highlight': i == this.filSel}">
-                                    <td appAnchocol [ancho]="30">{{row.item}}</td>
+                                    <td appAnchocol [ancho]="30">{{!row.id_cargo ? row.item:row.ind_gp}}</td>
                                     <td appAnchocol [ancho]="130" class="text-left" [ngClass]="{'pl-2':row.id_cargo}">
                                         {{row.descripcion}}</td>
                                     <td appAnchocol [ancho]="40">{{row.area_abreviatura}}</td>
@@ -78,6 +82,23 @@
 
                                     <td appAnchocol [ancho]="80">
                                         <ng-container *ngIf="row.id_cargo">
+                                            <!-- Botón Desplazar Arriba -->
+                                            <button class="btn btn-mini btn-outline-primary" placement="top"
+                                                type="button" ngbTooltip="Subir Cargo" container="body"
+                                                *ngIf="row.estado !== 2" [disabled]="esPrimerCargo(row, i)"
+                                                (click)="desplazarCargo(i, -1)" (mouseup)="quitarfoco($event);">
+                                                <i class="fa fa-arrow-up icono-but"></i>
+                                            </button>
+
+                                            <!-- Botón Desplazar Abajo -->
+                                            <button class="btn btn-mini btn-outline-primary" placement="top"
+                                                type="button" ngbTooltip="Bajar Cargo" container="body"
+                                                *ngIf="row.estado !== 2" [disabled]="esUltimoCargo(row, i)"
+                                                (click)="desplazarCargo(i, 1)" (mouseup)="quitarfoco($event);">
+                                                <i class="fa fa-arrow-down icono-but"></i>
+                                            </button>
+
+                                            <!-- Tus botones de Editar y Eliminar se mantienen igual debajo -->
                                             <button class="btn btn-mini btn-outline-secondary" placement="top"
                                                 type="button" ngbTooltip="editar Cargo" container="body"
                                                 *ngIf="row.estado !== 2" (click)="abrirModalCargo(row,i)"
@@ -90,7 +111,6 @@
                                                 (mouseup)="quitarfoco($event);">
                                                 <i class="fa fa-remove icono-but"></i>
                                             </button>
-
                                         </ng-container>
                                         <ng-container *ngIf="!row.id_cargo">
                                             <div class="d-flex">
@@ -574,13 +594,54 @@
                             (click)="abrirModalPostulUsuario()" (mouseup)="quitarfoco($event);">
                             <i class="fa fa-plus icono-but"></i> APROBADOS
                         </button>
+                        <div class="col" style="padding-top: 4px;">
+                            <!-- <select class="form-control form-control-sm" [(ngModel)]="filtroAreaSel"
+                                (change)="onAreaChange()">
+                                <option value="TODOS">-- TODOS --</option>
+                                <option *ngFor="let area of areas" [value]="area.id_area">
+                                    {{ area.descripcion }}
+                                </option>
+                            </select> -->
+                            <mat-form-field class="mff-reduc my-form-field col wrapper-custom pl-0 ml-2"
+                                appearance="outline" style="display: contents">
+                                <mat-label>Area</mat-label>
+                                <select matNativeControl [(ngModel)]="filtroAreaSel" (change)="onAreaChange()">
+                                    <option value="TODOS">-- TODOS --</option>
+                                    <option *ngFor="let area of areas" [value]="area.id_area">
+                                        {{ area.descripcion }}
+                                    </option>
+                                </select>
+                            </mat-form-field>
+                        </div>
+
+                        <div class="col" style="padding-top: 4px;">
+
+                            <!-- <select class="form-control form-control-sm" [(ngModel)]="filtroCargoSel"
+                                (change)="filtrarUsuariosLocal()">
+                                <option value="TODOS">-- TODOS --</option>
+                                <option *ngFor="let cargo of listaCargosFiltrados" [value]="cargo.id_cargo">
+                                    {{ cargo.descripcion }}
+                                </option>
+                            </select> -->
+                            <mat-form-field class="mff-reduc my-form-field col wrapper-custom pl-0 ml-2"
+                                appearance="outline" style="display: contents">
+                                <mat-label>Cargo</mat-label>
+                                <select matNativeControl [(ngModel)]="filtroCargoSel" (change)="filtrarUsuariosLocal()">
+                                    <option value="TODOS">-- TODOS --</option>
+                                    <option *ngFor="let cargo of listaCargosFiltrados" [value]="cargo.id_cargo">
+                                        {{ cargo.descripcion }}
+                                    </option>
+                                </select>
+                            </mat-form-field>
+                        </div>
                     </div>
                     <table class="table-bordered tab-10">
                         <thead class="text-center">
                             <tr style="height: 22px;">
-                                <th colspan="8">PERSONAL REGISTRADO</th>
+                                <th colspan="9">PERSONAL REGISTRADO</th>
                             </tr>
                             <tr style="height: 22px;">
+                                <th appAnchocol [ancho]="30"></th>
                                 <th appAnchocol [ancho]="200">NOMBRES</th>
                                 <th appAnchocol [ancho]="50">DNI</th>
                                 <th appAnchocol [ancho]="50">TELEFONO</th>
@@ -596,6 +657,7 @@
                             <ng-container *ngIf="tablaUsuarios.length; else noUsuarios">
                                 <tr *ngFor="let row of tablaUsuarios; let i=index"
                                     (click)="listarAsignacionesUsuario(i)" [ngClass]="{'highlight': filUsuario == i}">
+                                    <td appAnchocol [ancho]="30">{{i+1}}</td>
                                     <td appAnchocol [ancho]="200" class="text-left pl-2">{{row.apellidos}}
                                         {{row.nombres}}
                                     </td>
@@ -649,11 +711,7 @@
                             <h5> Asignaciones de cargo</h5>
                         </div>
                         <div class="card-body " *ngIf="filUsuario !== null">
-                            <!-- <button class="btn btn-success btn-sm light ripple d-flex" placement="top" type="button"
-                                ngbTooltip="Asignar nuevo cargo" container="body" (click)="abrirModalAsignacion()"
-                                *ngIf="tablaUsuarios[filUsuario].estado" (mouseup)="quitarfoco($event);">
-                                <i class="fa fa-plus icono-but"></i> Asignación
-                            </button> -->
+
                             <div class="col-12 px-0 overflow-auto">
                                 <table class="table-bordered tab-10">
                                     <thead class="text-center">
@@ -1079,10 +1137,10 @@
                         <th rowspan="2" appAnchocol2 [ancho]="40">Item</th>
                         <th rowspan="2" appAnchocol2 [ancho]="300">Descripcion</th>
                         <th rowspan="2" appAnchocol2 [ancho]="90">Abreviatura</th>
-                        <th rowspan="2" appAnchocol2 [ancho]="250">Formula</th>
+                        <th rowspan="2" appAnchocol2 [ancho]="150">Formula</th>
 
                         <ng-container *ngFor="let cargo of cargosFiltradosPres">
-                            <th class="mes-header" colspan="2">
+                            <th class="mes-header" colspan="2" appAnchocol2 [ancho]="160">
                                 {{cargo.descripcion}}
                             </th>
                         </ng-container>
@@ -2354,6 +2412,151 @@
                 (click)="!id_feriado.value ? agregarFeriado():actualizarFeriado()">
                 <ng-container *ngIf="!id_cargo.value">Guardar</ng-container>
                 <ng-container *ngIf="id_cargo.value">Actualizar</ng-container>
+            </button>
+        </div>
+    </div>
+</app-modal-basic>
+
+<app-modal-basic #modalPlanillaBase [dialogClass]="'modal-xl modalgrande'">
+    <div class="app-modal-header bg-primary text-white">
+        <h4 class="modal-title text-white"><b>Diseñador de Planilla Base</b></h4>
+        <button type="button" class="close text-white" (click)="cerrarModalPlanillaBase()">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+
+    <div class="app-modal-body" style="max-height: 78vh; overflow-y: auto; background-color: #f4f6f9;">
+        <div class="row">
+
+            <div class="col-md-4 col-12">
+                <div class="card shadow-sm mb-3">
+                    <div class="card-header bg-dark text-white py-2">
+                        <h6 class="mb-0 text-white"><i class="fa fa-list-ol mr-2"></i>1. Seleccione Área</h6>
+                    </div>
+                    <div class="card-body p-2">
+                        <div class="list-group" style="max-height: 180px; overflow-y: auto;">
+                            <button *ngFor="let area of areasDisponiblesModal" type="button"
+                                class="list-group-item list-group-item-action py-2 px-3 d-flex justify-content-between align-items-center"
+                                [class.active]="areaSeleccionadaMaster?.descripcion === area.descripcion"
+                                (click)="seleccionarAreaMaster(area)">
+                                <span class="small font-weight-bold">{{ area.descripcion }}</span>
+                                <span *ngIf="area.id_area" class="badge badge-success px-2 py-1"
+                                    style="font-size: 9px;">BD</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card shadow-sm mb-3">
+                    <div class="card-header bg-dark text-white py-2">
+                        <h6 class="mb-0 text-white"><i class="fa fa-users mr-2"></i>2. Seleccione Cargo</h6>
+                    </div>
+                    <div class="card-body p-2">
+                        <div class="list-group" style="max-height: 250px; overflow-y: auto;">
+                            <button *ngFor="let cargoName of cargosFiltradosModal" type="button"
+                                class="list-group-item list-group-item-action py-2 px-3"
+                                [class.active]="cargoSeleccionadoMaster === cargoName"
+                                (click)="cargoSeleccionadoMaster = cargoName">
+                                <span class="small font-weight-bold">{{ cargoName }}</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="button" class="btn btn-primary btn-block shadow ripple"
+                    [disabled]="!areaSeleccionadaMaster || !cargoSeleccionadoMaster"
+                    (click)="agregarAsignacionDerecha()">
+                    <i class="fa fa-arrow-circle-right mr-1"></i> Agregar a la Tabla
+                </button>
+            </div>
+
+            <div class="col-md-8 col-12">
+                <div class="card shadow-sm" style="min-height: 515px;">
+                    <div
+                        class="card-header bg-success text-white py-2 d-flex justify-content-between align-items-center">
+                        <h6 class="mb-0 text-white"><i class="fa fa-sitemap mr-2"></i>Estructura de la Planilla</h6>
+                        <span class="badge badge-light text-dark font-weight-bold">
+                            {{ obtenerTotalCargosAsignados() }} Asignado(s)
+                        </span>
+                    </div>
+                    <div class="card-body p-3 bg-white" style="max-height: 480px; overflow-y: auto;">
+
+                        <div *ngIf="planillaBase.length === 0" class="text-center py-5">
+                            <i class="fa fa-cubes text-muted mb-3" style="font-size: 40px;"></i>
+                            <h5 class="text-muted">La tabla está vacía</h5>
+                            <p class="small text-muted">Selecciona un área y un cargo de la izquierda para comenzar.</p>
+                        </div>
+
+                        <div *ngFor="let area of planillaBase; let idxArea = index"
+                            class="border rounded mb-3 overflow-hidden shadow-sm">
+                            <div class="bg-light p-2 border-bottom d-flex justify-content-between align-items-center">
+                                <span class="font-weight-bold text-dark" style="font-size: 13px;">
+                                    <i class="fa fa-folder text-warning mr-1"></i> {{ area.descripcion }}
+                                </span>
+                                <button class="btn btn-outline-danger btn-mini" (click)="eliminarArea2(idxArea)">
+                                    <i class="fa fa-trash"></i> Quitar Área
+                                </button>
+                            </div>
+
+                            <div class="table-responsive bg-white">
+                                <table class="table table-sm table-hover mb-0 text-center">
+                                    <thead class="thead-light">
+                                        <tr class="small font-weight-bold">
+                                            <th style="width: 5%">N°</th>
+                                            <th style="width: 45%" class="text-left pl-3">Cargo</th>
+                                            <th style="width: 15%">Abrev.</th>
+                                            <th style="width: 25%">Categoría</th>
+                                            <th style="width: 10%">Acción</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr *ngFor="let cargo of area.cargos; let idxCargo = index">
+                                            <td class="align-middle small">{{ idxCargo + 1 }}</td>
+                                            <td
+                                                class="text-left align-middle pl-3 font-weight-bold small text-secondary">
+                                                {{ cargo.descripcion }}
+                                            </td>
+                                            <td class="align-middle">
+                                                <span class="badge badge-primary font-weight-bolder">
+                                                    {{ cargo.abreviatura }}
+                                                </span>
+                                            </td>
+                                            <td class="align-middle">
+                                                <select
+                                                    class="form-control form-control-sm text-center font-weight-bold py-0"
+                                                    style="height: 26px; font-size: 11px;"
+                                                    [(ngModel)]="cargo.categoria_seleccionada">
+                                                    <option *ngFor="let tipo of tipos_cargos" [value]="tipo">{{ tipo }}
+                                                    </option>
+                                                </select>
+                                            </td>
+                                            <td class="align-middle">
+                                                <button class="btn btn-link text-danger p-0"
+                                                    (click)="eliminarCargoDeArea(idxArea, idxCargo)">
+                                                    <i class="fa fa-times-circle" style="font-size: 16px;"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="app-modal-footer w-100 bg-light">
+        <div class="row px-3 justify-content-between w-100">
+            <button type="button" class="btn btn-sm btn-danger ripple" (click)="cerrarModalPlanillaBase()">
+                Cancelar
+            </button>
+            <button type="button" class="btn btn-sm btn-success ripple font-weight-bold"
+                [disabled]="planillaBase.length === 0" (click)="guardarPlanillaCompleta()">
+                <i class="fa fa-save mr-1"></i> Guardar Todo el Bloque
             </button>
         </div>
     </div>

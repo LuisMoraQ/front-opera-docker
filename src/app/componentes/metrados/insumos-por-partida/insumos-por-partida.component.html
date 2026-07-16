@@ -1,0 +1,441 @@
+<div id="divbut" style="width: calc(100% - 58px); margin-left: 44px" class="hidescroll m-b-10">
+    <div class="row " style="margin-right: 0px; margin-left: 0px">
+        <button class="btn btn-sm btn-outline-secondary btn-menu-top" type="button" (mouseup)="quitarfoco($event)"
+            (click)="cambioVista(1)" style="padding: 4px 8px" [ngClass]="{ active: subvista === 1 }">
+            <i class="fa fa-list"></i> VINCULO DE RECURSOS CON PARTIDAS
+        </button>
+        <button class="btn btn-sm btn-outline-secondary btn-menu-top" type="button" (mouseup)="quitarfoco($event)"
+            style="padding: 4px 8px" [ngClass]="{ active: subvista === 2 }" (click)="cambioVista(2)">
+            <i class="fa fa-list"></i> COMPARATIVA DIARIA DE RECURSOS
+        </button>
+        <button class="btn btn-sm btn-outline-secondary btn-menu-top" type="button" (mouseup)="quitarfoco($event)"
+            style="padding: 4px 8px" [ngClass]="{ active: subvista === 3 }" (click)="cambioVista(3)">
+            <i class="fa fa-list"></i> RESUMEN DE CONTROL DE ACTIVIDADES
+        </button>
+
+    </div>
+</div>
+<div class="row px-3 d-flex ">
+    <ng-container *ngIf="subvista == 1">
+        <div class="col-12 d-flex pl-0 mb-3">
+            <mat-form-field appearance="outline" class="mff-reduc my-form-field col-3" [floatLabel]="'always'">
+                <mat-label>Mes</mat-label>
+                <select matNativeControl [(ngModel)]="mesSeleccionado" (change)="cambioMes()">
+                    <option *ngFor="let mes of meses; let index = index" [value]="index">
+                        {{mes.mes}}
+                    </option>
+                </select>
+            </mat-form-field>
+            <div class="col-9 px-0" style="overflow: auto">
+                <table class="mini-tabla tab-10 table-bordered w-100">
+                    <thead class="text-center">
+                        <tr>
+                            <th>REGISTRO</th>
+                            <th *ngFor="let dia of dias; let i = index" (click)="seleccionDia(dia)"
+                                [ngClass]="{'diaSeleccionado':diaSeleccionado == dia}">
+                                {{dia.descripcion_dia}}
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-center">
+                        <tr>
+                            <td>ESTADO</td>
+                            <td *ngFor="let dia of dias; let i = index" (click)="seleccionDia(dia)"
+                                [ngClass]="{'diaSeleccionado':diaSeleccionado == dia}">
+                                {{dia.estado}}
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div [ngClass]="{'col-md-6 col-sm-12': !expanded, 'col-md-12 col-sm-12': expanded}" class="px-0  ">
+            <div class="col-12 pl-0 d-flex">
+                <mat-form-field appearance="outline" class="mff-reduc my-form-field col-4 pl-0" [floatLabel]="'always'">
+                    <mat-label>Titulo</mat-label>
+                    <select matNativeControl [(ngModel)]="tituloSeleccionado" (change)="filtrarTitulo()">
+                        <option *ngFor="let titulo of titulos; let index = index" [value]="index">
+                            <span *ngIf="index">{{titulo.item}} -</span> {{titulo.descripcion}}
+                        </option>
+                    </select>
+                </mat-form-field>
+                <mat-form-field class="mff-reduc w-100 alto-35 field-busqueda col-4" appearance="outline">
+                    <mat-label>Buscar</mat-label>
+                    <input matInput type="text" [(ngModel)]="busqueda"
+                        autocomplete="off"><!-- (keyup)="applyFilterPrinc($event)" -->
+                    <button *ngIf="busqueda" matSuffix mat-icon-button aria-label="Clear" (click)="limpiarfiltro()">
+                        <mat-icon>close</mat-icon>
+                    </button>
+                </mat-form-field>
+                <div class="col-4">
+                    <div class="btn-group" style="margin-bottom: 3px;">
+                        <button type="button" class="btn btn-mini btn-group-mini btn-outline-primary" placement="top"
+                            ngbTooltip="Expandir Contenido de la Seleccion" container="body" (click)="Expandetodo()"
+                            (mouseup)="quitarfoco($event);">
+                            <i class="icofont icofont-rounded-expand icono-but"></i>
+                        </button>
+                        <button type="button" class="btn btn-mini btn-group-mini btn-outline-primary" placement="top"
+                            ngbTooltip="Contraer Contenido de la Seleccion" container="body" (click)="ContraeTodo()"
+                            (mouseup)="quitarfoco($event);">
+                            <i class="icofont icofont-rounded-collapse icono-but"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="w-100 tabla-limp overflow-auto h-tabla-pres">
+
+                <table class="table-bordered tab-10">
+                    <thead>
+                        <tr class="headsticky header-custom">
+                            <th appAnchocol [ancho]="30"></th>
+                            <th appAnchocol [ancho]="220" [detalle]="true">
+                                <div class="d-flex">
+                                    <a style="padding: 0px 2px;cursor: pointer;" ngbTooltip="Expandir Todo"
+                                        container="body" (click)="maxtodo()"><i
+                                            class="icofont icofont-caret-down"></i></a>
+                                    <a style="padding: 0px 2px;cursor: pointer;" ngbTooltip="Contraer Todo"
+                                        container="body" (click)="mintodo()"><i
+                                            class="icofont icofont-caret-up"></i></a>
+                                    <span style="width: calc(100% - 35px);">Descripción</span>
+                                </div>
+                            </th>
+                            <th appAnchocol [ancho]="44">Unidad</th>
+                            <th appAnchocol [ancho]="90">Metrado Diario</th>
+                            <th appAnchocol [ancho]="90">Precio Real</th>
+                            <th appAnchocol [ancho]="100">Parcial Diario</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+
+                        <ng-container *ngIf="datasourcePri.length>0">
+                            <tr (click)="registroAcue ? listarAcuePartida(row,i) : cambindiceselpresu(indice) "
+                                *ngFor="let row of datasourcePri |  filtroNiveles: busqueda : camposBusqueda;let indice=index;"
+                                [hidden]="row.mostrar == 0">
+                                <!-- [ngStyle]="{'display': row.mostrar == 1 ? null : 'none'}" -->
+                                <td class="cellsinpadding" appAnchocol [ancho]="30"
+                                    [ngStyle]="{'background': row.colorvin??'#f8f8f8'}">
+                                    <span>{{indice+1}}</span>
+                                    <!-- <span *ngIf="!colselpri && !colselpri2">{{indice+1}}</span>
+                                    <mat-checkbox
+                                        *ngIf="(row.unidad!='' && colselpri) || (row.unidad=='' && colselpri2 && row.tipofila!=0)"
+                                        class="checktabla" [checked]="row.seleccion==0?false:true"
+                                        (change)="$event ? Cambioseltpri(row,indice) : null"></mat-checkbox> -->
+                                </td>
+                                <td class="text-left cellsinpadding" appAnchocol [ancho]="220" [detalle]="true"
+                                    [ngClass]="{'highlight': filaSel == indice}" appPintarfilapre [tipo]="titulo1"
+                                    [color]="titulo1color" [letra]="titulo1letra" [item]="row.item" [separador]="'.'"
+                                    [partida]="row.unidad!=''?true:false">
+                                    <div class="d-flex">
+                                        <div [ngClass]="{'recortatext':lineas2,'recortatextlinea':!lineas2}"
+                                            [style.padding-left.px]="((row.item.toString().split('.').length-1)*5)+(row.unidad!=''?17:0)"
+                                            ngbTooltip="{{row.descripcion}}" #t="ngbTooltip" container="body">
+                                            <a *ngIf="row.unidad=='' && row.icomost=='0' && !busqueda"
+                                                style="padding: 0px 2px;color:#06bb06;cursor: pointer;"
+                                                (click)="toggleOnpresu(row.item,indice)">
+                                                <i class="icofont icofont-caret-down"></i>
+                                            </a>
+                                            <a *ngIf="row.unidad=='' && row.icomost=='1' && !busqueda"
+                                                style="padding: 0px 2px;color:red;cursor: pointer;"
+                                                (click)="toggleOffpresu(row.item,indice)">
+                                                <i class="icofont icofont-caret-up"></i>
+                                            </a><span
+                                                style="font-weight: 700;">{{row.item}}</span>&nbsp;&nbsp;{{row.descripcion}}
+                                        </div>
+                                    </div>
+                                </td>
+                                <td appAnchocol [ancho]="44" [ngClass]="{'highlight': filaSel == indice}"
+                                    appPintarfilapre [tipo]="titulo1" [color]="titulo1color" [letra]="titulo1letra"
+                                    [item]="row.item" [separador]="'.'" [partida]="row.unidad!=''?true:false">
+                                    {{row.unidad}}
+                                </td>
+                                <td appAnchocol [ancho]="90" [ngClass]="{'highlight': filaSel == indice}"
+                                    appPintarfilapre [tipo]="titulo1" [color]="titulo1color" [letra]="titulo1letra"
+                                    [item]="row.item" [separador]="'.'" [partida]="row.unidad!=''?true:false">
+                                    {{row.cantidad | number: mask_metrado }}
+                                </td>
+                                <td appAnchocol [ancho]="90" [ngClass]="{'highlight': filaSel == indice}"
+                                    appPintarfilapre [tipo]="titulo1" [color]="titulo1color" [letra]="titulo1letra"
+                                    [item]="row.item" [separador]="'.'" [partida]="row.unidad!=''?true:false">
+                                    <span *ngIf="row.unidad!=''" class="float-left">{{simbolo}}<i
+                                            *ngIf="(row.advceros=='1' || row.precio==0) && row.unidad!=''"
+                                            class="fa fa-exclamation-triangle c-alert"></i></span>
+                                    <span class="float-right">{{row.precio | number: mask_precio}}</span>
+                                </td>
+                                <td appAnchocol [ancho]="100" [ngClass]="{'highlight': filaSel == indice}"
+                                    appPintarfilapre [tipo]="titulo1" [color]="titulo1color" [letra]="titulo1letra"
+                                    [item]="row.item" [separador]="'.'" [partida]="row.unidad!=''?true:false">
+                                    <span class="float-left">{{simbolo}}</span>
+                                    <span class="float-right">{{row.parcial | number: mask_parcial}}</span>
+                                </td>
+                            </tr>
+                        </ng-container>
+                        <ng-container *ngIf="datasourcePri.length<=0">
+                            <tr>
+                                <td class="mat-cell text-center" colspan="8">
+                                    <label *ngIf="!buscando">No se encontraron resultados</label>
+                                    <div *ngIf="buscando" class="preloader3 loader-block">
+                                        <div class="circ1"></div>
+                                        <div class="circ2"></div>
+                                        <div class="circ3"></div>
+                                        <div class="circ4"></div>
+                                    </div>
+                                </td>
+                            </tr>
+
+                        </ng-container>
+
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div [ngClass]="{'col-md-6 col-sm-12': !expanded, 'col-md-12 col-sm-12': expanded}"
+            class="px-2 p-t-5 overflow-auto ">
+            <!-- <app-cargando [bloquearTodo]="false" *ngIf="mostrar_carga_todo2"></app-cargando> -->
+            <div class="row justify-content-between">
+                <div class="col-12 d-flex justify-content-between">
+                    <h4 *ngIf="!esgruposel && !acuxmetrado" class="sub-title text-center p-b-0">Analisis de Costos
+                        Unitarios</h4>
+                    <h4 *ngIf="esgruposel" class="sub-title text-center p-b-0">Relación de Insumos</h4>
+                    <h4 *ngIf="!esgruposel && acuxmetrado" class="sub-title text-center p-b-0">Costos Unitarios x
+                        Metrado</h4>
+                    <div>
+                        <label *ngIf="!solover" class="label" style="text-align: center;" placement="left"
+                            ngbTooltip="Edicion Precio Insumo"
+                            [ngClass]="{'btn-primary': butselprecio=='1','btn-info': butselprecio=='2','btn-success': butselprecio=='3','btn-inverse': butselprecio=='4'}">
+                            {{butselprecio=='1'?'Partida Actual':butselprecio=='2'?'En Titulo':butselprecio=='3'?'En
+                            Proyecto':butselprecio=='4'?'Usar Precio de Mercado':''}}
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <form [formGroup]="formDataPartida">
+                <div class="row">
+                    <mat-form-field appearance="outline" class="mff-reduc my-form-field col-sm-2 col-6 custpad-col"
+                        [ngClass]="{'mat-form-field-disa': formDataPartida.disabled}">
+                        <mat-label>Item</mat-label>
+                        <input matInput type="text" [value]="item.value" disabled>
+                    </mat-form-field>
+                    <div class="col-12 col-sm-10 custpad-col">
+                        <mat-form-field appearance="outline" class="mff-reduc my-form-field"
+                            style="width: calc(100% - 35px);">
+                            <mat-label>Descripción</mat-label>
+                            <input matInput class="mayuscula" [value]="descripcion.value" disabled>
+                        </mat-form-field>
+                    </div>
+                    <div *ngIf="!esgruposel && !acuxmetrado" class="col-12 col-sm-4 col-lg-3 d-flex">
+                        <mat-form-field appearance="outline" class="mff-reduc my-form-field"
+                            style="width: calc(100% - 36px);padding-bottom: 10px;">
+                            <mat-label>Unidad</mat-label>
+                            <input matInput class="mayuscula" [value]="unidad.value" disabled>
+                        </mat-form-field>
+                    </div>
+                    <div class="col-12 col-sm-4 col-lg-3 custpad-col">
+                        <mat-form-field *ngIf="!esgruposel && !acuxmetrado" appearance="outline"
+                            class="mff-reduc my-form-field w-100">
+                            <mat-label>Rendimiento</mat-label>
+                            <input matInput class="mayuscula" [value]="rendimiento.value" disabled>
+                            <span class="spanund"
+                                matSuffix>{{undrendimiento.value?(undrendimiento.value=='GLOBAL'?undrendimiento.value:undconcatrendi+'/'+undrendimiento.value):''}}</span>
+                        </mat-form-field>
+                    </div>
+                    <div *ngIf="!esgruposel && !acuxmetrado" class="col-sm-4 col-lg-3 col-12 custpad-col">
+                        <mat-form-field appearance="outline" class="mff-reduc my-form-field"
+                            style="width: calc(100% - 20px);">
+                            <mat-label>Jornada</mat-label>
+                            <input matInput class="mayuscula" [value]="jornada.value" disabled>
+                        </mat-form-field>
+                    </div>
+                    <div *ngIf="!esgruposel && !acuxmetrado" class="col-12 col-lg-3 custpad-col oculta-div">
+                        <mat-form-field appearance="outline" class="mff-reduc my-form-field w-100"
+                            [ngClass]="{'mat-form-field-disa': ratio.disabled}">
+                            <mat-label>RUP</mat-label>
+                            <input matInput class="mayuscula" [value]="ratio.value" disabled>
+                        </mat-form-field>
+                        <!-- <span class="spanund">{{unidad.value?'hh/'+unidad.value:''}}</span> -->
+                    </div>
+                    <!-- <mat-form-field *ngIf="!esgruposel && !acuxmetrado" appearance="outline" class="mff-reduc my-form-field col-12 col-sm-3"
+                    [floatLabel]="selprecio.disabled ? 'always' : 'auto'" [ngClass]="{'mat-form-field-disa': selprecio.disabled}">
+                    <mat-label>Edición Precio de Insumo</mat-label>
+                    <select matNativeControl formControlName="selprecio">
+                      <option value="1">Fila Actual</option>
+                      <option value="2">Actualizar en Titulo</option>
+                      <option value="3">Actualizar en Proyecto</option>
+                      <option value="4">Utilizar Precio de Mercado</option>
+                    </select>
+                  </mat-form-field> -->
+                </div>
+            </form>
+            <div class="d-flex">
+                <button type="button" class="btn btn-mini btn-success" [disableTooltip]="!minimbut2" placement="top"
+                    ngbTooltip="Agregar" container="body" (click)="modalAgregar()" (mouseup)="quitarfoco($event);">
+                    <i class="fa fa-retweet" [ngClass]="{'icono-but':minimbut2}"></i><span
+                        [ngClass]="{'hide-ele':minimbut2}">Editar</span>
+                </button>
+            </div>
+            <div class="tabla-limp">
+                <table class="table-bordered tab-10">
+                    <thead>
+                        <tr class="headsticky header-custom">
+                            <th appAnchocol [ancho]="30">N°</th>
+                            <th appAnchocol [ancho]="56"
+                                [ngClass]="{'cust-col-20': codsoloiu, 'cust-col-50': !codsoloiu}" [hidden]="!mcodigo">
+                                {{codsoloiu?'IU':'Codigo'}}</th>
+                            <th appAnchocol [ancho]="200" [detalle]="true">
+                                <div class="d-flex">
+                                    <span style="width: calc(100% - 35px);">Descripción</span>
+                                    <a style="padding: 0px 2px;cursor: pointer;" ngbTooltip="Orden Descendente"
+                                        [hidden]="!edicionacu" container="body" (click)="OrdendescRelins()"><i
+                                            class="icofont icofont-caret-down"></i></a>
+                                    <a style="padding: 0px 2px;cursor: pointer;" ngbTooltip="Orden Ascendente"
+                                        [hidden]="!edicionacu" container="body" (click)="OrdenascRelins()"><i
+                                            class="icofont icofont-caret-up"></i></a>
+                                </div>
+                            </th>
+                            <th appAnchocol [ancho]="44">Unidad</th>
+                            <th appAnchocol [ancho]="90" [hidden]="esgruposel || acuxmetrado">Cuadrilla</th>
+                            <th appAnchocol [ancho]="90">Cantidad</th>
+                            <th appAnchocol [ancho]="90">Precio</th>
+                            <th appAnchocol [ancho]="100">
+                                <div class="d-flex">
+                                    <span style="width: calc(100% - 35px);">Parcial</span>
+                                    <a style="padding: 0px 2px;cursor: pointer;" ngbTooltip="Orden Descendente"
+                                        [hidden]="!edicionacu" container="body" (click)="OrdenParcdescRelins()"><i
+                                            class="icofont icofont-caret-down"></i></a>
+                                    <a style="padding: 0px 2px;cursor: pointer;" ngbTooltip="Orden Ascendente"
+                                        [hidden]="!edicionacu" container="body" (click)="OrdenParcascRelins()"><i
+                                            class="icofont icofont-caret-up"></i></a>
+                                </div>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <ng-container *ngIf="registroAcue;else dataAcue">
+                            <tr *ngFor="let row of tablaAcue; let i = index">
+                                <td>{{row.ind_gp}}</td>
+                                <td>{{row.descripcion}}</td>
+                                <td>{{row.unidad}}</td>
+                                <td>{{row.cuadrilla}}</td>
+                                <td>{{row.cantidad}}</td>
+                                <td>{{row.precio}}</td>
+                                <td>{{row.parcial}}</td>
+                            </tr>
+                        </ng-container>
+                        <ng-template #dataAcue>
+
+                            <ng-container *ngIf="tablaacusel.length>0">
+                                <tr *ngFor="let row of tablaacusel;let indice=index;" [hidden]="row.mostrar == 0"
+                                    (click)="cambindiceselacu(indice)"
+                                    [ngClass]="{'highlight': filaSelacu == indice,'filagrupo':row.unidad==''}">
+                                    <td appAnchocol [ancho]="30" style="cursor: pointer;">
+                                        <span *ngIf="row.unidad!='' && !colselacu">{{row.num_det}}</span>
+                                        <mat-checkbox *ngIf="row.num_det>0 && colselacu" class="checktabla"
+                                            [checked]="row.seleccion==0?false:true"
+                                            (change)="$event ? Cambioseltacu(row) : null"></mat-checkbox>
+                                        <a *ngIf="row.unidad=='' && row.icomost=='0'"
+                                            style="color:#06bb06; width: 14px;"
+                                            (click)="toggleOn(row.id_tipo_insumo,indice)">
+                                            <i class="icofont icofont-caret-down"></i>
+                                        </a>
+                                        <a *ngIf="row.unidad=='' && row.icomost=='1'" style="color:red; width: 14px;"
+                                            (click)="toggleOff(row.id_tipo_insumo,indice)">
+                                            <i class="icofont icofont-caret-up"></i>
+                                        </a>
+                                    </td>
+                                    <td class="cellsinpadding" appAnchocol [ancho]="56" style="font-size:9px !important"
+                                        [ngClass]="{'cust-col-50': !codsoloiu,'cust-col-20': codsoloiu}"
+                                        [hidden]="!mcodigo">
+                                        {{row.codigo | recortacodigo : codsoloiu }}
+                                    </td>
+                                    <td class="cellsinpadding text-left" appAnchocol [ancho]="200" [detalle]="true">
+                                        <div class="recortatext celdaadvcero" ngbTooltip="{{row.descripcion}}"
+                                            #b="ngbTooltip" container="body" triggers="click:blur"
+                                            (mouseout)="b.close()">
+                                            {{row.descripcion}}
+                                        </div><i *ngIf="row.esinsumo==0 && row.num_det!=0 && !esgruposel"
+                                            class="fa fa-search" style="cursor: pointer;" ngbTooltip="Ver Subpartida"
+                                            container="body" (click)="OpenSubpartida(row,indice)"></i>
+                                    </td>
+                                    <td class="cellsinpadding" appAnchocol [ancho]="44">
+                                        {{row.unidad}}
+                                    </td>
+                                    <td class="cellsinpadding" appAnchocol [ancho]="90"
+                                        [hidden]="esgruposel || acuxmetrado">
+                                        <ng-container *ngIf="row.afcuadrilla==1">
+                                            <span
+                                                [ngClass]="{'celdaadvcero':row.cuadrilla==0,'celdanocero':row.cuadrilla!=0}">{{row.cuadrilla
+                                                | formatoDec}}</span><i
+                                                *ngIf="!(row.cuadrilla!=0) && datasourcePri[filaSel]?.unidad!=''"
+                                                class="fa fa-exclamation-triangle c-alert"></i>
+                                        </ng-container>
+                                    </td>
+                                    <td class="cellsinpadding" appAnchocol [ancho]="90">
+                                        <!-- <div *ngIf="row.afcuadrilla==1 && row.operador!='%'" class="float-right w-100">{{row.cantidad | number: mask_cant}}<span *ngIf="row.operador=='%' && datasourcePri[filaSel]?.unidad!='' && !acuxmetrado"> % </span></div> -->
+                                        <span
+                                            [ngClass]="{'celdaadvcero':row.cantidad==0,'celdanocero':row.cantidad!=0}">{{row.cantidad
+                                            | number: mask_cant}}<span
+                                                *ngIf="row.operador=='%' && datasourcePri[filaSel]?.unidad!='' && !acuxmetrado">
+                                                % </span></span>
+                                        <i *ngIf="!(row.cantidad!=0)" class="fa fa-exclamation-triangle c-alert"></i>
+                                    </td>
+                                    <td class="cellsinpadding" appAnchocol [ancho]="90">
+                                        <span *ngIf="row.unidad!=''" class="float-left">{{simbolo}}<i
+                                                *ngIf="(row.advceros=='1' || row.precio==0) && row.unidad!=''"
+                                                class="fa fa-exclamation-triangle c-alert"></i></span>
+                                        <span class="float-right">{{row.precio | number: mask_precio}}</span>
+                                    </td>
+                                    <td class="cellsinpadding" appAnchocol [ancho]="100">
+                                        <span class="float-left">{{simbolo}}</span>
+                                        <span class="float-right">{{row.parcial | number: mask_precio}}</span>
+                                    </td>
+                                </tr>
+                            </ng-container>
+                            <ng-container *ngIf="tablaacusel.length<=0">
+                                <tr>
+                                    <td class="mat-cell text-center" colspan="8">
+                                        <label *ngIf="!buscando">No se encontraron resultados</label>
+                                        <div *ngIf="buscando" class="preloader3 loader-block">
+                                            <div class="circ1"></div>
+                                            <div class="circ2"></div>
+                                            <div class="circ3"></div>
+                                            <div class="circ4"></div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </ng-container>
+                        </ng-template>
+
+
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="tare-footer footer-tabla tabla-limp m-b-5" [style.padding-right.px]="paddingscroll"
+                id="tableFoot" (scroll)="SyncScroll2()">
+                <table class="table-bordered tab-10" style="position: sticky; bottom: 1px;">
+                    <tfoot>
+                        <tr>
+                            <th [hidden]="esgruposel || acuxmetrado" class="cellsinpadding" appAnchocol [ancho]="600"
+                                [detalle]="true"
+                                [ngClass]="{'cust-foota': mcodigo && !codsoloiu,'cust-footb': mcodigo && codsoloiu, 'cust-footc': !mcodigo}">
+                                Total
+                            </th>
+                            <th [hidden]="!(esgruposel || acuxmetrado)" class="cellsinpadding" appAnchocol [ancho]="600"
+                                [detalle]="true"
+                                [ngClass]="{'cust-footd': mcodigo && !codsoloiu,'cust-foote': mcodigo && codsoloiu, 'cust-footf': !mcodigo}">
+                                Total
+                            </th>
+                            <th class="cellsinpadding" appAnchocol [ancho]="100">
+                                <span class="float-left" *ngIf="precio.value">{{simbolo}}</span><span
+                                    class="float-right font-weight-bolder" *ngIf="precio.value">{{precio.value | number
+                                    : mask_precio}}</span>
+                            </th>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+
+    </ng-container>
+</div>
+<app-cargando [bloquearTodo]="true" *ngIf="mostrar_carga_todo"></app-cargando>

@@ -12,6 +12,7 @@ import { ToastrService } from 'ngx-toastr';
 import * as moment from 'moment';
 import { FormsService } from 'src/app/servicios/forms.service';
 import { ConfiguracionService } from 'src/app/servicios/configuracion.service';
+import { VariablesGlobalesService } from 'src/app/servicios/variables-globales.service';
 export interface tablacui {
   cui: string;
   descripcion: string;
@@ -72,6 +73,7 @@ export class LoginComponent implements OnInit {
     public menuItems: MenuItems,
     private toaster: ToastrService,
     private configuracionService: ConfiguracionService,
+    private variablesGlobalesService: VariablesGlobalesService,
   ) { }
 
   ngOnInit(): void {
@@ -103,7 +105,9 @@ export class LoginComponent implements OnInit {
             let nomusuario = this._EncriptadorService.recuperarlocalstory('nombre');
             SwalService.informative('Bienvenido', nomusuario)
             this.menuItems.lateral();
+            
             setTimeout(this.navigateToPrinc.bind(this), 100);
+             this.variablesGlobalesService.menuPrincipal.next(true)
             return true;
           }
           else{
@@ -183,7 +187,6 @@ export class LoginComponent implements OnInit {
             return;
           }
           if(!datos.conex){
-            console.log('datos', datos)
             this._EncriptadorService.guardarlocalstory('idusuario', JSON.stringify(datos.id_usuario));
             this._EncriptadorService.guardarlocalstory('role', JSON.stringify(datos.role));
             this._EncriptadorService.guardarlocalstory('nombre', JSON.stringify(datos.nombres));
