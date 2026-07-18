@@ -1,9 +1,10 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnInit, ViewChild } from '@angular/core';
 import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
 import { FormsService } from 'src/app/servicios/forms.service';
 import { MetradoService } from 'src/app/servicios/metrado.service';
 import { PresupuestosService } from 'src/app/servicios/presupuestos.service';
+import { ModalBasicComponent } from 'src/app/shared/modal-basic/modal-basic.component';
 export interface rowacu {//revisar parametros de esta fila
   id_proyecto: any;
   indice: any;
@@ -139,6 +140,9 @@ export class InsumosPorPartidaComponent implements OnInit {
   get jornada(): UntypedFormControl { return this.formDataPartida.get('jornada') as UntypedFormControl }
   get ratio(): UntypedFormControl { return this.formDataPartida.get('ratio') as UntypedFormControl }
   get id_usuario(): UntypedFormControl { return this.formDataPartida.get('id_usuario') as UntypedFormControl }
+
+  @ViewChild("modalRegistroSaldo") modalRegistroSaldo: ModalBasicComponent;
+
   constructor(private toaster: ToastrService, public metradoService: MetradoService, private presuservice: PresupuestosService, public formService: FormsService,) { }
 
   async ngOnInit() {
@@ -773,5 +777,9 @@ export class InsumosPorPartidaComponent implements OnInit {
 
   modalAgregar() {
 
+  }
+
+  cerrarModal() {
+    
   }
 }

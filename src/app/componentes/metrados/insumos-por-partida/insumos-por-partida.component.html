@@ -439,3 +439,22 @@
     </ng-container>
 </div>
 <app-cargando [bloquearTodo]="true" *ngIf="mostrar_carga_todo"></app-cargando>
+
+<app-modal-basic #modalRegistroSaldo [dialogClass]="'modal-sm'">
+    <div class="app-modal-header">
+        <h4 class="modal-title tit-modal1"><b>Registro saldo dia </b></h4>
+        <button type="button" class="close basic-close" (click)="cerrarModal()">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+    <div class="app-modal-body">
+    </div>
+    <div class="app-modal-footer w-100">
+        <div class="row px-3">
+            <!-- <button type="button" style="margin-right: 5px;" class="btn btn-sm btn-success ripple"
+                (click)="actualizarAgrupamiento()">Guardar</button>
+            <button type="button" style="margin-right: 5px;" class="btn btn-sm btn-danger ripple"
+                (click)="cerrarModal2()">Cerrar</button> -->
+        </div>
+    </div>
+</app-modal-basic>

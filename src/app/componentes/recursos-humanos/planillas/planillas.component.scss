@@ -15,7 +15,7 @@
 
 
 .h-planilla {
-  height: calc(100% - 150px);
+  height: calc(100dvh - 380px);
 }
 
 .h-leyenda {
@@ -150,4 +150,119 @@ small {
 }
 .highlight2{
   background-color: yellow !important;
+}
+
+/* Primera columna estática (Ancho: 40px) */
+.col-sticky-1 {
+    position: sticky !important;
+    left: 0;
+    z-index: 3;
+    box-shadow: 2px 0 5px -2px rgba(0,0,0,0.15);
+    background-color: #ffffff !important;
+}
+
+/* Segunda columna estática (Se desplaza 40px) */
+.col-sticky-2 {
+    position: sticky !important;
+    left: 40px;
+    z-index: 3;
+    box-shadow: 3px 0 5px -2px rgba(0,0,0,0.15);
+    background-color: #ffffff !important;
+    max-width: 150px;
+    white-space: nowrap;
+}
+
+/* Cabeceras */
+th.col-sticky-1, th.col-sticky-2 {
+    z-index: 5 !important;
+    background-color: #004da0 !important; /* Ajusta a tu color azul */
+    color: white;
+}
+
+/* Fila de Área */
+.col-sticky-area {
+    position: sticky !important;
+    left: 0;
+    z-index: 2;
+    text-align: left;
+}
+
+/* ==========================================================================
+   ESTILOS EXCLUSIVOS PARA LA TABLA DE TAREO DE 2 FILAS DE CABECERA
+   ========================================================================== */
+
+/* Contenedor con límite de altura para activar el scroll vertical */
+.tabla-tareo-principal {
+    overflow: auto;
+    position: relative;
+    max-height: 70vh; 
+}
+
+/* --------------------------------------------------------------------------
+   FILA 1 DE LA CABECERA (Meses y Columnas con rowspan="2")
+   -------------------------------------------------------------------------- */
+.tabla-tareo-principal thead tr:nth-child(1) th {
+    position: sticky !important;
+    top: 0; /* Se clavan en el borde superior absoluto */
+    z-index: 4;
+    background-color: #004da0 !important; /* Tu azul */
+    color: white;
+}
+
+/* Intersecciones de las esquinas en la FILA 1 (Solo si el switch está activo) */
+.tabla-tareo-principal th.col-sticky-1 {
+    position: sticky !important;
+    top: 0 !important;
+    left: 0 !important;
+    z-index: 6 !important; /* Máxima prioridad, no los tapa nadie */
+}
+
+.tabla-tareo-principal th.col-sticky-2 {
+    position: sticky !important;
+    top: 0 !important;
+    left: 40px !important; /* Ancho de la primera columna */
+    z-index: 6 !important;
+}
+
+
+/* --------------------------------------------------------------------------
+   FILA 2 DE LA CABECERA (Los días: número y abreviatura)
+   -------------------------------------------------------------------------- */
+.tabla-tareo-principal thead tr:nth-child(2) th {
+    position: sticky !important;
+    /* IMPORTANTE: Debe ser exactamente la altura que tenga tu primera fila */
+    /* Si tus meses miden por ejemplo 40px de alto, aquí pones top: 40px; */
+    top: 23px; 
+    z-index: 4;
+    background-color: #004da0 !important;
+}
+
+
+/* --------------------------------------------------------------------------
+   CUERPO DE LA TABLA (Mantiene el mismo comportamiento)
+   -------------------------------------------------------------------------- */
+.tabla-tareo-principal td.col-sticky-1 {
+    position: sticky !important;
+    left: 0;
+    z-index: 3;
+    box-shadow: 2px 0 5px -2px rgba(0,0,0,0.15);
+    background-color: #ffffff !important;
+}
+
+.tabla-tareo-principal td.col-sticky-2 {
+    position: sticky !important;
+    left: 40px;
+    z-index: 3;
+    box-shadow: 3px 0 5px -2px rgba(0,0,0,0.15);
+    background-color: #ffffff !important;
+    max-width: 150px;
+    white-space: nowrap;
+}
+
+/* Fila de Área */
+.tabla-tareo-principal .col-sticky-area {
+    position: sticky !important;
+    left: 0;
+    z-index: 2;
+    text-align: left;
 }

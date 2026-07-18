@@ -286,7 +286,7 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
   consolidado = []
   tablaAcumFiltrada = []
   calendarioCompleto
-  calendarioFiltrado2
+  calendarioFiltrado2 = []
   totalesAcumulados = {}
   cargosFiltrados3 = []
   fechaMinima = null
@@ -316,6 +316,7 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
   reporteEstructurado = []
   procesadosPlanilla: Set<string>;
   sinPresAnalitico = false
+  columnasFijasActivas: boolean = true;
   @Input() set tabproyecto(value: any) {
 
     this.idProyecto = value.get('id_proyecto').value;
@@ -5304,13 +5305,14 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   filtrarCalendarioPorMes(mesSeleccionado: any) {
+
     this.calendarioFiltrado2 = null;
 
     if (!mesSeleccionado || !this.calendarioCompleto || this.calendarioCompleto.length === 0) {
       return;
     }
 
-    const mesKey = mesSeleccionado.mes_key;
+    const mesKey = mesSeleccionado.mes_key; // Ejemplo: "ENERO-2025" o "DICIEMBRE-2026"
     const partes = mesKey.split('-');
 
     if (partes.length !== 2) {
@@ -5318,33 +5320,35 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
       return;
     }
 
-    const nombreMesMayusculas = partes[0];
-    const anio = parseInt(partes[1]);
+    const nombreMesMayusculas = partes[0].toUpperCase();
+    const anioBuscado = parseInt(partes[1], 10);
 
-    // Normalizar el nombre del mes
+    // 1. BUSCAR EL AÑO CORRECTO DINÁMICAMENTE (No uses el índice [0] fijo)
+    const añoEncontrado = this.calendarioCompleto.find((c: any) => c.anio === anioBuscado);
+
+    if (!añoEncontrado || !añoEncontrado.meses) {
+      console.warn(`No se encontró el año ${anioBuscado} en calendarioCompleto`);
+      return;
+    }
+
+    // 2. NORMALIZAR EL MES PARA LA BÚSQUEDA
     const nombreMesNormalizado = this.normalizarNombreMes(nombreMesMayusculas);
 
-    if (this.calendarioCompleto[0]?.meses) {
-      const meses = this.calendarioCompleto[0].meses;
-      // Buscar coincidencia exacta
-      let mesEncontrado = meses.find((mes: any) =>
-        mes.mes === nombreMesNormalizado && mes.anio === anio
-      );
+    // 3. BUSCAR EL MES DENTRO DE ESE AÑO ESPECÍFICO
+    // Intento 1: Coincidencia exacta con el nombre normalizado
+    let mesEncontrado = añoEncontrado.meses.find((m: any) => m.mes === nombreMesNormalizado);
 
-      // Si no se encuentra, buscar ignorando mayúsculas/minúsculas
-      if (!mesEncontrado) {
-        mesEncontrado = meses.find((mes: any) =>
-          mes.mes.toUpperCase() === nombreMesMayusculas && mes.anio === anio
-        );
-      }
+    // Intento 2: Respaldo ignorando mayúsculas/minúsculas
+    if (!mesEncontrado) {
+      mesEncontrado = añoEncontrado.meses.find((m: any) => m.mes.toUpperCase() === nombreMesMayusculas);
+    }
 
-      if (mesEncontrado) {
-        this.calendarioFiltrado2 = mesEncontrado;
-        // console.log('Calendario filtrado encontrado:', this.calendarioFiltrado2);
-      } else {
-        console.warn('No se encontró calendario para el mes:', mesKey);
 
-      }
+    // 4. ASIGNAR EL RESULTADO
+    if (mesEncontrado) {
+      this.calendarioFiltrado2 = mesEncontrado;
+    } else {
+      console.warn('No se encontró calendario para el mes:', mesKey);
     }
   }
 

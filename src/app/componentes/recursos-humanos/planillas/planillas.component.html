@@ -420,6 +420,16 @@
                 <mat-slide-toggle class="mx-3" [(ngModel)]="ocultarSinAsistencia">
                     Ocultar sin asistencia
                 </mat-slide-toggle>
+                <!-- <div class="custom-control custom-switch my-2">
+                    <input type="checkbox" class="custom-control-input" id="switchSticky"
+                        [(ngModel)]="columnasFijasActivas">
+                    <label class="custom-control-label" for="switchSticky">
+                        {{ columnasFijasActivas ? 'Columnas fijas: Activado' : 'Columnas fijas: Desactivado' }}
+                    </label>
+                </div> -->
+                <mat-slide-toggle class="mx-3" [(ngModel)]="columnasFijasActivas">
+                    Columnas fijas
+                </mat-slide-toggle>
                 <button mat-raised-button color="primary" class="h-mat" (click)="filtroListadoCargos()">
                     <mat-icon>search</mat-icon>
                     Buscar
@@ -440,14 +450,16 @@
 
         </div>
         <div class="col-12 position-relative">
-            <div class="h-planilla overflow-auto">
+            <div class="h-planilla overflow-auto tabla-tareo-principal">
 
                 <table class="table-bordered tab-10">
                     <thead class="text-center">
                         <tr [ngClass]="{'h-22': !calendarioFiltrado.length }">
-                            <th rowspan="2" appAnchocol [ancho]="40"></th>
+                            <th rowspan="2" appAnchocol [ancho]="40" [ngClass]="{'col-sticky-1': columnasFijasActivas}">
+                            </th>
                             <!-- <th rowspan="2" appAnchocol [ancho]="120" [detalle]="true">CARGO</th> -->
-                            <th rowspan="2" appAnchocol [ancho]="150" [detalle]="true">USUARIO</th>
+                            <th rowspan="2" appAnchocol [ancho]="150" [detalle]="true"
+                                [ngClass]="{'col-sticky-2': columnasFijasActivas}">USUARIO</th>
                             <ng-container *ngFor="let mes of calendarioFiltrado">
                                 <th [colSpan]="mes.colspan" class="mes-header">
                                     {{mes.nombre}}
@@ -490,16 +502,17 @@
                                 (click)="this.usuarioSeleccionado = row; filTabFil = i">
                                 <ng-container *ngIf="row.mostrar && row.asistenciaExistente">
                                     <ng-container *ngIf="!row.id_cargo && !row.id_usuario">
-                                        <td [colSpan]="calendarioFiltrado[0]?.colspan + 13" class="bg-area">
-                                            <div style="margin-left: 40px;">
+                                        <td [colSpan]="calendarioFiltrado[0]?.colspan + 13" class="bg-area "
+                                            [ngClass]="{'col-sticky-area': columnasFijasActivas}">
+                                            <div class="ml-1 text-danger font-weight-bold">
                                                 {{row.area}}
                                             </div>
 
                                         </td>
                                     </ng-container>
                                     <ng-container *ngIf="row.id_cargo && !row.id_usuario">
-                                        <td colspan="2" class="text-center">
-                                            <div class="font-weight-bold text-decoration-underline">{{row.cargo}}
+                                        <td colspan="2" [ngClass]="{'col-sticky-1': columnasFijasActivas}">
+                                            <div class="font-weight-bold text-decoration-underline ml-3">{{row.cargo}}
                                             </div>
                                         </td>
 
@@ -524,7 +537,8 @@
                                         </td>
                                     </ng-container>
                                     <ng-container *ngIf="row.id_usuario">
-                                        <td class="text-center">{{row.nro_grupo}}</td>
+                                        <td class="text-center " [ngClass]="{'col-sticky-1': columnasFijasActivas}">
+                                            {{row.nro_grupo}}</td>
                                         <!-- <td>{{row.cargo}}</td> -->
                                         <!-- <td>
                                             <div class="d-flex justify-content-between align-items-center">
@@ -536,21 +550,24 @@
                                                 </button>
                                             </div>
                                         </td> -->
-                                        <td>
+                                        <td [ngClass]="{'col-sticky-2': columnasFijasActivas}">
                                             <div class="d-flex justify-content-between align-items-center">
                                                 <div class="d-flex align-items-center">
                                                     <span class="mr-2">{{row.descripcion_usuario }}</span>
+
+                                                </div>
+                                                <div>
                                                     <span [ngClass]="getCategoriaBadgeClass(row.tipo_cargo)"
                                                         [ngbTooltip]=" 'categoria '+ row.tipo_cargo" container="body"
                                                         *ngIf="row.tipo_cargo">
                                                         {{getRomanNumeral(row.tipo_cargo)}}
                                                     </span>
+                                                    <button type="button"
+                                                        class="btn btn-sm btn-outline-primary btn-mini2 ml-2"
+                                                        (mouseup)="quitarfoco($event)" (click)="detalleUsuario(row, i)">
+                                                        <i class="fa fa-list mr-0"></i>
+                                                    </button>
                                                 </div>
-                                                <button type="button"
-                                                    class="btn btn-sm btn-outline-primary btn-mini2 ml-2"
-                                                    (mouseup)="quitarfoco($event)" (click)="detalleUsuario(row, i)">
-                                                    <i class="fa fa-list mr-0"></i>
-                                                </button>
                                             </div>
                                         </td>
                                         <td *ngFor="let dia of row.dias; let j = index" appAnchocol [ancho]="56">
@@ -643,7 +660,7 @@
                     </tbody>
                     <tfoot class="sticky-footer-wrapper" *ngIf="tablaFiltrada.length">
                         <tr class="bg-light">
-                            <td colspan="2" class="text-center font-weight-bold">Total personal por dia</td>
+                            <td colspan="2" class="text-center font-weight-bold" [ngClass]="{'col-sticky-1': columnasFijasActivas}">Total personal por dia</td>
                             <!-- <td [colSpan]="calendarioFiltrado[0]?.colspan || 0"></td> -->
                             <ng-container *ngFor="let item of cantidadUsuariosDia">
                                 <td class="text-center font-weight-bold">
@@ -1017,7 +1034,7 @@
                         <th rowspan="3">Total Mes</th>
                     </tr>
                     <tr>
-                        <ng-container *ngFor="let dia of calendarioFiltrado2.dias">
+                        <ng-container *ngFor="let dia of calendarioFiltrado2?.dias">
                             <th colspan="2">
                                 <div class="dia-numero">{{dia.numero_dia_mes}} - {{dia.abreviatura}}</div>
                                 <!-- <div class="dia-abreviatura"></div> -->
@@ -1025,7 +1042,7 @@
                         </ng-container>
                     </tr>
                     <tr>
-                        <ng-container *ngFor="let dia of calendarioFiltrado2.dias">
+                        <ng-container *ngFor="let dia of calendarioFiltrado2?.dias">
                             <th appAnchocol [ancho]="40">
                                 Cant.
                             </th>

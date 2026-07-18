@@ -43,11 +43,11 @@
                         <thead class="text-center">
                             <tr>
                                 <th appAnchocol [ancho]="30" rowspan="2">Nro</th>
-                                <th appAnchocol [ancho]="130" rowspan="2">Area/Cargo</th>
+                                <th appAnchocol [ancho]="130" [detalle]="true" rowspan="2">Area/Cargo</th>
                                 <th appAnchocol [ancho]="80" colspan="2">Abreviatura</th>
-                                <th appAnchocol [ancho]="200" colspan="1">Categoria Evaluacion</th>
+                                <th appAnchocol [ancho]="120" colspan="1">Categoria Evaluacion</th>
                                 <th appAnchocol [ancho]="40" rowspan="2">Habilitado</th>
-                                <th appAnchocol [ancho]="80" rowspan="2"></th>
+                                <th appAnchocol [ancho]="130" rowspan="2"></th>
                             </tr>
                             <tr>
                                 <th appAnchocol [ancho]="40">Area</th>
@@ -61,7 +61,8 @@
                                 <tr *ngFor="let row of this.tablaCargos; let i = index" (click)="seleccionFila(i)"
                                     [ngClass]="{'font-weight-bolder': !row.id_cargo, 'highlight': i == this.filSel}">
                                     <td appAnchocol [ancho]="30">{{!row.id_cargo ? row.item:row.ind_gp}}</td>
-                                    <td appAnchocol [ancho]="130" class="text-left" [ngClass]="{'pl-2':row.id_cargo}">
+                                    <td appAnchocol [ancho]="130" [detalle]="true" class="text-left"
+                                        [ngClass]="{'pl-2':row.id_cargo}">
                                         {{row.descripcion}}</td>
                                     <td appAnchocol [ancho]="40">{{row.area_abreviatura}}</td>
                                     <td appAnchocol [ancho]="40">{{row.abreviatura}}</td>
@@ -80,7 +81,7 @@
                                         </div>
                                     </td>
 
-                                    <td appAnchocol [ancho]="80">
+                                    <td appAnchocol [ancho]="130">
                                         <ng-container *ngIf="row.id_cargo">
                                             <!-- Botón Desplazar Arriba -->
                                             <button class="btn btn-mini btn-outline-primary" placement="top"
@@ -113,7 +114,7 @@
                                             </button>
                                         </ng-container>
                                         <ng-container *ngIf="!row.id_cargo">
-                                            <div class="d-flex">
+                                            <div class="d-flex justify-content-center">
                                                 <button class="btn btn-mini btn-success" placement="top" type="button"
                                                     ngbTooltip="Agregar Cargo" container="body" *ngIf="row.estado !== 2"
                                                     (click)="abrirModalCargo()" (mouseup)="quitarfoco($event);">
