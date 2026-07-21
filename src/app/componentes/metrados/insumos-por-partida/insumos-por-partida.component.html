@@ -440,7 +440,7 @@
 </div>
 <app-cargando [bloquearTodo]="true" *ngIf="mostrar_carga_todo"></app-cargando>
 
-<app-modal-basic #modalRegistroSaldo [dialogClass]="'modal-sm'">
+<app-modal-basic #modalRegistroSaldo [dialogClass]="'modal-lg'">
     <div class="app-modal-header">
         <h4 class="modal-title tit-modal1"><b>Registro saldo dia </b></h4>
         <button type="button" class="close basic-close" (click)="cerrarModal()">
@@ -448,6 +448,49 @@
         </button>
     </div>
     <div class="app-modal-body">
+
+        <div class="col-12">
+            <mat-form-field class="mff-reduc w-100 alto-35 field-busqueda col-8" appearance="outline">
+                <mat-label>Buscar</mat-label>
+                <input matInput type="text" [(ngModel)]="busquedaMod"  id="inpbusq"
+                    autocomplete="off">
+                <button *ngIf="busquedaMod" matSuffix mat-icon-button aria-label="Clear" (click)="limpiarfiltroMod()">
+                    <mat-icon>close</mat-icon>
+                </button>
+            </mat-form-field>
+            <div class="col-4">
+                <button type="button" class="btn btn-mini btn-group-mini btn-outline-primary" placement="top"
+                    container="body" (click)="limpiarTodoDia()" (mouseup)="quitarfoco($event);">
+                    <i class="icofont icofont-rounded-expand icono-but"></i>
+                </button>
+            </div>
+        </div>
+        <div class="col-12">
+            <table class="table-bordered tab-10">
+                <thead class="headsticky">
+                    <tr class=" header-custom">
+                        <th appAnchocol [ancho]="30" rowspan="2"></th>
+                        <th appAnchocol [ancho]="150" [detalle]="true" rowspan="2">DESCRIPCION DEL BIEN O SERVICIO</th>
+                        <th appAnchocol [ancho]="30" rowspan="2">UND</th>
+                        <th colspan="4">REGISTRO DE MATERIAL</th>
+                    </tr>
+                    <tr class=" header-custom">
+
+                        <th appAnchocol [ancho]="80">INGRESADO</th>
+                        <th appAnchocol [ancho]="80">SALDO</th>
+                        <th appAnchocol [ancho]="80">DIARIO</th>
+                        <th appAnchocol [ancho]="80">UTILIZADO</th>
+                    </tr>
+
+                </thead>
+                <tbody>
+                    <tr>
+
+                    </tr>
+                </tbody>
+            </table>
+
+        </div>
     </div>
     <div class="app-modal-footer w-100">
         <div class="row px-3">

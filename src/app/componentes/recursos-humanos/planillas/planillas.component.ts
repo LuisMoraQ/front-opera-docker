@@ -1,7 +1,7 @@
 import { ProcesosRhService } from './../../../servicios/procesos-rh.service';
 import { SwalService } from './../../../servicios/swal.service';
 import { RecursosHumanosService } from './../../../servicios/recursoshumanos.service';
-import { AfterViewInit, ApplicationRef, ChangeDetectorRef, Component, Input, OnChanges, OnDestroy, OnInit, QueryList, ViewChild, ViewChildren } from '@angular/core';
+import { AfterViewInit, ApplicationRef, ChangeDetectorRef, Component, ElementRef, Input, OnChanges, OnDestroy, OnInit, QueryList, ViewChild, ViewChildren } from '@angular/core';
 const moment = require('moment');
 import { filatabla } from '../../configuraciones/parametros/parametros.component';
 import { ToastrService } from 'ngx-toastr';
@@ -272,6 +272,7 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
   @ViewChild("modalvinculo") modalvinculo: ModalBasicComponent;
   @ViewChild("modalPlanillaAprobada") modalPlanillaAprobada: ModalBasicComponent;
   @ViewChild("modalPlanillaVinculo") modalPlanillaVinculo: ModalBasicComponent;
+  @ViewChild('tablaContainer') tablaContainer!: ElementRef;
   usuarioSeleccionado: any;
   filTabFil = null
   mostrarSelColum: boolean;
@@ -317,6 +318,7 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
   procesadosPlanilla: Set<string>;
   sinPresAnalitico = false
   columnasFijasActivas: boolean = true;
+  columnasFijasActivas2: boolean = true;
   @Input() set tabproyecto(value: any) {
 
     this.idProyecto = value.get('id_proyecto').value;
@@ -404,7 +406,6 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
 
     const obj = { id_proyecto: this.idProyecto, id_registro: this.id_registro, tipocontra: 3 }
     const resp = await this.recursosHumanosService.listarAgrupamientoRequerimientos(obj)
-    console.log('resp', resp)
     if (resp) {
       this.tablaRegActividades = resp.agrupacion
       this.tablaRequerimientosCompleto = resp.desagregados
@@ -445,7 +446,6 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
     // } else if (this.activetab == 5) {
     //   await this.vincularReporteConRequerimientos()
     // }
-    console.log('this.tablaRequerimientos', this.tablaRequerimientos)
     this.buscando4 = false
   }
 
@@ -513,7 +513,6 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
       if (!this.tablaRegActividades || this.tablaRegActividades.length === 0) {
         const obj = { id_proyecto: this.idProyecto, id_registro: this.id_registro, tipocontra: 3 }
         const resp = await this.recursosHumanosService.listarAgrupamientoRequerimientos(obj)
-        console.log('resp', resp)
         if (resp) {
           this.tablaRegActividades = resp.agrupacion
           this.tablaRequerimientosCompleto = resp.desagregados
@@ -720,7 +719,6 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
         id_proyecto: this.idProyecto
       }
       const resp = await this.recursosHumanosService.listarCargosPorArea(obj)
-      console.log('resp', resp)
       this.areas = resp[0]
       this.cargos = resp[1]
     } catch (e) {
@@ -823,412 +821,682 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
     return res
   }
 
-  async filtroListadoCargos() {
-    this.mostrar_carga_todo = true
-    this.tablaFiltrada = []
-    this.totalMes = 0
-    this.cantidadUsuariosDia = []
-    // 1. Desactivar detección automática temporalmente
-    this.cdRef.detach();
+  // async filtroListadoCargos() {
+  //   this.mostrar_carga_todo = true
+  //   this.tablaFiltrada = []
+  //   this.totalMes = 0
+  //   this.cantidadUsuariosDia = []
+  //   // 1. Desactivar detección automática temporalmente
+  //   this.cdRef.detach();
 
-    // 2. Forzar un solo renderizado inicial
+  //   // 2. Forzar un solo renderizado inicial
+  //   this.cdRef.detectChanges();
+  //   this.mostrarSelColum = this.areaSeleccionada && this.cargoSeleccionada ? true : false
+
+  //   await new Promise(resolve => setTimeout(resolve, 50));
+  //   try {
+  //     await this.cambioDeMes()
+  //     const inicio = this.calendarioFiltrado[0].dias[0].fecha
+  //     const fin = this.calendarioFiltrado[0].dias[this.calendarioFiltrado[0].colspan - 1].fecha
+  //     const registrosAsistencia = await this.listarRegistrosAsistencia(inicio, fin)
+  //     const data = {
+  //       id_proyecto: this.idProyecto,
+  //       id_area: 0
+  //     }
+  //     const datos = await this.recursosHumanosService.listarHorarioYFeriadosArea(data)
+  //     let diasMesVacios = []
+  //     for (let i = 0; i < this.calendarioFiltrado[0]?.colspan; i++) {
+  //       diasMesVacios.push(null)
+  //     }
+  //     const mesesMap = {
+  //       'Enero': '01', 'Febrero': '02', 'Marzo': '03', 'Abril': '04',
+  //       'Mayo': '05', 'Junio': '06', 'Julio': '07', 'Agosto': '08',
+  //       'Septiembre': '09', 'Octubre': '10', 'Noviembre': '11', 'Diciembre': '12'
+  //     };
+
+  //     const mesFormateado = this.meses[this.mesSeleccionado].split(' - ')
+  //       .reverse()
+  //       .map((part, i) => i === 0 ? mesesMap[part] : part)
+  //       .join('-');
+  //     let tablaNueva = []
+  //     const montosAreas = await this.listarMontosAreaPresAnaliticoRH()
+  //     if (!this.areaSeleccionada) {
+  //       let totalMes = 0
+  //       for (const area of this.areas) {
+  //         let letTotalAreas = 0
+  //         const cargos = this.cargos
+  //           .filter(ele => ele.id_area == area.id_area)
+  //           .sort((a, b) => Number(a.ind_gp) - Number(b.ind_gp));
+  //         let areagrupo = []
+  //         for (const cargo of cargos) {
+  //           let cargoTotal = 0
+  //           const asignaciones = await this.asignaciones.filter(ele => ele.id_area == cargo.id_area && ele.id_cargo == cargo.id_cargo && this.verificarAsignacionEnMes(ele, mesFormateado))
+  //           // console.log('asignaciones', asignaciones)
+  //           if (!areagrupo.length && asignaciones.length) {
+  //             const areadata: filaTabla = {
+  //               area: area.descripcion,
+  //               cargo: null,
+  //               descripcion_usuario: null,
+  //               dias: diasMesVacios,
+  //               estado: null,
+  //               fecha_fin: '',
+  //               fecha_inicio: '',
+  //               id_area: area.id_area,
+  //               id_asignacion: null,
+  //               id_cargo: null,
+  //               id_usuario: null,
+  //               nro_grupo: null,
+  //               total_jornada: null,
+  //               coste_dia: null,
+  //               coste_mensual: null,
+  //               mostrar: true,
+  //               asistenciaExistente: true,
+  //               invalido: false,
+  //               dias_dominicales: null,
+  //               dias_feriados: null,
+  //               dias_laborados: null,
+  //               dias_otros: null,
+  //               dias_permiso: null,
+  //               dias_tardanzas: null,
+  //               dias_faltados: null,
+  //               descuentos: null,
+  //               diasNoLaborables: null,
+  //               feriadosSoloFecha: null,
+  //               tipo_cargo: null,
+  //               estado_pago: null,
+  //               planilla_mensual_aprobada: null
+  //             }
+  //             areagrupo.push(areadata)
+  //           }
+  //           if (asignaciones.length) {
+  //             const cargoData: filaTabla = {
+  //               area: area.descripcion,
+  //               cargo: cargo.descripcion,
+  //               descripcion_usuario: null,
+  //               dias: diasMesVacios,
+  //               estado: null,
+  //               fecha_fin: '',
+  //               fecha_inicio: '',
+  //               id_area: area.id_area,
+  //               id_asignacion: null,
+  //               id_cargo: cargo.id_cargo,
+  //               id_usuario: null,
+  //               nro_grupo: null,
+  //               total_jornada: null,
+  //               coste_dia: null,
+  //               coste_mensual: null,
+  //               mostrar: true,
+  //               asistenciaExistente: true,
+  //               invalido: false,
+  //               dias_dominicales: null,
+  //               dias_feriados: null,
+  //               dias_laborados: null,
+  //               dias_otros: null,
+  //               dias_permiso: null,
+  //               dias_tardanzas: null,
+  //               dias_faltados: null,
+  //               descuentos: null,
+  //               diasNoLaborables: null,
+  //               feriadosSoloFecha: null,
+  //               tipo_cargo: null,
+  //               estado_pago: null,
+  //               planilla_mensual_aprobada: null
+  //             }
+  //             areagrupo.push(cargoData)
+  //             let j = 1
+  //             for (const usuario of asignaciones) {
+  //               let dataHorario = datos[0].find(ele => ele.id_area == usuario.id_area)
+  //               if (!dataHorario) {
+  //                 dataHorario = {
+  //                   id_configuracion: null,
+  //                   id_proyecto: usuario.id_proyecto,
+  //                   id_area: usuario.id_area,
+  //                   inicio_semana: 'LUNES',
+  //                   dias_nolaborables: 'DOMINGO',
+  //                   hora_ingreso_manana: '07:30:00|07:30:00|07:30:00|07:30:00|07:30:00|07:30:00|',
+  //                   hora_salida_manana: '12:00:00|12:00:00|12:00:00|12:00:00|12:00:00|13:00:00|',
+  //                   hora_ingreso_tarde: '14:00:00|14:00:00|14:00:00|14:00:00|14:00:00||',
+  //                   hora_salida_tarde: '18:00:00|18:00:00|18:00:00|18:00:00|18:00:00||',
+  //                   totales_dia: 48,
+  //                   descuentos: "0|10|10|0|100|100|0|0|0|0|0|0|0|100|100|0|0|0|0|0|0",
+  //                   tardanza: 10,
+  //                   tiempo_extra: 0
+  //                 }
+  //               }
+  //               const costesCargoDia = montosAreas.find(ele => ele.id_area == usuario.id_area && ele.tipo == ('JORNAL CATEGORIA ' + usuario.tipo_cargo))?.cargos.find(ele => ele.id_cargo == usuario.id_cargo)
+  //               let costeDia = costesCargoDia ? costesCargoDia.parcial : 0
+
+  //               const descuentos = dataHorario?.descuentos.split('|')
+  //               const diasNoLaborables = dataHorario?.dias_nolaborables.split('|')
+  //               const feriadosSoloFecha = datos[1].filter(ele => {
+  //                 const areas = ele.areas?.split('|');
+  //                 return areas && areas.includes(usuario.id_area.toString());
+  //               }).map(ele => ele.fecha.split('T')[0]);
+  //               const resusuario = await this.filtrarPorUsuario(registrosAsistencia, usuario.id_usuario, usuario.id_asignacion, descuentos, diasNoLaborables, feriadosSoloFecha, costeDia)
+  //               // const existe = registroMes.find(ele => ele.id_control)
+  //               const planilla_mensual_aprobada = await this.consultarPlanillaAprobada(usuario.id_usuario, usuario.id_proyecto, mesFormateado, usuario.id_area, usuario.id_cargo)
+  //               const asignacionData: filaTabla = {
+  //                 area: area.descripcion,
+  //                 cargo: cargo.descripcion,
+  //                 descripcion_usuario: usuario.descripcion_usuario,
+  //                 dias: resusuario.registroMes,
+  //                 estado: usuario.estado,
+  //                 fecha_fin: usuario.fecha_fin,
+  //                 fecha_inicio: usuario.fecha_inicio,
+  //                 id_area: area.id_area,
+  //                 id_asignacion: usuario.id_asignacion,
+  //                 id_cargo: cargo.id_cargo,
+  //                 id_usuario: usuario.id_usuario,
+  //                 nro_grupo: j,
+  //                 total_jornada: 0,
+  //                 coste_dia: costeDia,
+  //                 coste_mensual: resusuario.montoMes,
+  //                 mostrar: true,
+  //                 asistenciaExistente: true,
+  //                 invalido: resusuario.invalido,
+  //                 dias_dominicales: resusuario.conteos.dias_dominicales,
+  //                 dias_faltados: resusuario.conteos.dias_faltados,
+  //                 dias_feriados: resusuario.conteos.dias_feriados,
+  //                 dias_laborados: resusuario.conteos.dias_laborados,
+  //                 dias_otros: resusuario.conteos.dias_otros,
+  //                 dias_permiso: resusuario.conteos.dias_permiso,
+  //                 dias_tardanzas: resusuario.conteos.dias_tardanzas,
+  //                 descuentos: descuentos,
+  //                 diasNoLaborables: diasNoLaborables,
+  //                 feriadosSoloFecha: feriadosSoloFecha,
+  //                 tipo_cargo: usuario.tipo_cargo,
+  //                 estado_pago: planilla_mensual_aprobada == null ? 0 : planilla_mensual_aprobada.estado_pago,
+  //                 planilla_mensual_aprobada: planilla_mensual_aprobada
+  //               }
+  //               cargoTotal += resusuario.montoMes
+  //               areagrupo.push(asignacionData)
+  //               j++
+  //             }
+  //           }
+  //           letTotalAreas += cargoTotal
+  //         }
+  //         tablaNueva = tablaNueva.concat(areagrupo)
+  //         // this.cdRef.detectChanges();
+  //         totalMes += letTotalAreas
+  //       }
+  //       this.totalMes = totalMes
+  //     } else {
+  //       let areaarray = []
+  //       let totalMes = 0
+  //       for (const area of this.areas) {
+  //         let letTotalAreas = 0
+  //         if (area.id_area == this.areaSeleccionada) {
+  //           const areadata: filaTabla = {
+  //             area: area.descripcion,
+  //             cargo: null,
+  //             descripcion_usuario: null,
+  //             dias: diasMesVacios,
+  //             estado: null,
+  //             fecha_fin: '',
+  //             fecha_inicio: '',
+  //             id_area: area.id_area,
+  //             id_asignacion: null,
+  //             id_cargo: null,
+  //             id_usuario: null,
+  //             nro_grupo: null,
+  //             total_jornada: null,
+  //             coste_dia: null,
+  //             coste_mensual: null,
+  //             mostrar: true,
+  //             asistenciaExistente: true,
+  //             invalido: false,
+  //             dias_dominicales: null,
+  //             dias_feriados: null,
+  //             dias_laborados: null,
+  //             dias_otros: null,
+  //             dias_permiso: null,
+  //             dias_tardanzas: null,
+  //             dias_faltados: null,
+  //             descuentos: null,
+  //             diasNoLaborables: null,
+  //             feriadosSoloFecha: null,
+  //             tipo_cargo: null,
+  //             estado_pago: null,
+  //             planilla_mensual_aprobada: null
+  //           }
+  //           areaarray.push(areadata)
+  //           const cargos = this.cargos
+  //             .filter(ele => ele.id_area == area.id_area)
+  //             .sort((a, b) => Number(a.ind_gp) - Number(b.ind_gp));
+  //           let cargosBuscar = []
+  //           if (this.cargoSeleccionada) {
+  //             const encontrado = cargos.find(ele => ele.id_cargo == this.cargoSeleccionada)
+  //             if (encontrado) {
+  //               cargosBuscar.push(encontrado)
+  //             }
+  //           } else {
+  //             cargosBuscar = cargos
+  //           }
+
+  //           for (const cargo of cargosBuscar) {
+  //             let cargoTotal = 0
+  //             const asignaciones = await this.asignaciones.filter(ele => ele.id_area == cargo.id_area && ele.id_cargo == cargo.id_cargo)
+  //             const cargoData: filaTabla = {
+  //               area: area.descripcion,
+  //               cargo: cargo.descripcion,
+  //               descripcion_usuario: null,
+  //               dias: diasMesVacios,
+  //               estado: null,
+  //               fecha_fin: '',
+  //               fecha_inicio: '',
+  //               id_area: area.id_area,
+  //               id_asignacion: null,
+  //               id_cargo: cargo.id_cargo,
+  //               id_usuario: null,
+  //               nro_grupo: null,
+  //               total_jornada: null,
+  //               coste_dia: null,
+  //               coste_mensual: null,
+  //               mostrar: true,
+  //               asistenciaExistente: true,
+  //               invalido: false,
+  //               dias_dominicales: null,
+  //               dias_feriados: null,
+  //               dias_laborados: null,
+  //               dias_otros: null,
+  //               dias_permiso: null,
+  //               dias_tardanzas: null,
+  //               dias_faltados: null,
+  //               descuentos: null,
+  //               diasNoLaborables: null,
+  //               feriadosSoloFecha: null,
+  //               tipo_cargo: null,
+  //               estado_pago: null,
+  //               planilla_mensual_aprobada: null
+  //             }
+
+  //             areaarray.push(cargoData)
+  //             let j = 1
+  //             for (const usuario of asignaciones) {
+  //               let dataHorario = datos[0].find(ele => ele.id_area == usuario.id_area)
+  //               if (!dataHorario) {
+  //                 dataHorario = {
+  //                   id_configuracion: null,
+  //                   id_proyecto: usuario.id_proyecto,
+  //                   id_area: usuario.id_area,
+  //                   inicio_semana: 'LUNES',
+  //                   dias_nolaborables: 'DOMINGO',
+  //                   hora_ingreso_manana: '07:30:00|07:30:00|07:30:00|07:30:00|07:30:00|07:30:00|',
+  //                   hora_salida_manana: '12:00:00|12:00:00|12:00:00|12:00:00|12:00:00|13:00:00|',
+  //                   hora_ingreso_tarde: '14:00:00|14:00:00|14:00:00|14:00:00|14:00:00||',
+  //                   hora_salida_tarde: '18:00:00|18:00:00|18:00:00|18:00:00|18:00:00||',
+  //                   totales_dia: 48,
+  //                   descuentos: "0|10|10|0|100|100|0|0|0|0|0|0|0|100|100|0|0|0|0|0|0",
+  //                   tardanza: 10,
+  //                   tiempo_extra: 0
+  //                 }
+  //               }
+  //               // const costesCargoHora = montosAreas.find(ele => ele.id_area == usuario.id_area && ele.tipo == "JORNAL DIARIO")?.cargos.find(ele => ele.id_cargo == usuario.id_cargo)
+  //               const costesCargoDia = montosAreas.find(ele => ele.id_area == usuario.id_area && ele.tipo == ('JORNAL CATEGORIA ' + usuario.tipo_cargo))?.cargos.find(ele => ele.id_cargo == usuario.id_cargo)
+  //               // let costeHora = costesCargoHora ? costesCargoHora.parcial : 0
+  //               let costeDia = costesCargoDia ? costesCargoDia.parcial : 0
+  //               const descuentos = dataHorario?.descuentos.split('|')
+  //               const diasNoLaborables = dataHorario?.dias_nolaborables.split('|')
+  //               const feriadosSoloFecha = datos[1].filter(ele => {
+  //                 const areas = ele.areas?.split('|');
+  //                 return areas && areas.includes(usuario.id_area.toString());
+  //               }).map(ele => ele.fecha.split('T')[0]);
+  //               const resusuario = await this.filtrarPorUsuario(registrosAsistencia, usuario.id_usuario, usuario.id_asignacion, descuentos, diasNoLaborables, feriadosSoloFecha, costeDia)
+  //               const planilla_mensual_aprobada = await this.consultarPlanillaAprobada(usuario.id_usuario, usuario.id_proyecto, mesFormateado, usuario.id_area, usuario.id_cargo)
+
+  //               const asignacionData: filaTabla = {
+  //                 area: area.descripcion,
+  //                 cargo: cargo.descripcion,
+  //                 descripcion_usuario: usuario.descripcion_usuario,
+  //                 dias: resusuario.registroMes,
+  //                 estado: usuario.estado,
+  //                 fecha_fin: usuario.fecha_fin,
+  //                 fecha_inicio: usuario.fecha_inicio,
+  //                 id_area: area.id_area,
+  //                 id_asignacion: usuario.id_asignacion,
+  //                 id_cargo: cargo.id_cargo,
+  //                 id_usuario: usuario.id_usuario,
+  //                 nro_grupo: j,
+  //                 total_jornada: 0,
+  //                 coste_dia: costeDia,
+  //                 coste_mensual: resusuario.montoMes,
+  //                 mostrar: true,
+  //                 asistenciaExistente: true,
+  //                 invalido: resusuario.invalido,
+  //                 dias_dominicales: resusuario.conteos.dias_dominicales,
+  //                 dias_faltados: resusuario.conteos.dias_faltados,
+  //                 dias_feriados: resusuario.conteos.dias_feriados,
+  //                 dias_laborados: resusuario.conteos.dias_laborados,
+  //                 dias_otros: resusuario.conteos.dias_otros,
+  //                 dias_permiso: resusuario.conteos.dias_permiso,
+  //                 dias_tardanzas: resusuario.conteos.dias_tardanzas,
+  //                 descuentos: descuentos,
+  //                 diasNoLaborables: diasNoLaborables,
+  //                 feriadosSoloFecha: feriadosSoloFecha,
+  //                 tipo_cargo: usuario.tipo_cargo,
+  //                 estado_pago: planilla_mensual_aprobada == null ? 0 : planilla_mensual_aprobada.estado_pago,
+  //                 planilla_mensual_aprobada: planilla_mensual_aprobada
+  //               }
+  //               cargoTotal += resusuario.montoMes
+  //               areaarray.push(asignacionData)
+  //               j++
+  //             }
+  //             letTotalAreas += cargoTotal
+  //           }
+  //         }
+  //         totalMes += letTotalAreas
+  //       }
+  //       this.totalMes = totalMes
+  //       tablaNueva = areaarray
+  //     }
+  //     let ocultar = true
+  //     let ocultarArea = true
+  //     if (this.ocultarSinAsistencia) {
+  //       for (let i = tablaNueva.length - 1; i >= 0; i--) {
+
+  //         const element = tablaNueva[i];
+  //         if (element.id_asignacion) {
+  //           const existe = element.dias.find(ele => ele.id_control)
+  //           ocultar = existe ? false : true
+  //           ocultarArea = existe ? false : true
+  //           element.asistenciaExistente = existe ? true : false
+  //         } else if (element.id_cargo) {
+  //           element.asistenciaExistente = !ocultar
+  //           if (ocultar) {
+  //             ocultar = true
+  //           }
+  //         } else {
+  //           element.asistenciaExistente = !ocultarArea
+  //           if (ocultarArea) {
+  //             ocultarArea = true
+  //           }
+  //         }
+  //       }
+
+  //       this.tablaFiltrada = tablaNueva
+  //     } else {
+  //       this.tablaFiltrada = tablaNueva
+  //     }
+  //     // this.mostrar_carga_todo = false
+  //     await this.recalcularTotales()
+  //     // console.log('this.tablaFiltrada', this.tablaFiltrada)
+  //   } catch (error) {
+  //     console.error('Error:', error);
+  //   } finally {
+  //     this.cdRef.reattach();
+  //     this.mostrar_carga_todo = false;
+  //     this.cdRef.detectChanges();
+  //   }
+  // }
+
+  async filtroListadoCargos() {
+    this.mostrar_carga_todo = true;
+
+    // 1. Resetear scroll visual antes de vaciar la tabla
+    if (this.tablaContainer?.nativeElement) {
+      this.tablaContainer.nativeElement.scrollLeft = 0;
+    }
+
+    this.tablaFiltrada = [];
+    this.cdRef.detach();
     this.cdRef.detectChanges();
-    this.mostrarSelColum = this.areaSeleccionada && this.cargoSeleccionada ? true : false
 
     await new Promise(resolve => setTimeout(resolve, 50));
+
     try {
-      await this.cambioDeMes()
-      const inicio = this.calendarioFiltrado[0].dias[0].fecha
-      const fin = this.calendarioFiltrado[0].dias[this.calendarioFiltrado[0].colspan - 1].fecha
-      const registrosAsistencia = await this.listarRegistrosAsistencia(inicio, fin)
-      const data = {
-        id_proyecto: this.idProyecto,
-        id_area: 0
-      }
-      const datos = await this.recursosHumanosService.listarHorarioYFeriadosArea(data)
-      let diasMesVacios = []
-      for (let i = 0; i < this.calendarioFiltrado[0]?.colspan; i++) {
-        diasMesVacios.push(null)
-      }
-      const mesesMap = {
-        'Enero': '01', 'Febrero': '02', 'Marzo': '03', 'Abril': '04',
-        'Mayo': '05', 'Junio': '06', 'Julio': '07', 'Agosto': '08',
-        'Septiembre': '09', 'Octubre': '10', 'Noviembre': '11', 'Diciembre': '12'
-      };
+      await this.cambioDeMes();
 
-      const mesFormateado = this.meses[this.mesSeleccionado].split(' - ')
-        .reverse()
-        .map((part, i) => i === 0 ? mesesMap[part] : part)
-        .join('-');
-      let tablaNueva = []
-      const montosAreas = await this.listarMontosAreaPresAnaliticoRH()
-      if (!this.areaSeleccionada) {
-        let totalMes = 0
-        for (const area of this.areas) {
-          let letTotalAreas = 0
-          const cargos = this.cargos
-            .filter(ele => ele.id_area == area.id_area)
-            .sort((a, b) => Number(a.ind_gp) - Number(b.ind_gp));
-          let areagrupo = []
-          for (const cargo of cargos) {
-            let cargoTotal = 0
-            const asignaciones = await this.asignaciones.filter(ele => ele.id_area == cargo.id_area && ele.id_cargo == cargo.id_cargo && this.verificarAsignacionEnMes(ele, mesFormateado))
-            // console.log('asignaciones', asignaciones)
-            if (!areagrupo.length && asignaciones.length) {
-              const areadata: filaTabla = {
-                area: area.descripcion,
-                cargo: null,
-                descripcion_usuario: null,
-                dias: diasMesVacios,
-                estado: null,
-                fecha_fin: '',
-                fecha_inicio: '',
-                id_area: area.id_area,
-                id_asignacion: null,
-                id_cargo: null,
-                id_usuario: null,
-                nro_grupo: null,
-                total_jornada: null,
-                coste_dia: null,
-                coste_mensual: null,
-                mostrar: true,
-                asistenciaExistente: true,
-                invalido: false,
-                dias_dominicales: null,
-                dias_feriados: null,
-                dias_laborados: null,
-                dias_otros: null,
-                dias_permiso: null,
-                dias_tardanzas: null,
-                dias_faltados: null,
-                descuentos: null,
-                diasNoLaborables: null,
-                feriadosSoloFecha: null,
-                tipo_cargo: null,
-                estado_pago: null,
-                planilla_mensual_aprobada: null
-              }
-              areagrupo.push(areadata)
-            }
-            if (asignaciones.length) {
-              const cargoData: filaTabla = {
+      const inicio = this.calendarioFiltrado[0].dias[0].fecha;
+      const fin = this.calendarioFiltrado[0].dias[this.calendarioFiltrado[0].colspan - 1].fecha;
+
+      // Peticiones iniciales
+      const [registrosAsistencia, datos, montosAreas] = await Promise.all([
+        this.listarRegistrosAsistencia(inicio, fin),
+        this.recursosHumanosService.listarHorarioYFeriadosArea({ id_proyecto: this.idProyecto, id_area: 0 }),
+        this.listarMontosAreaPresAnaliticoRH()
+      ]);
+
+      const diasMesVacios = new Array(this.calendarioFiltrado[0]?.colspan || 0).fill(null);
+      const mesFormateado = this.obtenerMesFormateado();
+
+      let tablaNueva: filaTabla[] = [];
+      let totalMesGeneral = 0;
+
+      // Determinar qué áreas iterar según el filtro
+      const areasAProcesar = this.areaSeleccionada
+        ? this.areas.filter(a => a.id_area == this.areaSeleccionada)
+        : this.areas;
+
+      for (const area of areasAProcesar) {
+        let totalArea = 0;
+        let areaGrupo: filaTabla[] = [];
+
+        // Filtrar y ordenar cargos
+        let cargosArea = this.cargos
+          .filter(c => c.id_area == area.id_area)
+          .sort((a, b) => Number(a.ind_gp) - Number(b.ind_gp));
+
+        if (this.areaSeleccionada && this.cargoSeleccionada) {
+          cargosArea = cargosArea.filter(c => c.id_cargo == this.cargoSeleccionada);
+        }
+
+        for (const cargo of cargosArea) {
+          let cargoTotal = 0;
+
+          // Obtener asignaciones para el cargo actual
+          let asignaciones = this.asignaciones.filter(ele => ele.id_area == cargo.id_area && ele.id_cargo == cargo.id_cargo);
+          if (!this.areaSeleccionada) {
+            asignaciones = asignaciones.filter(ele => this.verificarAsignacionEnMes(ele, mesFormateado));
+          }
+
+          if (!asignaciones.length) continue;
+
+          // Agregar fila encabezado de Área (solo si aún no se ha agregado para esta área)
+          if (!areaGrupo.length) {
+            areaGrupo.push(this.crearFilaBase(area.descripcion, null, area.id_area, null, diasMesVacios));
+          }
+
+          // Agregar fila encabezado de Cargo
+          areaGrupo.push(this.crearFilaBase(area.descripcion, cargo.descripcion, area.id_area, cargo.id_cargo, diasMesVacios));
+
+          // Optimización: Preparar reglas de horario/feriados del área una sola vez por cargo
+          const dataHorario = datos[0].find(ele => ele.id_area == cargo.id_area) || this.obtenerHorarioDefault(cargo.id_proyecto, cargo.id_area);
+          const descuentos = dataHorario.descuentos.split('|');
+          const diasNoLaborables = dataHorario.dias_nolaborables.split('|');
+          const feriadosSoloFecha = datos[1]
+            .filter(ele => ele.areas?.split('|').includes(cargo.id_area.toString()))
+            .map(ele => ele.fecha.split('T')[0]);
+
+          // Procesar usuarios en PARALELO para evitar lag por llamadas HTTP secuenciales
+          const usuariosProcesados = await Promise.all(
+            asignaciones.map(async (usuario, index) => {
+              const costesCargoDia = montosAreas
+                .find(ele => ele.id_area == usuario.id_area && ele.tipo === `JORNAL CATEGORIA ${usuario.tipo_cargo}`)
+                ?.cargos.find(ele => ele.id_cargo == usuario.id_cargo);
+
+              const costeDia = costesCargoDia ? costesCargoDia.parcial : 0;
+
+              // Consultas asíncronas por usuario
+              const [resusuario, planilla_mensual_aprobada] = await Promise.all([
+                this.filtrarPorUsuario(registrosAsistencia, usuario.id_usuario, usuario.id_asignacion, descuentos, diasNoLaborables, feriadosSoloFecha, costeDia),
+                this.consultarPlanillaAprobada(usuario.id_usuario, usuario.id_proyecto, mesFormateado, usuario.id_area, usuario.id_cargo)
+              ]);
+
+              const asignacionData: filaTabla = {
                 area: area.descripcion,
                 cargo: cargo.descripcion,
-                descripcion_usuario: null,
-                dias: diasMesVacios,
-                estado: null,
-                fecha_fin: '',
-                fecha_inicio: '',
+                descripcion_usuario: usuario.descripcion_usuario,
+                dias: resusuario.registroMes,
+                estado: usuario.estado,
+                fecha_fin: usuario.fecha_fin,
+                fecha_inicio: usuario.fecha_inicio,
                 id_area: area.id_area,
-                id_asignacion: null,
+                id_asignacion: usuario.id_asignacion,
                 id_cargo: cargo.id_cargo,
-                id_usuario: null,
-                nro_grupo: null,
-                total_jornada: null,
-                coste_dia: null,
-                coste_mensual: null,
+                id_usuario: usuario.id_usuario,
+                nro_grupo: index + 1,
+                total_jornada: 0,
+                coste_dia: costeDia,
+                coste_mensual: resusuario.montoMes,
                 mostrar: true,
                 asistenciaExistente: true,
-                invalido: false,
-                dias_dominicales: null,
-                dias_feriados: null,
-                dias_laborados: null,
-                dias_otros: null,
-                dias_permiso: null,
-                dias_tardanzas: null,
-                dias_faltados: null,
-                descuentos: null,
-                diasNoLaborables: null,
-                feriadosSoloFecha: null,
-                tipo_cargo: null,
-                estado_pago: null,
-                planilla_mensual_aprobada: null
-              }
-              areagrupo.push(cargoData)
-              let j = 1
-              for (const usuario of asignaciones) {
-                let dataHorario = datos[0].find(ele => ele.id_area == usuario.id_area)
-                if (!dataHorario) {
-                  dataHorario = {
-                    id_configuracion: null,
-                    id_proyecto: usuario.id_proyecto,
-                    id_area: usuario.id_area,
-                    inicio_semana: 'LUNES',
-                    dias_nolaborables: 'DOMINGO',
-                    hora_ingreso_manana: '07:30:00|07:30:00|07:30:00|07:30:00|07:30:00|07:30:00|',
-                    hora_salida_manana: '12:00:00|12:00:00|12:00:00|12:00:00|12:00:00|13:00:00|',
-                    hora_ingreso_tarde: '14:00:00|14:00:00|14:00:00|14:00:00|14:00:00||',
-                    hora_salida_tarde: '18:00:00|18:00:00|18:00:00|18:00:00|18:00:00||',
-                    totales_dia: 48,
-                    descuentos: "0|10|10|0|100|100|0|0|0|0|0|0|0|100|100|0|0|0|0|0|0",
-                    tardanza: 10,
-                    tiempo_extra: 0
-                  }
-                }
-                const costesCargoDia = montosAreas.find(ele => ele.id_area == usuario.id_area && ele.tipo == ('JORNAL CATEGORIA ' + usuario.tipo_cargo))?.cargos.find(ele => ele.id_cargo == usuario.id_cargo)
-                let costeDia = costesCargoDia ? costesCargoDia.parcial : 0
+                invalido: resusuario.invalido,
+                dias_dominicales: resusuario.conteos.dias_dominicales,
+                dias_faltados: resusuario.conteos.dias_faltados,
+                dias_feriados: resusuario.conteos.dias_feriados,
+                dias_laborados: resusuario.conteos.dias_laborados,
+                dias_otros: resusuario.conteos.dias_otros,
+                dias_permiso: resusuario.conteos.dias_permiso,
+                dias_tardanzas: resusuario.conteos.dias_tardanzas,
+                descuentos,
+                diasNoLaborables,
+                feriadosSoloFecha,
+                tipo_cargo: usuario.tipo_cargo,
+                estado_pago: planilla_mensual_aprobada?.estado_pago ?? 0,
+                planilla_mensual_aprobada
+              };
 
-                const descuentos = dataHorario?.descuentos.split('|')
-                const diasNoLaborables = dataHorario?.dias_nolaborables.split('|')
-                const feriadosSoloFecha = datos[1].filter(ele => {
-                  const areas = ele.areas?.split('|');
-                  return areas && areas.includes(usuario.id_area.toString());
-                }).map(ele => ele.fecha.split('T')[0]);
-                const resusuario = await this.filtrarPorUsuario(registrosAsistencia, usuario.id_usuario, usuario.id_asignacion, descuentos, diasNoLaborables, feriadosSoloFecha, costeDia)
-                // const existe = registroMes.find(ele => ele.id_control)
-                const planilla_mensual_aprobada = await this.consultarPlanillaAprobada(usuario.id_usuario, usuario.id_proyecto, mesFormateado, usuario.id_area, usuario.id_cargo)
-                const asignacionData: filaTabla = {
-                  area: area.descripcion,
-                  cargo: cargo.descripcion,
-                  descripcion_usuario: usuario.descripcion_usuario,
-                  dias: resusuario.registroMes,
-                  estado: usuario.estado,
-                  fecha_fin: usuario.fecha_fin,
-                  fecha_inicio: usuario.fecha_inicio,
-                  id_area: area.id_area,
-                  id_asignacion: usuario.id_asignacion,
-                  id_cargo: cargo.id_cargo,
-                  id_usuario: usuario.id_usuario,
-                  nro_grupo: j,
-                  total_jornada: 0,
-                  coste_dia: costeDia,
-                  coste_mensual: resusuario.montoMes,
-                  mostrar: true,
-                  asistenciaExistente: true,
-                  invalido: resusuario.invalido,
-                  dias_dominicales: resusuario.conteos.dias_dominicales,
-                  dias_faltados: resusuario.conteos.dias_faltados,
-                  dias_feriados: resusuario.conteos.dias_feriados,
-                  dias_laborados: resusuario.conteos.dias_laborados,
-                  dias_otros: resusuario.conteos.dias_otros,
-                  dias_permiso: resusuario.conteos.dias_permiso,
-                  dias_tardanzas: resusuario.conteos.dias_tardanzas,
-                  descuentos: descuentos,
-                  diasNoLaborables: diasNoLaborables,
-                  feriadosSoloFecha: feriadosSoloFecha,
-                  tipo_cargo: usuario.tipo_cargo,
-                  estado_pago: planilla_mensual_aprobada == null ? 0 : planilla_mensual_aprobada.estado_pago,
-                  planilla_mensual_aprobada: planilla_mensual_aprobada
-                }
-                cargoTotal += resusuario.montoMes
-                areagrupo.push(asignacionData)
-                j++
-              }
-            }
-            letTotalAreas += cargoTotal
+              return { asignacionData, montoMes: resusuario.montoMes };
+            })
+          );
+
+          // Unir datos procesados y sumar importes
+          for (const item of usuariosProcesados) {
+            areaGrupo.push(item.asignacionData);
+            cargoTotal += item.montoMes;
           }
-          tablaNueva = tablaNueva.concat(areagrupo)
-          // this.cdRef.detectChanges();
-          totalMes += letTotalAreas
+
+          totalArea += cargoTotal;
         }
-        this.totalMes = totalMes
-      } else {
-        let areaarray = []
-        let totalMes = 0
-        for (const area of this.areas) {
-          let letTotalAreas = 0
-          if (area.id_area == this.areaSeleccionada) {
-            const areadata: filaTabla = {
-              area: area.descripcion,
-              cargo: null,
-              descripcion_usuario: null,
-              dias: diasMesVacios,
-              estado: null,
-              fecha_fin: '',
-              fecha_inicio: '',
-              id_area: area.id_area,
-              id_asignacion: null,
-              id_cargo: null,
-              id_usuario: null,
-              nro_grupo: null,
-              total_jornada: null,
-              coste_dia: null,
-              coste_mensual: null,
-              mostrar: true,
-              asistenciaExistente: true,
-              invalido: false,
-              dias_dominicales: null,
-              dias_feriados: null,
-              dias_laborados: null,
-              dias_otros: null,
-              dias_permiso: null,
-              dias_tardanzas: null,
-              dias_faltados: null,
-              descuentos: null,
-              diasNoLaborables: null,
-              feriadosSoloFecha: null,
-              tipo_cargo: null,
-              estado_pago: null,
-              planilla_mensual_aprobada: null
-            }
-            areaarray.push(areadata)
-            const cargos = this.cargos
-              .filter(ele => ele.id_area == area.id_area)
-              .sort((a, b) => Number(a.ind_gp) - Number(b.ind_gp));
-            let cargosBuscar = []
-            if (this.cargoSeleccionada) {
-              const encontrado = cargos.find(ele => ele.id_cargo == this.cargoSeleccionada)
-              if (encontrado) {
-                cargosBuscar.push(encontrado)
-              }
-            } else {
-              cargosBuscar = cargos
-            }
 
-            for (const cargo of cargosBuscar) {
-              let cargoTotal = 0
-              const asignaciones = await this.asignaciones.filter(ele => ele.id_area == cargo.id_area && ele.id_cargo == cargo.id_cargo)
-              const cargoData: filaTabla = {
-                area: area.descripcion,
-                cargo: cargo.descripcion,
-                descripcion_usuario: null,
-                dias: diasMesVacios,
-                estado: null,
-                fecha_fin: '',
-                fecha_inicio: '',
-                id_area: area.id_area,
-                id_asignacion: null,
-                id_cargo: cargo.id_cargo,
-                id_usuario: null,
-                nro_grupo: null,
-                total_jornada: null,
-                coste_dia: null,
-                coste_mensual: null,
-                mostrar: true,
-                asistenciaExistente: true,
-                invalido: false,
-                dias_dominicales: null,
-                dias_feriados: null,
-                dias_laborados: null,
-                dias_otros: null,
-                dias_permiso: null,
-                dias_tardanzas: null,
-                dias_faltados: null,
-                descuentos: null,
-                diasNoLaborables: null,
-                feriadosSoloFecha: null,
-                tipo_cargo: null,
-                estado_pago: null,
-                planilla_mensual_aprobada: null
-              }
-
-              areaarray.push(cargoData)
-              let j = 1
-              for (const usuario of asignaciones) {
-                let dataHorario = datos[0].find(ele => ele.id_area == usuario.id_area)
-                if (!dataHorario) {
-                  dataHorario = {
-                    id_configuracion: null,
-                    id_proyecto: usuario.id_proyecto,
-                    id_area: usuario.id_area,
-                    inicio_semana: 'LUNES',
-                    dias_nolaborables: 'DOMINGO',
-                    hora_ingreso_manana: '07:30:00|07:30:00|07:30:00|07:30:00|07:30:00|07:30:00|',
-                    hora_salida_manana: '12:00:00|12:00:00|12:00:00|12:00:00|12:00:00|13:00:00|',
-                    hora_ingreso_tarde: '14:00:00|14:00:00|14:00:00|14:00:00|14:00:00||',
-                    hora_salida_tarde: '18:00:00|18:00:00|18:00:00|18:00:00|18:00:00||',
-                    totales_dia: 48,
-                    descuentos: "0|10|10|0|100|100|0|0|0|0|0|0|0|100|100|0|0|0|0|0|0",
-                    tardanza: 10,
-                    tiempo_extra: 0
-                  }
-                }
-                // const costesCargoHora = montosAreas.find(ele => ele.id_area == usuario.id_area && ele.tipo == "JORNAL DIARIO")?.cargos.find(ele => ele.id_cargo == usuario.id_cargo)
-                const costesCargoDia = montosAreas.find(ele => ele.id_area == usuario.id_area && ele.tipo == ('JORNAL CATEGORIA ' + usuario.tipo_cargo))?.cargos.find(ele => ele.id_cargo == usuario.id_cargo)
-                // let costeHora = costesCargoHora ? costesCargoHora.parcial : 0
-                let costeDia = costesCargoDia ? costesCargoDia.parcial : 0
-                const descuentos = dataHorario?.descuentos.split('|')
-                const diasNoLaborables = dataHorario?.dias_nolaborables.split('|')
-                const feriadosSoloFecha = datos[1].filter(ele => {
-                  const areas = ele.areas?.split('|');
-                  return areas && areas.includes(usuario.id_area.toString());
-                }).map(ele => ele.fecha.split('T')[0]);
-                const resusuario = await this.filtrarPorUsuario(registrosAsistencia, usuario.id_usuario, usuario.id_asignacion, descuentos, diasNoLaborables, feriadosSoloFecha, costeDia)
-                const planilla_mensual_aprobada = await this.consultarPlanillaAprobada(usuario.id_usuario, usuario.id_proyecto, mesFormateado, usuario.id_area, usuario.id_cargo)
-
-                const asignacionData: filaTabla = {
-                  area: area.descripcion,
-                  cargo: cargo.descripcion,
-                  descripcion_usuario: usuario.descripcion_usuario,
-                  dias: resusuario.registroMes,
-                  estado: usuario.estado,
-                  fecha_fin: usuario.fecha_fin,
-                  fecha_inicio: usuario.fecha_inicio,
-                  id_area: area.id_area,
-                  id_asignacion: usuario.id_asignacion,
-                  id_cargo: cargo.id_cargo,
-                  id_usuario: usuario.id_usuario,
-                  nro_grupo: j,
-                  total_jornada: 0,
-                  coste_dia: costeDia,
-                  coste_mensual: resusuario.montoMes,
-                  mostrar: true,
-                  asistenciaExistente: true,
-                  invalido: resusuario.invalido,
-                  dias_dominicales: resusuario.conteos.dias_dominicales,
-                  dias_faltados: resusuario.conteos.dias_faltados,
-                  dias_feriados: resusuario.conteos.dias_feriados,
-                  dias_laborados: resusuario.conteos.dias_laborados,
-                  dias_otros: resusuario.conteos.dias_otros,
-                  dias_permiso: resusuario.conteos.dias_permiso,
-                  dias_tardanzas: resusuario.conteos.dias_tardanzas,
-                  descuentos: descuentos,
-                  diasNoLaborables: diasNoLaborables,
-                  feriadosSoloFecha: feriadosSoloFecha,
-                  tipo_cargo: usuario.tipo_cargo,
-                  estado_pago: planilla_mensual_aprobada == null ? 0 : planilla_mensual_aprobada.estado_pago,
-                  planilla_mensual_aprobada: planilla_mensual_aprobada
-                }
-                cargoTotal += resusuario.montoMes
-                areaarray.push(asignacionData)
-                j++
-              }
-              letTotalAreas += cargoTotal
-            }
-          }
-          totalMes += letTotalAreas
-        }
-        this.totalMes = totalMes
-        tablaNueva = areaarray
+        tablaNueva = tablaNueva.concat(areaGrupo);
+        totalMesGeneral += totalArea;
       }
-      let ocultar = true
-      let ocultarArea = true
+
+      this.totalMes = totalMesGeneral;
+
+      // Aplicar filtro de ocultar filas sin asistencia
       if (this.ocultarSinAsistencia) {
-        for (let i = tablaNueva.length - 1; i >= 0; i--) {
+        let ocultar = true;
+        let ocultarArea = true;
 
+        for (let i = tablaNueva.length - 1; i >= 0; i--) {
           const element = tablaNueva[i];
           if (element.id_asignacion) {
-            const existe = element.dias.find(ele => ele.id_control)
-            ocultar = existe ? false : true
-            ocultarArea = existe ? false : true
-            element.asistenciaExistente = existe ? true : false
+            const existe = element.dias.some(ele => ele?.id_control);
+            ocultar = !existe;
+            ocultarArea = !existe;
+            element.asistenciaExistente = existe;
           } else if (element.id_cargo) {
-            element.asistenciaExistente = !ocultar
-            if (ocultar) {
-              ocultar = true
-            }
+            element.asistenciaExistente = !ocultar;
           } else {
-            element.asistenciaExistente = !ocultarArea
-            if (ocultarArea) {
-              ocultarArea = true
-            }
+            element.asistenciaExistente = !ocultarArea;
           }
         }
-
-        this.tablaFiltrada = tablaNueva
-      } else {
-        this.tablaFiltrada = tablaNueva
       }
-      // this.mostrar_carga_todo = false
-      await this.recalcularTotales()
-      // console.log('this.tablaFiltrada', this.tablaFiltrada)
+
+      this.tablaFiltrada = tablaNueva;
+      await this.recalcularTotales();
+
     } catch (error) {
-      console.error('Error:', error);
+      console.error('Error al filtrar listado de cargos:', error);
     } finally {
       this.cdRef.reattach();
       this.mostrar_carga_todo = false;
       this.cdRef.detectChanges();
+
+      // 2. Volver a forzar scroll a 0 cuando Angular ya pintó la nueva DOM
+      setTimeout(() => {
+        if (this.tablaContainer?.nativeElement) {
+          this.tablaContainer.nativeElement.scrollLeft = 0;
+        }
+      }, 50);
     }
+  }
+
+  // ==========================================
+  // MÉTODOS AUXILIARES DE LIMPIEZA Y SOPORTE
+  // ==========================================
+
+  private crearFilaBase(areaNombre: string, cargoNombre: string | null, idArea: number, idCargo: number | null, diasVacios: any[]): filaTabla {
+    return {
+      area: areaNombre,
+      cargo: cargoNombre,
+      descripcion_usuario: null,
+      dias: diasVacios,
+      estado: null,
+      fecha_fin: '',
+      fecha_inicio: '',
+      id_area: idArea,
+      id_asignacion: null,
+      id_cargo: idCargo,
+      id_usuario: null,
+      nro_grupo: null,
+      total_jornada: null,
+      coste_dia: null,
+      coste_mensual: null,
+      mostrar: true,
+      asistenciaExistente: true,
+      invalido: false,
+      dias_dominicales: null,
+      dias_feriados: null,
+      dias_laborados: null,
+      dias_otros: null,
+      dias_permiso: null,
+      dias_tardanzas: null,
+      dias_faltados: null,
+      descuentos: null,
+      diasNoLaborables: null,
+      feriadosSoloFecha: null,
+      tipo_cargo: null,
+      estado_pago: null,
+      planilla_mensual_aprobada: null
+    };
+  }
+  private resetearScrolls() {
+    if (this.tablaContainer?.nativeElement) {
+      const el = this.tablaContainer.nativeElement;
+      el.scrollLeft = 0;
+      el.scrollTop = 0;
+
+      // Si dentro hay otro div contenedor o la tabla con overflow:
+      const subScrolls = el.querySelectorAll('.tabla-tareo-principal, .contenedor-tabla-scroll, table');
+      subScrolls.forEach((sub: HTMLElement) => {
+        sub.scrollLeft = 0;
+        sub.scrollTop = 0;
+      });
+    }
+  }
+  private obtenerMesFormateado(): string {
+    const mesesMap: Record<string, string> = {
+      'Enero': '01', 'Febrero': '02', 'Marzo': '03', 'Abril': '04',
+      'Mayo': '05', 'Junio': '06', 'Julio': '07', 'Agosto': '08',
+      'Septiembre': '09', 'Octubre': '10', 'Noviembre': '11', 'Diciembre': '12'
+    };
+
+    return this.meses[this.mesSeleccionado]
+      .split(' - ')
+      .reverse()
+      .map((part, i) => (i === 0 ? mesesMap[part] : part))
+      .join('-');
+  }
+
+  private obtenerHorarioDefault(idProyecto: number, idArea: number) {
+    return {
+      id_configuracion: null,
+      id_proyecto: idProyecto,
+      id_area: idArea,
+      inicio_semana: 'LUNES',
+      dias_nolaborables: 'DOMINGO',
+      hora_ingreso_manana: '07:30:00|07:30:00|07:30:00|07:30:00|07:30:00|07:30:00|',
+      hora_salida_manana: '12:00:00|12:00:00|12:00:00|12:00:00|12:00:00|13:00:00|',
+      hora_ingreso_tarde: '14:00:00|14:00:00|14:00:00|14:00:00|14:00:00||',
+      hora_salida_tarde: '18:00:00|18:00:00|18:00:00|18:00:00|18:00:00||',
+      totales_dia: 48,
+      descuentos: "0|10|10|0|100|100|0|0|0|0|0|0|0|100|100|0|0|0|0|0|0",
+      tardanza: 10,
+      tiempo_extra: 0
+    };
   }
 
   getEstadoPago(row: any): number {
@@ -5330,10 +5598,8 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
       console.warn(`No se encontró el año ${anioBuscado} en calendarioCompleto`);
       return;
     }
-
     // 2. NORMALIZAR EL MES PARA LA BÚSQUEDA
     const nombreMesNormalizado = this.normalizarNombreMes(nombreMesMayusculas);
-
     // 3. BUSCAR EL MES DENTRO DE ESE AÑO ESPECÍFICO
     // Intento 1: Coincidencia exacta con el nombre normalizado
     let mesEncontrado = añoEncontrado.meses.find((m: any) => m.mes === nombreMesNormalizado);
@@ -6045,11 +6311,6 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
       )
     );
 
-    console.log("=== CLICK EN FILA REQUERIMIENTO ===");
-    console.log("Fila elegida (row):", { idgrupo: row.idgrupo, idfila: row.idfila, indrep: row.indrep });
-    console.log("Relación encontrada (reqcargSeleccionado):", this.reqcargSeleccionado);
-    console.log("Lista global de cargos vinculados:", this.cargosVinculados);
-
     this.reporteEstructurado = [...this.reporteEstructurado];
   }
 
@@ -6061,8 +6322,6 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
       // idfila: row.idfila,
     }
     this.requerimientosCargos = await this.recursosHumanosService.listarRequerimientoCargo(obj)
-    console.log('this.requerimientosCargos', this.requerimientosCargos)
-
   }
 
   // async onVinculadoChange(cargo, event: any) {
@@ -6168,18 +6427,14 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
     const isChecked = event.checked;
 
     const requerimiento = this.tablaRequerimientos[this.filSelReq]; // Detalle/Insumo (row)
-    console.log('requerimiento', requerimiento);
     const adqui = this.tablaRegActividades[this.filSelRegAct];     // Cabecera (adqui)
-    console.log('adqui', adqui);
 
     let cargosRelacionados = this.reqcargSeleccionado?.cargos
       ? this.reqcargSeleccionado.cargos.split('|').filter(c => c)
       : [];
 
-    console.log('cargo', cargo);
     const cargoId = cargo.id_cargo.toString() + '-' + cargo.tipo_cargo;
     const index = cargosRelacionados.indexOf(cargoId);
-    console.log('index', index);
 
     if (isChecked && index === -1) {
       cargosRelacionados.push(cargoId);
@@ -6204,7 +6459,6 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
 
         if (this.reqcargSeleccionado) {
           obj.id_relacion = this.reqcargSeleccionado.id_relacion;
-          console.log('actualizarRequerimientoCargo', obj);
           const resp = await this.recursosHumanosService.actualizarRequerimientoCargo(obj);
 
           this.reqcargSeleccionado.cargos = cargosRelacionados.join('|');
@@ -6219,7 +6473,6 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
 
         } else {
           // CREAR NUEVO
-          console.log('guardarRequerimientoCargo', obj);
           const resp = await this.recursosHumanosService.guardarRequerimientoCargo(obj);
 
           const nuevoId = resp[0]?.nuevo_id_relacion || resp[0]?.id_relacion;
@@ -6245,7 +6498,6 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
         }
       } else if (this.reqcargSeleccionado) {
         // ELIMINAR todos los cargos
-        console.log('eliminarRequerimientoCargo', this.reqcargSeleccionado.id_relacion);
         const resp = await this.recursosHumanosService.eliminarRequerimientoCargo({
           id_relacion: this.reqcargSeleccionado.id_relacion
         });

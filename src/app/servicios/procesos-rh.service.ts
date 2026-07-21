@@ -98,7 +98,6 @@ export class ProcesosRhService {
     const asistenciasMap = this.crearMapaAsistenciasPorUsuario(asistencias);
     const configuracionesMap = this.crearMapaConfiguraciones(configuraciones);
     const montosAreasMap = this.crearMapaMontosPorArea(montosAreas);
-
     const consolidadoGeneral = this.procesarAreasYAsignaciones(
       areas,
       cargos,
@@ -110,15 +109,22 @@ export class ProcesosRhService {
       feriados
     );
 
-    // Agregar cabeceras y totales de área
-    const consolidadoConCabeceras = this.agregarCabecerasYTotalArea(consolidadoGeneral);
+    // // Agregar cabeceras y totales de área
+    // const consolidadoConCabeceras = this.agregarCabecerasYTotalArea(consolidadoGeneral);
 
-    // Agrupar por meses con la nueva estructura
-    const consolidadoPorMeses = this.agruparConsolidadoPorMesesConTotales(consolidadoConCabeceras, calendario);
+    // // Agrupar por meses con la nueva estructura
+    // const consolidadoPorMeses = this.agruparConsolidadoPorMesesConTotales(consolidadoConCabeceras, calendario);
 
-    // Obtener totales globales por día y mes
+    // // Obtener totales globales por día y mes
+    // const totalesGlobales = this.calcularTotalesGlobales(consolidadoPorMeses);
+    // 1. Primero agrupar los datos reales por meses
+    const consolidadoPorMesesBase = this.agruparConsolidadoPorMeses(consolidadoGeneral, calendario);
+
+    // 2. Insertar cabeceras y calcular total de área DENTRO de cada mes
+    const consolidadoPorMeses = this.procesarCabecerasYTotalesPorMes(consolidadoPorMesesBase);
+
+    // 3. Obtener totales globales por día y mes
     const totalesGlobales = this.calcularTotalesGlobales(consolidadoPorMeses);
-
     return {
       consolidadoPorMeses,
       calendario,
@@ -129,6 +135,289 @@ export class ProcesosRhService {
     };
   }
 
+  private agruparConsolidadoPorMeses(
+    consolidadoGeneral: ConsolidadoItem[],
+    calendario: any[]
+  ): ConsolidadoPorMes[] {
+    const mesesMap = new Map<string, ConsolidadoPorMes>();
+
+    // Crear estructura de meses
+    for (const anio of calendario) {
+      if (!anio || !anio.meses) continue;
+      for (const mes of anio.meses) {
+        if (!mes) continue;
+        const mesKey = `${mes.mes.toUpperCase()}-${anio.anio}`;
+        if (!mesesMap.has(mesKey)) {
+          mesesMap.set(mesKey, {
+            mes_key: mesKey,
+            mes: mes.mes,
+            anio: anio.anio,
+            items: [],
+            costo_total_mes: 0
+          });
+        }
+      }
+    }
+
+    // Agrupar items reales
+    for (const item of consolidadoGeneral) {
+      if (!item || !item.calendario) continue;
+
+      const diasPorMes = new Map<string, CalendarioDia[]>();
+      const costoPorMes = new Map<string, number>();
+
+      for (const dia of item.calendario) {
+        if (!dia || !dia.fecha) continue;
+        const fechaMoment = moment(dia.fecha, 'DD-MM-YYYY');
+        const mesKey = `${fechaMoment.format('MMMM').toUpperCase()}-${fechaMoment.year()}`;
+
+        if (!diasPorMes.has(mesKey)) {
+          diasPorMes.set(mesKey, []);
+          costoPorMes.set(mesKey, 0);
+        }
+
+        diasPorMes.get(mesKey)!.push(dia);
+        costoPorMes.set(mesKey, (costoPorMes.get(mesKey) || 0) + (dia.monto_dia || 0));
+      }
+
+      for (const [mesKey, diasMes] of diasPorMes) {
+        const mesConsolidado = mesesMap.get(mesKey);
+        if (mesConsolidado) {
+          const itemParaMes: ConsolidadoItem = {
+            ...item,
+            calendario: diasMes,
+            costo_total: costoPorMes.get(mesKey) || 0
+          };
+          mesConsolidado.items.push(itemParaMes);
+          mesConsolidado.costo_total_mes += itemParaMes.costo_total;
+        }
+      }
+    }
+
+    return Array.from(this.mapaToArrayYOrdenar(mesesMap));
+  }
+  private mapaToArrayYOrdenar(mesesMap: Map<string, ConsolidadoPorMes>): ConsolidadoPorMes[] {
+    const mesesOrden: { [key: string]: number } = {
+      'enero': 1, 'febrero': 2, 'marzo': 3, 'abril': 4,
+      'mayo': 5, 'junio': 6, 'julio': 7, 'agosto': 8,
+      'septiembre': 9, 'octubre': 10, 'noviembre': 11, 'diciembre': 12
+    };
+
+    return Array.from(mesesMap.values()).sort((a, b) => {
+      // 1. Primero se ordena por año
+      if (a.anio !== b.anio) {
+        return a.anio - b.anio;
+      }
+
+      // 2. Si es el mismo año, se ordena por el mes
+      const mesNumA = mesesOrden[a.mes.toLowerCase().trim()] || 0;
+      const mesNumB = mesesOrden[b.mes.toLowerCase().trim()] || 0;
+
+      return mesNumA - mesNumB;
+    });
+  }
+
+  private procesarCabecerasYTotalesPorMes(consolidadoPorMeses: ConsolidadoPorMes[]): ConsolidadoPorMes[] {
+    return consolidadoPorMeses.map(mes => {
+      const itemsProcesados: ConsolidadoItem[] = [];
+      const itemsPorArea = new Map<number, ConsolidadoItem[]>();
+
+      // Agrupar los items del mes por id_area
+      mes.items.forEach(item => {
+        if (!itemsPorArea.has(item.id_area)) {
+          itemsPorArea.set(item.id_area, []);
+        }
+        itemsPorArea.get(item.id_area)!.push(item);
+      });
+
+      itemsPorArea.forEach((itemsArea, idArea) => {
+        if (itemsArea.length === 0) return;
+
+        // ------------------------------------------------------------------
+        // CAMBIO 1: Filtrar solo los cargos/detalles reales del área.
+        // Eliminamos cualquier fila que sea encabezado previo o no tenga cargo.
+        // ------------------------------------------------------------------
+        const cargosReales = itemsArea.filter(item =>
+          !item.es_cabecera_area &&
+          item.id_cargo !== null &&
+          item.descripcion_cargo !== ''
+        );
+
+        const primeraArea = itemsArea[0];
+
+        // ------------------------------------------------------------------
+        // CAMBIO 2: Agregar una ÚNICA Cabecera de Área
+        // ------------------------------------------------------------------
+        itemsProcesados.push({
+          id_area: primeraArea.id_area,
+          descripcion_area: primeraArea.descripcion_area,
+          id_cargo: null,
+          // Asignamos el texto aquí para que la celda "Cargo" muestre el título del Área
+          descripcion_cargo: `ÁREA: ${primeraArea.descripcion_area}`,
+          tipo_cargo: '',
+          cantidad: 0,
+          asignaciones: [],
+          calendario: [],
+          costo_total: 0,
+          es_cabecera_area: true,
+          es_total_area: false
+        });
+
+        // ------------------------------------------------------------------
+        // CAMBIO 3: Insertar ÚNICAMENTE los cargos reales filtrados
+        // ------------------------------------------------------------------
+        itemsProcesados.push(...cargosReales);
+
+        // ------------------------------------------------------------------
+        // CAMBIO 4: Calcular el total del área basándose solo en cargos reales
+        // ------------------------------------------------------------------
+        const totalAreaItem = this.construirTotalAreaParaMes(cargosReales, primeraArea);
+        itemsProcesados.push(totalAreaItem);
+      });
+
+      return {
+        ...mes,
+        items: itemsProcesados
+      };
+    });
+  }
+  // // Auxiliar para sumar días y costos del área en el mes
+  // private construirTotalAreaParaMes(itemsArea: ConsolidadoItem[], primeraArea: ConsolidadoItem): ConsolidadoItem {
+  //   const mapaDiasTotal = new Map<string, { cantidad_asignaciones: number; monto_dia: number }>();
+  //   let costoTotalArea = 0;
+  //   let cantidadTotalArea = 0;
+
+  //   itemsArea.forEach(item => {
+  //     costoTotalArea += item.costo_total || 0;
+  //     cantidadTotalArea += item.cantidad || 0;
+
+  //     item.calendario.forEach(dia => {
+  //       if (!mapaDiasTotal.has(dia.fecha)) {
+  //         mapaDiasTotal.set(dia.fecha, { cantidad_asignaciones: 0, monto_dia: 0 });
+  //       }
+  //       const acumuladoDia = mapaDiasTotal.get(dia.fecha)!;
+  //       acumuladoDia.cantidad_asignaciones += (dia.cantidad_asignaciones || 0);
+  //       acumuladoDia.monto_dia += (dia.monto_dia || 0);
+  //     });
+  //   });
+
+  //   // Convertir el mapa acumulado de días en el array de calendario del total del área
+  //   const calendarioTotalArea = Array.from(mapaDiasTotal.entries()).map(([fecha, val]) => ({
+  //     fecha,
+  //     cantidad_asignaciones: val.cantidad_asignaciones,
+  //     monto_dia: val.monto_dia
+  //   }));
+
+  //   return {
+  //     id_area: primeraArea.id_area,
+  //     descripcion_area: `TOTAL ${primeraArea.descripcion_area}`,
+  //     id_cargo: null,
+  //     descripcion_cargo: '',
+  //     tipo_cargo: '',
+  //     cantidad: cantidadTotalArea,
+  //     asignaciones: [],
+  //     calendario: calendarioTotalArea, // ¡Ahora el total del área SÍ TIENE DÍAS!
+  //     costo_total: costoTotalArea,
+  //     es_cabecera_area: false,
+  //     es_total_area: true
+  //   };
+  // }
+
+  // private procesarCabecerasYTotalesPorMes(consolidadoPorMeses: ConsolidadoPorMes[]): ConsolidadoPorMes[] {
+  //   return consolidadoPorMeses.map(mes => {
+  //     const itemsProcesados: ConsolidadoItem[] = [];
+  //     const itemsPorArea = new Map<number, ConsolidadoItem[]>();
+
+  //     // Agrupar los items del mes por id_area
+  //     mes.items.forEach(item => {
+  //       if (!itemsPorArea.has(item.id_area)) {
+  //         itemsPorArea.set(item.id_area, []);
+  //       }
+  //       itemsPorArea.get(item.id_area)!.push(item);
+  //     });
+
+  //     itemsPorArea.forEach((itemsArea, idArea) => {
+  //       if (itemsArea.length === 0) return;
+
+  //       const primeraArea = itemsArea[0];
+
+  //       // 1. Agregar CABECERA DE ÁREA
+  //       itemsProcesados.push({
+  //         id_area: primeraArea.id_area,
+  //         descripcion_area: primeraArea.descripcion_area,
+  //         id_cargo: null,
+  //         descripcion_cargo: '',
+  //         tipo_cargo: '',
+  //         cantidad: 0,
+  //         asignaciones: [],
+  //         calendario: [],
+  //         costo_total: 0,
+  //         es_cabecera_area: true,
+  //         es_total_area: false
+  //       });
+
+  //       // 2. Agregar los ITEMS (Cargos/Usuarios del área en este mes)
+  //       itemsProcesados.push(...itemsArea);
+
+  //       // 3. CALCULAR TOTAL DEL ÁREA PARA ESTE MES ESPECÍFICO
+  //       const totalAreaItem = this.construirTotalAreaParaMes(itemsArea, primeraArea);
+  //       itemsProcesados.push(totalAreaItem);
+  //     });
+
+  //     return {
+  //       ...mes,
+  //       items: itemsProcesados
+  //     };
+  //   });
+  // }
+
+
+  private construirTotalAreaParaMes(itemsArea: ConsolidadoItem[], primeraArea: ConsolidadoItem): ConsolidadoItem {
+    // Guardamos el objeto completo del día junto con los acumulados
+    const mapaDiasTotal = new Map<string, { diaBase: CalendarioDia; cantidad_asignaciones: number; monto_dia: number }>();
+    let costoTotalArea = 0;
+    let cantidadTotalArea = 0;
+
+    itemsArea.forEach(item => {
+      costoTotalArea += item.costo_total || 0;
+      cantidadTotalArea += item.cantidad || 0;
+
+      item.calendario.forEach(dia => {
+        if (!mapaDiasTotal.has(dia.fecha)) {
+          mapaDiasTotal.set(dia.fecha, {
+            diaBase: dia, // Mantenemos la referencia de dia, laborable, feriado, etc.
+            cantidad_asignaciones: 0,
+            monto_dia: 0
+          });
+        }
+        const acumuladoDia = mapaDiasTotal.get(dia.fecha)!;
+        acumuladoDia.cantidad_asignaciones += (dia.cantidad_asignaciones || 0);
+        acumuladoDia.monto_dia += (dia.monto_dia || 0);
+      });
+    });
+
+    // Reconstruimos el array garantizando el tipo CalendarioDia[]
+    const calendarioTotalArea: CalendarioDia[] = Array.from(mapaDiasTotal.values()).map(val => ({
+      ...val.diaBase, // Mantiene dia, laborable, feriado, esDiaEspecial, etc.
+      cantidad_asignaciones: val.cantidad_asignaciones,
+      monto_dia: val.monto_dia,
+      detalle_asistencias: [] // Vacío para la fila resumen de total
+    }));
+
+    return {
+      id_area: primeraArea.id_area,
+      descripcion_area: `TOTAL ${primeraArea.descripcion_area}`,
+      id_cargo: null,
+      descripcion_cargo: '',
+      tipo_cargo: '',
+      cantidad: cantidadTotalArea,
+      asignaciones: [],
+      calendario: calendarioTotalArea, // Cumple estrictamente con CalendarioDia[]
+      costo_total: costoTotalArea,
+      es_cabecera_area: false,
+      es_total_area: true
+    };
+  }
   private agregarCabecerasYTotalArea(consolidadoGeneral: ConsolidadoItem[]): ConsolidadoItem[] {
     const resultado: ConsolidadoItem[] = [];
 
@@ -473,6 +762,109 @@ export class ProcesosRhService {
     return mapa;
   }
 
+  // private procesarAreasYAsignaciones(
+  //   areas: any[],
+  //   cargos: any[],
+  //   asignaciones: any[],
+  //   calendario: any[],
+  //   asistenciasMap: Map<string, Map<number, any>>,
+  //   configuracionesMap: Map<number, any>,
+  //   montosAreasMap: Map<number, Map<string, Map<number, number>>>,
+  //   feriados: any[]
+  // ): ConsolidadoItem[] {
+  //   const cargosPorArea = this.agruparCargosPorArea(cargos);
+  //   const asignacionesPorCargo = this.agruparAsignacionesPorCargo(asignaciones);
+  //   const consolidadoMap = new Map<string, ConsolidadoItem>();
+  //   for (const area of areas) {
+  //     if (!area) continue;
+  //     let horarioConfArea = configuracionesMap.get(area.id_area);
+  //     if (!horarioConfArea) {
+  //       horarioConfArea = {
+  //         id_configuracion: null,
+  //         id_proyecto: area.id_proyecto,
+  //         id_area: area.id_area,
+  //         inicio_semana: 'LUNES',
+  //         dias_nolaborables: 'DOMINGO',
+  //         hora_ingreso_manana: '07:30:00|07:30:00|07:30:00|07:30:00|07:30:00|07:30:00|',
+  //         hora_salida_manana: '12:00:00|12:00:00|12:00:00|12:00:00|12:00:00|13:00:00|',
+  //         hora_ingreso_tarde: '14:00:00|14:00:00|14:00:00|14:00:00|14:00:00||',
+  //         hora_salida_tarde: '18:00:00|18:00:00|18:00:00|18:00:00|18:00:00||',
+  //         totales_dia: 48,
+  //         descuentos: "0|10|10|0|100|100|0|0|0|0|0|0|0|100|100|0|0|0|0|0|0",
+  //         tardanza: 10,
+  //         tiempo_extra: 0
+  //       }
+  //     }
+  //     const areaMontosMap = montosAreasMap.get(area.id_area);
+  //     const cargosArea = cargosPorArea.get(area.id_area) || [];
+
+  //     for (const cargo of cargosArea) {
+  //       if (!cargo) continue;
+
+  //       const asignacionesCargo = asignacionesPorCargo.get(cargo.id_cargo) || [];
+  //       const asignacionesPorTipo = new Map<string, any[]>();
+
+  //       asignacionesCargo.forEach(asignacion => {
+  //         if (!asignacion) return;
+  //         const key = asignacion.tipo_cargo || '';
+  //         if (!asignacionesPorTipo.has(key)) {
+  //           asignacionesPorTipo.set(key, []);
+  //         }
+  //         asignacionesPorTipo.get(key)!.push(asignacion);
+  //       });
+  //       for (const [tipoCargo, asignacionesGrupo] of asignacionesPorTipo) {
+  //         const key = `${area.id_area}_${cargo.id_cargo}_${tipoCargo}`;
+
+  //         let costoDia = 0;
+  //         if (areaMontosMap && tipoCargo) {
+  //           for (const [tipo, cargosMap] of areaMontosMap) {
+  //             if (tipo && tipo.endsWith(tipoCargo)) {
+  //               costoDia = cargosMap.get(cargo.id_cargo) || 0;
+  //               break;
+  //             }
+  //           }
+  //         }
+
+  //         const feriadosSoloFecha = feriados.filter(ele => {
+  //           if (!ele || !ele.areas) return false;
+  //           const areas = ele.areas?.split('|');
+  //           return areas && areas.includes(area.id_area.toString());
+  //         }).map(ele => ele.fecha?.split('T')[0]).filter(Boolean);
+
+  //         const { calendarioProcesado, costoTotal } = this.procesarDiasCalendarioGrupo(
+  //           calendario,
+  //           asistenciasMap,
+  //           costoDia,
+  //           horarioConfArea,
+  //           feriadosSoloFecha,
+  //           asignacionesGrupo
+  //         );
+
+  //         if (!consolidadoMap.has(key)) {
+  //           consolidadoMap.set(key, {
+  //             id_area: area.id_area,
+  //             descripcion_area: area.descripcion || '',
+  //             id_cargo: cargo.id_cargo,
+  //             descripcion_cargo: cargo.descripcion || '',
+  //             tipo_cargo: tipoCargo,
+  //             cantidad: asignacionesGrupo.length,
+  //             asignaciones: asignacionesGrupo,
+  //             calendario: calendarioProcesado,
+  //             costo_total: costoTotal
+  //           });
+  //         } else {
+  //           const item = consolidadoMap.get(key)!;
+  //           item.cantidad += asignacionesGrupo.length;
+  //           item.asignaciones.push(...asignacionesGrupo);
+  //           item.costo_total += costoTotal;
+  //         }
+  //       }
+  //     }
+  //   }
+
+  //   return Array.from(consolidadoMap.values());
+  // }
+
   private procesarAreasYAsignaciones(
     areas: any[],
     cargos: any[],
@@ -486,8 +878,10 @@ export class ProcesosRhService {
     const cargosPorArea = this.agruparCargosPorArea(cargos);
     const asignacionesPorCargo = this.agruparAsignacionesPorCargo(asignaciones);
     const consolidadoMap = new Map<string, ConsolidadoItem>();
+
     for (const area of areas) {
       if (!area) continue;
+
       let horarioConfArea = configuracionesMap.get(area.id_area);
       if (!horarioConfArea) {
         horarioConfArea = {
@@ -504,8 +898,19 @@ export class ProcesosRhService {
           descuentos: "0|10|10|0|100|100|0|0|0|0|0|0|0|100|100|0|0|0|0|0|0",
           tardanza: 10,
           tiempo_extra: 0
-        }
+        };
       }
+
+      // OBTENER Y FILTRAR FERIADOS DEL ÁREA UNA SOLA VEZ
+      const feriadosSoloFecha = feriados
+        .filter(ele => {
+          if (!ele || !ele.areas) return false;
+          const areasFeriado = ele.areas.split('|');
+          return areasFeriado.includes(area.id_area.toString());
+        })
+        .map(ele => ele.fecha?.split('T')[0])
+        .filter(Boolean);
+
       const areaMontosMap = montosAreasMap.get(area.id_area);
       const cargosArea = cargosPorArea.get(area.id_area) || [];
 
@@ -523,24 +928,25 @@ export class ProcesosRhService {
           }
           asignacionesPorTipo.get(key)!.push(asignacion);
         });
+
         for (const [tipoCargo, asignacionesGrupo] of asignacionesPorTipo) {
           const key = `${area.id_area}_${cargo.id_cargo}_${tipoCargo}`;
 
+          // BÚSQUEDA MÁS ROBUSTA DE COSTO DÍA
           let costoDia = 0;
           if (areaMontosMap && tipoCargo) {
-            for (const [tipo, cargosMap] of areaMontosMap) {
-              if (tipo && tipo.endsWith(tipoCargo)) {
+            const tipoCargoClean = String(tipoCargo ?? '').trim().toUpperCase();
+
+            for (const [tipoKey, cargosMap] of areaMontosMap) {
+              // Convertimos también la llave del Map a String por seguridad
+              const tipoKeyClean = String(tipoKey ?? '').trim().toUpperCase();
+
+              if (tipoKeyClean.endsWith(tipoCargoClean)) {
                 costoDia = cargosMap.get(cargo.id_cargo) || 0;
                 break;
               }
             }
           }
-
-          const feriadosSoloFecha = feriados.filter(ele => {
-            if (!ele || !ele.areas) return false;
-            const areas = ele.areas?.split('|');
-            return areas && areas.includes(area.id_area.toString());
-          }).map(ele => ele.fecha?.split('T')[0]).filter(Boolean);
 
           const { calendarioProcesado, costoTotal } = this.procesarDiasCalendarioGrupo(
             calendario,
@@ -559,7 +965,7 @@ export class ProcesosRhService {
               descripcion_cargo: cargo.descripcion || '',
               tipo_cargo: tipoCargo,
               cantidad: asignacionesGrupo.length,
-              asignaciones: asignacionesGrupo,
+              asignaciones: [...asignacionesGrupo],
               calendario: calendarioProcesado,
               costo_total: costoTotal
             });
@@ -568,6 +974,8 @@ export class ProcesosRhService {
             item.cantidad += asignacionesGrupo.length;
             item.asignaciones.push(...asignacionesGrupo);
             item.costo_total += costoTotal;
+            // NOTA: Si necesitas fusionar los datos de item.calendario con calendarioProcesado,
+            // deberás agregar una función auxiliar aquí para combinar ambos arrays.
           }
         }
       }
@@ -576,220 +984,6 @@ export class ProcesosRhService {
     return Array.from(consolidadoMap.values());
   }
 
-  // private procesarDiasCalendarioGrupo(
-  //   calendario: any[],
-  //   asistenciasMap: Map<string, Map<number, any>>,
-  //   costoDia: number,
-  //   horarioConfArea: any,
-  //   feriadosSoloFecha: string[],
-  //   asignacionesGrupo: any[]
-  // ): { calendarioProcesado: CalendarioDia[], costoTotal: number } {
-
-  //   const getDiaSemanaEspanol = (fechaMoment: moment.Moment): string => {
-  //     const diasMap: { [key: string]: string } = {
-  //       'SUNDAY': 'DOMINGO',
-  //       'MONDAY': 'LUNES',
-  //       'TUESDAY': 'MARTES',
-  //       'WEDNESDAY': 'MIÉRCOLES',
-  //       'THURSDAY': 'JUEVES',
-  //       'FRIDAY': 'VIERNES',
-  //       'SATURDAY': 'SÁBADO'
-  //     };
-  //     const diaIngles = fechaMoment.format('dddd').toUpperCase();
-  //     return diasMap[diaIngles] || diaIngles;
-  //   };
-
-  //   const descuentosRaw = horarioConfArea?.descuentos || [];
-
-  //   // const diasNoLaborables = horarioConfArea?.dias_nolaborables?.split('|') || [];
-  //   const diasNoLaborables = []
-  //   const descuentos = typeof descuentosRaw === 'string'
-  //     ? descuentosRaw.split('|')  // No usar slice(1) porque el primer elemento vacío es para ASISTIO
-  //     : descuentosRaw;
-
-  //   const tipos = [
-  //     { codigo: 'A', tipo: 'ASISTIO' },
-  //     { codigo: 'T', tipo: 'TARDANZA' },
-  //     { codigo: 'TI', tipo: 'TARDANZA INJUSTIFICADA' },
-  //     { codigo: 'TJ', tipo: 'TARDANZA JUSTIFICADA' },
-  //     { codigo: 'F', tipo: 'FALTA' },
-  //     { codigo: 'FI', tipo: 'FALTA INJUSTIFICADA' },
-  //     { codigo: 'FJ', tipo: 'FALTA JUSTIFICADA' },
-  //     { codigo: 'FM', tipo: 'DESCANSO MEDICO' },
-  //     { codigo: 'FV', tipo: 'VACACIONES' },
-  //     { codigo: 'PE', tipo: 'PERMISO' },
-  //     { codigo: 'D1', tipo: 'DESCUENTO OPCIONAL 1' },
-  //     { codigo: 'D2', tipo: 'DESCUENTO OPCIONAL 2' },
-  //     { codigo: 'D3', tipo: 'DESCUENTO OPCIONAL 3' },
-  //     { codigo: 'OBS', tipo: 'OBSERVADO' },
-  //     { codigo: 'IN', tipo: 'INCOMPLETO' },
-  //     { codigo: 'TEX', tipo: 'TEXTRA' },
-  //     { codigo: 'BN', tipo: 'BONO NO LABORABLE' },
-  //     { codigo: 'BF', tipo: 'BONO FERIADO' },
-  //     { codigo: 'B1', tipo: 'BONO OPCIONAL 1' },
-  //     { codigo: 'B2', tipo: 'BONO OPCIONAL 2' },
-  //     { codigo: 'B3', tipo: 'BONO OPCIONAL 3' },
-  //   ];
-
-  //   const tipoMap = new Map();
-  //   tipos.forEach((tipoObj, index) => {
-  //     const descuentoNumero = parseInt(descuentos[index] || "0", 10) || 0;
-  //     tipoMap.set(tipoObj.codigo, {
-  //       ...tipoObj,
-  //       descuento: descuentoNumero
-  //     });
-  //   });
-  //   console.log('descuentos', descuentos)
-  //   console.log('tipos', tipos)
-  //   console.log('tipoMap', tipoMap)
-  //   // Función para verificar si una asignación está activa en una fecha específica
-  //   const isAsignacionActivaEnFecha = (asignacion: any, fecha: moment.Moment): boolean => {
-  //     if (!asignacion) return false;
-
-  //     // Si tiene fecha_inicio y fecha_fin
-  //     if (asignacion.fecha_inicio && asignacion.fecha_fin) {
-  //       const fechaInicio = moment(asignacion.fecha_inicio);
-  //       const fechaFin = moment(asignacion.fecha_fin);
-  //       return fecha.isSameOrAfter(fechaInicio, 'day') && fecha.isSameOrBefore(fechaFin, 'day');
-  //     }
-
-  //     // Si solo tiene fecha_inicio
-  //     if (asignacion.fecha_inicio && !asignacion.fecha_fin) {
-  //       const fechaInicio = moment(asignacion.fecha_inicio);
-  //       return fecha.isSameOrAfter(fechaInicio, 'day');
-  //     }
-
-  //     // Si solo tiene fecha_fin
-  //     if (!asignacion.fecha_inicio && asignacion.fecha_fin) {
-  //       const fechaFin = moment(asignacion.fecha_fin);
-  //       return fecha.isSameOrBefore(fechaFin, 'day');
-  //     }
-
-  //     // Si no tiene fechas, asumir que siempre está activa
-  //     return true;
-  //   };
-
-  //   const calendarioProcesado: CalendarioDia[] = [];
-  //   let costoTotal = 0;
-
-  //   for (const anio of calendario) {
-  //     if (!anio || !anio.meses) continue;
-
-  //     for (const mes of anio.meses) {
-  //       if (!mes || !mes.dias) continue;
-
-  //       for (const dia of mes.dias) {
-  //         if (!dia || !dia.fecha) continue;
-
-  //         const fechaDia = moment(dia.fecha, 'DD-MM-YYYY');
-  //         const fechaDiaKey = fechaDia.format('DD-MM-YYYY');
-  //         const diaSemana = getDiaSemanaEspanol(fechaDia);
-  //         const fecha = dia.fecha;
-
-  //         const esDiaNoLaborable = diasNoLaborables.includes(diaSemana);
-  //         const esFeriado = feriadosSoloFecha.includes(fechaDiaKey);
-  //         const esDiaEspecial = esDiaNoLaborable || esFeriado;
-
-  //         const detalleAsistencias: AsistenciaDetalle[] = [];
-  //         let montoDia = 0;
-  //         let cantidadAsignacionesConMonto = 0;
-
-  //         const usuariosMap = asistenciasMap.get(fechaDiaKey) || new Map<number, any>();
-
-  //         // ✅ MODIFICADO: Procesar TODAS las asignaciones del grupo
-  //         for (const asignacion of asignacionesGrupo) {
-  //           if (!asignacion) continue;
-
-  //           // Verificar si la asignación está activa en esta fecha
-  //           const estaActiva = isAsignacionActivaEnFecha(asignacion, fechaDia);
-
-  //           if (!estaActiva) {
-  //             // Asignación NO activa en esta fecha - agregar detalle vacío
-  //             detalleAsistencias.push({
-  //               id_asignacion: asignacion.id_asignacion || 0,
-  //               id_usuario: asignacion.id_usuario || 0,
-  //               tipo_asistencia: '',
-  //               descuento_aplicado: 0,
-  //               monto_individual: 0
-  //             });
-  //             continue;
-  //           }
-
-  //           // Asignación activa - procesar asistencia
-  //           const asistencia = usuariosMap.get(asignacion.id_usuario);
-
-  //           if (asistencia) {
-  //             const tipoCodigo = asistencia.tipo;
-  //             console.log('asistencia', asistencia)
-  //             let montoIndividual = 0;
-  //             let descuentoAplicado = 0;
-
-  //             if (tipoCodigo && tipoCodigo !== '') {
-  //               const tipoInfo = tipoMap.get(tipoCodigo);
-  //               console.log('tipoInfo', tipoInfo)
-  //               if (tipoInfo) {
-  //                 descuentoAplicado = tipoInfo.descuento;
-  //                 if (!esDiaEspecial) {
-  //                   if (descuentoAplicado > 0) {
-  //                     const descuentoMonto = costoDia * (descuentoAplicado / 100);
-  //                     montoIndividual = costoDia - descuentoMonto;
-  //                   } else {
-  //                     montoIndividual = costoDia;
-  //                   }
-  //                   montoDia += montoIndividual;
-  //                   cantidadAsignacionesConMonto++;
-  //                 }
-  //               } else {
-  //                 if (!esDiaEspecial) {
-  //                   montoIndividual = costoDia;
-  //                   montoDia += montoIndividual;
-  //                   cantidadAsignacionesConMonto++;
-  //                 }
-  //               }
-  //             } else {
-  //               if (!esDiaEspecial) {
-  //                 montoIndividual = 0;
-  //               }
-  //             }
-
-  //             detalleAsistencias.push({
-  //               id_asignacion: asignacion.id_asignacion || 0,
-  //               id_usuario: asistencia.id_usuario || 0,
-  //               tipo_asistencia: tipoCodigo || '',
-  //               descuento_aplicado: descuentoAplicado,
-  //               monto_individual: montoIndividual
-  //             });
-  //           } else {
-  //             // Asignación activa sin registro de asistencia
-  //             detalleAsistencias.push({
-  //               id_asignacion: asignacion.id_asignacion || 0,
-  //               id_usuario: asignacion.id_usuario || 0,
-  //               tipo_asistencia: '',
-  //               descuento_aplicado: 0,
-  //               monto_individual: 0
-  //             });
-  //           }
-  //         }
-
-  //         // ✅ MODIFICADO: Siempre agregar el día al calendario
-  //         costoTotal += montoDia;
-
-  //         calendarioProcesado.push({
-  //           fecha: fecha,
-  //           dia: dia.dia || '',
-  //           laborable: dia.laborable || false,
-  //           feriado: dia.feriado || false,
-  //           esDiaEspecial,
-  //           monto_dia: montoDia,
-  //           cantidad_asignaciones: cantidadAsignacionesConMonto,
-  //           detalle_asistencias: detalleAsistencias
-  //         });
-  //       }
-  //     }
-  //   }
-
-  //   return { calendarioProcesado, costoTotal };
-  // }
   private procesarDiasCalendarioGrupo(
     calendario: any[],
     asistenciasMap: Map<string, Map<number, any>>,
@@ -814,8 +1008,7 @@ export class ProcesosRhService {
     };
 
     const descuentosRaw = horarioConfArea?.descuentos || [];
-
-    const diasNoLaborables = []
+    const diasNoLaborables = [];
     const descuentos = typeof descuentosRaw === 'string'
       ? descuentosRaw.split('|')
       : descuentosRaw;
@@ -849,10 +1042,9 @@ export class ProcesosRhService {
       const valorNumero = parseInt(descuentos[index] || "0", 10) || 0;
       tipoMap.set(tipoObj.codigo, {
         ...tipoObj,
-        valor: valorNumero  // Puede ser descuento o bonificación según tipoValor
+        valor: valorNumero
       });
     });
-
 
     const isAsignacionActivaEnFecha = (asignacion: any, fecha: moment.Moment): boolean => {
       if (!asignacion) return false;
@@ -907,8 +1099,10 @@ export class ProcesosRhService {
             if (!asignacion) continue;
 
             const estaActiva = isAsignacionActivaEnFecha(asignacion, fechaDia);
+            const asistencia = usuariosMap.get(asignacion.id_usuario);
 
-            if (!estaActiva) {
+            // Si NO está activa la asignación Y TAMPOCO hay asistencia registrada, se omite.
+            if (!estaActiva && !asistencia) {
               detalleAsistencias.push({
                 id_asignacion: asignacion.id_asignacion || 0,
                 id_usuario: asignacion.id_usuario || 0,
@@ -920,10 +1114,12 @@ export class ProcesosRhService {
               continue;
             }
 
-            const asistencia = usuariosMap.get(asignacion.id_usuario);
-
             if (asistencia) {
-              const tipoCodigo = asistencia.tipo;
+              // Soporta tanto asistencia.tipo como asistencia.tipo_asistencia
+              const rawTipo = asistencia.tipo || asistencia.tipo_asistencia || '';
+              // Limpia el asterisco '*' (ej. 'A*' -> 'A') para consultar el Map
+              const tipoCodigo = rawTipo.replace('*', '').trim();
+
               let montoIndividual = 0;
               let valorAplicado = 0;
               let tipoValor = '';
@@ -936,7 +1132,6 @@ export class ProcesosRhService {
 
                   if (!esDiaEspecial) {
                     if (tipoValor === 'descuento') {
-                      // Descuento: resta del costo del día
                       if (valorAplicado > 0) {
                         const descuentoMonto = costoDia * (valorAplicado / 100);
                         montoIndividual = costoDia - descuentoMonto;
@@ -944,7 +1139,6 @@ export class ProcesosRhService {
                         montoIndividual = costoDia;
                       }
                     } else if (tipoValor === 'bonificacion') {
-                      // Bonificación: suma adicional al costo del día
                       const bonificacionMonto = costoDia * (valorAplicado / 100);
                       montoIndividual = costoDia + bonificacionMonto;
                     } else {
@@ -968,13 +1162,14 @@ export class ProcesosRhService {
 
               detalleAsistencias.push({
                 id_asignacion: asignacion.id_asignacion || 0,
-                id_usuario: asistencia.id_usuario || 0,
-                tipo_asistencia: tipoCodigo || '',
+                id_usuario: asistencia.id_usuario || asignacion.id_usuario || 0,
+                tipo_asistencia: rawTipo, // Mantiene el formato original (ej. 'A*')
                 valor_aplicado: valorAplicado,
                 monto_individual: montoIndividual,
                 tipo_valor: tipoValor
               });
             } else {
+              // Si la asignación está activa pero no marcó asistencia en esa fecha
               detalleAsistencias.push({
                 id_asignacion: asignacion.id_asignacion || 0,
                 id_usuario: asignacion.id_usuario || 0,
@@ -1161,8 +1356,6 @@ export class ProcesosRhService {
 
     return meses;
   }
-
-
 
   async listarInformacionRHPlanilla(id_proyecto) {
     const obj = {

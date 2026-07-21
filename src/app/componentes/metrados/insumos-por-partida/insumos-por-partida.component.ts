@@ -106,6 +106,7 @@ export class InsumosPorPartidaComponent implements OnInit {
   acueCompletoMes: filaAcue[] = []
   registroAcue = true
   mostrar_carga_todo2 = false;
+  busquedaMod = ''
   @Input() set tabproyecto(value: any) {
     this.prueba = value
     this.id_proyecto = value.get('id_proyecto').value;
@@ -776,10 +777,19 @@ export class InsumosPorPartidaComponent implements OnInit {
   }
 
   modalAgregar() {
+    this.busquedaMod = ''
+    this.modalRegistroSaldo.show()
+  }
 
+  limpiarfiltroMod() {
+    this.busquedaMod = ''
   }
 
   cerrarModal() {
-    
+
+  }
+
+  limpiarTodoDia() {
+
   }
 }

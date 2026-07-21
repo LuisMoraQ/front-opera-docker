@@ -450,16 +450,16 @@
 
         </div>
         <div class="col-12 position-relative">
-            <div class="h-planilla overflow-auto tabla-tareo-principal">
+            <div class="h-planilla  tabla-tareo-principal contenedor-tabla-scroll" #tablaContainer>
 
                 <table class="table-bordered tab-10">
                     <thead class="text-center">
                         <tr [ngClass]="{'h-22': !calendarioFiltrado.length }">
-                            <th rowspan="2" appAnchocol [ancho]="40" [ngClass]="{'col-sticky-1': columnasFijasActivas}">
+                            <th rowspan="2" [ngClass]="{'col-sticky-1': columnasFijasActivas}">
                             </th>
                             <!-- <th rowspan="2" appAnchocol [ancho]="120" [detalle]="true">CARGO</th> -->
-                            <th rowspan="2" appAnchocol [ancho]="150" [detalle]="true"
-                                [ngClass]="{'col-sticky-2': columnasFijasActivas}">USUARIO</th>
+                            <th rowspan="2" [detalle]="true" [ngClass]="{'col-sticky-2': columnasFijasActivas}">USUARIO
+                            </th>
                             <ng-container *ngFor="let mes of calendarioFiltrado">
                                 <th [colSpan]="mes.colspan" class="mes-header">
                                     {{mes.nombre}}
@@ -660,7 +660,8 @@
                     </tbody>
                     <tfoot class="sticky-footer-wrapper" *ngIf="tablaFiltrada.length">
                         <tr class="bg-light">
-                            <td colspan="2" class="text-center font-weight-bold" [ngClass]="{'col-sticky-1': columnasFijasActivas}">Total personal por dia</td>
+                            <td colspan="2" class="text-center font-weight-bold"
+                                [ngClass]="{'col-sticky-1': columnasFijasActivas}">Total personal por dia</td>
                             <!-- <td [colSpan]="calendarioFiltrado[0]?.colspan || 0"></td> -->
                             <ng-container *ngFor="let item of cantidadUsuariosDia">
                                 <td class="text-center font-weight-bold">
@@ -839,151 +840,8 @@
         </div>
     </div>
 </ng-container>
-<!-- <ng-container *ngIf="activetab == 3">
-    <div class=" h-content">
-        <div class="col-12 d-flex px-0">
-            <mat-form-field appearance="outline" class="mff-reduc col-3 pl-0">
-                <mat-label>Area</mat-label>
-                <mat-select [(ngModel)]="areaSeleccionadaPres" (ngModelChange)="cambioAreaPres()">
-                    <mat-option *ngFor="let area of areas" [value]="area.id_area">
-                        {{area.descripcion}}
-                    </mat-option>
 
-                </mat-select>
-            </mat-form-field>
-
-            <div class="col d-flex" style="height: 29px;" *ngIf="this.areaSeleccionadaPres">
-                <button class="btn btn-mini btn-group-mini btn-outline-primary" container="body"
-                    style="margin-left: 1px" ngbTooltip="Agregar Fila" type="button" (mouseup)="quitarfoco($event)"
-                    (click)="agregarFila()">
-                    <i class="fa fa-plus icono-but" aria-hidden="true"></i>
-                </button>
-                <button class="btn btn-mini btn-group-mini btn-outline-primary" container="body"
-                    [disabled]="!filPresAna" style="margin-left: 1px" ngbTooltip="Eliminar Fila" type="button"
-                    (click)="eliminarFila()" (mouseup)="quitarfoco($event)">
-                    <i class="fa fa-times icono-but" aria-hidden="true"></i>
-                </button>
-                <button class="btn btn-mini btn-group-mini btn-outline-primary" container="body"
-                    [disabled]="!filPresAna || filPresAna < 2" style="margin-left: 1px" ngbTooltip="Mover Arriba Fila"
-                    type="button" (click)="moverFilaArriba()">
-                    <i class="fa fa-arrow-up icono-but" aria-hidden="true"></i>
-                </button>
-
-                <button class="btn btn-mini btn-group-mini btn-outline-primary" container="body"
-                    [disabled]="!filPresAna || filPresAna === tablaPresAnalitico.length - 1" style="margin-left: 1px"
-                    ngbTooltip="Mover Abajo Fila" type="button" (click)="moverFilaAbajo()">
-                    <i class="fa fa-arrow-down icono-but" aria-hidden="true"></i>
-                </button>
-                <button class="btn btn-mini btn-group-mini btn-outline-primary" container="body"
-                    style="margin-left: 1px" ngbTooltip="Limpiar presupuesto area" type="button"
-                    (click)="eliminarAreaPresAnaliticoRH()" (mouseup)="quitarfoco($event)">
-                    <i class="fa fa-trash icono-but" aria-hidden="true"></i>
-                </button>
-            </div>
-        </div>
-        <div class="h-planilla overflow-auto">
-            <table class="tablacust table-bordered tab-10" style="table-layout: fixed; width: 100%;">
-                <thead class="text-center">
-                    <tr [ngClass]="{'h-22': !tablaPresAnalitico.length }">
-                        <th rowspan="2" appAnchocol2 [ancho]="40">Item</th>
-                        <th rowspan="2" appAnchocol2 [ancho]="300">Descripcion</th>
-                        <th rowspan="2" appAnchocol2 [ancho]="90">Abreviatura</th>
-                        <th rowspan="2" appAnchocol2 [ancho]="250">Formula</th>
-
-                        <ng-container *ngFor="let cargo of cargosFiltradosPres">
-                            <th class="mes-header" colspan="2">
-                                {{cargo.descripcion}}
-                            </th>
-                        </ng-container>
-                    </tr>
-
-                    <tr>
-                        <ng-container *ngFor="let cargo of cargosFiltradosPres">
-                            <th class="mes-header" appAnchocol2 [ancho]="80">
-                                %
-                            </th>
-                            <th class="mes-header" appAnchocol2 [ancho]="80">
-                                Parcial
-                            </th>
-                        </ng-container>
-                    </tr>
-                </thead>
-                <tbody>
-                    <ng-container *ngIf="tablaPresAnalitico.length; else noPresAna">
-                        <tr *ngFor="let row of tablaPresAnalitico; let i = index" (click)="filPresAna = i"
-                            [ngClass]="{'highlight': i == filPresAna }">
-
-                            <td class="text-center" appAnchocol2 [ancho]="40">{{row.item}}</td>
-
-                            <td appAnchocol2 [ancho]="300">
-                                <input type="text" [value]="row.descripcion" class="w-100"
-                                    (blur)="blurDescripcion($event.target.value, i)" />
-                            </td>
-
-                            <td class="text-center" appAnchocol2 [ancho]="90">
-                                <input type="text" [value]="row.abreviatura" class="w-100 text-center"
-                                    (blur)="blurAbreviatura($event.target.value, i)" />
-                            </td>
-
-                            <td appAnchocol2 [ancho]="250">
-                                <span *ngIf="i === 0">{{row.formula}}</span>
-                                <input *ngIf="i !== 0" type="text" [value]="row.formula" class="mayuscula w-100"
-                                    (blur)="blurFormula($event.target.value, i)"
-                                    (keyup.enter)="blurFormula($event.target.value, i)" placeholder="Ej: %RB+50" />
-                            </td>
-
-                            <ng-container *ngFor="let cargo of row.cargos; let j = index">
-                                <td class="text-center" appAnchocol2 [ancho]="80">
-                                    <span *ngIf="i === 0">{{cargo.porcentaje | number:'1.2-2'}}</span>
-                                    <input *ngIf="i !== 0" type="number" [value]="cargo.porcentaje"
-                                        class="w-100 text-center" step="0.01"
-                                        (blur)="blurporcentaje($event.target.value, i, j)" />
-                                </td>
-
-                                <td class="text-center" appAnchocol2 [ancho]="80">
-                                    <input type="number" [value]="cargo.parcial" class="w-100 text-center" step="0.01"
-                                        (blur)="blurparcial($event.target.value, i, j)" />
-                                </td>
-                            </ng-container>
-                        </tr>
-                    </ng-container>
-                    <ng-template #noPresAna>
-                        <tr>
-                            <td class="mat-cell text-center" [colSpan]="4 + cargosFiltradosPres?.length * 2">
-                                <label>No se encontraron datos almacenados</label>
-                            </td>
-                        </tr>
-                    </ng-template>
-                </tbody>
-                <tfoot class="font-weight-colder text-center" *ngIf="this.tablaPresAnalitico.length">
-
-                    <tr *ngFor="let row of this.tablaPresAnaliticoFooter; let i = index ">
-                        <th colspan="3">{{row.descripcion}}</th>
-                        <th>
-                            <input type="number" [(ngModel)]="row.formula" class="w-100 text-center"
-                                *ngIf="row.item == '0-1'" (blur)="blurHoraJornal($event.target.value, i)" />
-                        </th>
-                        <ng-container *ngFor="let cargo of row.cargos; let j = index">
-                            <th class="text-center" appAnchocol2 [ancho]="80">
-                                <span *ngIf="row.item == '0-1' || row.item == '0-0'">{{cargo.porcentaje |
-                                    number:'1.2-2'}}</span>
-                                <input *ngIf="row.item !== '0-1' && row.item !== '0-0'" type="number"
-                                    [value]="cargo.porcentaje" class="w-100 text-center" step="0.01"
-                                    (blur)="blurporcentajeFooter($event.target.value, i, j)" />
-                            </th>
-
-                            <th class="text-center" appAnchocol2 [ancho]="80">
-                                <input type="number" [value]="cargo.parcial" class="w-100 text-center" step="0.01"
-                                    (blur)="blurparcialFooter($event.target.value, i, j)" />
-                            </th>
-                        </ng-container>
-                    </tr>
-                </tfoot>
-            </table>
-        </div>
-    </div>
-</ng-container> -->
-<ng-container *ngIf="activetab == 4">
+<!-- <ng-container *ngIf="activetab == 4">
     <div class=" h-content ">
         <div class="col-12 d-flex px-0">
             <mat-form-field appearance="outline" class="mff-reduc col-3">
@@ -1023,11 +881,9 @@
             <table class="table-bordered tab-10">
                 <thead class="text-center">
                     <tr>
-                        <!-- <th rowspan="3"></th> -->
-                        <!-- <th rowspan="3">Area</th> -->
+                     
                         <th rowspan="3">Cargo</th>
                         <th rowspan="3">Categoria</th>
-                        <!-- <th rowspan="3">Cantidad</th> -->
                         <th [colSpan]="calendarioFiltrado2?.dias?.length * 2">
                             {{calendarioFiltrado2?.mes}} - {{calendarioFiltrado2?.anio}}
                         </th>
@@ -1037,7 +893,6 @@
                         <ng-container *ngFor="let dia of calendarioFiltrado2?.dias">
                             <th colspan="2">
                                 <div class="dia-numero">{{dia.numero_dia_mes}} - {{dia.abreviatura}}</div>
-                                <!-- <div class="dia-abreviatura"></div> -->
                             </th>
                         </ng-container>
                     </tr>
@@ -1052,47 +907,49 @@
                         </ng-container>
                     </tr>
                 </thead>
+         
                 <tbody>
-                    <tr *ngFor="let row of tablaAcumFiltrada; let i = index"
-                        [ngClass]="{ 
-                                        'font-weight-bolder': row.es_encabezado_area || row.es_total_area, 'bg-area':row.es_encabezado_area, 'bg-total': row.es_total_area}">
-                        <!-- <td class="text-center">{{i+1}}</td> -->
-                        <!-- <td>{{row.descripcion_area}}</td> -->
-                        <td [ngClass]="{'pl-3':!row.es_encabezado_area && !row.es_total_area}">
-                            {{row.descripcion_cargo}}
-                        </td>
-                        <td class="text-center">{{getRomanNumeral(row.tipo_cargo)}}</td>
-                        <!-- <td>{{row.cantidad}}</td> -->
-                        <ng-container *ngFor="let dia of row.calendario">
-                            <ng-container>
-                                <td class="text-center">
-                                    <ng-container
-                                        *ngIf="dia.cantidad_asignaciones && !row.es_encabezado_area && !row.es_total_area">{{dia.cantidad_asignaciones}}</ng-container>
+                    <ng-container *ngFor="let row of tablaAcumFiltrada; let i = index">
+                        <tr *ngIf="!row.es_cabecera_area" [ngClass]="{ 
+                'font-weight-bolder': row.es_encabezado_area || row.es_total_area, 
+                'bg-area': row.es_encabezado_area, 
+                'bg-total': row.es_total_area
+            }">
 
+                            <td [ngClass]="{'pl-3': !row.es_encabezado_area && !row.es_total_area}">
+                                {{ row.descripcion_cargo || row.descripcion_area }}
+                            </td>
+
+                            <td class="text-center">
+                                <ng-container *ngIf="!row.es_encabezado_area && !row.es_total_area">
+                                    {{ getRomanNumeral(row.tipo_cargo) }}
+                                </ng-container>
+                            </td>
+
+                            <ng-container *ngFor="let dia of row.calendario">
+                                <td class="text-center">
+                                    <ng-container *ngIf="dia.cantidad_asignaciones && !row.es_encabezado_area">
+                                        {{ dia.cantidad_asignaciones }}
+                                    </ng-container>
                                 </td>
+
                                 <td>
                                     <div class="d-flex justify-content-between align-items-center"
-                                        *ngIf="dia.monto_dia && !row.es_encabezado_area && !row.es_total_area">
-                                        <!-- Símbolo izquierdo -->
+                                        *ngIf="dia.monto_dia && !row.es_encabezado_area">
                                         <span class="text-muted small">S/.</span>
-
-                                        <!-- Monto -->
-                                        <span>{{dia.monto_dia | number:'0.2-2'}}</span>
+                                        <span>{{ dia.monto_dia | number:'0.2-2' }}</span>
                                     </div>
                                 </td>
                             </ng-container>
-                        </ng-container>
-                        <td>
-                            <!-- {{row.costo_total| number:'0.2-2'}} -->
-                            <div class="d-flex justify-content-between align-items-center" *ngIf="row.costo_total">
-                                <!-- Símbolo izquierdo -->
-                                <span class="text-muted small">S/.</span>
 
-                                <!-- Monto -->
-                                <span>{{row.costo_total | number:'0.2-2'}}</span>
-                            </div>
-                        </td>
-                    </tr>
+                            <td>
+                                <div class="d-flex justify-content-between align-items-center" *ngIf="row.costo_total">
+                                    <span class="text-muted small">S/.</span>
+                                    <span>{{ row.costo_total | number:'0.2-2' }}</span>
+                                </div>
+                            </td>
+                        </tr>
+                    </ng-container>
                 </tbody>
                 <tfoot>
                     <tr *ngIf="tablaAcumFiltrada.length">
@@ -1101,20 +958,177 @@
                             <th></th>
                             <th>
                                 <div class="d-flex justify-content-between align-items-center">
-                                    <!-- Símbolo izquierdo -->
                                     <span class="text-muted small text-white">S/.</span>
 
-                                    <!-- Monto -->
                                     <span>{{diaAcumulado | number:'0.2-2'}}</span>
                                 </div>
                             </th>
                         </ng-container>
                         <th>
                             <div class="d-flex justify-content-between align-items-center">
-                                <!-- Símbolo izquierdo -->
                                 <span class="text-muted small text-white">S/.</span>
 
-                                <!-- Monto -->
+                                <span>{{totalesAcumulados?.totalGeneral | number:'0.2-2'}}</span>
+                            </div>
+                        </th>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+</ng-container> -->
+<ng-container *ngIf="activetab == 4">
+    <div class="h-content">
+        <!-- Filtros y Controles -->
+        <div class="col-12 d-flex px-0 align-items-center">
+            <mat-form-field appearance="outline" class="mff-reduc col-3">
+                <mat-label>Mes</mat-label>
+                <mat-select [(ngModel)]="mesSelAcum">
+                    <mat-option *ngFor="let mes of mesesAcum; let i=index" [value]="i">
+                        {{mes}}
+                    </mat-option>
+                </mat-select>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="mff-reduc col-3">
+                <mat-label>Area</mat-label>
+                <mat-select [(ngModel)]="areaSelAcum" (ngModelChange)="cambioAreaAcum()">
+                    <mat-option [value]="''">Todas</mat-option>
+                    <mat-option *ngFor="let area of areasAcum" [value]="area.id_area">
+                        {{area.descripcion}}
+                    </mat-option>
+                </mat-select>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="mff-reduc col-3">
+                <mat-label>Cargo</mat-label>
+                <mat-select [(ngModel)]="cargoSelAcum" [disabled]="!areaSelAcum">
+                    <mat-option [value]="''">Todos</mat-option>
+                    <mat-option *ngFor="let cargo of cargosFiltradosAcum" [value]="cargo.id_cargo">
+                        {{cargo.descripcion}}
+                    </mat-option>
+                </mat-select>
+            </mat-form-field>
+
+            <button mat-raised-button color="primary" class="h-50" (click)="filtroAcum()">
+                <mat-icon>search</mat-icon>
+                Buscar
+            </button>
+
+            <!-- TOGGLE DE COLUMNAS FIJAS -->
+            <mat-slide-toggle class="mx-3" [(ngModel)]="columnasFijasActivas2">
+                Columnas fijas
+            </mat-slide-toggle>
+        </div>
+
+        <!-- CONTENEDOR DE LA TABLA -->
+        <div class="col-12 px-0 tabla-acumulado-container" [class.sticky-active]="columnasFijasActivas2"
+            #scrollContainer>
+
+            <table class=" table-bordered tab-10">
+                <thead class="text-center">
+                    <tr>
+                        <th rowspan="3" class="col-sticky-1">Cargo</th>
+                        <th rowspan="3" class="col-sticky-2">Categoria</th>
+                        <th [colSpan]="(calendarioFiltrado2?.dias?.length || 0) * 2">
+                            {{calendarioFiltrado2?.mes}} - {{calendarioFiltrado2?.anio}}
+                        </th>
+                        <th rowspan="3">Total Mes</th>
+                    </tr>
+                    <tr>
+                        <ng-container *ngFor="let dia of calendarioFiltrado2?.dias">
+                            <th colspan="2">
+                                <div class="dia-numero">{{dia.numero_dia_mes}} - {{dia.abreviatura}}</div>
+                            </th>
+                        </ng-container>
+                    </tr>
+                    <tr>
+                        <ng-container *ngFor="let dia of calendarioFiltrado2?.dias">
+                            <th appAnchocol [ancho]="40">Cant.</th>
+                            <th appAnchocol [ancho]="70">Monto</th>
+                        </ng-container>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    <ng-container *ngFor="let row of tablaAcumFiltrada; let i = index">
+                        <tr *ngIf="!row.es_cabecera_area" [ngClass]="{ 
+                            'bg-area-acum': row.es_encabezado_area, 
+                            'bg-total-acum': row.es_total_area
+                        }">
+
+                            <!-- ==========================================
+                                 1. ENCABEZADO DE ÁREA (SOLUCIÓN CLAVE)
+                                 ========================================== -->
+                            <ng-container *ngIf="row.es_encabezado_area">
+                                <!-- Celda Sticky en las 2 primeras columnas (280px total) -->
+                                <td colspan="2" class="col-sticky-area-title text-uppercase font-weight-bold"
+                                    [title]="row.descripcion_area || row.descripcion_cargo">
+                                    {{ row.descripcion_area || row.descripcion_cargo }}
+                                </td>
+                                <!-- Relleno celeste para el resto de la tabla al hacer scroll -->
+                                <td [attr.colspan]="((calendarioFiltrado2?.dias?.length || 0) * 2) + 1"
+                                    class="bg-area-filler"></td>
+                            </ng-container>
+
+                            <!-- ==========================================
+                                 2. FILAS NORMALES / TOTALES
+                                 ========================================== -->
+                            <ng-container *ngIf="!row.es_encabezado_area">
+                                <td class="col-sticky-1" [ngClass]="{'pl-3': !row.es_total_area}"
+                                    [title]="row.descripcion_cargo">
+                                    {{ row.descripcion_cargo || row.descripcion_area }}
+                                </td>
+
+                                <td class="text-center col-sticky-2">
+                                    <ng-container *ngIf="!row.es_total_area">
+                                        {{ getRomanNumeral(row.tipo_cargo) }}
+                                    </ng-container>
+                                </td>
+
+                                <ng-container *ngFor="let dia of row.calendario">
+                                    <td class="text-center">
+                                        <ng-container *ngIf="dia.cantidad_asignaciones">
+                                            {{ dia.cantidad_asignaciones }}
+                                        </ng-container>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex justify-content-between align-items-center"
+                                            *ngIf="dia.monto_dia">
+                                            <span class="text-muted small">S/.</span>
+                                            <span>{{ dia.monto_dia | number:'0.2-2' }}</span>
+                                        </div>
+                                    </td>
+                                </ng-container>
+
+                                <td>
+                                    <div class="d-flex justify-content-between align-items-center"
+                                        *ngIf="row.costo_total">
+                                        <span class="text-muted small">S/.</span>
+                                        <span>{{ row.costo_total | number:'0.2-2' }}</span>
+                                    </div>
+                                </td>
+                            </ng-container>
+
+                        </tr>
+                    </ng-container>
+                </tbody>
+
+                <tfoot>
+                    <tr *ngIf="tablaAcumFiltrada.length">
+                        <th colspan="2" class="text-center col-sticky-1-2-foot">TOTAL</th>
+                        <ng-container *ngFor="let diaAcumulado of totalesAcumulados?.acumulados">
+                            <th></th>
+                            <th>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="text-muted small text-white">S/.</span>
+                                    <span>{{diaAcumulado | number:'0.2-2'}}</span>
+                                </div>
+                            </th>
+                        </ng-container>
+                        <th>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="text-muted small text-white">S/.</span>
                                 <span>{{totalesAcumulados?.totalGeneral | number:'0.2-2'}}</span>
                             </div>
                         </th>

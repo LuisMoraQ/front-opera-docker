@@ -1,10 +1,586 @@
+// .h-content {
+//   height: calc(100dvh - 175px);
+// }
+
+// .h-22 {
+//   height: 22px !important;
+// }
+
+// .bg-area {
+//   background-color: #d0def5;
+// }
+
+// .bg-total {
+//   background-color: #f1ecb5;
+// }
+
+
+// .h-planilla {
+//   height: calc(100dvh - 380px);
+// }
+
+// .h-leyenda {
+//   max-height: 40px;
+//   min-height: 40px;
+// }
+
+// .badge {
+//   font-size: 0.65rem;
+//   padding: 0.2rem 0.35rem;
+//   min-width: 24px;
+//   text-align: center;
+//   font-weight: 600;
+// }
+
+// small {
+//   font-size: 0.7rem;
+//   white-space: nowrap;
+// }
+
+// /* Colores personalizados */
+// .bg-orange {
+//   background-color: #fd7e14 !important;
+// }
+
+// .bg-dark-red {
+//   background-color: #c82333 !important;
+// }
+
+// .bg-pink {
+//   background-color: #e83e8c !important;
+// }
+
+// .bg-purple {
+//   background-color: #6f42c1 !important;
+// }
+
+// .bg-teal {
+//   background-color: #20c997 !important;
+// }
+
+// .table-sm td {
+//   padding: 0.15rem 0.5rem;
+//   white-space: nowrap;
+// }
+
+// .badge {
+//   font-size: 0.65rem;
+//   padding: 0.2rem 0.35rem;
+//   min-width: 24px;
+//   font-weight: 600;
+// }
+
+// small {
+//   font-size: 0.7rem;
+// }
+
+// .planilla2 {
+//   height: calc(100dvh - 250px);
+// }
+
+// /* Agrega esto en tu archivo styles.css o en el CSS del componente */
+
+// /* Clases de colores personalizados */
+// .bg-orange {
+//   background-color: #fd7e14 !important;
+// }
+
+// .bg-yellow {
+//   background-color: #ffeb3b !important;
+// }
+
+// .bg-dark-red {
+//   background-color: #c82333 !important;
+// }
+
+// .bg-pink {
+//   background-color: #e83e8c !important;
+// }
+
+// .bg-indigo {
+//   background-color: #6610f2 !important;
+// }
+
+// .bg-light-blue {
+//   background-color: #85d6ff !important;
+// }
+
+// .bg-lime {
+//   background-color: #d4edda !important;
+//   border-color: #c3e6cb !important;
+// }
+
+// .sticky-footer-wrapper {
+//   position: sticky;
+//   bottom: 0;
+//   background-color: white;
+//   border-top: 2px solid #dee2e6;
+//   z-index: 100;
+//   overflow-x: auto;
+// }
+
+// .sticky-footer-wrapper table {
+//   margin-bottom: 0;
+//   width: 100%;
+// }
+
+// /* Sincronizar ancho de columnas */
+// .sticky-footer-wrapper .tab-10 {
+//   width: auto;
+//   /* Se ajustará al contenido */
+//   min-width: 100%;
+//   /* Mínimo ancho completo */
+// }
+
+// .tablacust {
+//   table-layout: fixed;
+//   width: 100%;
+//   border-collapse: collapse;
+// }
+
+// .tablacust th,
+// .tablacust td {
+//   box-sizing: border-box;
+//   overflow: hidden;
+//   text-overflow: ellipsis;
+// }
+
+// .h-mat {
+//   height: 38.75px !important;
+// }
+
+// .h-contenedor {
+//   height: calc(100dvh - 150px);
+// }
+
+// .highlight2 {
+//   background-color: yellow !important;
+// }
+
+// /* Primera columna estática (Ancho: 40px) */
+// .col-sticky-1 {
+//   position: sticky !important;
+//   left: 0;
+//   z-index: 3;
+//   box-shadow: 2px 0 5px -2px rgba(0, 0, 0, 0.15);
+//   background-color: #ffffff !important;
+// }
+
+// /* Segunda columna estática (Se desplaza 40px) */
+// .col-sticky-2 {
+//   position: sticky !important;
+//   left: 40px;
+//   z-index: 3;
+//   box-shadow: 3px 0 5px -2px rgba(0, 0, 0, 0.15);
+//   background-color: #ffffff !important;
+//   max-width: 150px;
+//   white-space: nowrap;
+// }
+
+// /* Cabeceras */
+// th.col-sticky-1,
+// th.col-sticky-2 {
+//   z-index: 5 !important;
+//   background-color: #004da0 !important;
+//   /* Ajusta a tu color azul */
+//   color: white;
+// }
+
+// /* Fila de Área */
+// .col-sticky-area {
+//   position: sticky !important;
+//   left: 0;
+//   z-index: 2;
+//   text-align: left;
+// }
+
+// /* ==========================================================================
+//    ESTILOS EXCLUSIVOS PARA LA TABLA DE TAREO DE 2 FILAS DE CABECERA
+//    ========================================================================== */
+
+// /* Contenedor con límite de altura para activar el scroll vertical */
+// .tabla-tareo-principal {
+//   overflow: auto;
+//   position: relative;
+//   max-height: 70vh;
+// }
+
+// /* --------------------------------------------------------------------------
+//    FILA 1 DE LA CABECERA (Meses y Columnas con rowspan="2")
+//    -------------------------------------------------------------------------- */
+// .tabla-tareo-principal thead tr:nth-child(1) th {
+//   position: sticky !important;
+//   top: 0;
+//   /* Se clavan en el borde superior absoluto */
+//   z-index: 4;
+//   background-color: #004da0 !important;
+//   /* Tu azul */
+//   color: white;
+// }
+
+// /* Intersecciones de las esquinas en la FILA 1 (Solo si el switch está activo) */
+// .tabla-tareo-principal th.col-sticky-1 {
+//   position: sticky !important;
+//   top: 0 !important;
+//   left: 0 !important;
+//   z-index: 6 !important;
+//   /* Máxima prioridad, no los tapa nadie */
+// }
+
+// .tabla-tareo-principal th.col-sticky-2 {
+//   position: sticky !important;
+//   top: 0 !important;
+//   left: 40px !important;
+//   /* Ancho de la primera columna */
+//   z-index: 6 !important;
+// }
+
+
+// /* --------------------------------------------------------------------------
+//    FILA 2 DE LA CABECERA (Los días: número y abreviatura)
+//    -------------------------------------------------------------------------- */
+// .tabla-tareo-principal thead tr:nth-child(2) th {
+//   position: sticky !important;
+//   /* IMPORTANTE: Debe ser exactamente la altura que tenga tu primera fila */
+//   /* Si tus meses miden por ejemplo 40px de alto, aquí pones top: 40px; */
+//   top: 23px;
+//   z-index: 4;
+//   background-color: #004da0 !important;
+// }
+
+
+// /* --------------------------------------------------------------------------
+//    CUERPO DE LA TABLA (Mantiene el mismo comportamiento)
+//    -------------------------------------------------------------------------- */
+// .tabla-tareo-principal td.col-sticky-1 {
+//   position: sticky !important;
+//   left: 0;
+//   z-index: 3;
+//   box-shadow: 2px 0 5px -2px rgba(0, 0, 0, 0.15);
+//   background-color: #ffffff !important;
+// }
+
+// .tabla-tareo-principal td.col-sticky-2 {
+//   position: sticky !important;
+//   left: 40px;
+//   z-index: 3;
+//   box-shadow: 3px 0 5px -2px rgba(0, 0, 0, 0.15);
+//   background-color: #ffffff !important;
+//   max-width: 150px;
+//   white-space: nowrap;
+// }
+
+// /* Fila de Área */
+// .tabla-tareo-principal .col-sticky-area {
+//   position: sticky !important;
+//   left: 0;
+//   z-index: 2;
+//   text-align: left;
+// }
+
+// /* Contenedor principal con scroll */
+// .contenedor-tabla-scroll {
+//   overflow-x: auto;
+//   max-width: 100%;
+//   position: relative;
+// }
+
+// /* Regla para la columna de USUARIO (Sticky) */
+// .columna-fija-usuario,
+// th.columna-fija-usuario,
+// td.columna-fija-usuario {
+//   position: sticky !important;
+//   left: 0 !important;
+//   z-index: 10 !important;
+//   /* Asegura que quede por encima de las celdas del calendario */
+//   background-color: #ffffff !important;
+//   /* Evita transparencia al hacer scroll */
+
+//   /* Ancho estricto e inamovible */
+//   width: 250px !important;
+//   min-width: 250px !important;
+//   max-width: 250px !important;
+
+//   box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+//   /* Sombra para separar de los días */
+//   box-sizing: border-box;
+// }
+
+// /* Asegurar que las celdas de días tengan un ancho constante */
+// .columna-dia {
+//   width: 45px !important;
+//   min-width: 45px !important;
+//   max-width: 45px !important;
+//   text-align: center;
+// }
+
+// /* 1. Asegurar layout rígido para que thead y tbody coincidan al milímetro */
+// .tabla-tareo-principal table {
+//   table-layout: fixed !important;
+//   width: max-content !important;
+//   /* Evita que la tabla colapse su ancho */
+//   border-collapse: separate !important;
+//   border-spacing: 0 !important;
+// }
+
+// /* 2. Primera columna de la Cabecera (USUARIO / Áreas) */
+// .tabla-tareo-principal thead tr:nth-child(1) th.columna-fija-usuario,
+// .tabla-tareo-principal thead tr:nth-child(2) th.columna-fija-usuario,
+// .tabla-tareo-principal tbody td.columna-fija-usuario {
+//   position: sticky !important;
+//   left: 0 !important;
+//   width: 250px !important;
+//   min-width: 250px !important;
+//   max-width: 250px !important;
+//   box-sizing: border-box !important;
+// }
+
+// /* Prioridad de encimado para la cabecera fija */
+// .tabla-tareo-principal thead tr:nth-child(1) th.columna-fija-usuario {
+//   z-index: 10 !important;
+//   /* Esquina superior izquierda debe tener el mayor z-index */
+//   background-color: #004da0 !important;
+// }
+
+// .tabla-tareo-principal thead tr:nth-child(2) th.columna-fija-usuario {
+//   z-index: 9 !important;
+//   background-color: #004da0 !important;
+// }
+
+// .tabla-tareo-principal tbody td.columna-fija-usuario {
+//   z-index: 5 !important;
+//   background-color: #ffffff !important;
+// }
+
+// /* ==========================================================================
+//    CORRECCIÓN DE COLUMNAS STICKY (Sincronización exacta de Left y Width)
+//    ========================================================================== */
+
+// /* Columna 1: El Número (ej. 1, 2, 3...) */
+// .tabla-tareo-principal th.col-sticky-1,
+// .tabla-tareo-principal td.col-sticky-1 {
+//   position: sticky !important;
+//   left: 0 !important;
+//   width: 40px !important;
+//   min-width: 40px !important;
+//   max-width: 40px !important;
+//   box-sizing: border-box !important;
+// }
+
+// /* Columna 2: Nombre de USUARIO y sus botones */
+// .tabla-tareo-principal th.col-sticky-2,
+// .tabla-tareo-principal td.col-sticky-2 {
+//   position: sticky !important;
+//   left: 40px !important;
+//   /* Inicia exactamente donde termina la col-1 */
+//   width: 250px !important;
+//   /* Ancho fijo para que nunca colapse */
+//   min-width: 250px !important;
+//   max-width: 250px !important;
+//   box-sizing: border-box !important;
+//   white-space: nowrap !important;
+//   overflow: hidden !important;
+//   text-overflow: ellipsis !important;
+// }
+
+// /* --------------------------------------------------------------------------
+//    GESTIÓN DE PRIORIDADES (Z-INDEX) PARA EVITAR QUE SE SOLAPEN
+//    -------------------------------------------------------------------------- */
+
+// /* Esquinas Superiores de la Cabecera (Prioridad Máxima) */
+// .tabla-tareo-principal thead tr:nth-child(1) th.col-sticky-1,
+// .tabla-tareo-principal thead tr:nth-child(1) th.col-sticky-2 {
+//   z-index: 20 !important;
+//   background-color: #004da0 !important;
+// }
+
+// .tabla-tareo-principal thead tr:nth-child(2) th.col-sticky-1,
+// .tabla-tareo-principal thead tr:nth-child(2) th.col-sticky-2 {
+//   z-index: 19 !important;
+//   background-color: #004da0 !important;
+// }
+
+// /* Celdas del Cuerpo (Detrás de la cabecera pero encima del calendario) */
+// .tabla-tareo-principal tbody td.col-sticky-1,
+// .tabla-tareo-principal tbody td.col-sticky-2 {
+//   z-index: 5 !important;
+//   background-color: #ffffff !important;
+//   /* Fondo opaco obligatorio */
+// }
+
+
+// /* Scope exclusivo: Solo afectará a elementos dentro de .tabla-acumulado-container */
+// .tabla-acumulado-container {
+//   position: relative;
+//   overflow-x: auto;
+
+//   /* Cuando esté activo el toggle, aplicamos sticky solo a las celdas de ESTA tabla */
+//   &.sticky-active {
+//     .col-sticky-1 {
+//       position: sticky !important;
+//       left: 0 !important;
+//       z-index: 2 !important;
+//       background-color: #ffffff !important;
+//     }
+
+//     .col-sticky-2 {
+//       position: sticky !important;
+//       left: 180px !important;
+//       /* Ajusta exactamente al ancho de tu 1ra columna (Cargo) */
+//       z-index: 2 !important;
+//       background-color: #ffffff !important;
+//       /* Sombra divisoria sutil que solo aparece cuando la columna es fija */
+//       box-shadow: 3px 0px 5px -2px rgba(0, 0, 0, 0.15);
+//     }
+
+//     /* En la cabecera (thead) elevamos el z-index para que no tape los títulos al hacer scroll */
+//     thead th.col-sticky-1,
+//     thead th.col-sticky-2 {
+//       z-index: 3 !important;
+//       // background-color: #f8f9fa !important; /* O el color de tu thead */
+//     }
+//   }
+
+//   /* Estilo aislado para la fila completa de Área (Celeste) */
+//   .table {
+//     tr.bg-area-acum {
+//       background-color: #e0f2fe !important;
+//       /* Celeste */
+
+//       td {
+//         background-color: #e0f2fe !important;
+//         color: #0369a1 !important;
+//         font-weight: bold;
+//       }
+//     }
+
+//     tr.bg-total-acum {
+//       background-color: #f1f5f9 !important;
+//       font-weight: bold;
+//     }
+//   }
+// }
+
+// .tabla-acumulado-container {
+//   position: relative;
+//   overflow-x: auto;
+
+//   /* Cuando se activa el toggle de columnas fijas */
+//   &.sticky-active {
+
+//     /* 1. THs de la cabecera (conservan su color original de tu tabla) */
+//     thead th.col-sticky-1 {
+//       position: sticky !important;
+//       left: 0 !important;
+//       z-index: 4 !important;
+//     }
+
+//     thead th.col-sticky-2 {
+//       position: sticky !important;
+//       left: 180px !important;
+//       /* Ajusta según el ancho real de Cargo */
+//       z-index: 4 !important;
+//     }
+
+//     /* 2. Celdas del Body */
+//     tbody td.col-sticky-1 {
+//       position: sticky !important;
+//       left: 0 !important;
+//       z-index: 2 !important;
+//     }
+
+//     tbody td.col-sticky-2 {
+//       position: sticky !important;
+//       left: 180px !important;
+//       z-index: 2 !important;
+//       box-shadow: 3px 0px 5px -2px rgba(0, 0, 0, 0.15);
+//     }
+//   }
+
+//   .table {
+
+//     /* A. FILA ENCABEZADO DE ÁREA (Celeste) */
+//     tr.bg-area-acum {
+//       background-color: #e0f2fe !important;
+
+//       td {
+//         background-color: #e0f2fe !important;
+//         color: #0369a1 !important;
+//         font-weight: bold;
+//       }
+
+//       /* Título del área pegado a la izquierda */
+//       .sticky-area-title {
+//         position: sticky;
+//         left: 15px;
+//         display: inline-block;
+//         white-space: nowrap;
+//         z-index: 3;
+//       }
+//     }
+
+//     /* B. FILA DE TOTALES DEL BODY (Color diferenciado) */
+//     tr.bg-total-acum {
+//       background-color: #f1f5f9 !important;
+
+//       td {
+//         background-color: #f1f5f9 !important;
+//         font-weight: bold;
+
+//         /* Si la celda de la fila total es sticky, mantiene el color de total y no blanco */
+//         &.col-sticky-1,
+//         &.col-sticky-2 {
+//           background-color: #f1f5f9 !important;
+//         }
+//       }
+//     }
+
+//     /* C. FILAS NORMALES (Blanco para celdas sticky) */
+//     tbody tr:not(.bg-area-acum):not(.bg-total-acum) {
+
+//       td.col-sticky-1,
+//       td.col-sticky-2 {
+//         background-color: #ffffff !important;
+//       }
+//     }
+//   }
+// }
+
+/* ==========================================================================
+   1. UTILITIES Y ALTURAS
+   ========================================================================== */
 .h-content {
   height: calc(100dvh - 175px);
 }
+
+.h-contenedor {
+  height: calc(100dvh - 150px);
+}
+
+.h-planilla {
+  height: calc(100dvh - 380px);
+}
+
+.planilla2 {
+  height: calc(100dvh - 250px);
+}
+
 .h-22 {
   height: 22px !important;
 }
 
+.h-mat {
+  height: 38.75px !important;
+}
+
+.h-leyenda {
+  max-height: 40px;
+  min-height: 40px;
+}
+
+/* ==========================================================================
+   2. COLORES GENERALES & BADGES
+   ========================================================================== */
 .bg-area {
   background-color: #d0def5;
 }
@@ -13,32 +589,12 @@
   background-color: #f1ecb5;
 }
 
-
-.h-planilla {
-  height: calc(100dvh - 380px);
-}
-
-.h-leyenda {
-  max-height: 40px;
-  min-height: 40px;
-}
-
-.badge {
-  font-size: 0.65rem;
-  padding: 0.2rem 0.35rem;
-  min-width: 24px;
-  text-align: center;
-  font-weight: 600;
-}
-
-small {
-  font-size: 0.7rem;
-  white-space: nowrap;
-}
-
-/* Colores personalizados */
 .bg-orange {
   background-color: #fd7e14 !important;
+}
+
+.bg-yellow {
+  background-color: #ffeb3b !important;
 }
 
 .bg-dark-red {
@@ -57,45 +613,6 @@ small {
   background-color: #20c997 !important;
 }
 
-.table-sm td {
-  padding: 0.15rem 0.5rem;
-  white-space: nowrap;
-}
-
-.badge {
-  font-size: 0.65rem;
-  padding: 0.2rem 0.35rem;
-  min-width: 24px;
-  font-weight: 600;
-}
-
-small {
-  font-size: 0.7rem;
-}
-
-.planilla2 {
-  height: calc(100dvh - 250px);
-}
-
-/* Agrega esto en tu archivo styles.css o en el CSS del componente */
-
-/* Clases de colores personalizados */
-.bg-orange {
-  background-color: #fd7e14 !important;
-}
-
-.bg-yellow {
-  background-color: #ffeb3b !important;
-}
-
-.bg-dark-red {
-  background-color: #c82333 !important;
-}
-
-.bg-pink {
-  background-color: #e83e8c !important;
-}
-
 .bg-indigo {
   background-color: #6610f2 !important;
 }
@@ -108,6 +625,45 @@ small {
   background-color: #d4edda !important;
   border-color: #c3e6cb !important;
 }
+
+.highlight2 {
+  background-color: yellow !important;
+}
+
+.badge {
+  font-size: 0.65rem;
+  padding: 0.2rem 0.35rem;
+  min-width: 24px;
+  text-align: center;
+  font-weight: 600;
+}
+
+small {
+  font-size: 0.7rem;
+  white-space: nowrap;
+}
+
+.table-sm td {
+  padding: 0.15rem 0.5rem;
+  white-space: nowrap;
+}
+
+/* ==========================================================================
+   3. TABLAS GENERALES & FOOTER STICKY
+   ========================================================================== */
+.tablacust {
+  table-layout: fixed;
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.tablacust th,
+.tablacust td {
+  box-sizing: border-box;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .sticky-footer-wrapper {
   position: sticky;
   bottom: 0;
@@ -122,147 +678,253 @@ small {
   width: 100%;
 }
 
-/* Sincronizar ancho de columnas */
 .sticky-footer-wrapper .tab-10 {
-  width: auto; /* Se ajustará al contenido */
-  min-width: 100%; /* Mínimo ancho completo */
-}
-
-.tablacust {
-  table-layout: fixed;
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.tablacust th,
-.tablacust td {
-  box-sizing: border-box;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.h-mat {
-  height: 38.75px !important;
-}
-
-.h-contenedor {
-  height: calc(100dvh - 150px);
-}
-.highlight2{
-  background-color: yellow !important;
-}
-
-/* Primera columna estática (Ancho: 40px) */
-.col-sticky-1 {
-    position: sticky !important;
-    left: 0;
-    z-index: 3;
-    box-shadow: 2px 0 5px -2px rgba(0,0,0,0.15);
-    background-color: #ffffff !important;
-}
-
-/* Segunda columna estática (Se desplaza 40px) */
-.col-sticky-2 {
-    position: sticky !important;
-    left: 40px;
-    z-index: 3;
-    box-shadow: 3px 0 5px -2px rgba(0,0,0,0.15);
-    background-color: #ffffff !important;
-    max-width: 150px;
-    white-space: nowrap;
-}
-
-/* Cabeceras */
-th.col-sticky-1, th.col-sticky-2 {
-    z-index: 5 !important;
-    background-color: #004da0 !important; /* Ajusta a tu color azul */
-    color: white;
-}
-
-/* Fila de Área */
-.col-sticky-area {
-    position: sticky !important;
-    left: 0;
-    z-index: 2;
-    text-align: left;
+  width: auto;
+  min-width: 100%;
 }
 
 /* ==========================================================================
-   ESTILOS EXCLUSIVOS PARA LA TABLA DE TAREO DE 2 FILAS DE CABECERA
+   4. TABLA TAREO PRINCIPAL (2 FILAS DE CABECERA)
    ========================================================================== */
-
-/* Contenedor con límite de altura para activar el scroll vertical */
 .tabla-tareo-principal {
-    overflow: auto;
-    position: relative;
-    max-height: 70vh; 
+  overflow: auto;
+  position: relative;
+  max-height: 70vh;
 }
 
-/* --------------------------------------------------------------------------
-   FILA 1 DE LA CABECERA (Meses y Columnas con rowspan="2")
-   -------------------------------------------------------------------------- */
+.tabla-tareo-principal table {
+  table-layout: fixed !important;
+  width: max-content !important;
+  border-collapse: separate !important;
+  border-spacing: 0 !important;
+}
+
+/* Filas Sticky de Cabecera */
 .tabla-tareo-principal thead tr:nth-child(1) th {
-    position: sticky !important;
-    top: 0; /* Se clavan en el borde superior absoluto */
-    z-index: 4;
-    background-color: #004da0 !important; /* Tu azul */
-    color: white;
+  position: sticky !important;
+  top: 0;
+  z-index: 4;
+  background-color: #004da0 !important;
+  color: white;
 }
 
-/* Intersecciones de las esquinas en la FILA 1 (Solo si el switch está activo) */
-.tabla-tareo-principal th.col-sticky-1 {
-    position: sticky !important;
-    top: 0 !important;
-    left: 0 !important;
-    z-index: 6 !important; /* Máxima prioridad, no los tapa nadie */
-}
-
-.tabla-tareo-principal th.col-sticky-2 {
-    position: sticky !important;
-    top: 0 !important;
-    left: 40px !important; /* Ancho de la primera columna */
-    z-index: 6 !important;
-}
-
-
-/* --------------------------------------------------------------------------
-   FILA 2 DE LA CABECERA (Los días: número y abreviatura)
-   -------------------------------------------------------------------------- */
 .tabla-tareo-principal thead tr:nth-child(2) th {
-    position: sticky !important;
-    /* IMPORTANTE: Debe ser exactamente la altura que tenga tu primera fila */
-    /* Si tus meses miden por ejemplo 40px de alto, aquí pones top: 40px; */
-    top: 23px; 
-    z-index: 4;
-    background-color: #004da0 !important;
+  position: sticky !important;
+  top: 23px;
+  z-index: 4;
+  background-color: #004da0 !important;
+  color: white;
 }
 
-
-/* --------------------------------------------------------------------------
-   CUERPO DE LA TABLA (Mantiene el mismo comportamiento)
-   -------------------------------------------------------------------------- */
+/* Columnas Fijas (Tareo) */
+.tabla-tareo-principal th.col-sticky-1,
 .tabla-tareo-principal td.col-sticky-1 {
-    position: sticky !important;
-    left: 0;
-    z-index: 3;
-    box-shadow: 2px 0 5px -2px rgba(0,0,0,0.15);
-    background-color: #ffffff !important;
+  position: sticky !important;
+  left: 0 !important;
+  width: 40px !important;
+  min-width: 40px !important;
+  max-width: 40px !important;
+  box-sizing: border-box !important;
 }
 
+.tabla-tareo-principal th.col-sticky-2,
 .tabla-tareo-principal td.col-sticky-2 {
-    position: sticky !important;
-    left: 40px;
-    z-index: 3;
-    box-shadow: 3px 0 5px -2px rgba(0,0,0,0.15);
-    background-color: #ffffff !important;
-    max-width: 150px;
-    white-space: nowrap;
+  position: sticky !important;
+  left: 40px !important;
+  width: 250px !important;
+  min-width: 250px !important;
+  max-width: 250px !important;
+  box-sizing: border-box !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
 }
 
-/* Fila de Área */
+/* Z-Index Tareo */
+.tabla-tareo-principal thead tr:nth-child(1) th.col-sticky-1,
+.tabla-tareo-principal thead tr:nth-child(1) th.col-sticky-2 {
+  z-index: 20 !important;
+}
+
+.tabla-tareo-principal thead tr:nth-child(2) th.col-sticky-1,
+.tabla-tareo-principal thead tr:nth-child(2) th.col-sticky-2 {
+  z-index: 19 !important;
+}
+
+.tabla-tareo-principal tbody td.col-sticky-1,
+.tabla-tareo-principal tbody td.col-sticky-2 {
+  z-index: 5 !important;
+  background-color: #ffffff !important;
+}
+
 .tabla-tareo-principal .col-sticky-area {
+  position: sticky !important;
+  left: 0;
+  z-index: 2;
+  text-align: left;
+}
+
+.columna-dia {
+  width: 45px !important;
+  min-width: 45px !important;
+  max-width: 45px !important;
+  text-align: center;
+}
+
+/* ==========================================================================
+   5. TABLA ACUMULADA (ACUMULADO ACUM) - CORREGIDO TOTAL
+   ========================================================================== */
+.tabla-acumulado-container {
+  position: relative;
+  overflow: auto;
+  max-height: 75vh;
+
+  .table {
+    table-layout: fixed !important;
+    width: max-content !important;
+    border-collapse: separate !important;
+    border-spacing: 0 !important;
+
+    /* Anchos estrictos e inamovibles */
+    th.col-sticky-1,
+    td.col-sticky-1 {
+      width: 180px !important;
+      min-width: 180px !important;
+      max-width: 180px !important;
+      box-sizing: border-box !important;
+      white-space: nowrap !important;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    th.col-sticky-2,
+    td.col-sticky-2 {
+      width: 100px !important;
+      min-width: 100px !important;
+      max-width: 100px !important;
+      box-sizing: border-box !important;
+    }
+  }
+
+  /* REGLAS CABECERA (THEAD) - FUNCIONA CON O SIN TOGGLE */
+  thead tr:nth-child(1) th {
     position: sticky !important;
-    left: 0;
-    z-index: 2;
-    text-align: left;
+    top: 0;
+    z-index: 10;
+    background-color: #004da0 !important;
+    color: white;
+  }
+
+  thead tr:nth-child(2) th {
+    position: sticky !important;
+    top: 24px;
+    z-index: 10;
+    background-color: #004da0 !important;
+    color: white;
+  }
+
+  thead tr:nth-child(3) th {
+    position: sticky !important;
+    top: 48px;
+    z-index: 10;
+    background-color: #004da0 !important;
+    color: white;
+  }
+
+  /* ESTILOS AL ACTIVAR "COLUMNIS FIJAS" */
+  &.sticky-active {
+
+    /* Esquinas de la Cabecera (Sticky horizontal + vertical) */
+    thead th.col-sticky-1 {
+      position: sticky !important;
+      left: 0 !important;
+      z-index: 30 !important;
+      background-color: #004da0 !important;
+    }
+
+    thead th.col-sticky-2 {
+      position: sticky !important;
+      left: 180px !important;
+      z-index: 30 !important;
+      background-color: #004da0 !important;
+      box-shadow: 3px 0px 5px -2px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Filas Normales (Cuerpo) */
+    tbody tr:not(.bg-area-acum):not(.bg-total-acum) {
+      td.col-sticky-1 {
+        position: sticky !important;
+        left: 0 !important;
+        z-index: 5 !important;
+        background-color: #ffffff !important;
+      }
+
+      td.col-sticky-2 {
+        position: sticky !important;
+        left: 180px !important;
+        z-index: 5 !important;
+        background-color: #ffffff !important;
+        box-shadow: 3px 0px 5px -2px rgba(0, 0, 0, 0.15);
+      }
+    }
+
+    /* ENCABEZADO DE ÁREA (CELESTE) - AHORA TOTALMENTE STICKY */
+    tbody tr.bg-area-acum {
+      background-color: #e0f2fe !important;
+
+      td.col-sticky-area-title {
+        position: sticky !important;
+        left: 0 !important;
+        z-index: 7 !important;
+        background-color: #e0f2fe !important;
+        color: #0369a1 !important;
+        width: 280px !important;
+        /* 180px + 100px */
+        min-width: 280px !important;
+        max-width: 280px !important;
+        padding-left: 1rem !important;
+        box-shadow: 3px 0px 5px -2px rgba(0, 0, 0, 0.15);
+      }
+
+      td.bg-area-filler {
+        background-color: #e0f2fe !important;
+      }
+    }
+
+    /* FILA DE TOTALES POR ÁREA (PLOMO + NEGRITA) */
+    tbody tr.bg-total-acum {
+      background-color: #e2e8f0 !important;
+      /* Fondo plomo para toda la fila */
+      font-weight: bold !important;
+      /* Texto en negrita para toda la fila */
+      color: #1e293b !important;
+
+      /* Primera columna fija (Cargo) */
+      td.col-sticky-1 {
+        position: sticky !important;
+        left: 0 !important;
+        z-index: 5 !important;
+        background-color: #e2e8f0 !important;
+        /* Plomo coincidente */
+        font-weight: bold !important;
+      }
+
+      /* Segunda columna fija (Categoría) */
+      td.col-sticky-2 {
+        position: sticky !important;
+        left: 180px !important;
+        z-index: 5 !important;
+        background-color: #e2e8f0 !important;
+        /* Plomo coincidente */
+        font-weight: bold !important;
+        box-shadow: 3px 0px 5px -2px rgba(0, 0, 0, 0.15);
+      }
+
+      /* Asegurar que las celdas de montos/cantidades en el scroll también tengan el fondo plomo */
+      td {
+        background-color: #e2e8f0 !important;
+        font-weight: bold !important;
+      }
+    }
+  }
 }
