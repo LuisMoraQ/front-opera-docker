@@ -792,7 +792,6 @@ export class EquiposHerramientasComponent implements OnInit {
           nuevaTabla = nuevaTabla.concat(filtrados)
         }
         this.tablaPlanilla = nuevaTabla
-
         // Solo agregar el array de sumas por día si es subvista 3
         if (esSubvista3 && sumaPorDia.length > 0) {
           this.sumaPorDiaPlanilla = sumaPorDia;
@@ -1228,6 +1227,7 @@ export class EquiposHerramientasComponent implements OnInit {
         }
         elementosActualizar.push(equipo)
       }
+
       const payload = {
         elementosActualizar: elementosActualizar,
         idsEliminar: this.idEquiposEliminar,
@@ -1733,7 +1733,7 @@ export class EquiposHerramientasComponent implements OnInit {
             id_proyecto: this.id_proyecto,
             id_equipo: row.id_equipo,
             fecha: diaSeleccionado.fecha,
-            id_proveedor: '',
+           id_proveedor: null,
             horas_dia: data.horas_dia,
             minutos_dia: data.minutos_dia,
             costo_dia: data.coste_dia,
@@ -1796,13 +1796,14 @@ export class EquiposHerramientasComponent implements OnInit {
             id_proyecto: this.id_proyecto,
             id_equipo: row.id_equipo,
             fecha: diaSeleccionado.fecha,
-            id_proveedor: '',
+            // 🟢 Si es cadena vacía, pásalo a null para que .NET no falle al parsear int?
+            id_proveedor: null,
             horas_dia: data.horas_dia,
             minutos_dia: data.minutos_dia,
             costo_dia: data.coste_dia,
             horas_detalle: horas_detalle,
-            observaciones: data.observaciones,
-          }
+            observaciones: data.observaciones ?? null
+          };
           const resp = await this.equiposServiciosService.guardarDesagregadoEquipo(obj)
 
           if (resp[0]?.id_desagregado) {

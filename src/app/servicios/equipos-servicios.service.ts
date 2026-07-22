@@ -89,39 +89,35 @@ export class EquiposServiciosService {
     ).toPromise()
   }
 
-  guardarDesagregadoEquipo(params = {}): Promise<any> {
-    let formData: FormData = new FormData();
-    Object.entries(params).forEach(([key, value]) => {
-      formData.append(key, value as string);
-    });
+  guardarDesagregadoEquipo(params: any = {}): Promise<any> {
     const url = this.enviUrl + '/api/equiposservicios/guardarDesagregadoEquipo';
-    return this.http.post<any>(url, formData).pipe(
+
+    // Enviar 'params' directamente como objeto JSON en lugar de FormData
+    return this.http.post<any>(url, params).pipe(
       map(res => {
         if (!res) {
-          throw new Error
+          throw new Error('Respuesta vacía');
         }
-        return res
+        return res;
       }),
-      catchError(err => throwError(err))
-    ).toPromise()
+      catchError(err => throwError(() => err))
+    ).toPromise();
   }
 
-  actualizarDesagregadoEquipo(params = {}): Promise<any> {
-    let formData: FormData = new FormData();
-    Object.entries(params).forEach(([key, value]) => {
-      formData.append(key, value as string);
-    });
-    const url = this.enviUrl + '/api/equiposservicios/actualizarDesagregadoEquipo';
-    return this.http.post<any>(url, formData).pipe(
-      map(res => {
-        if (!res) {
-          throw new Error
-        }
-        return res
-      }),
-      catchError(err => throwError(err))
-    ).toPromise()
-  }
+ actualizarDesagregadoEquipo(params: any = {}): Promise<any> {
+  const url = this.enviUrl + '/api/equiposservicios/actualizarDesagregadoEquipo';
+
+  // Enviar el objeto JSON directo (sin FormData)
+  return this.http.post<any>(url, params).pipe(
+    map(res => {
+      if (!res) {
+        throw new Error('Respuesta vacía');
+      }
+      return res;
+    }),
+    catchError(err => throwError(() => err))
+  ).toPromise();
+}
 
   eliminarDesagregadoEquipo(params = {}): Promise<any> {
     let formData: FormData = new FormData();
@@ -192,24 +188,24 @@ export class EquiposServiciosService {
     ).toPromise()
   }
 
-    listarAgrupamientoRequerimientos(params = {}): Promise<any> {
+  listarAgrupamientoRequerimientos(params = {}): Promise<any> {
     let formData: FormData = new FormData();
     Object.entries(params).forEach(([key, value]) => {
       formData.append(key, value as string);
     });
-    
+
     const url = this.enviUrl + '/api/equiposservicios/listarAgrupamientoRequerimientos';
-    
+
     return this.http.post<any>(url, formData).pipe(
       map(res => {
         if (!res) {
           throw new Error('No se recibieron datos');
         }
-        
+
         // La respuesta tendrá dos arrays
         const datosPrincipales = res[0];  // Primer SELECT
         const datosDesagregados = res[1]; // Segundo SELECT
-        
+
         // Puedes estructurar la respuesta como prefieras
         return {
           agrupacion: datosPrincipales,

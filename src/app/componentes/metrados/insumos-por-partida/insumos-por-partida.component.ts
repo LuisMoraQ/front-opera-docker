@@ -1,9 +1,11 @@
 import { Component, Input, OnInit, ViewChild } from '@angular/core';
 import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
+import * as moment from 'moment';
 import { ToastrService } from 'ngx-toastr';
 import { FormsService } from 'src/app/servicios/forms.service';
 import { MetradoService } from 'src/app/servicios/metrado.service';
 import { PresupuestosService } from 'src/app/servicios/presupuestos.service';
+import { SwalService } from 'src/app/servicios/swal.service';
 import { ModalBasicComponent } from 'src/app/shared/modal-basic/modal-basic.component';
 export interface rowacu {//revisar parametros de esta fila
   id_proyecto: any;
@@ -703,6 +705,8 @@ export class InsumosPorPartidaComponent implements OnInit {
     if (i === this.filaSel) {
       return;
     }
+    console.log('i', i)
+    this.filaSel = i
     // let rowsel = this.datasourcePri[this.filaSel];
     this.formDataPartida.reset({
       item: row.item,
@@ -773,12 +777,38 @@ export class InsumosPorPartidaComponent implements OnInit {
         this.tablaAcue.push(obj);
       });
     });
-    console.log()
+    console.log('this.tablaAcue', this.tablaAcue)
   }
 
-  modalAgregar() {
-    this.busquedaMod = ''
-    this.modalRegistroSaldo.show()
+  async modalAgregar(row) {
+    try {
+      if (this.filaSel == null || this.diaSeleccionado == null) {
+        this.toaster.error('Seleccione una partida y un dia', '', { closeButton: false, positionClass: 'toast-bottom-right', timeOut: 5000 })
+        return
+      }
+      console.log('row', row)
+      console.log('diaSeleccionado', this.diaSeleccionado)
+      this.mostrar_carga_todo = true
+      const fecha = this.diaSeleccionado?.fecha
+      if (row.tipo == 2) {
+        const obj = {
+          id_proyecto: this.id_proyecto,
+          fecha: fecha
+        }
+        const response = await this.metradoService.listadoMovAlmSalidaProyecto(obj)
+        console.log('response', response)
+      }
+
+      this.busquedaMod = ''
+      this.modalRegistroSaldo.show()
+      this.mostrar_carga_todo = false
+    } catch (error) {
+      console.log(error)
+      this.mostrar_carga_todo = false
+      SwalService.error()
+    }
+
+
   }
 
   limpiarfiltroMod() {
@@ -786,7 +816,7 @@ export class InsumosPorPartidaComponent implements OnInit {
   }
 
   cerrarModal() {
-
+    this.modalRegistroSaldo.hide()
   }
 
   limpiarTodoDia() {

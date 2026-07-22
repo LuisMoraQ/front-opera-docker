@@ -108,11 +108,12 @@
                     <tbody>
 
                         <ng-container *ngIf="datasourcePri.length>0">
-                            <tr (click)="registroAcue ? listarAcuePartida(row,i) : cambindiceselpresu(indice) "
+                            <tr (click)="registroAcue ? listarAcuePartida(row,indice) : cambindiceselpresu(indice) "
                                 *ngFor="let row of datasourcePri |  filtroNiveles: busqueda : camposBusqueda;let indice=index;"
                                 [hidden]="row.mostrar == 0">
                                 <!-- [ngStyle]="{'display': row.mostrar == 1 ? null : 'none'}" -->
                                 <td class="cellsinpadding" appAnchocol [ancho]="30"
+                                    [ngClass]="{'highlight': filaSel == indice}"
                                     [ngStyle]="{'background': row.colorvin??'#f8f8f8'}">
                                     <span>{{indice+1}}</span>
                                     <!-- <span *ngIf="!colselpri && !colselpri2">{{indice+1}}</span>
@@ -267,11 +268,12 @@
                 </div>
             </form>
             <div class="d-flex">
-                <button type="button" class="btn btn-mini btn-success" [disableTooltip]="!minimbut2" placement="top"
-                    ngbTooltip="Agregar" container="body" (click)="modalAgregar()" (mouseup)="quitarfoco($event);">
+                <!-- <button type="button" class="btn btn-mini btn-success" [disableTooltip]="!minimbut2" placement="top"
+                    [disable]="filaSel==null && diaSeleccionado == null" ngbTooltip="Agregar" container="body"
+                    (click)="modalAgregar()" (mouseup)="quitarfoco($event);">
                     <i class="fa fa-retweet" [ngClass]="{'icono-but':minimbut2}"></i><span
                         [ngClass]="{'hide-ele':minimbut2}">Editar</span>
-                </button>
+                </button> -->
             </div>
             <div class="tabla-limp">
                 <table class="table-bordered tab-10">
@@ -307,6 +309,7 @@
                                             class="icofont icofont-caret-up"></i></a>
                                 </div>
                             </th>
+                            <th appAnchocol [ancho]="30"></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -319,6 +322,13 @@
                                 <td>{{row.cantidad}}</td>
                                 <td>{{row.precio}}</td>
                                 <td>{{row.parcial}}</td>
+                                <td>
+                                    <button type="button" class="btn btn-mini2 btn-success" ngbTooltip="Agregar"
+                                        *ngIf="row.tipo !== 1" container="body" (click)="modalAgregar(row)"
+                                        (mouseup)="quitarfoco($event);">
+                                        <i class="fa fa-retweet icono-but"></i><span></span>
+                                    </button>
+                                </td>
                             </tr>
                         </ng-container>
                         <ng-template #dataAcue>
@@ -392,7 +402,7 @@
                             </ng-container>
                             <ng-container *ngIf="tablaacusel.length<=0">
                                 <tr>
-                                    <td class="mat-cell text-center" colspan="8">
+                                    <td class="mat-cell text-center" colspan="9">
                                         <label *ngIf="!buscando">No se encontraron resultados</label>
                                         <div *ngIf="buscando" class="preloader3 loader-block">
                                             <div class="circ1"></div>
@@ -430,6 +440,7 @@
                                     class="float-right font-weight-bolder" *ngIf="precio.value">{{precio.value | number
                                     : mask_precio}}</span>
                             </th>
+                            <th appAnchocol [ancho]="30"></th>
                         </tr>
                     </tfoot>
                 </table>
@@ -449,25 +460,24 @@
     </div>
     <div class="app-modal-body">
 
-        <div class="col-12">
+        <div class="col-12 d-flex pl-0">
             <mat-form-field class="mff-reduc w-100 alto-35 field-busqueda col-8" appearance="outline">
                 <mat-label>Buscar</mat-label>
-                <input matInput type="text" [(ngModel)]="busquedaMod"  id="inpbusq"
-                    autocomplete="off">
+                <input matInput type="text" [(ngModel)]="busquedaMod" id="inpbusq" autocomplete="off">
                 <button *ngIf="busquedaMod" matSuffix mat-icon-button aria-label="Clear" (click)="limpiarfiltroMod()">
                     <mat-icon>close</mat-icon>
                 </button>
             </mat-form-field>
-            <div class="col-4">
+            <div class="col-4 d-flex justify-content-end pr-0">
                 <button type="button" class="btn btn-mini btn-group-mini btn-outline-primary" placement="top"
                     container="body" (click)="limpiarTodoDia()" (mouseup)="quitarfoco($event);">
-                    <i class="icofont icofont-rounded-expand icono-but"></i>
+                    <i class="icofont icofont-trash icono-but"></i>
                 </button>
             </div>
         </div>
         <div class="col-12">
             <table class="table-bordered tab-10">
-                <thead class="headsticky">
+                <thead class="headsticky text-center">
                     <tr class=" header-custom">
                         <th appAnchocol [ancho]="30" rowspan="2"></th>
                         <th appAnchocol [ancho]="150" [detalle]="true" rowspan="2">DESCRIPCION DEL BIEN O SERVICIO</th>
