@@ -10,30 +10,30 @@ import { LogisticaService } from 'src/app/servicios/logistica.service';
 import { SwalService } from 'src/app/servicios/swal.service';
 import { ModalBasicComponent } from 'src/app/shared/modal-basic/modal-basic.component';
 export interface servicio {
-  item: string,
-  descripcion: string,
-  placa: string,
-  fecha_solicitud: string,
-  unidad: string | null,
-  cantidad: string,
-  precio_unitario: string,
-  parcial: number,
-  estado: number,
-  index_grupo: number,
-  id_grupo: number,
-  id_equipo: number,
-  id_registro: number | null,
-  id_fila: number | null,
-  ind_rep: number | null,
-  index_elemento: number,
-  id_proyecto: number,
-  tipo_registro: string,
-  tipo: string,
-  nroprov: number,
-  tiempo_registrado: number,
-  valorGlobal: null,
-  desagregadosCompleto: Array<any>,
-  total_registrado: number
+  item: string;
+  descripcion: string;
+  placa: string;
+  fecha_solicitud: string | null;
+  unidad: string | null;
+  cantidad: number | string;          // Puede venir string de input, pero para operaciones se castea a number
+  precio_unitario: number | string;   // Puede venir string de input, pero para operaciones se castea a number
+  parcial: number;
+  estado: number;
+  index_grupo: number;
+  id_grupo: number;
+  id_equipo: number;
+  id_registro: number | null;
+  id_fila: number | null;
+  ind_rep: number | null;
+  index_elemento: number;
+  id_proyecto: number;
+  tipo_registro: string;
+  tipo: string;
+  nroprov: number;
+  tiempo_registrado: number;
+  valorGlobal: any;                   // Cambiado de 'null' literal a 'any' o 'number | null'
+  desagregadosCompleto: Array<any>;
+  total_registrado: number;
 }
 @Component({
   selector: 'app-equipos-herramientas',
@@ -115,6 +115,7 @@ export class EquiposHerramientasComponent implements OnInit {
     tiempo_programado: new UntypedFormControl('', []),
     tiempo_utilizado: new UntypedFormControl('', []),
     saldo_utilizar: new UntypedFormControl('', []),
+    fechaRegistroGlobal: new UntypedFormControl('', []),
     tiempos: new FormArray([]),
     horas_dia: new UntypedFormControl('', []),
     minutos_dia: new UntypedFormControl('', []),
@@ -152,7 +153,9 @@ export class EquiposHerramientasComponent implements OnInit {
     const minutos = totalMinutos % 60;
     return `${horas.toString().padStart(2, '0')}:${minutos.toString().padStart(2, '0')}`;
   }
-
+  get fechaRegistroGlobal(): UntypedFormControl {
+    return this.formDesagregado.get('fechaRegistroGlobal') as UntypedFormControl;
+  }
   actualizarEquipos = false
   idEquiposEliminar = []
   selFilPlan = null
@@ -373,22 +376,35 @@ export class EquiposHerramientasComponent implements OnInit {
     });
   }
 
-  calcularTotalDesagregado(servicio) {
+  calcularTotalDesagregado(servicio: any): number {
     if (!servicio.desagregadosCompleto || servicio.desagregadosCompleto.length === 0) {
       return 0;
     }
 
-    return servicio.desagregadosCompleto.reduce((total, d) => {
+    return servicio.desagregadosCompleto.reduce((total: number, d: any) => {
+      // 1. Tipos Por Horas/Día Directo
       if (servicio.tipo === 'H-M' || servicio.tipo === 'DIA') {
-        return total + (d.horas_dia || 0);
+        return total + (Number(d.horas_dia) || 0);
       }
+
+      // 2. Tipos MES y GLOBAL
       if (servicio.tipo === 'MES' || servicio.tipo === 'GLOBAL') {
-        const suma = d.horas_detalle?.split('/').reduce((sum, rango) => {
-          const partes = rango.split('|');
-          return sum + (parseFloat(partes[2]) || 0);
-        }, 0) || 0;
-        return total + suma;
+        if (d.horas_detalle) {
+          const sumaDetalle = d.horas_detalle.split('/').reduce((sum: number, rango: string) => {
+            const partes = rango.split('|');
+            return sum + (parseFloat(partes[2]) || 0);
+          }, 0);
+
+          // Si el detalle dio un valor mayor a 0, lo usamos; de lo contrario fallback a horas_dia
+          if (sumaDetalle > 0) return total + sumaDetalle;
+        }
+
+        // Fallback si horas_detalle es null, vacío o dio 0:
+        // Usamos d.horas_dia o, en su defecto para GLOBAL, mantenemos las horas que ya traía el servicio
+        const horasFallBack = Number(d.horas_dia) || 0;
+        return total + (horasFallBack > 0 ? horasFallBack : (Number(servicio.tiempo_registrado) || 0));
       }
+
       return total;
     }, 0);
   }
@@ -431,131 +447,121 @@ export class EquiposHerramientasComponent implements OnInit {
 
   async selTablaRegAct(row, i) {
     if (i !== this.filSelRegAct) {
-      this.mostrar_carga_todo = true
-      this.filSelRegAct = i
-      this.filSelServ = null
-      this.filSelReq = null
+      this.mostrar_carga_todo = true;
+      this.filSelRegAct = i;
+      this.filSelServ = null;
+      this.filSelReq = null;
 
-      const tablaRequerimientos = this.reqCompletos.filter(ele => row.idgrupo == ele.idgrupo)
+      const tablaRequerimientos = this.reqCompletos.filter(ele => row.idgrupo == ele.idgrupo);
       const id_prov = row.nroprov;
 
-      this.tablaRequerimientos = [...tablaRequerimientos]
-        .map(servicio => {
-          // Seleccionar precio y marca según el proveedor
-          let precioSeleccionado = 0;
-          let marcaSeleccionada = '';
+      this.tablaRequerimientos = tablaRequerimientos.map(servicio => {
+        let precioSeleccionado = 0;
+        let marcaSeleccionada = '';
 
-          switch (Number(id_prov)) {
-            case 1:
-              precioSeleccionado = Number(servicio.preciosol1) || 0;
-              marcaSeleccionada = servicio.marca1 || '';
-              break;
-            case 2:
-              precioSeleccionado = Number(servicio.preciosol2) || 0;
-              marcaSeleccionada = servicio.marca2 || '';
-              break;
-            case 3:
-              precioSeleccionado = Number(servicio.preciosol3) || 0;
-              marcaSeleccionada = servicio.marca3 || '';
-              break;
-            default:
-              precioSeleccionado = 0;
-              marcaSeleccionada = '';
-          }
+        switch (Number(id_prov)) {
+          case 1:
+            precioSeleccionado = Number(servicio.preciosol1) || 0;
+            marcaSeleccionada = servicio.marca1 || '';
+            break;
+          case 2:
+            precioSeleccionado = Number(servicio.preciosol2) || 0;
+            marcaSeleccionada = servicio.marca2 || '';
+            break;
+          case 3:
+            precioSeleccionado = Number(servicio.preciosol3) || 0;
+            marcaSeleccionada = servicio.marca3 || '';
+            break;
+        }
 
-          // Calcular parcial (precio * cantidad)
-          const cantidad = Number(servicio.cantidad) || 0;
-          const parcial = precioSeleccionado * cantidad;
+        const cantidad = Number(servicio.cantidad) || 0;
+        const parcial = precioSeleccionado * cantidad;
 
-          // Buscar elementos encontrados en tablaServiciosCompleto
-          const encontrados = this.tablaServiciosCompleto.filter(ele =>
-            Number(servicio.idgrupo) == Number(ele.id_grupo) &&
-            servicio.idfila == ele.id_fila
-          );
-          // Procesar los elementos encontrados pasando el array encontrados
-          const resultado = this.procesarElementosEncontrados(encontrados);
-          return {
-            ...servicio,
-            precio: precioSeleccionado,      // Precio seleccionado según proveedor
-            marca: marcaSeleccionada,        // Marca seleccionada según proveedor
-            parcial: parcial,                // Parcial calculado
-            precio_usada: resultado.precio_usada,
-            cantidad_usada: resultado.cantidad_usada,
-            parcial_usada: resultado.parcial_usada,
-            todos_iguales: resultado.todos_iguales,
-            // Mantener los valores originales si los necesitas
-            precioOriginal1: servicio.preciosol1,
-            precioOriginal2: servicio.preciosol2,
-            precioOriginal3: servicio.preciosol3,
-            marcaOriginal1: servicio.marca1,
-            marcaOriginal2: servicio.marca2,
-            marcaOriginal3: servicio.marca3
-          };
-        });
+        const encontrados = this.tablaServiciosCompleto.filter(ele =>
+          Number(servicio.idgrupo) === Number(ele.id_grupo) &&
+          Number(servicio.idfila) === Number(ele.id_fila)
+        );
 
-      // const tablaServicios = this.tablaServiciosCompleto.filter(ele =>
-      //   Number(ele.id_grupo) == Number(row.idgrupo)
-      // );
-      // this.tablaServicios = [...tablaServicios].sort((a, b) => {
-      //   // Primero ordenar por index_grupo
-      //   if (a.index_grupo !== b.index_grupo) {
-      //     return a.index_grupo - b.index_grupo;
-      //   }
-      //   // Si tienen el mismo index_grupo, ordenar por index_elemento
-      //   return a.index_elemento - b.index_elemento;
-      // });
+        const resultado = this.procesarElementosEncontrados(encontrados);
+
+        // --- EVALUACIÓN DEL ESTADO ---
+        // Comparación de parciales con margen para evitar fallos por flotantes
+        const sonParcialesIguales = parcial > 0 && Math.abs(parcial - resultado.parcial_usada) < 0.01;
+
+        // Es CULMINADO (2) si los parciales son iguales O si todos los encontrados están en estado 2
+        const esCulminado = sonParcialesIguales || resultado.todos_culminados;
+        const estadoCalculado = esCulminado ? 2 : 1;
+
+        return {
+          ...servicio,
+          precio: precioSeleccionado,
+          marca: marcaSeleccionada,
+          parcial: parcial,
+          precio_usada: resultado.precio_usada,
+          cantidad_usada: resultado.cantidad_usada,
+          parcial_usada: resultado.parcial_usada,
+          todos_iguales: resultado.todos_iguales,
+          saldo: parcial - resultado.parcial_usada,
+          estado: estadoCalculado // <--- Asignamos el estado evaluado
+        };
+      });
+
+      // Filtrar y ordenar la vista de servicios
       const tablaServicios = this.tablaServiciosCompleto.filter(ele =>
-        Number(ele.id_grupo) == Number(row.idgrupo)
+        Number(ele.id_grupo) === Number(row.idgrupo)
       );
 
-      this.tablaServicios = [...tablaServicios].sort((a, b) => {
-        if (a.index_grupo !== b.index_grupo) {
-          return a.index_grupo - b.index_grupo;
-        }
-        return a.index_elemento - b.index_elemento;
-      }).map((item, index, array) => {
-        item.icomost = '1'; // Todos los grupos empiezan colapsados
-        item.visible = true; // La cabecera siempre visible
+      this.tablaServicios = [...tablaServicios]
+        .sort((a, b) => a.index_grupo - b.index_grupo || a.index_elemento - b.index_elemento)
+        .map(item => ({
+          ...item,
+          icomost: '1',
+          visible: true
+        }));
 
-        return item;
-      });
-      this.todosExpandidos = true
-      await this.calcularTotales()
-      this.mostrar_carga_todo = false
+      this.todosExpandidos = true;
+      this.mostrar_carga_todo = false;
     }
   }
 
-  procesarElementosEncontrados(encontrados) {
+  procesarElementosEncontrados(encontrados: any[]) {
     if (!encontrados || encontrados.length === 0) {
       return {
         precio_usada: null,
         cantidad_usada: null,
         parcial_usada: 0,
-        todos_iguales: null
+        todos_iguales: null,
+        todos_culminados: false
       };
     }
-    const primerPrecio = encontrados[0].precio_unitario;
+
+    // Convertimos explícitamente a Number
+    const primerPrecio = Number(encontrados[0].precio_unitario) || 0;
     const primerTipo = encontrados[0].tipo;
-    const todosMismoPrecio = encontrados.every(ele => ele.precio_unitario === primerPrecio);
+
+    const todosMismoPrecio = encontrados.every(
+      ele => Number(ele.precio_unitario) === primerPrecio
+    );
     const todosMismoTipo = encontrados.every(ele => ele.tipo === primerTipo);
-    // Sumar todos los total_registrado de cada elemento encontrado
-    const sumaTotalRegistrado = encontrados.reduce((sum, ele) =>
-      sum + ((ele.tiempo_registrado !== 0 && ele.precio_unitario !== 0) ? (ele.total_registrado || 0) : 0), 0);
-    if (todosMismoPrecio && todosMismoTipo) {
-      return {
-        precio_usada: primerPrecio,
-        cantidad_usada: encontrados.reduce((sum, ele) => sum + (ele.tiempo_registrado || 0), 0),
-        parcial_usada: sumaTotalRegistrado,
-        todos_iguales: true
-      };
-    } else {
-      return {
-        precio_usada: null,
-        cantidad_usada: null,
-        parcial_usada: sumaTotalRegistrado,  // Aquí debe ir la suma de total_registrado
-        todos_iguales: false
-      };
-    }
+
+    // Verificamos si absolutamente TODOS los elementos asociados ya están culminados (estado == 2)
+    const todosCulminados = encontrados.every(ele => Number(ele.estado) === 2);
+
+    const sumaTotalRegistrado = encontrados.reduce(
+      (sum, ele) => sum + (Number(ele.total_registrado) || 0), 0
+    );
+
+    const sumaTiempoRegistrado = encontrados.reduce(
+      (sum, ele) => sum + (Number(ele.tiempo_registrado) || 0), 0
+    );
+
+    return {
+      precio_usada: todosMismoPrecio && todosMismoTipo ? primerPrecio : null,
+      cantidad_usada: sumaTiempoRegistrado,
+      parcial_usada: sumaTotalRegistrado,
+      todos_iguales: todosMismoPrecio && todosMismoTipo,
+      todos_culminados: todosCulminados
+    };
   }
 
   selTablaReq(row, i) {
@@ -615,7 +621,7 @@ export class EquiposHerramientasComponent implements OnInit {
       }
       this.mostrar_carga_todo = false
     }
-
+ 
   }
 
   async listarDesagregadosEquipos() {
@@ -744,19 +750,43 @@ export class EquiposHerramientasComponent implements OnInit {
             element.desagregadosCompleto = completos
             element.visible = true
             if (element.tipo == 'GLOBAL') {
-              element.valorGlobal = completos[0]
-              const valorGlobal = completos.find(ele => ele)
-              const arrayMes = await this.evaluarGlobalMes(valorGlobal?.horas_detalle, 'GLOBAL')
-              element.valorGlobal = valorGlobal
-              element.arrayMes = arrayMes
-              const total = arrayMes.reduce((acc, ele) => acc + (Number(ele) || 0), 0)
-              element.total_hm = total
-              element.parcial = total * element.precio_unitario
+              // 1. Asignar el registro desagregado global si existe
+              element.valorGlobal = completos.find(ele => ele) || null;
+              const valorGlobal = element.valorGlobal;
 
-              // Solo sumar al total por día si es subvista 3
-              if (esSubvista3 && arrayMes && arrayMes.length === sumaPorDia.length) {
-                arrayMes.forEach((valor, idx) => {
-                  sumaPorDia[idx] += (Number(valor) || 0) * element.precio_unitario;
+              // 2. Mantener intactos los valores base del registro
+              const precioUnitarioNum = Number(element.precio_unitario) || 0;
+              const totalRegistradoNum = Number(element.total_registrado) || 0;
+              const tiempoRegistradoNum = Number(element.tiempo_registrado) || 0;
+
+              // 3. Crear matriz para el calendario sin alterar las variables del equipo
+              const totalDias = this.calendarioFiltrado?.dias?.length || 0;
+              const arrayMesGlobal = new Array(totalDias).fill(0);
+
+              if (valorGlobal && totalDias > 0) {
+                // Extraer solo YYYY-MM-DD sin alterar por zona horaria
+                const fechaGlobalStr = (valorGlobal.fechaRegistroGlobal || valorGlobal.fecha || '').split('T')[0];
+
+                const idxDia = this.calendarioFiltrado.dias.findIndex(
+                  dia => dia.fecha === fechaGlobalStr
+                );
+
+                if (idxDia !== -1) {
+                  // El monto asignado al día es costo_dia o total_registrado o parcial existente
+                  const montoDia = Number(valorGlobal.costo_dia) || totalRegistradoNum || Number(element.parcial) || 0;
+                  arrayMesGlobal[idxDia] = montoDia;
+                }
+              }
+
+              // 4. PRESERVAR las propiedades originales de GLOBAL sin sobreescribir
+              element.arrayMes = arrayMesGlobal;
+              element.total_hm = tiempoRegistradoNum; // Preservar tiempo_registrado
+              element.parcial = totalRegistradoNum > 0 ? totalRegistradoNum : (precioUnitarioNum * tiempoRegistradoNum);
+
+              // 5. Acumular suma por día si corresponde a la subvista 3
+              if (esSubvista3 && arrayMesGlobal && arrayMesGlobal.length === sumaPorDia.length) {
+                arrayMesGlobal.forEach((valor, idx) => {
+                  sumaPorDia[idx] += Number(valor) || 0;
                 });
               }
             } else if (element.tipo == 'MES') {
@@ -803,34 +833,35 @@ export class EquiposHerramientasComponent implements OnInit {
   }
 
   evaluarGlobalMes(horasDetalle, tipo) {
-    // if (tipo == 'GLOBAL') {
-    //   const calendario = this.calendario
-    //   console.log('global', calendario)
-    // } else {
-    const mes = this.calendarioFiltrado?.dias
-    if (!horasDetalle) return new Array(mes.length).fill(0);
+    const mes = this.calendarioFiltrado?.dias;
+    if (!mes || !horasDetalle) return new Array(mes?.length || 0).fill(0);
 
-    // Crear un Set con todas las fechas que están en los rangos
-    const fechasEnRango = new Set();
+    const fechasEnRango = new Set<string>();
 
     horasDetalle.split('/').forEach(rango => {
       if (!rango.trim()) return;
 
       const [fechaInicioStr, fechaFinStr] = rango.split('|');
-      const fechaInicio = new Date(fechaInicioStr);
-      const fechaFin = new Date(fechaFinStr);
+      if (!fechaInicioStr || !fechaFinStr) return;
 
-      // Agregar todas las fechas entre inicio y fin al Set
-      let fechaActual = new Date(fechaInicio);
-      while (fechaActual <= fechaFin) {
-        fechasEnRango.add(fechaActual.toISOString().split('T')[0]);
-        fechaActual.setDate(fechaActual.getDate() + 1);
+      // Normalizar a YYYY-MM-DD sin instanciar Date en UTC
+      const fInicio = fechaInicioStr.split('T')[0];
+      const fFin = fechaFinStr.split('T')[0];
+
+      let curr = new Date(fInicio + 'T00:00:00');
+      const end = new Date(fFin + 'T00:00:00');
+
+      while (curr <= end) {
+        const year = curr.getFullYear();
+        const month = String(curr.getMonth() + 1).padStart(2, '0');
+        const day = String(curr.getDate()).padStart(2, '0');
+        fechasEnRango.add(`${year}-${month}-${day}`);
+
+        curr.setDate(curr.getDate() + 1);
       }
     });
 
-    // Mapear el calendario: 1 si la fecha está en el Set, 0 si no
     return mes.map(dia => fechasEnRango.has(dia.fecha) ? 1 : 0);
-    // }
   }
 
   async cambioMes() {
@@ -935,24 +966,82 @@ export class EquiposHerramientasComponent implements OnInit {
     this.modalEquipo.hide()
   }
 
+  // abrirModalEquipo(row?: servicio) {
+  //   this.actualizarEquipos = false
+  //   this.equipos.clear();
+
+  //   this.fila_requerimiento.reset('');
+
+  //   this.formEquipo.markAsPristine();
+  //   this.formEquipo.markAsUntouched();
+  //   this.formEquipo.updateValueAndValidity();
+  //   this.tablaEquiposAgregar = []
+  //   this.idEquiposEliminar = []
+  //   if (row) {
+  //     this.actualizarEquipos = true
+  //     const elementosGrupo = this.tablaServicios.filter(ele => ele.index_grupo == row.index_grupo && ele.index_elemento !== 0)
+  //     for (const requerimiento of elementosGrupo) {
+  //       const fecha_solicitud = requerimiento.fecha_solicitud
+  //         ? requerimiento.fecha_solicitud.split('T')[0]
+  //         : null;
+  //       const form = this.fb.group({
+  //         item: ['E-' + requerimiento.id_fila],
+  //         descripcion: [requerimiento?.descripcion || '', Validators.required],
+  //         placa: [requerimiento?.placa],
+  //         fecha_solicitud: [fecha_solicitud],
+  //         unidad: [requerimiento.unidad, [Validators.required]],
+  //         cantidad: [requerimiento.cantidad, [Validators.required]],
+  //         precio_unitario: [requerimiento.precio_unitario, [Validators.required]],
+  //         parcial: [requerimiento.cantidad * requerimiento.precio_unitario],
+  //         estado: [requerimiento?.estado],
+  //         index_grupo: [requerimiento?.index_grupo],
+  //         id_grupo: [requerimiento?.id_grupo],
+  //         id_equipo: [requerimiento?.id_equipo],
+  //         id_registro: [requerimiento.id_registro],
+  //         id_fila: [requerimiento?.id_fila],
+  //         ind_rep: [requerimiento?.ind_rep],
+  //         index_elemento: [requerimiento?.index_elemento],
+  //         id_proyecto: [requerimiento?.id_proyecto],
+  //         tipo_registro: [requerimiento?.tipo_registro],
+  //         tipo: [{
+  //           value: requerimiento?.tipo,
+  //           disabled: requerimiento?.desagregadosCompleto?.length > 0
+  //         }],
+  //         nroprov: [requerimiento?.nroprov],
+  //         desagregadosCompleto: [requerimiento?.desagregadosCompleto],
+  //         tiempo_registrado: [requerimiento?.tiempo_registrado],
+  //         total_registrado: [requerimiento?.total_registrado]
+  //       });
+  //       this.equipos.push(form)
+  //     }
+  //   } else {
+  //     this.actualizarEquipos = false
+  //   }
+  //   this.modalEquipo.show()
+  // }
+
   abrirModalEquipo(row?: servicio) {
-    this.actualizarEquipos = false
+    this.actualizarEquipos = false;
     this.equipos.clear();
 
     this.fila_requerimiento.reset('');
-
     this.formEquipo.markAsPristine();
     this.formEquipo.markAsUntouched();
     this.formEquipo.updateValueAndValidity();
-    this.tablaEquiposAgregar = []
-    this.idEquiposEliminar = []
+    this.tablaEquiposAgregar = [];
+    this.idEquiposEliminar = [];
+
     if (row) {
-      this.actualizarEquipos = true
-      const elementosGrupo = this.tablaServicios.filter(ele => ele.index_grupo == row.index_grupo && ele.index_elemento !== 0)
+      this.actualizarEquipos = true;
+      const elementosGrupo = this.tablaServicios.filter(
+        ele => ele.index_grupo == row.index_grupo && ele.index_elemento !== 0
+      );
+
       for (const requerimiento of elementosGrupo) {
         const fecha_solicitud = requerimiento.fecha_solicitud
           ? requerimiento.fecha_solicitud.split('T')[0]
           : null;
+
         const form = this.fb.group({
           item: ['E-' + requerimiento.id_fila],
           descripcion: [requerimiento?.descripcion || '', Validators.required],
@@ -981,12 +1070,23 @@ export class EquiposHerramientasComponent implements OnInit {
           tiempo_registrado: [requerimiento?.tiempo_registrado],
           total_registrado: [requerimiento?.total_registrado]
         });
-        this.equipos.push(form)
+
+        // Si al cargar ya es GLOBAL, aseguramos deshabilitar los controles correspondientes
+        if (requerimiento?.tipo === 'GLOBAL') {
+          form.get('cantidad')?.disable({ emitEvent: false });
+          form.get('precio_unitario')?.disable({ emitEvent: false });
+        }
+
+        // Activar el escuchador para cambios futuros
+        this.escucharCambioTipo(form);
+
+        this.equipos.push(form);
       }
     } else {
-      this.actualizarEquipos = false
+      this.actualizarEquipos = false;
     }
-    this.modalEquipo.show()
+
+    this.modalEquipo.show();
   }
 
   abrirModalEstado(row) {
@@ -1063,8 +1163,8 @@ export class EquiposHerramientasComponent implements OnInit {
 
   async agregarEquipo() {
     try {
-      if (this.formEquipo.invalid) {
-        this.formEquipo.markAllAsTouched()
+      if (this.formEquipo.invalid || !this.equipos.value?.length) {
+        this.formEquipo.markAllAsTouched();
         this.toaster.error(
           'Formulario incompleto',
           'Error',
@@ -1074,27 +1174,28 @@ export class EquiposHerramientasComponent implements OnInit {
             timeOut: 4000,
           }
         );
-        return
+        return;
       }
-      this.mostrar_carga_todo = true
-      const filaServicio = this.tablaServicios[this.filSelServ]
-      let index = null
-      let j = 1
-      if (this.filSelServ < this.tablaServicios.length + 1) {
-        for (let i = this.filSelServ + 1; i < this.tablaServicios.length; i++) {
-          const element = this.tablaServicios[i];
-          if (element.index_grupo == 0) {
-            index = i
-          } else {
-            j++
-          }
-        }
-      }
-      const filtrados = this.tablaServicios.filter(ele => ele.index_grupo == filaServicio.index_grupo && ele.index_elemento !== 0)
-      const filaRegAct = this.tablaRegActividades[this.filSelRegAct]
-      let serviciosArray = []
-      let i = filtrados.length + 1
-      for (const element of this.equipos.value) {
+
+      this.mostrar_carga_todo = true;
+      const filaServicio = this.tablaServicios[this.filSelServ];
+
+      const filtrados = this.tablaServicios.filter(
+        ele => ele.index_grupo == filaServicio.index_grupo && ele.index_elemento !== 0
+      );
+      const filaRegAct = this.tablaRegActividades[this.filSelRegAct];
+
+      let serviciosArray = [];
+      let i = filtrados.length + 1;
+
+      for (const element of this.equipos.getRawValue()) {
+
+        // Si es GLOBAL y por algún motivo el total_registrado venía en 0, 
+        // aseguramos que tome el valor de 'parcial' o la multiplicación de cantidad * precio
+        const totalRegistradoCalculado = element.tipo === 'GLOBAL'
+          ? (element.total_registrado || (element.precio_unitario * element.cantidad))
+          : (element.total_registrado || 0);
+
         const equipo: servicio = {
           cantidad: this.formService.redondeo(element.cantidad, 5),
           descripcion: element.descripcion,
@@ -1116,39 +1217,44 @@ export class EquiposHerramientasComponent implements OnInit {
           tipo: element.tipo,
           tipo_registro: element.tipo_registro,
           nroprov: element.nroprov,
-          tiempo_registrado: 0,
-          valorGlobal: null,
-          desagregadosCompleto: [],
-          total_registrado: element.total_registrado
-        }
-        serviciosArray.push(equipo)
-        i++
+
+          // FIX: Mantenemos los valores que vienen del FormArray en lugar de forzar 0
+          tiempo_registrado: element.tiempo_registrado ?? 0,
+          valorGlobal: element.valorGlobal ?? null,
+          desagregadosCompleto: element.desagregadosCompleto ?? [],
+          total_registrado: totalRegistradoCalculado
+        };
+
+        serviciosArray.push(equipo);
+        i++;
       }
-      const idsInsertados = await this.equiposServiciosService.guardarEquiposServicio(serviciosArray)
+
+      const idsInsertados = await this.equiposServiciosService.guardarEquiposServicio(serviciosArray);
+
       if (idsInsertados && idsInsertados.length > 0) {
         serviciosArray.forEach((serv, index) => {
           if (index < idsInsertados.length) {
             serv.id_equipo = idsInsertados[index];
           }
         });
-        this.tablaServiciosCompleto = this.tablaServiciosCompleto.concat(serviciosArray)
-        const row = this.tablaRegActividades[this.filSelRegAct]
-        const i = this.filSelRegAct
-        this.filSelRegAct = null
-        await this.selTablaRegAct(row, i)
+
+        this.tablaServiciosCompleto = this.tablaServiciosCompleto.concat(serviciosArray);
+        const row = this.tablaRegActividades[this.filSelRegAct];
+        const indexAct = this.filSelRegAct;
+        this.filSelRegAct = null;
+
+        await this.selTablaRegAct(row, indexAct);
         this.modalEquipo.hide();
-        this.toaster.success(
-          `Se guardo correctamente`,
-          'Éxito'
-        );
+        this.toaster.success('Se guardó correctamente', 'Éxito');
       } else {
         SwalService.error('No se pudieron guardar los servicios');
       }
-      this.mostrar_carga_todo = false
+
+      this.mostrar_carga_todo = false;
     } catch (error) {
-      this.mostrar_carga_todo = false
-      SwalService.error()
-      console.log(error)
+      this.mostrar_carga_todo = false;
+      SwalService.error();
+      console.error(error);
     }
   }
 
@@ -1198,9 +1304,12 @@ export class EquiposHerramientasComponent implements OnInit {
       }
       this.mostrar_carga_todo = true
       let elementosActualizar = []
-      for (const element of this.equipos.value) {
+      for (const element of this.equipos.getRawValue()) {
+        const cantidadNum = Number(element.cantidad) || 0;
+        const precioNum = Number(element.precio_unitario) || 0;
+
         const equipo: servicio = {
-          cantidad: element.cantidad,
+          cantidad: cantidadNum,
           descripcion: element.descripcion,
           id_grupo: element.id_grupo,
           fecha_solicitud: element.fecha_solicitud,
@@ -1210,9 +1319,9 @@ export class EquiposHerramientasComponent implements OnInit {
           index_grupo: element.index_grupo,
           estado: element.estado,
           item: element.item,
-          parcial: element.precio_unitario * element.cantidad,
+          parcial: precioNum * cantidadNum, // Previene NaN
           placa: element.placa,
-          precio_unitario: element.precio_unitario,
+          precio_unitario: precioNum,
           unidad: element.unidad,
           id_equipo: element.id_equipo,
           index_elemento: element.index_elemento,
@@ -1224,10 +1333,9 @@ export class EquiposHerramientasComponent implements OnInit {
           valorGlobal: element.valorGlobal,
           desagregadosCompleto: element.desagregadosCompleto,
           total_registrado: element.total_registrado
-        }
-        elementosActualizar.push(equipo)
+        };
+        elementosActualizar.push(equipo);
       }
-
       const payload = {
         elementosActualizar: elementosActualizar,
         idsEliminar: this.idEquiposEliminar,
@@ -1288,6 +1396,7 @@ export class EquiposHerramientasComponent implements OnInit {
         const i = this.filSelRegAct
         this.filSelRegAct = null
         await this.selTablaRegAct(row, i)
+        await this.calcularTotales()
         this.idEquiposEliminar = [];
         this.equipos.clear();
         this.modalEquipo.hide();
@@ -1299,7 +1408,7 @@ export class EquiposHerramientasComponent implements OnInit {
       } else {
         this.toaster.error(response.message || 'Error en la operación', 'Error');
       }
-      await this.actualizarDataCompleta()
+      // await this.actualizarDataCompleta()
       this.mostrar_carga_todo = false;
     } catch (e) {
       this.mostrar_carga_todo = false
@@ -1365,9 +1474,29 @@ export class EquiposHerramientasComponent implements OnInit {
     this.mostrar_carga_todo = false
   }
 
+  // Verifica si un requerimiento ya fue registrado/agregado como GLOBAL
+  requerimientoEsGlobal(idFila: any, indexIgnorarModal: number = -1): boolean {
+    if (!idFila) return false;
+
+    // 1. Validar en registros guardados en la tabla principal
+    const existeEnTabla = this.tablaServiciosCompleto.some(
+      item => Number(item.id_fila) === Number(idFila) && item.tipo === 'GLOBAL'
+    );
+
+    if (existeEnTabla) return true;
+
+    // 2. Validar en el FormArray del modal actual (por si se agregaron varias filas antes de guardar)
+    const existeEnModal = this.equipos.controls.some((ctrl, index) => {
+      if (index === indexIgnorarModal) return false; // Para permitir edición sobre la misma fila si fuera necesario
+      const val = ctrl.value;
+      return Number(val.id_fila) === Number(idFila) && val.tipo === 'GLOBAL';
+    });
+
+    return existeEnModal;
+  }
+
   calcularTotales() {
     for (const element of this.tablaRequerimientos) {
-      // Filtrar servicios relacionados con este requerimiento
       const filtrados = this.tablaServicios.filter((ele: servicio) =>
         Number(ele.id_registro) === Number(element.id_registro) &&
         Number(ele.ind_rep) === Number(element.indrep) &&
@@ -1375,32 +1504,29 @@ export class EquiposHerramientasComponent implements OnInit {
         Number(ele.id_fila) === Number(element.idfila)
       );
 
-      // Verificar si todos los servicios tienen el mismo tipo y precio_unitario
+      if (filtrados.length === 0) continue; // Protección si no hay registros
+
       const primerServicio = filtrados[0];
-      const tienenMismoTipo = filtrados.every(servicio => servicio.tipo === primerServicio?.tipo);
-      const tienenMismoPrecio = filtrados.every(servicio => servicio.precio_unitario === primerServicio?.precio_unitario);
-      const sonHomogeneos = tienenMismoTipo && tienenMismoPrecio && filtrados.length > 0;
+      const tienenMismoTipo = filtrados.every(s => s.tipo === primerServicio?.tipo);
+      const tienenMismoPrecio = filtrados.every(s => Number(s.precio_unitario) === Number(primerServicio?.precio_unitario));
+      const sonHomogeneos = tienenMismoTipo && tienenMismoPrecio;
 
-      // Calcular el total de tiempo_registrado (cantidad_usada)
-      const sumaTotalTiempoRegistrado = filtrados.reduce((acc, item) => acc + (Number(item.tiempo_registrado) || 0), 0);
-
-      // Calcular el total de parcial_usada (suma de total_registrado)
-      // const sumaTotalRegistrado = filtrados.reduce((acc, item) => acc + (Number(item.total_registrado) || 0), 0);
+      const sumaTotalTiempo = filtrados.reduce((acc, item) => acc + (Number(item.tiempo_registrado) || 0), 0);
       const sumaTotalRegistrado = filtrados.reduce((sum, ele) =>
-        sum + ((ele.tiempo_registrado !== 0 && ele.precio_unitario !== 0) ? (ele.total_registrado || 0) : 0), 0);
+        sum + ((ele.tiempo_registrado !== 0 && ele.precio_unitario !== 0) ? (Number(ele.total_registrado) || 0) : 0), 0);
+
+      // Mantenimiento de valores acumulados siempre
+      element.parcial_usada = sumaTotalRegistrado;
+
       if (sonHomogeneos) {
-        // Caso homogéneo: todos tienen mismo tipo y precio_unitario
-        element.cantidad_usada = sumaTotalTiempoRegistrado;
+        element.cantidad_usada = sumaTotalTiempo;
         element.precio_usada = primerServicio.precio_unitario;
-        element.parcial_usada = sumaTotalRegistrado;
       } else {
-        // Caso heterogéneo: difieren en tipo o precio_unitario
-        element.cantidad_usada = null;
-        element.precio_usada = null;
-        element.parcial_usada = sumaTotalRegistrado;
+        // Si es valor global/heterogéneo, mantén las sumas totales acumuladas si tu UI lo requiere
+        element.cantidad_usada = sumaTotalTiempo;
+        element.precio_usada = null; // O el valor promedio/global
       }
 
-      // Calcular saldo
       element.saldo = (Number(element.parcial) || 0) - (Number(element.parcial_usada) || 0);
     }
 
@@ -1415,13 +1541,13 @@ export class EquiposHerramientasComponent implements OnInit {
         acumuladoTotal += acumuladoGrupo;
         acumuladoGrupo = 0;
       } else {
-        acumuladoGrupo += element.parcial;
+        acumuladoGrupo += Number(element.parcial) || 0;
       }
     }
-
   }
 
   async seleccionCelda(i, j) {
+    this.selFilPlan = i
     if (this.evitandoDobleEjecucion) {
       return;
     }
@@ -1619,328 +1745,692 @@ export class EquiposHerramientasComponent implements OnInit {
       this.minutos_dia.setValue(0);
     }
     this.calcularSaldo();
-    if (cambio) {
+
+    if (cambio && this.tiempos.valid) {
       this.equipoEditado = true
     }
 
   }
+  calcularSaldo(): void {
+    const filaActual = this.tablaPlanilla[this.selFilPlan];
+    if (!filaActual) return;
 
-  calcularSaldo() {
+    const esGlobal = filaActual.tipo === 'GLOBAL';
+
+    // --- 1. CÁLCULO DE MINUTOS Y COSTE DEL DÍA ---
     let minutosProg = 0;
     const progValue = this.horas_dia.value;
 
     if (progValue) {
       if (typeof progValue === 'string' && progValue.includes(':')) {
         const [horas, minutos] = progValue.split(':').map(Number);
-        minutosProg = (horas * 60) + (minutos || 0);
+        minutosProg = horas * 60 + (minutos || 0);
       } else {
         minutosProg = Math.round(parseFloat(progValue.toString()) * 60);
       }
     }
 
-    // Obtener el coste unitario por hora
-    const costeUnitario = this.coste_unitario.value || 0;
-
-    // Calcular horas trabajadas (convertir minutos a horas)
+    const costeUnitario = Number(this.coste_unitario.value) || 0;
     const horasTrabajadas = minutosProg / 60;
-
-    // Calcular el coste del día (horas * coste por hora)
     const costeDia = horasTrabajadas * costeUnitario;
 
-    // Redondear a 2 decimales para moneda
-    this.coste_dia.setValue(Math.round(costeDia * 100) / 100);
-    let total = 0
-    // this.tablaPlanilla[this.selFilPlan]?.desagregadosCompleto.map(ele => ele.horas_dia + total)
-    this.tablaPlanilla[this.selFilPlan]?.desagregadosCompleto.forEach(ele => {
-      total += Number(ele.horas_dia);
-    });
+    this.coste_dia.setValue(Math.round(costeDia * 100) / 100, { emitEvent: false });
 
-    this.tiempo_utilizado.setValue(total)
-    const saldo = this.tiempo_programado.value - total
-    this.saldo_utilizar.setValue(saldo)
-    if (this.tablaPlanilla[this.selFilPlan].tipo !== 'MES') {
-      const total2 = this.tablaPlanilla[this.selFilPlan].planilla.reduce((acc, ele) => acc + (Number(ele?.horas_dia) || 0), 0)
-      this.tablaPlanilla[this.selFilPlan].total_hm = total2
-      this.tablaPlanilla[this.selFilPlan].parcial = total2 * this.tablaPlanilla[this.selFilPlan].precio_unitario
-    } else if (this.tablaPlanilla[this.selFilPlan].tipo !== 'GLOBAL') {
-      const total2 = this.tablaPlanilla[this.selFilPlan].planilla.reduce((acc, ele) => acc + (Number(ele?.horas_dia) || 0), 0)
-      this.tablaPlanilla[this.selFilPlan].total_hm = total2
-      // this.tablaPlanilla[this.selFilPlan].parcial = total2 * this.tablaPlanilla[this.selFilPlan].precio_unitario
-      this.tablaPlanilla[this.selFilPlan].precio_unitario = total2 !== 0
-        ? Number((this.tablaPlanilla[this.selFilPlan].total_registrado / total2).toFixed(5))
-        : 0;
+    // --- 2. CÁLCULO DE SALDOS ACUMULADOS ---
+    const total = (filaActual.desagregadosCompleto || []).reduce(
+      (acc: number, ele: any) => acc + (Number(ele.horas_dia) || 0),
+      0
+    );
 
-    } else {
-      const total = this.tablaPlanilla[this.selFilPlan].arrayMes.reduce((acc, ele) => acc + (Number(ele) || 0), 0)
-      this.tablaPlanilla[this.selFilPlan].total_hm = total
-      this.tablaPlanilla[this.selFilPlan].parcial = total * this.tablaPlanilla[this.selFilPlan].precio_unitario
+    this.tiempo_utilizado.setValue(total, { emitEvent: false });
+
+    const tiempoProgramado = Number(this.tiempo_programado.value) || 0;
+    this.saldo_utilizar.setValue(tiempoProgramado - total, { emitEvent: false });
+
+    // Si es GLOBAL finalizamos sin recalcular la fila en tabla
+    if (esGlobal) return;
+
+    // --- 3. RECÁLCULO DE TOTALES EN LA TABLA ---
+    if (Array.isArray(filaActual.planilla)) {
+      const totalHorasPlanilla = filaActual.planilla.reduce(
+        (acc: number, ele: any) => acc + (Number(ele?.horas_dia) || 0),
+        0
+      );
+
+      filaActual.total_hm = totalHorasPlanilla;
+
+      if (filaActual.tipo === 'MES') {
+        filaActual.precio_unitario = totalHorasPlanilla !== 0
+          ? Number(((filaActual.total_registrado || 0) / totalHorasPlanilla).toFixed(5))
+          : 0;
+      } else {
+        // H-M, HM y DIA
+        filaActual.parcial = totalHorasPlanilla * (Number(filaActual.precio_unitario) || 0);
+      }
+
+      // Forzar actualización de referencia para tablas de Angular/RxJS
+      this.tablaPlanilla = [...this.tablaPlanilla];
     }
-
   }
 
-  async guardarActualizarCambiosDesagregado(cambio = false) {
+  // async guardarActualizarCambiosDesagregado(cambio = false) {
+  //   if (!this.equipoEditado) {
+  //     this.toaster.info(
+  //       'Ningun cambio realizado',
+  //       '',
+  //       {
+  //         closeButton: false,
+  //         positionClass: 'toast-bottom-right',
+  //         timeOut: 4000,
+  //       }
+  //     );
+  //     return
+  //   }
+  //   try {
+  //     console.log('this.equipoEditado', this.equipoEditado)
+  //     console.log('this.tiempos', this.tiempos)
+  //     if (this.tiempos.invalid) {
+  //       if (!cambio) {
+  //         this.tiempos.markAllAsTouched()
+  //         this.toaster.error(
+  //           'Datos horas laborados incorrecto',
+  //           'Error',
+  //           {
+  //             closeButton: false,
+  //             positionClass: 'toast-bottom-right',
+  //             timeOut: 4000,
+  //           }
+  //         );
+  //       } else {
+  //         this.equipoEditado = false
+  //       }
+  //       return
+  //     }
+  //     this.mostrar_carga_todo = true
+  //     const fila = this.tablaPlanilla[this.selFilPlan]
+  //     const data = this.formDesagregado.getRawValue()
+  //     const horas_detalle_Array = this.tiempos.value.map(ele => (ele.inicio || ele.fechaInicio) + '|' + (ele.fin || ele.fechaFin) + '|' + ele.tiempo);
+  //     const horas_detalle = horas_detalle_Array.join('/')
+  //     let diaSeleccionado = null
+  //     let row = null
+  //     if (fila.tipo == 'H-M' || fila.tipo == 'DIA') {
+  //       diaSeleccionado = this.calendarioFiltrado.dias[this.celdaSel[1]]
+  //       row = this.tablaPlanilla[this.celdaSel[0]]
+  //     } else if (fila.tipo == 'MES') {
+  //       diaSeleccionado = this.calendarioFiltrado.dias[0]
+  //       row = this.tablaPlanilla[this.selFilPlan]
+  //     } else {
+  //       diaSeleccionado = this.calendario[0].dias[0]
+  //       row = this.tablaPlanilla[this.selFilPlan]
+  //     }
+  //     if ((horas_detalle || data.horas_dia)) {
+  //       if (data.id_desagregado) {
+  //         const obj = {
+  //           id_desagregado: data.id_desagregado,
+  //           id_proyecto: this.id_proyecto,
+  //           id_equipo: row.id_equipo,
+  //           fecha: diaSeleccionado.fecha,
+  //           id_proveedor: null,
+  //           horas_dia: data.horas_dia,
+  //           minutos_dia: data.minutos_dia,
+  //           costo_dia: data.coste_dia,
+  //           horas_detalle: horas_detalle,
+  //           observaciones: data.observaciones == null ? '' : data.observaciones,
+  //         }
+  //         console.log('objac', obj)
+  //         const resp = await this.equiposServiciosService.actualizarDesagregadoEquipo(obj)
+  //         console.log('resp', resp)
+  //         if (resp[0]?.mensaje == '1') {
+  //           // Actualizar la celda en la tabla
+  //           if (fila.tipo == 'H-M' || fila.tipo == 'DIA') {
+  //             this.tablaPlanilla[this.celdaSel[0]].planilla[this.celdaSel[1]] = obj
+  //           } else if (fila.tipo == 'MES') {
+  //             this.tablaPlanilla[this.selFilPlan].valorMensual = obj
+  //             const arrayMes = await this.evaluarGlobalMes(obj?.horas_detalle, 'MES')
+  //             this.tablaPlanilla[this.selFilPlan].arrayMes = arrayMes
+  //             const total = arrayMes.reduce((acc, ele) => acc + (Number(ele) || 0), 0)
+  //             this.tablaPlanilla[this.selFilPlan].total_hm = total
+  //             this.tablaPlanilla[this.selFilPlan].parcial = total * this.tablaPlanilla[this.selFilPlan].precio_unitario
+  //           } else {
+  //             this.tablaPlanilla[this.selFilPlan].valorGlobal = obj
+  //             const valorGlobal = obj
+  //             const arrayMes = await this.evaluarGlobalMes(valorGlobal?.horas_detalle, 'GLOBAL')
+  //             this.tablaPlanilla[this.selFilPlan].valorGlobal = valorGlobal
+  //             this.tablaPlanilla[this.selFilPlan].arrayMes = arrayMes
+  //             const total = arrayMes.reduce((acc, ele) => acc + (Number(ele) || 0), 0)
+  //             this.tablaPlanilla[this.selFilPlan].total_hm = total
+  //             this.tablaPlanilla[this.selFilPlan].parcial = total * this.tablaPlanilla[this.selFilPlan].precio_unitario
+  //           }
+
+
+  //           // Actualizar el elemento en el array desagregadosCompleto
+  //           const array = this.tablaPlanilla[this.selFilPlan].desagregadosCompleto
+  //           const indice = array.findIndex(ele => ele.id_desagregado === obj.id_desagregado) // CORREGIDO: ===
+  //           if (indice !== -1) {
+  //             array[indice] = obj
+  //             // CORREGIDO: Asignar el array completo, no solo un elemento
+  //             this.tablaPlanilla[this.selFilPlan].desagregadosCompleto = array
+  //           }
+  //           if (horas_detalle) {
+  //             this.actualizarTiempoUtilizado(false);
+  //           } else {
+  //             this.calcularSaldo()
+  //           }
+
+  //           this.equipoEditado = false
+  //           this.toaster.success(
+  //             'Se realizo con exito',
+  //             'Éxito',
+  //             {
+  //               closeButton: false,
+  //               positionClass: 'toast-bottom-right',
+  //               timeOut: 4000,
+  //             }
+  //           );
+  //         } else {
+  //           SwalService.error()
+  //         }
+  //       } else {
+  //         const obj = {
+  //           id_proyecto: this.id_proyecto,
+  //           id_equipo: row.id_equipo,
+  //           fecha: diaSeleccionado.fecha,
+  //           // 🟢 Si es cadena vacía, pásalo a null para que .NET no falle al parsear int?
+  //           id_proveedor: null,
+  //           horas_dia: data.horas_dia,
+  //           minutos_dia: data.minutos_dia,
+  //           costo_dia: data.coste_dia,
+  //           horas_detalle: horas_detalle,
+  //           observaciones: data.observaciones ?? null
+  //         };
+  //         console.log('objg', obj)
+  //         const resp = await this.equiposServiciosService.guardarDesagregadoEquipo(obj)
+  //         console.log('resp', resp)
+  //         if (resp[0]?.id_desagregado) {
+  //           obj['id_desagregado'] = resp[0].id_desagregado
+
+  //           if (fila.tipo == 'H-M' || fila.tipo == 'DIA') {
+  //             this.tablaPlanilla[this.celdaSel[0]].planilla[this.celdaSel[1]] = obj
+  //             this.tablaPlanilla[this.celdaSel[0]].desagregadosCompleto.push(obj)
+  //             if (horas_detalle) {
+  //               this.actualizarTiempoUtilizado();
+  //             } else {
+  //               this.calcularSaldo()
+  //             }
+  //           } else if (fila.tipo == 'MES') {
+  //             this.tablaPlanilla[this.selFilPlan].valorMensual = obj
+  //             const arrayMes = await this.evaluarGlobalMes(obj?.horas_detalle, 'MES')
+  //             this.tablaPlanilla[this.selFilPlan].arrayMes = arrayMes
+  //             const total = arrayMes.reduce((acc, ele) => acc + (Number(ele) || 0), 0)
+  //             this.tablaPlanilla[this.selFilPlan].total_hm = total
+  //             this.tablaPlanilla[this.selFilPlan].parcial = total * this.tablaPlanilla[this.selFilPlan].precio_unitario
+  //             this.tablaPlanilla[this.selFilPlan].desagregadosCompleto.push(obj)
+  //           } else {
+  //             this.tablaPlanilla[this.selFilPlan].valorGlobal = obj
+  //             const valorGlobal = obj
+  //             const arrayMes = await this.evaluarGlobalMes(valorGlobal?.horas_detalle, 'GLOBAL')
+  //             this.tablaPlanilla[this.selFilPlan].valorGlobal = valorGlobal
+  //             this.tablaPlanilla[this.selFilPlan].arrayMes = arrayMes
+  //             const total = arrayMes.reduce((acc, ele) => acc + (Number(ele) || 0), 0)
+  //             this.tablaPlanilla[this.selFilPlan].total_hm = total
+  //             this.tablaPlanilla[this.selFilPlan].parcial = total * this.tablaPlanilla[this.selFilPlan].precio_unitario
+  //             this.tablaPlanilla[this.selFilPlan].desagregadosCompleto.push(obj)
+  //           }
+
+  //           this.id_desagregado.setValue(resp[0].id_desagregado)
+  //           this.equipoEditado = false
+  //           this.toaster.success(
+  //             'Se realizo con exito',
+  //             'Éxito',
+  //             {
+  //               closeButton: false,
+  //               positionClass: 'toast-bottom-right',
+  //               timeOut: 4000,
+  //             }
+  //           );
+  //         } else {
+  //           SwalService.error()
+  //         }
+  //       }
+  //     } else {
+  //       const obj = {
+  //         id_desagregado: this.id_desagregado.value
+  //       }
+  //       console.log('elim', obj)
+  //       const resp = await this.equiposServiciosService.eliminarDesagregadoEquipo(obj)
+  //       console.log('resp', resp)
+  //       if (resp[0].mensaje == '1') {
+  //         while (this.tiempos.value.length) {
+  //           this.tiempos.removeAt(0);
+  //         }
+
+  //         if (fila.tipo == 'H-M' || fila.tipo == 'DIA') {
+  //           this.tablaPlanilla[this.celdaSel[0]].planilla[this.celdaSel[1]] = null
+  //           this.tablaPlanilla[this.celdaSel[0]].desagregadosCompleto =
+  //             this.tablaPlanilla[this.celdaSel[0]].desagregadosCompleto.filter(
+  //               item => item.id_desagregado !== this.id_desagregado.value
+  //             );
+  //           let total = 0
+  //           // this.tablaPlanilla[this.selFilPlan].desagregadosCompleto.map(ele => ele.horas_dia + total)
+  //           this.tablaPlanilla[this.selFilPlan]?.desagregadosCompleto.forEach(ele => {
+  //             total += Number(ele.horas_dia);
+  //           });
+  //           this.tiempo_utilizado.setValue(total)
+  //         } else if (fila.tipo == 'MES') {
+  //           this.tablaPlanilla[this.selFilPlan].valorMensual = null
+  //           this.tablaPlanilla[this.selFilPlan].valorGlobal = null
+  //           const arrayMes = await this.evaluarGlobalMes('', 'MES')
+  //           this.tablaPlanilla[this.selFilPlan].arrayMes = arrayMes
+  //           const total = arrayMes.reduce((acc, ele) => acc + (Number(ele) || 0), 0)
+  //           this.tablaPlanilla[this.selFilPlan].total_hm = total
+  //           this.tablaPlanilla[this.selFilPlan].parcial = total * this.tablaPlanilla[this.selFilPlan].precio_unitario
+  //           this.tablaPlanilla[this.selFilPlan].desagregadosCompleto = []
+  //           this.tiempo_utilizado.setValue(total)
+  //         } else {
+  //           this.tablaPlanilla[this.selFilPlan].valorMensual = null
+  //           this.tablaPlanilla[this.selFilPlan].valorGlobal = null
+
+  //           const arrayMes = await this.evaluarGlobalMes('', 'GLOBAL')
+  //           this.tablaPlanilla[this.selFilPlan].arrayMes = arrayMes
+  //           const total = arrayMes.reduce((acc, ele) => acc + (Number(ele) || 0), 0)
+  //           this.tablaPlanilla[this.selFilPlan].total_hm = total
+  //           this.tablaPlanilla[this.selFilPlan].parcial = total * this.tablaPlanilla[this.selFilPlan].precio_unitario
+  //           this.tablaPlanilla[this.selFilPlan].desagregadosCompleto = []
+  //           this.tiempo_utilizado.setValue(total)
+  //         }
+
+
+  //         this.id_desagregado.setValue('')
+
+  //         const saldo = this.tiempo_programado.value - 0
+  //         this.saldo_utilizar.setValue(saldo)
+  //         this.minutos_dia.setValue('')
+  //         this.horas_dia.setValue('')
+  //         this.observaciones.setValue('')
+  //         this.coste_dia.setValue('')
+  //         this.equipoEditado = false
+  //         this.toaster.success(
+  //           'Se realizo con exito',
+  //           'Éxito',
+  //           {
+  //             closeButton: false,
+  //             positionClass: 'toast-bottom-right',
+  //             timeOut: 4000,
+  //           }
+  //         );
+  //       }
+  //     }
+  //     this.mostrar_carga_todo = false
+
+  //   } catch (error) {
+  //     this.mostrar_carga_todo = false
+  //     console.log(error)
+  //     SwalService.error()
+  //   }
+  // }
+  async guardarActualizarCambiosDesagregado(cambio = false): Promise<boolean | void> {
+
     if (!this.equipoEditado) {
-      this.toaster.info(
-        'Ningun cambio realizado',
-        '',
-        {
-          closeButton: false,
-          positionClass: 'toast-bottom-right',
-          timeOut: 4000,
-        }
-      );
-      return
+      this.toaster.info('Ningún cambio realizado', '', {
+        closeButton: false,
+        positionClass: 'toast-bottom-right',
+        timeOut: 4000,
+      });
+      return;
     }
+
     try {
+      // ==========================================
+      // 1. VALIDACIÓN DEL FORMULARIO DE TIEMPOS
+      // ==========================================
       if (this.tiempos.invalid) {
         if (!cambio) {
-          this.tiempos.markAllAsTouched()
-          this.toaster.error(
-            'Datos horas laborados incorrecto',
-            'Error',
-            {
-              closeButton: false,
-              positionClass: 'toast-bottom-right',
-              timeOut: 4000,
-            }
-          );
+          this.tiempos.markAllAsTouched();
+          this.toaster.error('Datos horas laborados incorrectos', 'Error', {
+            closeButton: false,
+            positionClass: 'toast-bottom-right',
+            timeOut: 4000,
+          });
         } else {
-          this.equipoEditado = false
+          this.equipoEditado = false;
         }
-        return
+        return;
       }
-      this.mostrar_carga_todo = true
-      const fila = this.tablaPlanilla[this.selFilPlan]
-      const data = this.formDesagregado.getRawValue()
-      const horas_detalle_Array = this.tiempos.value.map(ele => (ele.inicio || ele.fechaInicio) + '|' + (ele.fin || ele.fechaFin) + '|' + ele.tiempo);
-      const horas_detalle = horas_detalle_Array.join('/')
-      let diaSeleccionado = null
-      let row = null
-      if (fila.tipo == 'H-M' || fila.tipo == 'DIA') {
-        diaSeleccionado = this.calendarioFiltrado.dias[this.celdaSel[1]]
-        row = this.tablaPlanilla[this.celdaSel[0]]
-      } else if (fila.tipo == 'MES') {
-        diaSeleccionado = this.calendarioFiltrado.dias[0]
-        row = this.tablaPlanilla[this.selFilPlan]
-      } else {
-        diaSeleccionado = this.calendario[0].dias[0]
-        row = this.tablaPlanilla[this.selFilPlan]
+
+      const fila = this.tablaPlanilla[this.selFilPlan];
+      const data = this.formDesagregado.getRawValue();
+      const esGlobal = fila.tipo === 'GLOBAL';
+
+      // ==========================================
+      // 2. VALIDACIÓN DE FECHA OBLIGATORIA (GLOBAL)
+      // ==========================================
+      if (esGlobal && !data.fechaRegistroGlobal) {
+        if (!cambio) {
+          this.toaster.warning('La fecha asignada es obligatoria para el tipo GLOBAL', 'Advertencia', {
+            closeButton: false,
+            positionClass: 'toast-bottom-right',
+            timeOut: 4000,
+          });
+        } else {
+          this.equipoEditado = false;
+        }
+        return false;
       }
-      if ((horas_detalle || data.horas_dia)) {
+
+      this.mostrar_carga_todo = true;
+
+      // Detalle de horas formateado (inicio|fin|tiempo/...)
+      const horasDetalleArray = this.tiempos.value.map(
+        (ele: any) => `${ele.inicio || ele.fechaInicio || ''}|${ele.fin || ele.fechaFin || ''}|${ele.tiempo || ''}`
+      );
+      const horasDetalle = horasDetalleArray.join('/');
+
+      // ==========================================
+      // 3. DETERMINACIÓN DE OBJETIVOS Y NAVEGACIÓN
+      // ==========================================
+      let diaSeleccionado = null;
+      let targetIndex = this.selFilPlan;
+
+      if (fila.tipo === 'H-M' || fila.tipo === 'DIA') {
+        targetIndex = this.celdaSel[0];
+        diaSeleccionado = this.calendarioFiltrado?.dias?.[this.celdaSel[1]];
+      } else if (fila.tipo === 'MES') {
+        diaSeleccionado = this.calendarioFiltrado?.dias?.[0];
+      }
+
+      const targetRow = this.tablaPlanilla[targetIndex];
+      const fechaPayload = esGlobal ? data.fechaRegistroGlobal : diaSeleccionado?.fecha;
+
+      if (!fechaPayload) {
+        this.mostrar_carga_todo = false;
+        if (cambio) this.equipoEditado = false;
+        return false;
+      }
+
+      const tieneContenidoGuardable = Boolean(horasDetalle || data.horas_dia || esGlobal);
+
+      if (tieneContenidoGuardable) {
         if (data.id_desagregado) {
+          // ==========================================
+          // A. ACTUALIZACIÓN DE REGISTRO
+          // ==========================================
           const obj = {
             id_desagregado: data.id_desagregado,
             id_proyecto: this.id_proyecto,
-            id_equipo: row.id_equipo,
-            fecha: diaSeleccionado.fecha,
-           id_proveedor: null,
-            horas_dia: data.horas_dia,
-            minutos_dia: data.minutos_dia,
-            costo_dia: data.coste_dia,
-            horas_detalle: horas_detalle,
-            observaciones: data.observaciones == null ? '' : data.observaciones,
-          }
-          const resp = await this.equiposServiciosService.actualizarDesagregadoEquipo(obj)
-          if (resp[0]?.mensaje == '1') {
-            // Actualizar la celda en la tabla
-            if (fila.tipo == 'H-M' || fila.tipo == 'DIA') {
-              this.tablaPlanilla[this.celdaSel[0]].planilla[this.celdaSel[1]] = obj
-            } else if (fila.tipo == 'MES') {
-              this.tablaPlanilla[this.selFilPlan].valorMensual = obj
-              const arrayMes = await this.evaluarGlobalMes(obj?.horas_detalle, 'MES')
-              this.tablaPlanilla[this.selFilPlan].arrayMes = arrayMes
-              const total = arrayMes.reduce((acc, ele) => acc + (Number(ele) || 0), 0)
-              this.tablaPlanilla[this.selFilPlan].total_hm = total
-              this.tablaPlanilla[this.selFilPlan].parcial = total * this.tablaPlanilla[this.selFilPlan].precio_unitario
-            } else {
-              this.tablaPlanilla[this.selFilPlan].valorGlobal = obj
-              const valorGlobal = obj
-              const arrayMes = await this.evaluarGlobalMes(valorGlobal?.horas_detalle, 'GLOBAL')
-              this.tablaPlanilla[this.selFilPlan].valorGlobal = valorGlobal
-              this.tablaPlanilla[this.selFilPlan].arrayMes = arrayMes
-              const total = arrayMes.reduce((acc, ele) => acc + (Number(ele) || 0), 0)
-              this.tablaPlanilla[this.selFilPlan].total_hm = total
-              this.tablaPlanilla[this.selFilPlan].parcial = total * this.tablaPlanilla[this.selFilPlan].precio_unitario
-            }
-
-
-            // Actualizar el elemento en el array desagregadosCompleto
-            const array = this.tablaPlanilla[this.selFilPlan].desagregadosCompleto
-            const indice = array.findIndex(ele => ele.id_desagregado === obj.id_desagregado) // CORREGIDO: ===
-            if (indice !== -1) {
-              array[indice] = obj
-              // CORREGIDO: Asignar el array completo, no solo un elemento
-              this.tablaPlanilla[this.selFilPlan].desagregadosCompleto = array
-            }
-            if (horas_detalle) {
-              this.actualizarTiempoUtilizado(false);
-            } else {
-              this.calcularSaldo()
-            }
-
-            this.equipoEditado = false
-            this.toaster.success(
-              'Se realizo con exito',
-              'Éxito',
-              {
-                closeButton: false,
-                positionClass: 'toast-bottom-right',
-                timeOut: 4000,
-              }
-            );
-          } else {
-            SwalService.error()
-          }
-        } else {
-          const obj = {
-            id_proyecto: this.id_proyecto,
-            id_equipo: row.id_equipo,
-            fecha: diaSeleccionado.fecha,
-            // 🟢 Si es cadena vacía, pásalo a null para que .NET no falle al parsear int?
+            id_equipo: targetRow.id_equipo,
+            fecha: fechaPayload,
             id_proveedor: null,
             horas_dia: data.horas_dia,
             minutos_dia: data.minutos_dia,
             costo_dia: data.coste_dia,
-            horas_detalle: horas_detalle,
-            observaciones: data.observaciones ?? null
+            horas_detalle: horasDetalle,
+            observaciones: data.observaciones ?? '',
           };
-          const resp = await this.equiposServiciosService.guardarDesagregadoEquipo(obj)
 
-          if (resp[0]?.id_desagregado) {
-            obj['id_desagregado'] = resp[0].id_desagregado
+          const resp = await this.equiposServiciosService.actualizarDesagregadoEquipo(obj);
 
-            if (fila.tipo == 'H-M' || fila.tipo == 'DIA') {
-              this.tablaPlanilla[this.celdaSel[0]].planilla[this.celdaSel[1]] = obj
-              this.tablaPlanilla[this.celdaSel[0]].desagregadosCompleto.push(obj)
-              if (horas_detalle) {
-                this.actualizarTiempoUtilizado();
-              } else {
-                this.calcularSaldo()
-              }
-            } else if (fila.tipo == 'MES') {
-              this.tablaPlanilla[this.selFilPlan].valorMensual = obj
-              const arrayMes = await this.evaluarGlobalMes(obj?.horas_detalle, 'MES')
-              this.tablaPlanilla[this.selFilPlan].arrayMes = arrayMes
-              const total = arrayMes.reduce((acc, ele) => acc + (Number(ele) || 0), 0)
-              this.tablaPlanilla[this.selFilPlan].total_hm = total
-              this.tablaPlanilla[this.selFilPlan].parcial = total * this.tablaPlanilla[this.selFilPlan].precio_unitario
-              this.tablaPlanilla[this.selFilPlan].desagregadosCompleto.push(obj)
+          if (resp[0]?.mensaje === '1') {
+            const rowClonada = { ...targetRow };
+
+            if (fila.tipo === 'H-M' || fila.tipo === 'DIA') {
+              const planillaCopy = [...(rowClonada.planilla || [])];
+              planillaCopy[this.celdaSel[1]] = { ...obj };
+              rowClonada.planilla = planillaCopy;
+            } else if (fila.tipo === 'MES') {
+              rowClonada.valorMensual = { ...obj };
+              const arrayMes = await this.evaluarGlobalMes(obj.horas_detalle, 'MES');
+              rowClonada.arrayMes = arrayMes;
+
+              const total = arrayMes.reduce((acc: number, ele: any) => acc + (Number(ele) || 0), 0);
+              rowClonada.total_hm = total;
+              rowClonada.parcial = total * (Number(rowClonada.precio_unitario) || 0);
             } else {
-              this.tablaPlanilla[this.selFilPlan].valorGlobal = obj
-              const valorGlobal = obj
-              const arrayMes = await this.evaluarGlobalMes(valorGlobal?.horas_detalle, 'GLOBAL')
-              this.tablaPlanilla[this.selFilPlan].valorGlobal = valorGlobal
-              this.tablaPlanilla[this.selFilPlan].arrayMes = arrayMes
-              const total = arrayMes.reduce((acc, ele) => acc + (Number(ele) || 0), 0)
-              this.tablaPlanilla[this.selFilPlan].total_hm = total
-              this.tablaPlanilla[this.selFilPlan].parcial = total * this.tablaPlanilla[this.selFilPlan].precio_unitario
-              this.tablaPlanilla[this.selFilPlan].desagregadosCompleto.push(obj)
+              // Caso GLOBAL
+              rowClonada.valorGlobal = {
+                ...obj,
+                fechaRegistroGlobal: data.fechaRegistroGlobal,
+              };
+
+              const totalDias = this.calendarioFiltrado?.dias?.length || 0;
+              const arrayMesGlobal = new Array(totalDias).fill(0);
+              const fechaGlobalStr = (data.fechaRegistroGlobal || '').split('T')[0];
+
+              const idxDia = this.calendarioFiltrado?.dias?.findIndex(
+                (d: any) => (d.fecha || '').split('T')[0] === fechaGlobalStr
+              );
+
+              if (idxDia !== -1 && idxDia !== undefined) {
+                arrayMesGlobal[idxDia] = Number(data.coste_dia) || Number(rowClonada.total_registrado) || Number(rowClonada.parcial) || 0;
+              }
+              rowClonada.arrayMes = arrayMesGlobal;
             }
 
-            this.id_desagregado.setValue(resp[0].id_desagregado)
-            this.equipoEditado = false
-            this.toaster.success(
-              'Se realizo con exito',
-              'Éxito',
-              {
-                closeButton: false,
-                positionClass: 'toast-bottom-right',
-                timeOut: 4000,
+            // Colección completa inmutable
+            const arrayCompleto = [...(rowClonada.desagregadosCompleto || [])];
+            const indice = arrayCompleto.findIndex(ele => ele.id_desagregado === obj.id_desagregado);
+            if (indice !== -1) {
+              arrayCompleto[indice] = { ...obj, fechaRegistroGlobal: data.fechaRegistroGlobal };
+              rowClonada.desagregadosCompleto = arrayCompleto;
+            }
+
+            // Asignar objeto completamente clonado al índice principal
+            this.tablaPlanilla[targetIndex] = rowClonada;
+
+            if (!esGlobal) {
+              if (horasDetalle) {
+                this.actualizarTiempoUtilizado(false);
+              } else {
+                this.calcularSaldo();
               }
-            );
+            }
+
+            this.notificarExito();
           } else {
-            SwalService.error()
+            SwalService.error();
+          }
+        } else {
+          // ==========================================
+          // B. CREACIÓN DE REGISTRO
+          // ==========================================
+          const obj = {
+            id_proyecto: this.id_proyecto,
+            id_equipo: targetRow.id_equipo,
+            fecha: fechaPayload,
+            id_proveedor: null,
+            horas_dia: data.horas_dia,
+            minutos_dia: data.minutos_dia,
+            costo_dia: data.coste_dia,
+            horas_detalle: horasDetalle,
+            observaciones: data.observaciones ?? '',
+          };
+
+          const resp = await this.equiposServiciosService.guardarDesagregadoEquipo(obj);
+
+          if (resp[0]?.id_desagregado) {
+            const nuevoObj = { ...obj, id_desagregado: resp[0].id_desagregado };
+            const rowClonada = { ...targetRow };
+
+            if (fila.tipo === 'H-M' || fila.tipo === 'DIA') {
+              const planillaCopy = [...(rowClonada.planilla || [])];
+              planillaCopy[this.celdaSel[1]] = { ...nuevoObj };
+              rowClonada.planilla = planillaCopy;
+              rowClonada.desagregadosCompleto = [
+                ...(rowClonada.desagregadosCompleto || []),
+                { ...nuevoObj },
+              ];
+
+              this.tablaPlanilla[targetIndex] = rowClonada;
+
+              if (horasDetalle) {
+                this.actualizarTiempoUtilizado();
+              } else {
+                this.calcularSaldo();
+              }
+            } else if (fila.tipo === 'MES') {
+              rowClonada.valorMensual = { ...nuevoObj };
+              const arrayMes = await this.evaluarGlobalMes(nuevoObj.horas_detalle, 'MES');
+              rowClonada.arrayMes = arrayMes;
+
+              const total = arrayMes.reduce((acc: number, ele: any) => acc + (Number(ele) || 0), 0);
+              rowClonada.total_hm = total;
+              rowClonada.parcial = total * (Number(rowClonada.precio_unitario) || 0);
+              rowClonada.desagregadosCompleto = [
+                ...(rowClonada.desagregadosCompleto || []),
+                { ...nuevoObj },
+              ];
+
+              this.tablaPlanilla[targetIndex] = rowClonada;
+            } else {
+              // Caso GLOBAL
+              rowClonada.valorGlobal = {
+                ...nuevoObj,
+                fechaRegistroGlobal: data.fechaRegistroGlobal,
+              };
+
+              const totalDias = this.calendarioFiltrado?.dias?.length || 0;
+              const arrayMesGlobal = new Array(totalDias).fill(0);
+              const fechaGlobalStr = (data.fechaRegistroGlobal || '').split('T')[0];
+
+              const idxDia = this.calendarioFiltrado?.dias?.findIndex(
+                (d: any) => (d.fecha || '').split('T')[0] === fechaGlobalStr
+              );
+
+              if (idxDia !== -1 && idxDia !== undefined) {
+                arrayMesGlobal[idxDia] = Number(data.coste_dia) || Number(rowClonada.total_registrado) || Number(rowClonada.parcial) || 0;
+              }
+              rowClonada.arrayMes = arrayMesGlobal;
+              rowClonada.desagregadosCompleto = [
+                ...(rowClonada.desagregadosCompleto || []),
+                { ...nuevoObj, fechaRegistroGlobal: data.fechaRegistroGlobal },
+              ];
+
+              this.tablaPlanilla[targetIndex] = rowClonada;
+            }
+
+            this.id_desagregado.setValue(resp[0].id_desagregado, { emitEvent: false });
+            this.notificarExito();
+          } else {
+            SwalService.error();
           }
         }
       } else {
-        const obj = {
-          id_desagregado: this.id_desagregado.value
+        // ==========================================
+        // C. ELIMINACIÓN DE REGISTRO
+        // ==========================================
+        const idDesagregado = this.id_desagregado.value;
+
+        if (!idDesagregado) {
+          this.mostrar_carga_todo = false;
+          this.equipoEditado = false;
+          return;
         }
-        const resp = await this.equiposServiciosService.eliminarDesagregadoEquipo(obj)
 
-        if (resp[0].mensaje == '1') {
-          while (this.tiempos.value.length) {
-            this.tiempos.removeAt(0);
-          }
+        const resp = await this.equiposServiciosService.eliminarDesagregadoEquipo({
+          id_desagregado: idDesagregado,
+        });
 
-          if (fila.tipo == 'H-M' || fila.tipo == 'DIA') {
-            this.tablaPlanilla[this.celdaSel[0]].planilla[this.celdaSel[1]] = null
-            this.tablaPlanilla[this.celdaSel[0]].desagregadosCompleto =
-              this.tablaPlanilla[this.celdaSel[0]].desagregadosCompleto.filter(
-                item => item.id_desagregado !== this.id_desagregado.value
-              );
-            let total = 0
-            // this.tablaPlanilla[this.selFilPlan].desagregadosCompleto.map(ele => ele.horas_dia + total)
-            this.tablaPlanilla[this.selFilPlan]?.desagregadosCompleto.forEach(ele => {
-              total += Number(ele.horas_dia);
-            });
-            this.tiempo_utilizado.setValue(total)
-          } else if (fila.tipo == 'MES') {
-            this.tablaPlanilla[this.selFilPlan].valorMensual = null
-            this.tablaPlanilla[this.selFilPlan].valorGlobal = null
-            const arrayMes = await this.evaluarGlobalMes('', 'MES')
-            this.tablaPlanilla[this.selFilPlan].arrayMes = arrayMes
-            const total = arrayMes.reduce((acc, ele) => acc + (Number(ele) || 0), 0)
-            this.tablaPlanilla[this.selFilPlan].total_hm = total
-            this.tablaPlanilla[this.selFilPlan].parcial = total * this.tablaPlanilla[this.selFilPlan].precio_unitario
-            this.tablaPlanilla[this.selFilPlan].desagregadosCompleto = []
-            this.tiempo_utilizado.setValue(total)
+        if (resp[0]?.mensaje === '1') {
+          this.tiempos.clear({ emitEvent: false });
+          const rowClonada = { ...targetRow };
+
+          if (fila.tipo === 'H-M' || fila.tipo === 'DIA') {
+            const planillaCopy = [...(rowClonada.planilla || [])];
+            planillaCopy[this.celdaSel[1]] = null;
+            rowClonada.planilla = planillaCopy;
+            rowClonada.desagregadosCompleto = (rowClonada.desagregadosCompleto || []).filter(
+              (item: any) => item.id_desagregado !== idDesagregado
+            );
+
+            this.tablaPlanilla[targetIndex] = rowClonada;
+
+            const total = (rowClonada.desagregadosCompleto || [])
+              .reduce((acc: number, ele: any) => acc + (Number(ele.horas_dia) || 0), 0);
+
+            this.tiempo_utilizado.setValue(total, { emitEvent: false });
+          } else if (fila.tipo === 'MES') {
+            rowClonada.valorMensual = null;
+            rowClonada.valorGlobal = null;
+
+            const arrayMes = await this.evaluarGlobalMes('', 'MES');
+            rowClonada.arrayMes = arrayMes;
+
+            const total = arrayMes.reduce((acc: number, ele: any) => acc + (Number(ele) || 0), 0);
+            rowClonada.total_hm = total;
+            rowClonada.parcial = total * (Number(rowClonada.precio_unitario) || 0);
+            rowClonada.desagregadosCompleto = [];
+
+            this.tablaPlanilla[targetIndex] = rowClonada;
+            this.tiempo_utilizado.setValue(total, { emitEvent: false });
           } else {
-            this.tablaPlanilla[this.selFilPlan].valorMensual = null
-            this.tablaPlanilla[this.selFilPlan].valorGlobal = null
+            // Eliminación Tipo GLOBAL
+            rowClonada.valorMensual = null;
+            rowClonada.valorGlobal = null;
 
-            const arrayMes = await this.evaluarGlobalMes('', 'GLOBAL')
-            this.tablaPlanilla[this.selFilPlan].arrayMes = arrayMes
-            const total = arrayMes.reduce((acc, ele) => acc + (Number(ele) || 0), 0)
-            this.tablaPlanilla[this.selFilPlan].total_hm = total
-            this.tablaPlanilla[this.selFilPlan].parcial = total * this.tablaPlanilla[this.selFilPlan].precio_unitario
-            this.tablaPlanilla[this.selFilPlan].desagregadosCompleto = []
-            this.tiempo_utilizado.setValue(total)
+            const totalDias = this.calendarioFiltrado?.dias?.length || 0;
+            rowClonada.arrayMes = new Array(totalDias).fill(0);
+            rowClonada.desagregadosCompleto = [];
+
+            this.tablaPlanilla[targetIndex] = rowClonada;
           }
 
+          this.id_desagregado.setValue('', { emitEvent: false });
 
-          this.id_desagregado.setValue('')
+          if (!esGlobal) {
+            const saldo = Number(this.tiempo_programado.value || 0);
+            this.saldo_utilizar.setValue(saldo, { emitEvent: false });
+          }
 
-          const saldo = this.tiempo_programado.value - 0
-          this.saldo_utilizar.setValue(saldo)
-          this.minutos_dia.setValue('')
-          this.horas_dia.setValue('')
-          this.observaciones.setValue('')
-          this.coste_dia.setValue('')
-          this.equipoEditado = false
-          this.toaster.success(
-            'Se realizo con exito',
-            'Éxito',
-            {
-              closeButton: false,
-              positionClass: 'toast-bottom-right',
-              timeOut: 4000,
-            }
-          );
+          // Reseteo del formulario
+          this.minutos_dia.setValue('', { emitEvent: false });
+          this.horas_dia.setValue('', { emitEvent: false });
+          this.observaciones.setValue('', { emitEvent: false });
+          this.coste_dia.setValue('', { emitEvent: false });
+          this.fechaRegistroGlobal.setValue('', { emitEvent: false });
+
+          this.notificarExito();
+        } else {
+          SwalService.error();
         }
       }
-      this.mostrar_carga_todo = false
+
+      // Clonación del array principal para forzar detección de cambios en la UI
+      this.tablaPlanilla = [...this.tablaPlanilla];
+      this.mostrar_carga_todo = false;
 
     } catch (error) {
-      this.mostrar_carga_todo = false
-      console.log(error)
-      SwalService.error()
+      this.mostrar_carga_todo = false;
+      console.error('Error en guardarActualizarCambiosDesagregado:', error);
+      SwalService.error();
     }
   }
 
-  crearFilaServicio(): FormGroup {
+  // Helper interno para notificar éxito y limpiar estado de edición
+  private notificarExito(): void {
+    this.equipoEditado = false;
+    this.toaster.success('Se realizó con éxito', 'Éxito', {
+      closeButton: false,
+      positionClass: 'toast-bottom-right',
+      timeOut: 4000,
+    });
+  }
 
-    const requerimiento = this.tablaRequerimientos[this.fila_requerimiento.value]
-    const regAct = this.tablaRegActividades[this.filSelRegAct]
+  crearFilaServicio(): FormGroup {
+    const requerimiento = this.tablaRequerimientos[this.fila_requerimiento.value];
+    const regAct = this.tablaRegActividades[this.filSelRegAct];
+
+    const cantInicial = requerimiento?.cantidad ?? 0;
+    const precioInicial = requerimiento?.precio ?? 0;
+    const parcialInicial = cantInicial * precioInicial;
+
     const form = this.fb.group({
       item: ['E-' + requerimiento?.idfila],
       descripcion: [requerimiento?.descripcion || '', Validators.required],
       placa: [''],
       fecha_solicitud: [requerimiento?.fecha_sol],
       unidad: [requerimiento?.unidad],
-      cantidad: [requerimiento?.cantidad, [Validators.required]],
-      precio_unitario: [requerimiento?.precio, [Validators.required]],
-      parcial: [0, [Validators.required]],
+      cantidad: [cantInicial, [Validators.required]],
+      precio_unitario: [precioInicial, [Validators.required]],
+      parcial: [parcialInicial, [Validators.required]],
       estado: [1],
       index_grupo: [0],
       id_grupo: [0],
@@ -1958,24 +2448,114 @@ export class EquiposHerramientasComponent implements OnInit {
       nroprov: [regAct?.nroprov],
       desagregadosCompleto: [[]],
       tiempo_registrado: [0],
-      total_registrado: [0]
+      // NACE DESHABILITADO para que en el HTML se renderice directamente como texto plano (span)
+      total_registrado: [{ value: 0, disabled: true }]
     });
-    return form
 
+    // Activar el escuchador para cambios de tipo (GLOBAL, H-M, etc.)
+    this.escucharCambioTipo(form);
+    return form;
+  }
+
+  private escucharCambioTipo(form: FormGroup): void {
+    const tipoControl = form.get('tipo');
+    if (!tipoControl) return;
+
+    tipoControl.valueChanges.subscribe((nuevoTipo: string) => {
+      const idFila = form.get('id_fila')?.value;
+
+      if (nuevoTipo === 'GLOBAL') {
+        const filasExistentes = this.obtenerFilasPorRequerimiento(idFila);
+
+        // REGLA 1: No se puede cambiar a GLOBAL si ya existen 2 o más filas para este requerimiento
+        if (filasExistentes.length > 1) {
+          this.toaster.warning(
+            'No se puede cambiar a GLOBAL porque este requerimiento ya tiene múltiples registros creados.',
+            'Operación no permitida'
+          );
+          tipoControl.setValue('H-M', { emitEvent: false });
+          return;
+        }
+
+        // REGLA 2: Si ya existía otro registro previo que era GLOBAL
+        const indexActual = this.equipos.controls.findIndex(c => c === form);
+        const existeOtroGlobal = filasExistentes.some(
+          f => f.get('tipo')?.value === 'GLOBAL' && this.equipos.controls.indexOf(f) !== indexActual
+        );
+
+        if (existeOtroGlobal) {
+          this.toaster.warning(
+            'Este requerimiento ya tiene un registro GLOBAL activo.',
+            'Atención'
+          );
+          tipoControl.setValue('H-M', { emitEvent: false });
+          return;
+        }
+      }
+
+      const cantidadCtrl = form.get('cantidad');
+      const precioCtrl = form.get('precio_unitario');
+      const totalCtrl = form.get('total_registrado');
+      const tiempoCtrl = form.get('tiempo_registrado'); // 👈 Capturamos el control de tiempo
+
+      const filaReqIndex = this.fila_requerimiento?.value;
+      const requerimiento = this.tablaRequerimientos[filaReqIndex];
+
+      if (nuevoTipo === 'GLOBAL') {
+        const cantInicial = requerimiento?.cantidad ?? 0;
+        const precioInicial = requerimiento?.precio ?? 0;
+        const totalInicial = requerimiento?.parcial ?? (cantInicial * precioInicial);
+
+        // Asignamos los valores del requerimiento
+        cantidadCtrl?.setValue(cantInicial, { emitEvent: false });
+        precioCtrl?.setValue(precioInicial, { emitEvent: false });
+        totalCtrl?.setValue(totalInicial, { emitEvent: false });
+        tiempoCtrl?.setValue(cantInicial, { emitEvent: false }); // 👈 Seteamos tiempo_registrado con la cantidad del requerimiento
+
+        cantidadCtrl?.disable({ emitEvent: false });
+        precioCtrl?.disable({ emitEvent: false });
+      } else {
+        cantidadCtrl?.enable({ emitEvent: false });
+        precioCtrl?.enable({ emitEvent: false });
+      }
+
+      totalCtrl?.disable({ emitEvent: false });
+      form.updateValueAndValidity({ emitEvent: false });
+    });
   }
 
   agregarFila() {
+    const indexReq = this.formEquipo.get('fila_requerimiento')?.value;
+    if (indexReq === null || indexReq === undefined || indexReq === '') return;
+
+    const requerimiento = this.tablaRequerimientos[indexReq];
+    const idFila = requerimiento?.idfila;
+
+    // BLOQUEO: Si el requerimiento ya existe como GLOBAL, no permite agregar más filas
+    if (this.requerimientoEsGlobal(idFila)) {
+      this.toaster.warning(
+        'Este requerimiento ya fue registrado como GLOBAL y no admite más partidas/registros.',
+        'Requerimiento Bloqueado'
+      );
+      return;
+    }
+
     const nuevaFila = this.crearFilaServicio();
     this.equipos.push(nuevaFila);
-
-
-
   }
+
   // Eliminar fila
-  eliminarFilaModal(index: number, row) {
-    if (row.desagredados?.length) {
+  eliminarFilaModal(index: number) {
+    // 1. Obtenemos el grupo actual del FormArray
+    const equipoFormGroup = this.equipos.at(index);
+    const valorForm = equipoFormGroup.value;
+
+    // 2. Evaluamos desagregados (o desagregadosCompleto según cómo lo hayas nombrado)
+    const desagregados = valorForm.desagregados || valorForm.desagregadosCompleto || [];
+
+    if (desagregados && desagregados.length > 0) {
       this.toaster.error(
-        'El equipo tiene registros en planilla, elimine todos los registro en planilla para poder eliminar',
+        'El equipo tiene registros en planilla, elimine todos los registros en planilla para poder eliminar',
         '',
         {
           closeButton: false,
@@ -1983,17 +2563,19 @@ export class EquiposHerramientasComponent implements OnInit {
           timeOut: 4000,
         }
       );
-      return
+      return; // Cancela la eliminación
     }
+
+    // 3. Si es en modo actualización, registramos el ID para eliminar en el backend
     if (this.actualizarEquipos) {
-      const id = this.equipos.value[index].id_equipo
-      if (!this.idEquiposEliminar.includes(id)) {
-        this.idEquiposEliminar.push(id)
+      const id = valorForm.id_equipo;
+      if (id && !this.idEquiposEliminar.includes(id)) {
+        this.idEquiposEliminar.push(id);
       }
     }
 
+    // 4. Eliminamos la fila y reordenamos
     this.equipos.removeAt(index);
-
     this.reordenarPorGrupo();
   }
 
@@ -2022,180 +2604,371 @@ export class EquiposHerramientasComponent implements OnInit {
     }
   }
 
-  async seleccionFilaPlanrow(row, i) {
+  // async seleccionFilaPlanrow(row, i) {
+  //   if (this.evitandoDobleEjecucion) {
+  //     return;
+  //   }
+
+  //   if (this.selFilPlan == i) {
+  //     return
+  //   }
+  //   if (this.equipoEditado && (row.tipo == 'GLOBAL' || row.tipo == 'MES')) {
+  //     this.evitandoDobleEjecucion = true;
+  //     await this.guardarActualizarCambiosDesagregado(true);
+  //     this.evitandoDobleEjecucion = false;
+  //   }
+  //   this.celdaSel = [null, null]
+  //   this.buscando = true
+  //   this.detalleMensual = []
+  //   this.acumuladoCantidades = [];
+  //   this.acumuladoParciales = [];
+  //   this.resumenPorAnio = [];
+  //   row.item !== 0 ? this.selFilPlan = i : null
+  //   this.formDesagregado.reset()
+  //   while (this.tiempos.value.length) {
+  //     this.tiempos.removeAt(0);
+  //   }
+  //   this.tipoSeleccionado = row.tipo
+  //   if (row.tipo == 'GLOBAL') {
+  //     // this.observaciones.enable()
+  //     this.coste_unitario.setValue(this.tablaPlanilla[i].precio_unitario)
+  //     this.unidad.setValue(this.tablaPlanilla[i].unidad)
+  //     this.tiempo_programado.setValue(this.tablaPlanilla[i].cantidad)
+  //     const dataDiaEquipo = row.valorGlobal
+
+  //     if (dataDiaEquipo) {
+  //       // Si existe, asignamos los valores
+  //       this.id_desagregado.setValue(dataDiaEquipo.id_desagregado)
+  //       this.horas_dia.setValue(dataDiaEquipo.horas_dia)
+  //       this.minutos_dia.setValue(dataDiaEquipo.minutos_dia)
+  //       this.observaciones.setValue(dataDiaEquipo.observaciones)
+  //       this.coste_dia.setValue(dataDiaEquipo.costo_dia)
+  //       const tiempos = dataDiaEquipo.horas_detalle
+  //       if (tiempos) {
+  //         const esFecha = this.tipoSeleccionado === 'MES' || this.tipoSeleccionado === 'GLOBAL';
+
+  //         // Separar por '/' para obtener cada fila
+  //         const filas = dataDiaEquipo.horas_detalle.split('/');
+
+  //         filas.forEach((fila: string) => {
+  //           // Separar por '|' para obtener inicio y fin
+  //           const [valor1, valor2, valor3] = fila.split('|');
+
+  //           // Crear el grupo según el tipo
+  //           const grupoControles: any = {
+  //             tiempo: [0]
+  //           };
+
+  //           if (esFecha) {
+  //             grupoControles.fechaInicio = [valor1 || '', Validators.required];
+  //             grupoControles.fechaFin = [valor2 || '', Validators.required];
+  //           } else {
+  //             grupoControles.inicio = [valor1 || '', Validators.required];
+  //             grupoControles.fin = [valor2 || '', Validators.required];
+  //           }
+  //           grupoControles.tiempo = [valor3 || 0];
+  //           const nuevoGrupo = this.fb.group(grupoControles, {
+  //             validators: [this.validarFila.bind(this)]
+  //           });
+
+  //           this.tiempos.push(nuevoGrupo);
+  //         });
+  //         if (this.tiempos.value.length) {
+  //           this.actualizarTiempoUtilizado(false);
+  //         } else {
+  //           this.calcularSaldo()
+  //         }
+  //         this.equipoEditado = false
+  //       }
+  //     } else {
+  //       // Si no existe, limpiamos o asignamos valores por defecto
+  //       this.id_desagregado.setValue(null)
+  //       this.horas_dia.setValue(0)
+  //       this.minutos_dia.setValue(0)
+  //       this.observaciones.setValue('')
+  //       this.coste_dia.setValue(0)
+  //     }
+
+  //     // El cálculo del total siempre se hace (no depende de dataDiaEquipo)
+  //     let total = 0
+  //     this.tablaPlanilla[i].desagregadosCompleto.forEach(ele => {
+  //       total += Number(ele?.horas_dia || 0);
+  //     });
+  //     this.tiempo_utilizado.setValue(total)
+
+  //     // Aquí también validamos tiempo_programado
+  //     const saldo = (this.tiempo_programado?.value || 0) - total
+  //     this.saldo_utilizar.setValue(saldo)
+  //   } else if (row.tipo == 'DIA') {
+  //     this.horas_dia.disable()
+
+  //   } else if (row.tipo == 'MES') {
+  //     const dataDiaEquipo = row.valorMensual
+  //     this.coste_unitario.setValue(this.tablaPlanilla[i].precio_unitario)
+  //     this.unidad.setValue(this.tablaPlanilla[i].unidad)
+  //     this.tiempo_programado.setValue(this.tablaPlanilla[i].cantidad)
+  //     if (dataDiaEquipo) {
+  //       // Si existe, asignamos los valores
+  //       this.id_desagregado.setValue(dataDiaEquipo.id_desagregado)
+  //       this.horas_dia.setValue(dataDiaEquipo.horas_dia)
+  //       this.minutos_dia.setValue(dataDiaEquipo.minutos_dia)
+  //       this.observaciones.setValue(dataDiaEquipo.observaciones)
+  //       this.coste_dia.setValue(dataDiaEquipo.costo_dia)
+  //       const tiempos = dataDiaEquipo.horas_detalle
+  //       if (tiempos) {
+  //         const esFecha = this.tipoSeleccionado === 'MES';
+
+  //         // Separar por '/' para obtener cada fila
+  //         const filas = dataDiaEquipo.horas_detalle.split('/');
+
+  //         filas.forEach((fila: string) => {
+  //           // Separar por '|' para obtener inicio y fin
+  //           const [valor1, valor2, valor3] = fila.split('|');
+
+  //           // Crear el grupo según el tipo
+  //           const grupoControles: any = {
+  //             tiempo: [0]
+  //           };
+
+  //           if (esFecha) {
+  //             grupoControles.fechaInicio = [valor1 || '', Validators.required];
+  //             grupoControles.fechaFin = [valor2 || '', Validators.required];
+  //           } else {
+  //             grupoControles.inicio = [valor1 || '', Validators.required];
+  //             grupoControles.fin = [valor2 || '', Validators.required];
+  //           }
+  //           grupoControles.tiempo = [valor3 || 0];
+  //           const nuevoGrupo = this.fb.group(grupoControles, {
+  //             validators: [this.validarFila.bind(this)]
+  //           });
+
+  //           this.tiempos.push(nuevoGrupo);
+  //         });
+  //         if (this.tiempos.value.length) {
+  //           this.actualizarTiempoUtilizado(false);
+  //         } else {
+  //           this.calcularSaldo()
+  //         }
+  //       }
+  //     } else {
+  //       // Si no existe, limpiamos o asignamos valores por defecto
+  //       this.id_desagregado.setValue(null)
+  //       this.horas_dia.setValue(0)
+  //       this.minutos_dia.setValue(0)
+  //       this.observaciones.setValue('')
+  //       this.coste_dia.setValue(0)
+  //     }
+
+  //     // El cálculo del total siempre se hace (no depende de dataDiaEquipo)
+  //     let total = 0
+  //     this.tablaPlanilla[i].desagregadosCompleto.forEach(ele => {
+  //       total += Number(ele?.horas_dia || 0);
+  //     });
+  //     this.tiempo_utilizado.setValue(total)
+
+  //     // Aquí también validamos tiempo_programado
+  //     const saldo = (this.tiempo_programado?.value || 0) - total
+  //     this.saldo_utilizar.setValue(saldo)
+
+  //   }
+  //   if (this.selFilPlan !== null) {
+  //     await this.cambioDetalle()
+  //   }
+  //   if (this.tiempos.value.length) {
+  //     this.observaciones.enable()
+  //   }
+  //   this.buscando = false
+  // }
+
+  // Helper para dar formato YYYY-MM-DD a cualquier fecha que venga del backend/UI
+  private formatearFechaInput(fechaRaw: string | Date): string {
+    if (!fechaRaw) return '';
+    if (typeof fechaRaw === 'string') {
+      return fechaRaw.split('T')[0];
+    }
+    const fechaObj = new Date(fechaRaw);
+    return fechaObj.toISOString().split('T')[0];
+  }
+  async seleccionFilaPlanrow(row: any, i: number) {
     if (this.evitandoDobleEjecucion) {
       return;
     }
 
-    if (this.selFilPlan == i) {
-      return
+    if (this.selFilPlan === i) {
+      return;
     }
-    if (this.equipoEditado && (row.tipo == 'GLOBAL' || row.tipo == 'MES')) {
+
+    // 1. OBTENER LA FILA ANTERIOR (donde ocurrieron los cambios)
+    const filaAnterior = this.selFilPlan !== null ? this.tablaPlanilla[this.selFilPlan] : null;
+
+    // 2. EVALUAR Y EJECUTAR AUTOGUARDADO EN LA FILA ANTERIOR
+    if (this.equipoEditado && filaAnterior && (filaAnterior.tipo === 'GLOBAL' || filaAnterior.tipo === 'MES')) {
       this.evitandoDobleEjecucion = true;
-      await this.guardarActualizarCambiosDesagregado(true);
-      this.evitandoDobleEjecucion = false;
+      try {
+        await this.guardarActualizarCambiosDesagregado(true);
+      } catch (err) {
+        console.error('Error durante autoguardado:', err);
+      } finally {
+        this.evitandoDobleEjecucion = false;
+      }
     }
-    this.celdaSel = [null, null]
-    this.buscando = true
-    this.detalleMensual = []
+
+    // 3. CAMBIAR DE SELECCIÓN A LA NUEVA FILA
+    this.celdaSel = [null, null];
+    this.buscando = true;
+    this.detalleMensual = [];
     this.acumuladoCantidades = [];
     this.acumuladoParciales = [];
     this.resumenPorAnio = [];
-    row.item !== 0 ? this.selFilPlan = i : null
-    this.formDesagregado.reset()
-    while (this.tiempos.value.length) {
-      this.tiempos.removeAt(0);
+
+    if (row.item !== 0) {
+      this.selFilPlan = i;
     }
-    this.tipoSeleccionado = row.tipo
-    if (row.tipo == 'GLOBAL') {
-      // this.observaciones.enable()
-      this.coste_unitario.setValue(this.tablaPlanilla[i].precio_unitario)
-      this.unidad.setValue(this.tablaPlanilla[i].unidad)
-      this.tiempo_programado.setValue(this.tablaPlanilla[i].cantidad)
-      const dataDiaEquipo = row.valorGlobal
+
+    // Limpieza previa del formulario
+    this.formDesagregado.reset(undefined, { emitEvent: false });
+    this.tiempos.clear({ emitEvent: false }); // Uso optimizado en lugar de while
+
+    this.tipoSeleccionado = row.tipo;
+
+    // -------------------------------------------------------------
+    // CASO 1: TIPO GLOBAL
+    // -------------------------------------------------------------
+    if (row.tipo === 'GLOBAL') {
+      this.fechaRegistroGlobal.enable({ emitEvent: false });
+
+      this.coste_unitario.setValue(this.tablaPlanilla[i].precio_unitario, { emitEvent: false });
+      this.unidad.setValue(this.tablaPlanilla[i].unidad, { emitEvent: false });
+      this.tiempo_programado.setValue(this.tablaPlanilla[i].cantidad, { emitEvent: false });
+
+      const dataDiaEquipo = row.valorGlobal;
 
       if (dataDiaEquipo) {
-        // Si existe, asignamos los valores
-        this.id_desagregado.setValue(dataDiaEquipo.id_desagregado)
-        this.horas_dia.setValue(dataDiaEquipo.horas_dia)
-        this.minutos_dia.setValue(dataDiaEquipo.minutos_dia)
-        this.observaciones.setValue(dataDiaEquipo.observaciones)
-        this.coste_dia.setValue(dataDiaEquipo.costo_dia)
-        const tiempos = dataDiaEquipo.horas_detalle
-        if (tiempos) {
-          const esFecha = this.tipoSeleccionado === 'MES' || this.tipoSeleccionado === 'GLOBAL';
+        this.id_desagregado.setValue(dataDiaEquipo.id_desagregado, { emitEvent: false });
+        this.horas_dia.setValue(dataDiaEquipo.horas_dia, { emitEvent: false });
+        this.minutos_dia.setValue(dataDiaEquipo.minutos_dia, { emitEvent: false });
+        this.observaciones.setValue(dataDiaEquipo.observaciones, { emitEvent: false });
+        this.coste_dia.setValue(dataDiaEquipo.costo_dia, { emitEvent: false });
 
-          // Separar por '/' para obtener cada fila
-          const filas = dataDiaEquipo.horas_detalle.split('/');
+        const fechaRaw =
+          dataDiaEquipo.fechaRegistroGlobal ||
+          dataDiaEquipo.fecha ||
+          (row.desagregadosCompleto && row.desagregadosCompleto[0]?.fecha);
 
-          filas.forEach((fila: string) => {
-            // Separar por '|' para obtener inicio y fin
-            const [valor1, valor2, valor3] = fila.split('|');
-
-            // Crear el grupo según el tipo
-            const grupoControles: any = {
-              tiempo: [0]
-            };
-
-            if (esFecha) {
-              grupoControles.fechaInicio = [valor1 || '', Validators.required];
-              grupoControles.fechaFin = [valor2 || '', Validators.required];
-            } else {
-              grupoControles.inicio = [valor1 || '', Validators.required];
-              grupoControles.fin = [valor2 || '', Validators.required];
-            }
-            grupoControles.tiempo = [valor3 || 0];
-            const nuevoGrupo = this.fb.group(grupoControles, {
-              validators: [this.validarFila.bind(this)]
-            });
-
-            this.tiempos.push(nuevoGrupo);
-          });
-          if (this.tiempos.value.length) {
-            this.actualizarTiempoUtilizado(false);
-          } else {
-            this.calcularSaldo()
-          }
-          this.equipoEditado = false
+        if (fechaRaw) {
+          this.fechaRegistroGlobal.setValue(this.formatearFechaInput(fechaRaw), { emitEvent: false });
+        } else {
+          this.fechaRegistroGlobal.setValue('', { emitEvent: false });
         }
+
+        this.cargarDetalleTiempos(dataDiaEquipo.horas_detalle, true);
       } else {
-        // Si no existe, limpiamos o asignamos valores por defecto
-        this.id_desagregado.setValue(null)
-        this.horas_dia.setValue(0)
-        this.minutos_dia.setValue(0)
-        this.observaciones.setValue('')
-        this.coste_dia.setValue(0)
+        this.limpiarCamposDesagregado();
+        this.fechaRegistroGlobal.setValue('', { emitEvent: false });
       }
 
-      // El cálculo del total siempre se hace (no depende de dataDiaEquipo)
-      let total = 0
-      this.tablaPlanilla[i].desagregadosCompleto.forEach(ele => {
-        total += Number(ele?.horas_dia || 0);
-      });
-      this.tiempo_utilizado.setValue(total)
-
-      // Aquí también validamos tiempo_programado
-      const saldo = (this.tiempo_programado?.value || 0) - total
-      this.saldo_utilizar.setValue(saldo)
-    } else if (row.tipo == 'DIA') {
-      this.horas_dia.disable()
-
-    } else if (row.tipo == 'MES') {
-      const dataDiaEquipo = row.valorMensual
-      this.coste_unitario.setValue(this.tablaPlanilla[i].precio_unitario)
-      this.unidad.setValue(this.tablaPlanilla[i].unidad)
-      this.tiempo_programado.setValue(this.tablaPlanilla[i].cantidad)
-      if (dataDiaEquipo) {
-        // Si existe, asignamos los valores
-        this.id_desagregado.setValue(dataDiaEquipo.id_desagregado)
-        this.horas_dia.setValue(dataDiaEquipo.horas_dia)
-        this.minutos_dia.setValue(dataDiaEquipo.minutos_dia)
-        this.observaciones.setValue(dataDiaEquipo.observaciones)
-        this.coste_dia.setValue(dataDiaEquipo.costo_dia)
-        const tiempos = dataDiaEquipo.horas_detalle
-        if (tiempos) {
-          const esFecha = this.tipoSeleccionado === 'MES';
-
-          // Separar por '/' para obtener cada fila
-          const filas = dataDiaEquipo.horas_detalle.split('/');
-
-          filas.forEach((fila: string) => {
-            // Separar por '|' para obtener inicio y fin
-            const [valor1, valor2, valor3] = fila.split('|');
-
-            // Crear el grupo según el tipo
-            const grupoControles: any = {
-              tiempo: [0]
-            };
-
-            if (esFecha) {
-              grupoControles.fechaInicio = [valor1 || '', Validators.required];
-              grupoControles.fechaFin = [valor2 || '', Validators.required];
-            } else {
-              grupoControles.inicio = [valor1 || '', Validators.required];
-              grupoControles.fin = [valor2 || '', Validators.required];
-            }
-            grupoControles.tiempo = [valor3 || 0];
-            const nuevoGrupo = this.fb.group(grupoControles, {
-              validators: [this.validarFila.bind(this)]
-            });
-
-            this.tiempos.push(nuevoGrupo);
-          });
-          if (this.tiempos.value.length) {
-            this.actualizarTiempoUtilizado(false);
-          } else {
-            this.calcularSaldo()
-          }
-        }
-      } else {
-        // Si no existe, limpiamos o asignamos valores por defecto
-        this.id_desagregado.setValue(null)
-        this.horas_dia.setValue(0)
-        this.minutos_dia.setValue(0)
-        this.observaciones.setValue('')
-        this.coste_dia.setValue(0)
-      }
-
-      // El cálculo del total siempre se hace (no depende de dataDiaEquipo)
-      let total = 0
-      this.tablaPlanilla[i].desagregadosCompleto.forEach(ele => {
-        total += Number(ele?.horas_dia || 0);
-      });
-      this.tiempo_utilizado.setValue(total)
-
-      // Aquí también validamos tiempo_programado
-      const saldo = (this.tiempo_programado?.value || 0) - total
-      this.saldo_utilizar.setValue(saldo)
-
+      this.calcularTotalesYSaldos(i);
     }
+    // -------------------------------------------------------------
+    // CASO 2: TIPO MES
+    // -------------------------------------------------------------
+    else if (row.tipo === 'MES') {
+      this.coste_unitario.setValue(this.tablaPlanilla[i].precio_unitario, { emitEvent: false });
+      this.unidad.setValue(this.tablaPlanilla[i].unidad, { emitEvent: false });
+      this.tiempo_programado.setValue(this.tablaPlanilla[i].cantidad, { emitEvent: false });
+
+      const dataDiaEquipo = row.valorMensual;
+
+      if (dataDiaEquipo) {
+        this.id_desagregado.setValue(dataDiaEquipo.id_desagregado, { emitEvent: false });
+        this.horas_dia.setValue(dataDiaEquipo.horas_dia, { emitEvent: false });
+        this.minutos_dia.setValue(dataDiaEquipo.minutos_dia, { emitEvent: false });
+        this.observaciones.setValue(dataDiaEquipo.observaciones, { emitEvent: false });
+        this.coste_dia.setValue(dataDiaEquipo.costo_dia, { emitEvent: false });
+
+        this.cargarDetalleTiempos(dataDiaEquipo.horas_detalle, true);
+      } else {
+        this.limpiarCamposDesagregado();
+      }
+
+      this.calcularTotalesYSaldos(i);
+    }
+    // -------------------------------------------------------------
+    // CASO 3: TIPO DIA
+    // -------------------------------------------------------------
+    else if (row.tipo === 'DIA') {
+      this.horas_dia.disable({ emitEvent: false });
+    }
+
+    // Reseteamos bandera de edición ya que cargamos los datos de la nueva fila
+    this.equipoEditado = false;
+
     if (this.selFilPlan !== null) {
-      await this.cambioDetalle()
+      await this.cambioDetalle();
     }
+
     if (this.tiempos.value.length) {
-      this.observaciones.enable()
+      this.observaciones.enable({ emitEvent: false });
     }
-    this.buscando = false
+
+    this.buscando = false;
+  }
+
+  // =============================================================
+  // MÉTODOS AUXILIARES
+  // =============================================================
+
+  private cargarDetalleTiempos(horasDetalle: string, esFecha: boolean) {
+    if (!horasDetalle) return;
+
+    const filas = horasDetalle.split('/');
+
+    filas.forEach((fila: string) => {
+      const [valor1, valor2, valor3] = fila.split('|');
+
+      const grupoControles: any = {
+        tiempo: [valor3 || 0]
+      };
+
+      if (esFecha) {
+        grupoControles.fechaInicio = [valor1 || '', Validators.required];
+        grupoControles.fechaFin = [valor2 || '', Validators.required];
+      } else {
+        grupoControles.inicio = [valor1 || '', Validators.required];
+        grupoControles.fin = [valor2 || '', Validators.required];
+      }
+
+      const nuevoGrupo = this.fb.group(grupoControles, {
+        validators: [this.validarFila.bind(this)]
+      });
+
+      this.tiempos.push(nuevoGrupo, { emitEvent: false });
+    });
+
+    if (this.tiempos.value.length) {
+      this.actualizarTiempoUtilizado(false);
+    } else {
+      this.calcularSaldo();
+    }
+  }
+
+  private limpiarCamposDesagregado() {
+    this.id_desagregado.setValue(null, { emitEvent: false });
+    this.horas_dia.setValue(0, { emitEvent: false });
+    this.minutos_dia.setValue(0, { emitEvent: false });
+    this.observaciones.setValue('', { emitEvent: false });
+    this.coste_dia.setValue(0, { emitEvent: false });
+  }
+
+  private calcularTotalesYSaldos(indexPlanilla: number) {
+    let total = 0;
+    this.tablaPlanilla[indexPlanilla]?.desagregadosCompleto?.forEach((ele: any) => {
+      total += Number(ele?.horas_dia || 0);
+    });
+
+    this.tiempo_utilizado.setValue(total, { emitEvent: false });
+    const saldo = (this.tiempo_programado?.value || 0) - total;
+    this.saldo_utilizar.setValue(saldo, { emitEvent: false });
   }
 
   procesarEquipoPorMes(equipo, mesesCalendario) {
@@ -2925,62 +3698,81 @@ export class EquiposHerramientasComponent implements OnInit {
 
   async eliminarDesagregado() {
     try {
-      this.mostrar_carga_todo = true
-      const equipo = this.tablaPlanilla[this.celdaSel[0]]
-      const sw = await SwalService.confirm('Estas seguro?', 'Se eliminarà registro seleccionado al equipo')
-      if (sw.isConfirmed) {
-        const obj = {
-          id_desagregado: this.id_desagregado.value
-        }
-        const resp = await this.equiposServiciosService.eliminarDesagregadoEquipo(obj)
-        if (resp[0].mensaje == '1') {
-          while (this.tiempos.value.length) {
-            this.tiempos.removeAt(0);
-          }
-          this.tablaPlanilla[this.celdaSel[0]].planilla[this.celdaSel[1]] = null
-          this.tablaPlanilla[this.celdaSel[0]].desagregadosCompleto =
-            this.tablaPlanilla[this.celdaSel[0]].desagregadosCompleto.filter(
-              item => item.id_desagregado !== this.id_desagregado.value
-            );
-          let total = 0
-          // this.tablaPlanilla[this.selFilPlan].desagregadosCompleto.map(ele => ele.horas_dia + total)
-          this.tablaPlanilla[this.selFilPlan]?.desagregadosCompleto.forEach(ele => {
-            total += Number(ele.horas_dia);
-          });
-          this.id_desagregado.setValue('')
-          this.tiempo_utilizado.setValue(total)
-          const saldo = this.tiempo_programado.value - 0
-          this.saldo_utilizar.setValue(saldo)
-          this.minutos_dia.setValue('')
-          this.horas_dia.setValue('')
-          this.observaciones.setValue('')
-          this.coste_dia.setValue('')
-          this.equipoEditado = false
-        }
-      }
-      this.mostrar_carga_todo = false
-    } catch (error) {
-      this.mostrar_carga_todo = false
-      SwalService.error()
-      console.log(error)
-    }
+      // 1. Obtener fila e ID
+      const idxFila = this.celdaSel?.[0] ?? this.selFilPlan;
+      const filaActual = this.tablaPlanilla?.[idxFila];
+      const idEliminar = this.id_desagregado.value;
 
+      if (!filaActual || !idEliminar) {
+        console.warn('No hay registro o desagregado seleccionado para eliminar.');
+        return;
+      }
+
+      const sw = await SwalService.confirm('¿Estás seguro?', 'Se eliminará el registro seleccionado');
+      if (!sw.isConfirmed) return;
+
+      this.mostrar_carga_todo = true;
+
+      const obj = { id_desagregado: idEliminar };
+      const resp = await this.equiposServiciosService.eliminarDesagregadoEquipo(obj);
+
+      if (resp[0]?.mensaje == '1') {
+        // 2. Limpiar FormArray de tiempos
+        while (this.tiempos.value.length) {
+          this.tiempos.removeAt(0, { emitEvent: false });
+        }
+
+        // 3. RECARGAR Y SINCRONIZAR CON LA BASE DE DATOS Y LA TABLA
+        const desagregadosActualizados = await this.listarDesagregadosEquipos();
+        await this.filtrarPlanillaEquiposServicios(desagregadosActualizados);
+
+        // 4. Limpiar campos del formulario
+        this.id_desagregado.setValue('', { emitEvent: false });
+        this.tiempo_utilizado.setValue(0, { emitEvent: false });
+        this.saldo_utilizar.setValue(this.tiempo_programado.value || 0, { emitEvent: false });
+        this.minutos_dia.setValue('', { emitEvent: false });
+        this.horas_dia.setValue('', { emitEvent: false });
+        this.observaciones.setValue('', { emitEvent: false });
+        this.coste_dia.setValue('', { emitEvent: false });
+        if (this.fechaRegistroGlobal) this.fechaRegistroGlobal.setValue('', { emitEvent: false });
+
+        this.equipoEditado = false;
+
+        this.toaster.success('Se eliminó con éxito', 'Éxito', {
+          closeButton: false,
+          positionClass: 'toast-bottom-right',
+          timeOut: 4000,
+        });
+      } else {
+        SwalService.error();
+      }
+    } catch (error) {
+      console.error('Error en eliminarDesagregado:', error);
+      SwalService.error();
+    } finally {
+      this.mostrar_carga_todo = false;
+    }
   }
 
-
   async actualizarDataCompleta() {
+    const i = this.filSelRegAct;
 
-    const i = this.filSelRegAct
-    this.filSelRegAct = null
+    // 1. Re-agrupar los servicios en la tabla de actividades
     const tablaRegActividades = this.tablaRegActividades.map(element => {
-      element.servicios = this.tablaServiciosCompleto.filter(ele => ele.id_grupo == Number(element.idgrupo) && ele.id_registro == element.id_registro)
-      return element
-    })
-    this.tablaRegActividades = await this.procesarCantidadAcumulada(tablaRegActividades)
-    const row = this.tablaRegActividades[i]
+      element.servicios = this.tablaServiciosCompleto.filter(
+        ele => Number(ele.id_grupo) === Number(element.idgrupo) && Number(ele.id_registro) === Number(element.id_registro)
+      );
+      return element;
+    });
 
-    await this.selTablaRegAct(row, i)
-    await this.calcularTotales()
+    this.tablaRegActividades = await this.procesarCantidadAcumulada(tablaRegActividades);
+
+    // 2. Si había una fila seleccionada, re-seleccionarla para actualizar requerimientos y servicios
+    if (i !== null && this.tablaRegActividades[i]) {
+      const row = this.tablaRegActividades[i];
+      this.filSelRegAct = null; // Para forzar que selTablaRegAct entre al IF
+      await this.selTablaRegAct(row, i); // <-- Esto YA ejecuta calcularTotales() internamente
+    }
   }
 
   // Método para toggle ON (mostrar elementos)
@@ -3220,4 +4012,45 @@ export class EquiposHerramientasComponent implements OnInit {
     }
     return total
   }
+
+  /**
+ * Devuelve todas las filas activas que pertenecen al id_fila especificado.
+ */
+  private obtenerFilasPorRequerimiento(idFila: number | string): FormGroup[] {
+    return this.equipos.controls.filter(c => c.get('id_fila')?.value === idFila) as FormGroup[];
+  }
+
+  /**
+   * Verifica si un requerimiento ya tiene al menos una fila con tipo 'GLOBAL'.
+   */
+  marcarComoEditado(): void {
+    if (!this.buscando) {
+      this.equipoEditado = true;
+    }
+  }
+
+  esFechaGlobalRegistrada(row: any, diaHeader: any): boolean {
+    // 1. Validar que sea STRICTAMENTE tipo GLOBAL
+    if (!row || row.tipo !== 'GLOBAL' || !diaHeader) {
+      return false;
+    }
+
+    // 2. Extraer la fecha guardada en la fila para GLOBAL
+    const fechaGuardada =
+      row.valorGlobal?.fechaRegistroGlobal ||
+      row.valorGlobal?.fecha ||
+      (row.desagregadosCompleto && row.desagregadosCompleto[0]?.fecha);
+
+    // 3. Obtener la fecha de la columna (ajusta 'fecha' según la propiedad exacta de tu objeto diaHeader)
+    const fechaColumna = diaHeader.fecha || diaHeader.fecha_str;
+
+    if (!fechaGuardada || !fechaColumna) {
+      return false;
+    }
+
+    // 4. Comparar ambas fechas en formato YYYY-MM-DD
+    return this.formatearFechaInput(fechaGuardada) === this.formatearFechaInput(fechaColumna);
+  }
+
+
 }

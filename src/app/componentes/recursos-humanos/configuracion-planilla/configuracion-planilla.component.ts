@@ -182,7 +182,7 @@ export class ConfiguracionPlanillaComponent implements OnInit {
     { codigo: 'OBS', tipo: 'OBSERVADO', porcentaje: 100 },
     { codigo: 'IN', tipo: 'INCOMPLETO', porcentaje: 100 },
     { codigo: 'TEX', tipo: 'TEXTRA', porcentaje: null },
-    { codigo: 'BN', tipo: 'BONO NO LABORABLE', porcentaje: null },
+    { codigo: 'BN', tipo: 'BONO DOMINICAL', porcentaje: null },
     { codigo: 'BF', tipo: 'BONO FERIADO', porcentaje: null },
     { codigo: 'B1', tipo: 'BONO OPCIONAL 1', porcentaje: null },
     { codigo: 'B2', tipo: 'BONO OPCIONAL 2', porcentaje: null },
