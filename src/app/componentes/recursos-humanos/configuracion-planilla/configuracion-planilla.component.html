@@ -854,9 +854,9 @@
                                     <ng-container *ngIf="i!==2 && j >0; else noEditable">
 
                                         <ng-container *ngIf="!diasNoLaborablesArray[j - 1]">
-                                            <div class="time-input-container" (click)="showTimePicker($event, i, j)">
+                                            <div class="time-input-container">
                                                 <input matInput type="time" [(ngModel)]="tablaHorario[i][j]"
-                                                    (input)="finalizarEdicion()">
+                                                    (click)="showTimePicker($event)" (change)="finalizarEdicion()">
                                             </div>
                                         </ng-container>
                                     </ng-container>
@@ -866,6 +866,12 @@
 
                                 </td>
 
+                            </tr>
+                            <tr class="bg-light font-weight-bold">
+                                <td class="text-center">TOTAL HORAS DÍA</td>
+                                <td *ngFor="let dia of dias; let j = index" class="text-center">
+                                    {{ calcularHorasPorDia(j) }}
+                                </td>
                             </tr>
                         </ng-container>
                         <tr>
@@ -942,6 +948,7 @@
                         </ng-template>
                     </tbody>
                 </table>
+              
             </div>
             <div class="col-4  overflow-auto " style="position: relative; bottom: 2rem;">
                 <!-- <div class="card-header mt-1">
@@ -983,12 +990,13 @@
                     </tbody>
                 </table> -->
                 <div class="mb-4">
-                    <h5 class="text-danger font-weight-bold">Configuración de Descuentos</h5>
+                    <h5 class="text-danger font-weight-bold mb-0">Configuración de Descuentos</h5>
                     <table class="table-bordered tab-10">
                         <thead class="text-center bg-light">
                             <tr style="height: 22px;">
-                                <th appAnchocol [ancho]="30">Código</th>
+                                <th appAnchocol [ancho]="30">Cód.</th>
                                 <th appAnchocol [ancho]="80">Tipo de Incidencia</th>
+                                <th appAnchocol [ancho]="35">Influye cant.</th>
                                 <th appAnchocol [ancho]="130">
                                     <div class="d-flex justify-content-center align-items-center">
                                         <div>Porcentaje Descuento (día)</div>
@@ -1005,6 +1013,12 @@
                                     <td class="text-center">{{row.codigo}}</td>
                                     <td class="text-left px-2">{{row.tipo}}</td>
                                     <td class="text-center">
+                                        <span class="badge"
+                                            [ngClass]="row.influye_cantidad === 1 ? 'badge-success' : 'badge-secondary'">
+                                            {{ row.influye_cantidad === 1 ? 'SÍ' : 'NO' }}
+                                        </span>
+                                    </td>
+                                    <!-- <td class="text-center">
                                         <div
                                             style="display: flex; height: 100%; align-items: center; justify-content: center;">
                                             <input type="number" class="form-control"
@@ -1015,6 +1029,30 @@
                                                 style="height: 24px; padding: 0 8px; display: flex; align-items: center; justify-content: center; border: 1px solid #ccc; border-left: none; border-radius: 0 4px 4px 0; background-color: #f8f9fa;">
                                                 %
                                             </span>
+                                        </div>
+                                    </td> -->
+                                    <td class="text-center">
+                                        <div
+                                            style="display: flex; height: 100%; align-items: center; justify-content: center;">
+
+                                            <!-- Texto previo fijo -->
+                                            <span
+                                                style="font-weight: 500; font-size: 12px; margin-right: 6px; white-space: nowrap;">
+                                                100 % -
+                                            </span>
+
+                                            <!-- Input reducido a 45px -->
+                                            <input type="number" class="form-control"
+                                                style="width: 50px; height: 24px; padding: 0 4px; text-align: right; border: 1px solid #ccc; border-right: none; border-radius: 4px 0 0 4px; font-size: 12px;"
+                                                autocomplete="off" maxlength="3" (blur)="actualizarHorario()"
+                                                [(ngModel)]="tiposAsistencia[i].porcentaje" [min]="0">
+
+                                            <!-- Sufijo % -->
+                                            <span
+                                                style="height: 24px; padding: 0 6px; display: flex; align-items: center; justify-content: center; border: 1px solid #ccc; border-left: none; border-radius: 0 4px 4px 0; background-color: #f8f9fa; font-size: 12px;">
+                                                %
+                                            </span>
+
                                         </div>
                                     </td>
                                     <td class="text-center" style="background-color: #f0f0f0;">
@@ -1027,12 +1065,13 @@
                 </div>
 
                 <div class="mb-4">
-                    <h5 class="text-success font-weight-bold">Configuración de Bonificaciones</h5>
+                    <h5 class="text-success font-weight-bold mb-0">Configuración de Bonificaciones</h5>
                     <table class="table-bordered tab-10">
                         <thead class="text-center bg-light">
                             <tr style="height: 22px;">
-                                <th appAnchocol [ancho]="30">Código</th>
+                                <th appAnchocol [ancho]="3">Cód.</th>
                                 <th appAnchocol [ancho]="80">Tipo de Bono</th>
+                                <th appAnchocol [ancho]="35">Influye cant.</th>
                                 <th appAnchocol [ancho]="130">
                                     <div class="d-flex justify-content-center align-items-center">
                                         <div>Porcentaje Bono (día)</div>
@@ -1049,6 +1088,12 @@
                                     <td class="text-center">{{row.codigo}}</td>
                                     <td class="text-left px-2">{{row.tipo}}</td>
                                     <td class="text-center">
+                                        <span class="badge"
+                                            [ngClass]="row.influye_cantidad === 1 ? 'badge-success' : 'badge-secondary'">
+                                            {{ row.influye_cantidad === 1 ? 'SÍ' : 'NO' }}
+                                        </span>
+                                    </td>
+                                    <!-- <td class="text-center">
                                         <div
                                             style="display: flex; height: 100%; align-items: center; justify-content: center;">
                                             <input type="number" class="form-control"
@@ -1059,6 +1104,30 @@
                                                 style="height: 24px; padding: 0 8px; display: flex; align-items: center; justify-content: center; border: 1px solid #28a745; border-left: none; border-radius: 0 4px 4px 0; background-color: #e8f5e9; color: #28a745;">
                                                 %
                                             </span>
+                                        </div>
+                                    </td> -->
+                                    <td class="text-center">
+                                        <div
+                                            style="display: flex; height: 100%; align-items: center; justify-content: center;">
+
+                                            <!-- Texto previo fijo con el estilo/color verde correspondiente -->
+                                            <span
+                                                style="font-weight: 500; font-size: 12px; margin-right: 6px; white-space: nowrap; color: #28a745;">
+                                                100 % +
+                                            </span>
+
+                                            <!-- Input reducido a 45px -->
+                                            <input type="number" class="form-control"
+                                                style="width: 50px; height: 24px; padding: 0 4px; text-align: right; border: 1px solid #28a745; border-right: none; border-radius: 4px 0 0 4px; font-size: 12px;"
+                                                autocomplete="off" maxlength="3" (blur)="actualizarHorario()"
+                                                [(ngModel)]="tiposAsistencia[i].porcentaje" [min]="0">
+
+                                            <!-- Sufijo % -->
+                                            <span
+                                                style="height: 24px; padding: 0 6px; display: flex; align-items: center; justify-content: center; border: 1px solid #28a745; border-left: none; border-radius: 0 4px 4px 0; background-color: #e8f5e9; color: #28a745; font-size: 12px;">
+                                                %
+                                            </span>
+
                                         </div>
                                     </td>
                                     <td class="text-center" style="background-color: #e8f5e9;">

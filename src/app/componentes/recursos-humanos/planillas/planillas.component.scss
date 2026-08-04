@@ -928,3 +928,33 @@ small {
     }
   }
 }
+
+/* Asegura el fondo y el nivel Z del contenedor fijado del área */
+.col-sticky-area {
+  position: relative;
+  background-color: #f8f9fa;
+  /* Ajusta al color de fondo de tu fila de área */
+}
+
+.sticky-area-content {
+  z-index: 5;
+  background-color: inherit;
+  /* Mantiene el mismo fondo que la celda */
+  white-space: nowrap;
+}
+
+/* Celda de Footer Fijada */
+td.col-sticky-1, 
+.sticky-footer-wrapper tr td.col-sticky-1 {
+  position: sticky;
+  left: 0;
+  /* z-index 10 asegura que esté por encima de las celdas normales pero debajo de los headers */
+  z-index: 10 !important; 
+  /* Es crucial definir un color de fondo sólido */
+  background-color: #f8f9fa !important; 
+}
+
+/* Evita transparencias si el tr tiene hover o cambios de color */
+.sticky-footer-wrapper tr {
+  background-color: #f8f9fa;
+}

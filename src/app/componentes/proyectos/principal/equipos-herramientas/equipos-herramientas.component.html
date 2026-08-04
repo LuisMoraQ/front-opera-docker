@@ -551,11 +551,12 @@
                         <ng-container *ngIf="dia?.horas_dia">{{dia.horas_dia | number:'0.2-2'}}</ng-container>
                       </td>
                     </ng-container>
-                    <ng-container *ngIf="row.tipo =='GLOBAL' || row.tipo == 'MES'">
+                    <ng-container *ngIf="row.tipo == 'GLOBAL' || row.tipo == 'MES'">
                       <td class="text-center" *ngFor="let dia of row.arrayMes; let j = index" [ngClass]="{
         'celda-global-fecha': esFechaGlobalRegistrada(row, calendarioFiltrado?.dias[j])
       }">
-                        <ng-container *ngIf="dia">{{dia}}</ng-container>
+                        <!-- Muestra el número SOLO si 'dia' tiene un valor mayor a 0 -->
+                        <ng-container *ngIf="dia && dia > 0">{{ dia }}</ng-container>
                       </td>
                     </ng-container>
                   </ng-container>
@@ -669,230 +670,32 @@
                 </div>
               </div>
 
-              <!-- <div class="col-4 h-100">
-                <div>Horas laboradas <ng-container *ngIf="tipoSeleccionado == 'H-M' || tipoSeleccionado == 'DIA'">en el
-                    dia</ng-container></div>
-                <div>
-                  <ng-container
-                    *ngIf="((tipoSeleccionado == 'H-M' || tipoSeleccionado == 'DIA') && this.celdaSel[0] !== null && this.celdaSel[1]!== null) || tipoSeleccionado == 'MES' || tipoSeleccionado == 'GLOBAL'">
-                    <table class="table-bordered tab-10">
-                      <thead class="table-light" style="position: sticky; top: 0;">
-                        <tr class="text-center">
-                          <ng-container [ngSwitch]="tipoSeleccionado">
-                            <ng-container *ngSwitchCase="'H-M'">
-                              <th>Inicio</th>
-                              <th>Fin</th>
-                              <th>Tiempo</th>
-                            </ng-container>
-                            <ng-container *ngSwitchCase="'DIA'">
-                              <th>Inicio</th>
-                              <th>Fin</th>
-                              <th>Tiempo</th>
-                            </ng-container>
-
-                            <ng-container *ngSwitchCase="'MES'">
-                              <th>Fecha Inicio</th>
-                              <th>Fecha Fin</th>
-                              <th>Días</th>
-                            </ng-container>
-                            <ng-container *ngSwitchCase="'GLOBAL'">
-                              <th>Fecha Inicio</th>
-                              <th>Fecha Fin</th>
-                              <th>Días</th>
-                            </ng-container>
-                          </ng-container>
-
-                          <th style="width: 50px">
-                            <button type="button" class="btn btn-mini2 btn-primary" (click)="agregarTiempo()"
-                              *ngIf="(((tipoSeleccionado == 'DIA'|| tipoSeleccionado == 'H-M' )&& this.celdaSel[0] !== null && this.celdaSel[0]!== null) || ((tipoSeleccionado !== 'DIA'&& tipoSeleccionado !== 'H-M' )&& selFilPlan !== null) || tipoSeleccionado == 'GLOBAL') && this.selFilPlan && tablaPlanilla[this.selFilPlan]?.estado == 1">
-                              + {{tipoSeleccionado === 'H-M' || tipoSeleccionado === 'DIA' ? 'Horario' : 'Periodo'}}
-                            </button>
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody formArrayName="tiempos">
-                        <ng-container *ngIf="tiempos.controls.length > 0; else noControls">
-                          <tr *ngFor="let tiempo of tiempos.controls; let i = index" [formGroupName]="i">
-                            <ng-container [ngSwitch]="tipoSeleccionado">
-
-                              <ng-container *ngSwitchCase="'H-M'">
-                                <td>
-                                  <input type="time" class="form-control form-control-sm" formControlName="inicio"
-                                    (input)="calcularTiempo(i)" (blur)="calcularTiempo(i)"
-                                    [class.is-invalid]="mostrarError(tiempo, 'inicio')">
-                                </td>
-                                <td>
-                                  <input type="time" class="form-control form-control-sm" formControlName="fin"
-                                    (input)="calcularTiempo(i)" (blur)="calcularTiempo(i)"
-                                    [class.is-invalid]="mostrarError(tiempo, 'fin')">
-                                </td>
-                                <td>
-                                  <div *ngIf="tiempo.errors; else mostrarValorHM">
-                                    <div *ngIf="tiempo.hasError('solapamiento')" class="text-danger fw-bold"
-                                      style="font-size: 11px;">
-                                      ⚠️ Horario solapado
-                                    </div>
-                                    <div *ngIf="tiempo.hasError('inicioMayor')" class="text-danger fw-bold"
-                                      style="font-size: 11px;">
-                                      ⚠️ Fin no válido
-                                    </div>
-                                  </div>
-
-                                  <ng-template #mostrarValorHM>
-                                    <input type="text" class="form-control form-control-sm bg-light text-center"
-                                      [value]="tiempo.get('tiempo')?.value + ' min'" readonly>
-                                  </ng-template>
-                                </td>
-                              </ng-container>
-
-                              <ng-container *ngSwitchCase="'DIA'">
-                                <td>
-                                  <input type="time" class="form-control form-control-sm" formControlName="inicio"
-                                    (input)="calcularTiempo(i)" (blur)="calcularTiempo(i)"
-                                    [class.is-invalid]="mostrarError(tiempo, 'inicio')">
-                                </td>
-                                <td>
-                                  <input type="time" class="form-control form-control-sm" formControlName="fin"
-                                    (input)="calcularTiempo(i)" (blur)="calcularTiempo(i)"
-                                    [class.is-invalid]="mostrarError(tiempo, 'fin')">
-                                </td>
-                                <td>
-                                  <div *ngIf="tiempo.errors; else mostrarValorHM">
-                                    <div *ngIf="tiempo.hasError('solapamiento')" class="text-danger fw-bold"
-                                      style="font-size: 11px;">
-                                      ⚠️ Horario solapado
-                                    </div>
-                                    <div *ngIf="tiempo.hasError('inicioMayor')" class="text-danger fw-bold"
-                                      style="font-size: 11px;">
-                                      ⚠️ Fin no válido
-                                    </div>
-                                  </div>
-
-                                  <ng-template #mostrarValorHM>
-                                    <input type="text" class="form-control form-control-sm bg-light text-center"
-                                      [value]="tiempo.get('tiempo')?.value + ' min'" readonly>
-                                  </ng-template>
-                                </td>
-                              </ng-container>
-
-                              <ng-container *ngSwitchCase="'MES'">
-                                <td>
-                                  <input type="date" class="form-control form-control-sm" formControlName="fechaInicio"
-                                    [min]="obtenerMinFechaMes()" [max]="obtenerMaxFechaMes()"
-                                    (change)="validarFechasPeriodo(i)" (blur)="validarFechasPeriodo(i)"
-                                    [class.is-invalid]="mostrarError(tiempo, 'fechaInicio')">
-                                </td>
-                                <td>
-                                  <input type="date" class="form-control form-control-sm" formControlName="fechaFin"
-                                    [min]="obtenerMinFechaMes()" [max]="obtenerMaxFechaMes()"
-                                    (change)="validarFechasPeriodo(i)" (blur)="validarFechasPeriodo(i)"
-                                    [class.is-invalid]="mostrarError(tiempo, 'fechaFin')">
-                                </td>
-
-                                <td>
-                                  <div *ngIf="tiempo.errors; else mostrarValorMes">
-                                    <div *ngIf="tiempo.hasError('fechaInvalida') || tiempo.hasError('inicioMayor')"
-                                      class="text-danger fw-bold" style="font-size: 11px;">
-                                      ⚠️ Fecha no válida
-                                    </div>
-                                  </div>
-
-                                  <ng-template #mostrarValorMes>
-                                    <span class="form-control-plaintext text-center texto-24">
-                                      {{ tiempo.get('tiempo')?.value || 0 }} días
-                                    </span>
-                                  </ng-template>
-
-                                </td>
-                              </ng-container>
-
-                              <ng-container *ngSwitchCase="'GLOBAL'">
-                                <td>
-                                  <input type="date" class="form-control form-control-sm" formControlName="fechaInicio"
-                                    [min]="obtenerMinFechaGlobal()" [max]="obtenerMaxFechaGlobal()"
-                                    (change)="validarFechasPeriodo(i)" (blur)="validarFechasPeriodo(i)"
-                                    [class.is-invalid]="mostrarError(tiempo, 'fechaInicio')">
-                                </td>
-                                <td>
-                                  <input type="date" class="form-control form-control-sm" formControlName="fechaFin"
-                                    [min]="obtenerMinFechaGlobal()" [max]="obtenerMaxFechaGlobal()"
-                                    (change)="validarFechasPeriodo(i)" (blur)="validarFechasPeriodo(i)"
-                                    [class.is-invalid]="mostrarError(tiempo, 'fechaFin')">
-                                </td>
-
-                                <td>
-                                  <div *ngIf="tiempo.errors; else mostrarValorGlobal">
-                                    <div *ngIf="tiempo.hasError('fechaInvalida') || tiempo.hasError('inicioMayor')"
-                                      class="text-danger fw-bold" style="font-size: 11px;">
-                                      ⚠️ Fecha no válida
-                                    </div>
-                                    <div *ngIf="tiempo.hasError('fechaFueraDeRango')" class="text-danger fw-bold"
-                                      style="font-size: 11px;">
-                                      ⚠️ Fecha fuera del rango del proyecto
-                                    </div>
-                                    <div *ngIf="tiempo.hasError('solapamiento')" class="text-danger fw-bold"
-                                      style="font-size: 11px;">
-                                      ⚠️ Periodo se solapa con otro
-                                    </div>
-                                  </div>
-
-                                  <ng-template #mostrarValorGlobal>
-                                    <span class="form-control-plaintext text-center texto-24">
-                                      {{ tiempo.get('tiempo')?.value || 0 }} días
-                                    </span>
-                                  </ng-template>
-                                </td>
-                              </ng-container>
-                            </ng-container>
-
-                            <td class="text-center">
-                              <button type="button" class="btn btn-sm btn-danger py-0 px-1" (click)="eliminarTiempo(i)">
-                                <i class="bi bi-trash"></i> ×
-                              </button>
-                            </td>
-                          </tr>
-                        </ng-container>
-                        <ng-template #noControls>
-                          <tr>
-                            <td class="mat-cell text-center" colspan="4">
-                              <label>No se encontraron resultados</label>
-                            </td>
-                          </tr>
-                        </ng-template>
-                      </tbody>
-                    </table>
-                  </ng-container>
-                  <ng-container
-                    *ngIf="((tipoSeleccionado == 'H-M' || tipoSeleccionado == 'DIA') && (this.celdaSel[0] == null || this.celdaSel[1]== null))">
-                    <div class="alert alert-info2" role="alert">
-                      SELECCIONE UN DIA DEL MES DEL EQUIPO SELECCIONADO
-                    </div>
-                  </ng-container>
-                </div>
-              </div> -->
               <div class="col-4 h-100">
-                <div>
+                <div class="fw-bold mb-1">
                   Horas laboradas
-                  <ng-container *ngIf="tipoSeleccionado == 'H-M' || tipoSeleccionado == 'DIA'">en el día</ng-container>
+                  <ng-container *ngIf="tipoSeleccionado === 'H-M' || tipoSeleccionado === 'DIA'">en el
+                    día</ng-container>
                 </div>
 
                 <div>
-                  <!-- VISTA CUANDO SE HA SELECCIONADO CELDA O ES MES/GLOBAL -->
+                  <!-- MODO 1: GLOBAL O MES -->
+                  <!-- MODO 2: H-M O DIA CON CELDA SELECCIONADA -->
                   <ng-container
-                    *ngIf="((tipoSeleccionado == 'H-M' || tipoSeleccionado == 'DIA') && this.celdaSel[0] !== null && this.celdaSel[1] !== null) || tipoSeleccionado == 'MES' || tipoSeleccionado == 'GLOBAL'">
+                    *ngIf="(tipoSeleccionado === 'GLOBAL' || tipoSeleccionado === 'MES') || 
+                        ((tipoSeleccionado === 'H-M' || tipoSeleccionado === 'DIA') && celdaSel[0] !== null && celdaSel[1] !== null)">
 
-                    <!-- CAMPO DE FECHA INDEPENDIENTE (Modo GLOBAL) -->
+                    <!-- Campo Fecha para tipo GLOBAL -->
                     <div *ngIf="tipoSeleccionado === 'GLOBAL'" class="mb-2 p-2 bg-light border rounded">
                       <label class="fw-bold text-muted d-block mb-1" style="font-size: 11px;">FECHA ASIGNADA:</label>
                       <input type="date" class="form-control form-control-sm" formControlName="fechaRegistroGlobal"
                         (change)="marcarComoEditado()">
-                      <!-- Usa formControlName aquí -->
                     </div>
 
-                    <table class="table-bordered tab-10">
+                    <table class="table-bordered tab-10 w-100">
                       <thead class="table-light" style="position: sticky; top: 0;">
                         <tr class="text-center">
-                          <!-- Cabeceras según el tipo -->
+
+                          <!-- Cabeceras Dinámicas -->
                           <ng-container [ngSwitch]="tipoSeleccionado">
                             <ng-container *ngSwitchCase="'H-M'">
                               <th>Inicio</th>
@@ -916,10 +719,10 @@
                             </ng-container>
                           </ng-container>
 
-                          <!-- Botón Agregar -->
-                          <th style="width: 50px">
+                          <!-- Botón Agregar Periodo / Horario -->
+                          <th style="width: 50px;">
                             <button type="button" class="btn btn-mini2 btn-primary" (click)="agregarTiempo()"
-                              *ngIf="(((tipoSeleccionado == 'DIA'|| tipoSeleccionado == 'H-M' ) && this.celdaSel[0] !== null && this.celdaSel[1] !== null) || ((tipoSeleccionado !== 'DIA'&& tipoSeleccionado !== 'H-M' ) && selFilPlan !== null) || tipoSeleccionado == 'GLOBAL') && this.selFilPlan && tablaPlanilla[this.selFilPlan]?.estado == 1">
+                              *ngIf="selFilPlan !== null && tablaPlanilla[selFilPlan]?.estado == 1">
                               + {{tipoSeleccionado === 'H-M' || tipoSeleccionado === 'DIA' ? 'Horario' : 'Periodo'}}
                             </button>
                           </th>
@@ -928,108 +731,59 @@
 
                       <tbody formArrayName="tiempos">
                         <ng-container *ngIf="tiempos.controls.length > 0; else noControls">
-                          <tr *ngFor="let tiempo of tiempos.controls; let i = index" [formGroupName]="i">
+                          <tr *ngFor="let tiempo of tiempos.controls; let idx = index" [formGroupName]="idx">
 
-                            <!-- MODO H-M Y DIA -->
+                            <!-- CONTROLES PARA H-M Y DIA (Horas: HH:mm) -->
                             <ng-container *ngIf="tipoSeleccionado === 'H-M' || tipoSeleccionado === 'DIA'">
                               <td>
                                 <input type="time" class="form-control form-control-sm" formControlName="inicio"
-                                  (input)="calcularTiempo(i)" (blur)="calcularTiempo(i)"
-                                  [class.is-invalid]="mostrarError(tiempo, 'inicio')">
+                                  (input)="calcularTiempo(idx)" (blur)="calcularTiempo(idx)">
                               </td>
                               <td>
                                 <input type="time" class="form-control form-control-sm" formControlName="fin"
-                                  (input)="calcularTiempo(i)" (blur)="calcularTiempo(i)"
-                                  [class.is-invalid]="mostrarError(tiempo, 'fin')">
+                                  (input)="calcularTiempo(idx)" (blur)="calcularTiempo(idx)">
                               </td>
                               <td>
-                                <div *ngIf="tiempo.errors; else mostrarValorHM">
-                                  <div *ngIf="tiempo.hasError('solapamiento')" class="text-danger fw-bold"
-                                    style="font-size: 11px;">
-                                    ⚠️ Horario solapado
-                                  </div>
-                                  <div *ngIf="tiempo.hasError('inicioMayor')" class="text-danger fw-bold"
-                                    style="font-size: 11px;">
-                                    ⚠️ Fin no válido
-                                  </div>
-                                </div>
-                                <ng-template #mostrarValorHM>
-                                  <input type="text" class="form-control form-control-sm bg-light text-center"
-                                    [value]="tiempo.get('tiempo')?.value + ' min'" readonly>
-                                </ng-template>
+                                <input type="text" class="form-control form-control-sm bg-light text-center"
+                                  [value]="(tiempo.get('tiempo')?.value || 0) + ' min'" readonly>
                               </td>
                             </ng-container>
 
-                            <!-- MODO MES -->
+                            <!-- CONTROLES PARA MES (Fechas: YYYY-MM-DD) -->
                             <ng-container *ngIf="tipoSeleccionado === 'MES'">
                               <td>
                                 <input type="date" class="form-control form-control-sm" formControlName="fechaInicio"
-                                  [min]="obtenerMinFechaMes()" [max]="obtenerMaxFechaMes()"
-                                  (change)="validarFechasPeriodo(i)" (blur)="validarFechasPeriodo(i)"
-                                  [class.is-invalid]="mostrarError(tiempo, 'fechaInicio')">
+                                  (change)="validarFechasPeriodo(idx)">
                               </td>
                               <td>
                                 <input type="date" class="form-control form-control-sm" formControlName="fechaFin"
-                                  [min]="obtenerMinFechaMes()" [max]="obtenerMaxFechaMes()"
-                                  (change)="validarFechasPeriodo(i)" (blur)="validarFechasPeriodo(i)"
-                                  [class.is-invalid]="mostrarError(tiempo, 'fechaFin')">
+                                  (change)="validarFechasPeriodo(idx)">
                               </td>
-                              <td>
-                                <div *ngIf="tiempo.errors; else mostrarValorMes">
-                                  <div *ngIf="tiempo.hasError('fechaInvalida') || tiempo.hasError('inicioMayor')"
-                                    class="text-danger fw-bold" style="font-size: 11px;">
-                                    ⚠️ Fecha no válida
-                                  </div>
-                                </div>
-                                <ng-template #mostrarValorMes>
-                                  <span class="form-control-plaintext text-center texto-24">
-                                    {{ tiempo.get('tiempo')?.value || 0 }} días
-                                  </span>
-                                </ng-template>
+                              <td class="text-center">
+                                <span>{{ tiempo.get('tiempo')?.value || 0 }} días</span>
                               </td>
                             </ng-container>
 
-                            <!-- MODO GLOBAL -->
+                            <!-- CONTROLES PARA GLOBAL (Fechas: YYYY-MM-DD) -->
                             <ng-container *ngIf="tipoSeleccionado === 'GLOBAL'">
                               <td>
                                 <input type="date" class="form-control form-control-sm" formControlName="fechaInicio"
-                                  [min]="obtenerMinFechaGlobal()" [max]="obtenerMaxFechaGlobal()"
-                                  (change)="validarFechasPeriodo(i)" (blur)="validarFechasPeriodo(i)"
-                                  [class.is-invalid]="mostrarError(tiempo, 'fechaInicio')">
+                                  (change)="validarFechasPeriodo(idx)">
                               </td>
                               <td>
                                 <input type="date" class="form-control form-control-sm" formControlName="fechaFin"
-                                  [min]="obtenerMinFechaGlobal()" [max]="obtenerMaxFechaGlobal()"
-                                  (change)="validarFechasPeriodo(i)" (blur)="validarFechasPeriodo(i)"
-                                  [class.is-invalid]="mostrarError(tiempo, 'fechaFin')">
+                                  (change)="validarFechasPeriodo(idx)">
                               </td>
-                              <td>
-                                <div *ngIf="tiempo.errors; else mostrarValorGlobal">
-                                  <div *ngIf="tiempo.hasError('fechaInvalida') || tiempo.hasError('inicioMayor')"
-                                    class="text-danger fw-bold" style="font-size: 11px;">
-                                    ⚠️ Fecha no válida
-                                  </div>
-                                  <div *ngIf="tiempo.hasError('fechaFueraDeRango')" class="text-danger fw-bold"
-                                    style="font-size: 11px;">
-                                    ⚠️ Fecha fuera del rango del proyecto
-                                  </div>
-                                  <div *ngIf="tiempo.hasError('solapamiento')" class="text-danger fw-bold"
-                                    style="font-size: 11px;">
-                                    ⚠️ Periodo se solapa con otro
-                                  </div>
-                                </div>
-                                <ng-template #mostrarValorGlobal>
-                                  <span class="form-control-plaintext text-center texto-24">
-                                    {{ tiempo.get('tiempo')?.value || 0 }} días
-                                  </span>
-                                </ng-template>
+                              <td class="text-center">
+                                <span>{{ tiempo.get('tiempo')?.value || 0 }} días</span>
                               </td>
                             </ng-container>
 
-                            <!-- ACCIÓN ELIMINAR -->
+                            <!-- Acciones -->
                             <td class="text-center">
-                              <button type="button" class="btn btn-sm btn-danger py-0 px-1" (click)="eliminarTiempo(i)">
-                                <i class="bi bi-trash"></i> ×
+                              <button type="button" class="btn btn-sm btn-danger py-0 px-1"
+                                (click)="eliminarTiempo(idx)">
+                                ×
                               </button>
                             </td>
 
@@ -1038,8 +792,8 @@
 
                         <ng-template #noControls>
                           <tr>
-                            <td class="mat-cell text-center" colspan="4">
-                              <label>No se encontraron resultados</label>
+                            <td class="text-center text-muted" colspan="4">
+                              No hay registros de tiempo agregados
                             </td>
                           </tr>
                         </ng-template>
@@ -1047,15 +801,17 @@
                     </table>
                   </ng-container>
 
-                  <!-- MENSAJE DE ADVERTENCIA -->
+                  <!-- MENSAJE DE INDICACIÓN CUANDO AÚN NO SE HA SELECCIONADO UNA CELDA DE DÍA -->
                   <ng-container
-                    *ngIf="((tipoSeleccionado == 'H-M' || tipoSeleccionado == 'DIA') && (this.celdaSel[0] == null || this.celdaSel[1] == null))">
-                    <div class="alert alert-info2" role="alert">
-                      SELECCIONE UN DIA DEL MES DEL EQUIPO SELECCIONADO
+                    *ngIf="(tipoSeleccionado === 'H-M' || tipoSeleccionado === 'DIA') && (celdaSel[0] === null || celdaSel[1] === null)">
+                    <div class="alert alert-info text-center my-2" role="alert">
+                      <i class="fa fa-info-circle me-1"></i> Seleccione un día en el calendario para ingresar o ver el
+                      detalle de horas.
                     </div>
                   </ng-container>
                 </div>
               </div>
+
               <div class="col-3  h-100">
                 <div class="fw-bold" *ngIf="tipoSeleccionado == 'H-M' || tipoSeleccionado == 'DIA'">
                   <ng-container *ngIf="tipoSeleccionado == 'H-M'">Horas </ng-container> total dia
@@ -1178,7 +934,7 @@
     </div>
   </ng-container>
 
-  <ng-container *ngIf="subvista == 3">
+  <!-- <ng-container *ngIf="subvista == 3">
     <div class="h-100 m-0  px-3 w-100">
       <div class="col-12 d-flex px-0">
         <mat-form-field appearance="outline" class="mff-reduc col-3">
@@ -1200,14 +956,7 @@
 
           </mat-select>
         </mat-form-field>
-        <!-- <mat-form-field appearance="outline" class="mff-reduc col-3">
-          <mat-label>Detalle</mat-label>
-          <mat-select [(ngModel)]="verDetalle">
-            <mat-option [value]="''">Ocultar</mat-option>
-            <mat-option [value]="'mensual'">Mensual</mat-option>
-            <mat-option [value]="'desagregado'">Desagregado</mat-option>
-          </mat-select>
-        </mat-form-field> -->
+
         <div class="col-3">
           <label>Columnas Estaticas :</label>
           <div class="switch switch-primary d-inline m-r-10" style="margin-left: 10px;">
@@ -1236,7 +985,6 @@
                   MAQUINARIA Y EQUIPO</th>
                 <th rowspan="2" appAnchocol [ancho]="60">MODELO</th>
                 <th rowspan="2" appAnchocol [ancho]="80">TIPO REGISTRO</th>
-                <!-- <th rowspan="2" appAnchocol [ancho]="60">TIPO </th> -->
                 <ng-container *ngIf="calendarioFiltrado">
                   <th [colSpan]="calendarioFiltrado?.total_dias" class="mes-header">
                     {{calendarioFiltrado?.mes_display}}
@@ -1252,7 +1000,6 @@
               <tr>
 
                 <ng-container *ngFor="let dia of calendarioFiltrado?.dias">
-                  <!-- <ng-container *ngFor="let dia of mes.dias"> -->
                   <th class="dia-header" [ngClass]="{
                             'laborable': dia.es_laborable,
                             'no-laborable': !dia.es_laborable,
@@ -1261,7 +1008,6 @@
                     <div class="dia-numero">{{dia.dia_numero}}</div>
                     <div class="dia-abreviatura">{{dia.dia_semana_corto}}</div>
                   </th>
-                  <!-- </ng-container> -->
                 </ng-container>
 
               </tr>
@@ -1295,10 +1041,8 @@
                   </td>
                   <td>{{row.placa}}</td>
                   <td class="text-center">{{row.tipo_registro}}</td>
-                  <!-- <td class="text-center">{{row.tipo}}</td> -->
                   <ng-container *ngIf="row.item !== 0; else cabecera">
 
-                    <!-- Opción A: Tipos por Horas/Días (multiplica horas * precio) -->
                     <ng-container *ngIf="row.tipo !== 'GLOBAL' && row.tipo !== 'MES'">
                       <td class="text-center" *ngFor="let dia of row.planilla">
                         <ng-container *ngIf="dia?.horas_dia">
@@ -1307,7 +1051,6 @@
                       </td>
                     </ng-container>
 
-                    <!-- Opción B: Tipos GLOBAL / MES (muestra el monto directo sin multiplicar) -->
                     <ng-container *ngIf="row.tipo === 'GLOBAL' || row.tipo === 'MES'">
                       <td class="text-center" *ngFor="let dia of row.planilla">
                         <ng-container *ngIf="dia">
@@ -1336,7 +1079,6 @@
                     </ng-container>
                   </td>
                   <td class="text-center">
-                    <!-- {{row.estado}} -->
                     <span class="badge bg-success pos-badge" style="padding-top: 4px;"
                       *ngIf="row.estado == 1">EJECUCION</span>
                     <span class="badge bg-danger pos-badge" style="padding-top: 4px;"
@@ -1376,6 +1118,255 @@
           </table>
         </div>
 
+      </div>
+    </div>
+  </ng-container> -->
+  <ng-container *ngIf="subvista == 3">
+    <div class="h-100 m-0 px-3 w-100">
+      <div class="col-12 d-flex px-0 align-items-center">
+        <mat-form-field appearance="outline" class="mff-reduc col-3">
+          <mat-label>Mes</mat-label>
+          <mat-select [(ngModel)]="mesSeleccionado" (ngModelChange)="cambioMes()">
+            <mat-option *ngFor="let mes of calendario; let i=index" [value]="i">
+              {{mes.mes_nombre}} - {{mes.anio}}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="mff-reduc col-3">
+          <mat-label>Requerimiento</mat-label>
+          <mat-select [(ngModel)]="grupoSeleccionado" (ngModelChange)="cambioArea()">
+            <mat-option [value]="''">Todos</mat-option>
+            <mat-option *ngFor="let grupo of tablaRegActividades; let i = index" [value]="i">
+              {{grupo.descripcion}}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <!-- SWITCH 1: COLUMNAS ESTÁTICAS -->
+        <div class="col-3">
+          <label>Columnas Estáticas :</label>
+          <div class="switch switch-primary d-inline m-r-10" style="margin-left: 10px;">
+            <input type="checkbox" id="switch-p-1" [(ngModel)]='columnasEstatica'>
+            <label for="switch-p-1" class="cr"></label>
+          </div>
+        </div>
+
+        <!-- 🟢 NUEVO SWITCH 2: MOSTRAR HORAS Y PRECIO EN LUGAR DE TOTAL MONETARIO -->
+        <div class="col-3">
+          <label>Ver Horas / P.U. :</label>
+          <div class="switch switch-primary d-inline m-r-10" style="margin-left: 10px;">
+            <input type="checkbox" id="switch-p-2" [(ngModel)]='mostrarDetalleHoras'>
+            <label for="switch-p-2" class="cr"></label>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-12 px-0">
+        <div class="overflow-auto tabla-plantilla-completo">
+          <table class="table-bordered tab-10">
+            <thead class="text-center" style="position: sticky; top: 0;">
+              <tr [ngClass]="{'h-22': !calendarioFiltrado?.dias.length }">
+                <th rowspan="2" appAnchocol [ancho]="40" [ngClass]="{'static1h': columnasEstatica}">
+                  <div class="w-100" style="cursor: pointer;" (click)="toggleTodoNueva2()"
+                    title="Expandir/Contraer todos">
+                    <a *ngIf="todosExpandidosNueva2" style="color:red; width: 14px;">
+                      <i class="icofont icofont-caret-up"></i>
+                    </a>
+                    <a *ngIf="!todosExpandidosNueva2" style="color:#06bb06; width: 14px;">
+                      <i class="icofont icofont-caret-down"></i>
+                    </a>
+                  </div>
+                </th>
+
+                <!-- 🟢 REDUCCIÓN DE TAMAÑO DE LA COLUMNA DESCRIPCIÓN (ej. de 150 a 100) -->
+                <th rowspan="2" appAnchocol [ancho]="100" [detalle]="true" [ngClass]="{'static2h': columnasEstatica}">
+                  MAQUINARIA Y EQUIPO
+                </th>
+                <th rowspan="2" appAnchocol [ancho]="60">MODELO</th>
+                <th rowspan="2" appAnchocol [ancho]="80">TIPO REGISTRO</th>
+
+                <!-- CABECERA DINÁMICA DE DÍAS DEL MES -->
+                <ng-container *ngIf="calendarioFiltrado">
+                  <th
+                    [colSpan]="mostrarDetalleHoras ? (calendarioFiltrado?.total_dias * 2) : calendarioFiltrado?.total_dias"
+                    class="mes-header">
+                    {{calendarioFiltrado?.mes_display}}
+                  </th>
+                </ng-container>
+
+                <th rowspan="2" appAnchocol [ancho]="60">TOTAL HM</th>
+                <th rowspan="2" appAnchocol [ancho]="80">P.U.</th>
+                <th rowspan="2" appAnchocol [ancho]="90">PARCIAL</th>
+                <th rowspan="2" appAnchocol [ancho]="80">ESTADO</th>
+              </tr>
+
+              <!-- SUB-CABECERA DÍAS DEL MES -->
+              <tr>
+                <ng-container *ngFor="let dia of calendarioFiltrado?.dias">
+                  <th [attr.colspan]="mostrarDetalleHoras ? 2 : 1" class="dia-header" [ngClass]="{
+                          'laborable': dia.es_laborable,
+                          'no-laborable': !dia.es_laborable,
+                          'feriado': dia.feriado
+                      }" appAnchocol [ancho]="mostrarDetalleHoras ? 70 : 45">
+                    <div class="dia-numero">{{dia.dia_numero}}</div>
+                    <div class="dia-abreviatura">{{dia.dia_semana_corto}}</div>
+                  </th>
+                </ng-container>
+              </tr>
+            </thead>
+
+            <tbody>
+              <ng-container *ngIf="tablaPlanilla.length; else elseTemplate">
+                <tr *ngFor="let row of this.tablaPlanilla; let i = index"
+                  [ngClass]="{'font-weight-bolder':row.item == 0, 'highlight3': selFilPlan == i ,'cabecera-bg':row.item == 0}"
+                  (click)="selFilPlan=i" [hidden]="!row.visible">
+
+                  <td class="text-center"
+                    [ngClass]="{'static1 ': columnasEstatica, 'bg-white':row.item !== 0 && columnasEstatica}">
+                    <ng-container *ngIf="row.item !== 0; else toggleButton2">
+                      {{row.item}}
+                    </ng-container>
+                    <ng-template #toggleButton2>
+                      <div class="w-100" style="cursor: pointer;"
+                        (click)="row.icomost == '0' ? toggleOnNueva2(row, i) : toggleOffNueva2(row, i)">
+                        <a *ngIf="row.icomost == '0'" style="color:#06bb06; width: 14px;">
+                          <i class="icofont icofont-caret-down"></i>
+                        </a>
+                        <a *ngIf="row.icomost == '1'" style="color:red; width: 14px;">
+                          <i class="icofont icofont-caret-up"></i>
+                        </a>
+                      </div>
+                    </ng-template>
+                  </td>
+
+                  <td [ngClass]="{'static2 ': columnasEstatica, 'bg-white':row.item !== 0 && columnasEstatica}">
+                    <div class="recortatext1l" placement="top" ngbTooltip="{{row.descripcion}}" container="body">
+                      {{row.descripcion}}
+                    </div>
+                  </td>
+
+                  <td>{{row.placa}}</td>
+                  <td class="text-center">{{row.tipo_registro}}</td>
+
+                  <!-- FILAS DE DATOS DE DÍAS -->
+                  <ng-container *ngIf="row.item !== 0; else cabecera">
+
+                    <!-- MODO NORMAL: MUESTRA TOTAL MONETARIO DEL DÍA -->
+                    <ng-container *ngIf="!mostrarDetalleHoras">
+                      <ng-container *ngIf="row.tipo !== 'GLOBAL' && row.tipo !== 'MES'">
+                        <td class="text-center" *ngFor="let dia of row.planilla">
+                          <ng-container *ngIf="dia?.horas_dia">
+                            {{ (dia.costo_dia || (dia.horas_dia * row.precio_unitario)) | number:'0.2-2' }}
+                          </ng-container>
+                        </td>
+                      </ng-container>
+
+                      <ng-container *ngIf="row.tipo === 'GLOBAL' || row.tipo === 'MES'">
+                        <td class="text-center" *ngFor="let dia of row.planilla">
+                          <ng-container *ngIf="dia">
+                            {{ (dia.costo_dia || row.precio_unitario) | number:'0.2-2' }}
+                          </ng-container>
+                        </td>
+                      </ng-container>
+                    </ng-container>
+
+                    <!-- 🟢 MODO ACTIVADO: MUESTRA 2 COLUMNAS (HORAS Y PRECIO UNITARIO) -->
+                    <!-- MODO ACTIVADO: MUESTRA 2 COLUMNAS (HORAS Y PRECIO UNITARIO) -->
+                    <ng-container *ngIf="mostrarDetalleHoras">
+                      <ng-container *ngFor="let dia of row.planilla">
+
+                        <!-- Condición: ¿Existen horas laboradas mayores a 0? -->
+                        <ng-container *ngIf="dia?.horas_dia && dia.horas_dia > 0; else celdaVacia">
+
+                          <!-- Celda de Horas -->
+                          <td class="text-center bg-light-cell border-end-0">
+                            <small>{{ dia.horas_dia }}</small>
+                          </td>
+
+                          <!-- Celda de Precio Unitario -->
+                          <td class="text-end text-muted">
+                            <small>S/ {{ row.precio_unitario | number:'0.2-2' }}</small>
+                          </td>
+
+                        </ng-container>
+
+                        <!-- Plantilla cuando horas_dia es 0, null o undefined -->
+                        <ng-template #celdaVacia>
+                          <td class="border-end-0"></td>
+                          <td></td>
+                        </ng-template>
+
+                      </ng-container>
+                    </ng-container>
+
+                  </ng-container>
+
+                  <ng-template #cabecera>
+                    <td
+                      [colSpan]="mostrarDetalleHoras ? (calendarioFiltrado?.total_dias * 2) : calendarioFiltrado?.total_dias">
+                    </td>
+                  </ng-template>
+
+                  <td class="text-center">{{row.total_hm}}</td>
+                  <td class="text-right">
+                    <ng-container *ngIf="row.item !== 0">
+                      <span class="float-left text-muted">S/</span>
+                      <span class="float-right"> {{row.precio_unitario | number:'0.2-2'}}</span>
+                    </ng-container>
+                  </td>
+                  <td>
+                    <ng-container *ngIf="row.item !== 0">
+                      <span class="float-left text-muted">S/</span>
+                      <span class="float-right"> {{row.parcial | number:'0.2-2'}}</span>
+                    </ng-container>
+                  </td>
+                  <td class="text-center">
+                    <span class="badge bg-success pos-badge" style="padding-top: 4px;"
+                      *ngIf="row.estado == 1">EJECUCION</span>
+                    <span class="badge bg-danger pos-badge" style="padding-top: 4px;"
+                      *ngIf="row.estado == 2">CULMINADO</span>
+                  </td>
+                </tr>
+              </ng-container>
+
+              <ng-template #elseTemplate>
+                <tr class="h-celda">
+                  <td class="mat-cell text-center" colspan="8">
+                    <label *ngIf="!buscando3">No se encontraron resultados</label>
+                    <div *ngIf="buscando3" class="preloader3 loader-block">
+                      <div class="circ1"></div>
+                      <div class="circ2"></div>
+                      <div class="circ3"></div>
+                      <div class="circ4"></div>
+                    </div>
+                  </td>
+                </tr>
+              </ng-template>
+            </tbody>
+
+            <!-- PIE DE PÁGINA (TOTALES) -->
+            <tfoot *ngIf="sumaPorDiaPlanilla && sumaPorDiaPlanilla.length > 0"
+              style="background: #f8f9fa; font-weight: bold;">
+              <tr>
+                <th colspan="2" class="text-end fw-bold" [ngClass]="{'static1h': columnasEstatica}">TOTAL POR DÍA:</th>
+                <th colspan="2" class="text-end fw-bold"></th>
+
+                <!-- Ajusta dinámicamente los colspan del footer -->
+                <th *ngFor="let total of sumaPorDiaPlanilla" [attr.colspan]="mostrarDetalleHoras ? 2 : 1"
+                  class="text-center fw-bold">
+                  <span style="opacity: 0.6;">S/</span> {{ total | number:'0.2-2' }}
+                </th>
+
+                <th class="text-center fw-bold" colspan="2">TOTAL MES:</th>
+                <th class="text-end fw-bold text-primary text-right">
+                  <span style="opacity: 0.6;">S/</span> {{ totalMes | number:'1.2-2' }}
+                </th>
+                <th></th>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
       </div>
     </div>
   </ng-container>
@@ -1453,7 +1444,6 @@
               <th appAnchocol [ancho]="50">Item</th>
               <th appAnchocol [ancho]="200" [detalle]="true">Equipo</th>
               <th appAnchocol [ancho]="100">Placa</th>
-              <!-- <th appAnchocol [ancho]="90">F. Solicitada</th> -->
               <th appAnchocol [ancho]="70">Und</th>
               <th appAnchocol [ancho]="80">Cant. Req</th>
               <th appAnchocol [ancho]="80">Cant. Regis.</th>
@@ -1461,7 +1451,6 @@
               <th appAnchocol [ancho]="100">Parcial</th>
               <th appAnchocol [ancho]="100">Tipo Registro</th>
               <th appAnchocol [ancho]="100">Tipo</th>
-              <!-- <th appAnchocol [ancho]="100" *ngIf="actualizarEquipos">Estado</th> -->
               <th appAnchocol [ancho]="40"></th>
             </tr>
           </thead>
@@ -1476,28 +1465,16 @@
                   [class.is-invalid]="equipo.get('descripcion')?.invalid && equipo.get('descripcion')?.touched"
                   placeholder="Placa">
               </td>
-
-              <!-- Placa -->
               <td>
                 <input type="text" class="form-control form-control-sm input-24" formControlName="placa"
                   [class.is-invalid]="equipo.get('placa')?.invalid && equipo.get('placa')?.touched" placeholder="Placa">
               </td>
 
-              <!-- Fecha Solicitada -->
-              <!-- <td>
-           
-                <span class="form-control-plaintext text-center texto-24">{{ equipo.get('fecha_solicitud')?.value |
-                  date: 'dd-MM-yyyy'}}</span>
-              </td> -->
-
-              <!-- Unidad -->
               <td>
 
                 <span class="form-control-plaintext text-center texto-24">{{ equipo.get('unidad')?.value }}</span>
               </td>
-              <!-- Cantidad -->
               <td>
-                <!-- Si el control está deshabilitado (ej. cuando es GLOBAL), muestra solo texto -->
                 <span *ngIf="equipo.get('cantidad')?.disabled; else inputCantidad"
                   class="form-control-plaintext text-end texto-24">
                   {{ equipo.get('cantidad')?.value | number:'1.2-2' }}
@@ -1513,9 +1490,7 @@
                 <span class="form-control-plaintext text-center texto-24">{{ equipo.get('tiempo_registrado')?.value
                   }}</span>
               </td>
-              <!-- Precio Unitario -->
               <td>
-                <!-- Si está deshabilitado, muestra texto -->
                 <span *ngIf="equipo.get('precio_unitario')?.disabled; else inputPrecio"
                   class="form-control-plaintext text-end texto-24">
                   {{ equipo.get('precio_unitario')?.value | number:'1.2-2' }}
@@ -1526,17 +1501,13 @@
                     [class.is-invalid]="equipo.get('precio_unitario')?.invalid && equipo.get('precio_unitario')?.touched">
                 </ng-template>
               </td>
-
-              <!-- Total Registrado (Solo Lectura) -->
               <td>
                 <span class="form-control-plaintext text-end texto-24">
                   {{ equipo.get('total_registrado')?.value | number:'1.2-2' }}
                 </span>
               </td>
 
-              <!-- Tipo Registro -->
               <td>
-                <!-- <span class="form-control-plaintext texto-24">{{ equipo.get('tipo_registro')?.value }}</span> -->
                 <select class="form-control form-control-sm input-24" formControlName="tipo_registro"
                   [class.is-invalid]="equipo.get('tipo_registro')?.invalid && equipo.get('tipo_registro')?.touched">
                   <option value="ALQUILADO">ALQUILADO</option>
@@ -1544,7 +1515,6 @@
                 </select>
               </td>
 
-              <!-- Tipo -->
               <td>
                 <select class="form-control form-control-sm input-24" formControlName="tipo"
                   [title]="equipo.get('desagregadosCompleto').value?.length > 0 ? 'No se puede cambiar el tipo porque ya existen desagregados' : ''"
@@ -1554,47 +1524,25 @@
                   <option value="MES">MES</option>
                   <option value="GLOBAL">GLOBAL</option>
                 </select>
-                <!-- <select class="form-control form-control-sm input-24" formControlName="tipo"
-                  [class.is-invalid]="equipo.get('tipo')?.invalid && equipo.get('tipo')?.touched"
-                  [disabled]="equipo.get('desagregadosCompleto').value?.length > 0"
-                  [title]="equipo.get('desagregadosCompleto').value?.length > 0 ? 'No se puede cambiar el tipo porque ya existen desagregados' : ''">
-                  <option value="H-M">H-M</option>
-                  <option value="DIA">DIA</option>
-                  <option value="MES">MES</option>
-                  <option value="GLOBAL">GLOBAL</option>
-                </select> -->
+
               </td>
-              <!-- <td *ngIf="actualizarEquipos">
-                <select class="form-control form-control-sm input-24" formControlName="estado"
-                  [class.is-invalid]="equipo.get('estado')?.invalid && equipo.get('estado')?.touched">
-                  <option value="1"> EJECUCION </option>
-                  <option value="2">CULMINADO</option>
-                </select>
-              </td> -->
-              <!-- Botón eliminar -->
+
               <td class="text-center celda-accion">
                 <button type="button" *ngIf="equipo.get('estado')?.value == 1" class="btn btn-danger btn-sm boton-24"
-                  (click)="eliminarFilaModal(i, equipo.value)">
+                  (click)="eliminarFilaModal(i)">
                   <i class="fa fa-trash mr-0"></i>
                 </button>
               </td>
             </tr>
 
-            <!-- Fila vacía cuando no hay datos -->
+
             <tr *ngIf="equipos.length === 0" class="fila-24">
               <td colspan="11" class="text-center text-muted py-3">
                 No hay servicios agregados. Seleccione un requerimiento y haga clic en Agregar.
               </td>
             </tr>
           </tbody>
-          <!-- Fila de totales -->
-          <!-- <tfoot *ngIf="equipos.length > 0" style="background: #f8f9fa; font-weight: bold;">
-            <tr>
-              <td colspan="7" class="text-end">TOTAL:</td>
-              <td class="text-end">{{ totalParcial | number:'1.2-2' }}</td>
-              <td colspan="3"></td>
-            </tr>
-          </tfoot> -->
+
         </table>
       </div>
     </form>

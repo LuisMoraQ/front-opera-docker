@@ -72,6 +72,7 @@ export class EquiposHerramientasComponent implements OnInit {
   totalMes = 0
   detalleMensual = []
   resumenPorAnio: any[] = [];
+  mostrarDetalleHoras: boolean = false;
   @Input() set tabproyecto(value: any) {
     this.id_proyecto = value.get('id_proyecto').value;
     const aspectosGen = value.get('aspectos_generales') as UntypedFormGroup;
@@ -197,7 +198,7 @@ export class EquiposHerramientasComponent implements OnInit {
     }
   }
 
-  // async cambioDataRegistro() {
+  // async cambioDataRegistro() {j
   //   this.mostrar_carga_todo = true
   //   console.log('b')
   //   setTimeout(async () => {
@@ -377,61 +378,102 @@ export class EquiposHerramientasComponent implements OnInit {
   }
 
   calcularTotalDesagregado(servicio: any): number {
+    const tiempoOriginal = Number(servicio.tiempo_registrado) || 0;
+
     if (!servicio.desagregadosCompleto || servicio.desagregadosCompleto.length === 0) {
-      return 0;
+      return tiempoOriginal;
     }
 
-    return servicio.desagregadosCompleto.reduce((total: number, d: any) => {
-      // 1. Tipos Por Horas/Día Directo
+    const suma = servicio.desagregadosCompleto.reduce((total: number, d: any) => {
+      // 1. Tipos Por Horas/Día Directo (H-M, DIA)
       if (servicio.tipo === 'H-M' || servicio.tipo === 'DIA') {
         return total + (Number(d.horas_dia) || 0);
       }
 
-      // 2. Tipos MES y GLOBAL
-      if (servicio.tipo === 'MES' || servicio.tipo === 'GLOBAL') {
+      // 2. Tipo MES
+      if (servicio.tipo === 'MES') {
         if (d.horas_detalle) {
           const sumaDetalle = d.horas_detalle.split('/').reduce((sum: number, rango: string) => {
             const partes = rango.split('|');
             return sum + (parseFloat(partes[2]) || 0);
           }, 0);
 
-          // Si el detalle dio un valor mayor a 0, lo usamos; de lo contrario fallback a horas_dia
           if (sumaDetalle > 0) return total + sumaDetalle;
         }
+        return total + (Number(d.horas_dia) || 0);
+      }
 
-        // Fallback si horas_detalle es null, vacío o dio 0:
-        // Usamos d.horas_dia o, en su defecto para GLOBAL, mantenemos las horas que ya traía el servicio
-        const horasFallBack = Number(d.horas_dia) || 0;
-        return total + (horasFallBack > 0 ? horasFallBack : (Number(servicio.tiempo_registrado) || 0));
+      // 3. Tipo GLOBAL: Si tiene costo_dia, sumamos el costo acumulado directamente
+      if (servicio.tipo === 'GLOBAL') {
+        if (Number(d.costo_dia) > 0) {
+          return total + Number(d.costo_dia);
+        }
+        // Fallback a suma de horas_detalle si no hay costo_dia definido
+        if (d.horas_detalle) {
+          const sumaDetalle = d.horas_detalle.split('/').reduce((sum: number, rango: string) => {
+            const partes = rango.split('|');
+            return sum + (parseFloat(partes[2]) || 0);
+          }, 0);
+          if (sumaDetalle > 0) return total + sumaDetalle;
+        }
+        return total + (Number(d.horas_dia) || 0);
       }
 
       return total;
     }, 0);
+
+    return suma > 0 ? suma : tiempoOriginal;
   }
 
-  async listarEquiposServicios(desagregados) {
+  async listarEquiposServicios(desagregados: any[]) {
     const obj = {
       id_proyecto: this.id_proyecto,
       id_registro: this.id_registro
-    }
-    const response = await this.equiposServiciosService.listarEquipoServicio(obj)
-    if (response.length) {
-      response.forEach(async element => {
+    };
+
+    const response = await this.equiposServiciosService.listarEquipoServicio(obj);
+
+    if (response?.length) {
+      for (const element of response) {
         if (element.index_grupo !== 0) {
-          element.desagregadosCompleto = desagregados.filter(ele => ele.id_equipo == element.id_equipo)
-          const tiempo_registrado = await this.calcularTotalDesagregado(element);
-          element.parcial = element.cantidad * element.precio_unitario
+          // 1. Asignamos desagregados pertenecientes a este equipo
+          element.desagregadosCompleto = desagregados.filter(
+            ele => ele.id_equipo == element.id_equipo
+          );
 
-          element.tiempo_registrado = tiempo_registrado
-          if (element.tipo == 'GLOBAL') {
-            element.precio_unitario = element.tiempo_registrado ? (element.total_registrado / element.tiempo_registrado) : 0
+          // 2. Preservamos los datos originales de la BD
+          const precioBD = Number(element.precio_unitario) || 0;
+          const cantidadBD = Number(element.cantidad) || 0;
+          const tiempoBD = Number(element.tiempo_registrado) || 0;
+
+          element.precio_unitario = precioBD;
+          element.parcial = cantidadBD * precioBD;
+
+          // 3. Calculamos la suma acumulada de las horas/días de los desagregados
+          const sumaDesagregados = await this.calcularTotalDesagregado(element);
+
+          if (element.tipo === 'GLOBAL') {
+            // 1. Preservamos el tiempo registrado base de la BD (ej. 80)
+            element.tiempo_registrado = tiempoBD > 0 ? tiempoBD : sumaDesagregados;
+
+            // 2. Preservamos el total_registrado original de la BD (22800)
+            // Si no viniera de la BD, tomamos el cálculo base (tiempoBD * precioBD)
+            const totalOriginalBD = (Number(element.total_registrado) > 0)
+              ? Number(element.total_registrado)
+              : (tiempoBD * precioBD);
+
+            // Mantenemos los 22800 intactos
+            element.total_registrado = totalOriginalBD;
+
           } else {
-            element.total_registrado = element.tiempo_registrado * element.precio_unitario
+            // Para H-M, DIA, MES: Sí depende del avance consumido * precio unitario
+            element.tiempo_registrado = sumaDesagregados;
+            element.total_registrado = element.tiempo_registrado * precioBD;
           }
-
         }
-      });
-      this.tablaServiciosCompleto = response
+      }
+
+      this.tablaServiciosCompleto = response;
     }
   }
 
@@ -473,17 +515,13 @@ export class EquiposHerramientasComponent implements OnInit {
             marcaSeleccionada = servicio.marca3 || '';
             break;
         }
-
         const cantidad = Number(servicio.cantidad) || 0;
         const parcial = precioSeleccionado * cantidad;
-
         const encontrados = this.tablaServiciosCompleto.filter(ele =>
           Number(servicio.idgrupo) === Number(ele.id_grupo) &&
           Number(servicio.idfila) === Number(ele.id_fila)
         );
-
         const resultado = this.procesarElementosEncontrados(encontrados);
-
         // --- EVALUACIÓN DEL ESTADO ---
         // Comparación de parciales con margen para evitar fallos por flotantes
         const sonParcialesIguales = parcial > 0 && Math.abs(parcial - resultado.parcial_usada) < 0.01;
@@ -621,7 +659,7 @@ export class EquiposHerramientasComponent implements OnInit {
       }
       this.mostrar_carga_todo = false
     }
- 
+
   }
 
   async listarDesagregadosEquipos() {
@@ -731,90 +769,105 @@ export class EquiposHerramientasComponent implements OnInit {
           nuevaTabla.push(grupo)
 
           for (const element of filtrados) {
-            j++
-            element.cabecera = false
-            element.mostrar = 1
-            element.icomost = '1'
-            // Solo agregar propiedad mostrar si es subvista 3
+            j++;
+            element.cabecera = false;
+            element.mostrar = 1;
+            element.icomost = '1';
+
             if (esSubvista3) {
               element.mostrar = 1;
             }
 
             const planilla = this.calendarioFiltrado?.dias.map(ele => {
-              const encontrado = desagredados.find(reg => reg.fecha.split('T')[0] == ele.fecha && reg.id_equipo == element.id_equipo)
-              return encontrado ? encontrado : null
-            })
-            const completos = desagredados.filter(reg => reg.id_equipo == element.id_equipo)
-            element.planilla = planilla
-            element.item = j
-            element.desagregadosCompleto = completos
-            element.visible = true
+              const encontrado = desagredados.find(reg => reg.fecha.split('T')[0] == ele.fecha && reg.id_equipo == element.id_equipo);
+              return encontrado ? encontrado : null;
+            });
+
+            const completos = desagredados.filter(reg => reg.id_equipo == element.id_equipo);
+            element.planilla = planilla;
+            element.item = j;
+            element.desagregadosCompleto = completos;
+            element.visible = true;
+
             if (element.tipo == 'GLOBAL') {
-              // 1. Asignar el registro desagregado global si existe
               element.valorGlobal = completos.find(ele => ele) || null;
               const valorGlobal = element.valorGlobal;
 
-              // 2. Mantener intactos los valores base del registro
               const precioUnitarioNum = Number(element.precio_unitario) || 0;
               const totalRegistradoNum = Number(element.total_registrado) || 0;
               const tiempoRegistradoNum = Number(element.tiempo_registrado) || 0;
 
-              // 3. Crear matriz para el calendario sin alterar las variables del equipo
               const totalDias = this.calendarioFiltrado?.dias?.length || 0;
               const arrayMesGlobal = new Array(totalDias).fill(0);
 
-              if (valorGlobal && totalDias > 0) {
-                // Extraer solo YYYY-MM-DD sin alterar por zona horaria
+              if (valorGlobal && totalDias > 0 && valorGlobal.horas_detalle) {
+                const rangos = valorGlobal.horas_detalle.split('/');
+
+                rangos.forEach((rango: string) => {
+                  const [fInicioStr, fFinStr] = rango.split('|');
+                  if (fInicioStr && fFinStr) {
+                    const inicioIso = fInicioStr.trim().split('T')[0];
+                    const finIso = fFinStr.trim().split('T')[0];
+
+                    this.calendarioFiltrado.dias.forEach((diaObj: any, idx: number) => {
+                      const fechaDiaIso = diaObj.fecha.trim().split('T')[0];
+                      if (fechaDiaIso >= inicioIso && fechaDiaIso <= finIso) {
+                        arrayMesGlobal[idx] = 1; // Mantiene los marcadores visuales en el calendario
+                      }
+                    });
+                  }
+                });
+              }
+
+              element.arrayMes = arrayMesGlobal;
+              element.total_hm = tiempoRegistradoNum;
+              element.parcial = totalRegistradoNum > 0 ? totalRegistradoNum : (precioUnitarioNum * tiempoRegistradoNum);
+
+              // 🟢 CÁLCULO SUBVISTA 3 PARA GLOBAL:
+              // Solo se suma el costo diario puntual (costo_dia o precio_unitario)
+              // en la FECHA EXACTA de registro, NO en todo el rango abonado.
+              if (esSubvista3 && valorGlobal) {
                 const fechaGlobalStr = (valorGlobal.fechaRegistroGlobal || valorGlobal.fecha || '').split('T')[0];
+                const idxDiaPuntual = this.calendarioFiltrado?.dias?.findIndex((dia: any) => dia.fecha === fechaGlobalStr);
 
-                const idxDia = this.calendarioFiltrado.dias.findIndex(
-                  dia => dia.fecha === fechaGlobalStr
-                );
-
-                if (idxDia !== -1) {
-                  // El monto asignado al día es costo_dia o total_registrado o parcial existente
-                  const montoDia = Number(valorGlobal.costo_dia) || totalRegistradoNum || Number(element.parcial) || 0;
-                  arrayMesGlobal[idxDia] = montoDia;
+                if (idxDiaPuntual !== undefined && idxDiaPuntual !== -1 && idxDiaPuntual < sumaPorDia.length) {
+                  // Asigna el costo diario del registro (285) únicamente al día de inicio
+                  const montoDiario = Number(valorGlobal.costo_dia) || precioUnitarioNum;
+                  sumaPorDia[idxDiaPuntual] += montoDiario;
                 }
               }
 
-              // 4. PRESERVAR las propiedades originales de GLOBAL sin sobreescribir
-              element.arrayMes = arrayMesGlobal;
-              element.total_hm = tiempoRegistradoNum; // Preservar tiempo_registrado
-              element.parcial = totalRegistradoNum > 0 ? totalRegistradoNum : (precioUnitarioNum * tiempoRegistradoNum);
-
-              // 5. Acumular suma por día si corresponde a la subvista 3
-              if (esSubvista3 && arrayMesGlobal && arrayMesGlobal.length === sumaPorDia.length) {
-                arrayMesGlobal.forEach((valor, idx) => {
-                  sumaPorDia[idx] += Number(valor) || 0;
-                });
-              }
             } else if (element.tipo == 'MES') {
-              element.valorGlobal = null
-              const valorMes = planilla.find(ele => ele)
-              element.valorMensual = valorMes
-              const arrayMes = await this.evaluarGlobalMes(valorMes?.horas_detalle, 'MES')
-              element.arrayMes = arrayMes
-              const total = arrayMes.reduce((acc, ele) => acc + (Number(ele) || 0), 0)
-              element.total_hm = total
-              element.parcial = total * element.precio_unitario
+              element.valorGlobal = null;
+              const valorMes = planilla.find(ele => ele);
+              element.valorMensual = valorMes;
+              const arrayMes = await this.evaluarGlobalMes(valorMes?.horas_detalle, 'MES');
+              element.arrayMes = arrayMes;
+              const total = arrayMes.reduce((acc, ele) => acc + (Number(ele) || 0), 0);
+              element.total_hm = total;
+              element.parcial = total * (Number(element.precio_unitario) || 0);
 
-              // Solo sumar al total por día si es subvista 3
               if (esSubvista3 && arrayMes && arrayMes.length === sumaPorDia.length) {
                 arrayMes.forEach((valor, idx) => {
-                  sumaPorDia[idx] += (Number(valor) || 0) * element.precio_unitario;
+                  sumaPorDia[idx] += (Number(valor) || 0) * (Number(element.precio_unitario) || 0);
                 });
               }
-            } else {
-              element.arrayMes = []
-              const total = planilla.reduce((acc, ele) => acc + (Number(ele?.horas_dia) || 0), 0)
-              element.total_hm = total
-              element.parcial = total * element.precio_unitario
 
-              // Solo sumar al total por día si es subvista 3
+            } else {
+              // TIPOS 'DIA' y 'H-M'
+              element.arrayMes = [];
+              const total = planilla.reduce((acc, ele) => acc + (Number(ele?.horas_dia) || 0), 0);
+              element.total_hm = total;
+              element.parcial = total * (Number(element.precio_unitario) || 0);
+
+              // 🟢 CÁLCULO SUBVISTA 3 PARA DIA / H-M:
+              // Toma directamente el costo_dia calculado del desagregado de cada día
               if (esSubvista3 && planilla && planilla.length === sumaPorDia.length) {
                 planilla.forEach((dia, idx) => {
-                  sumaPorDia[idx] += (Number(dia?.horas_dia) || 0) * element.precio_unitario;
+                  if (dia) {
+                    const costoCalculado = Number(dia.costo_dia) || ((Number(dia.horas_dia) || 0) * (Number(element.precio_unitario) || 0));
+                    sumaPorDia[idx] += costoCalculado;
+                  }
                 });
               }
             }
@@ -827,6 +880,7 @@ export class EquiposHerramientasComponent implements OnInit {
           this.sumaPorDiaPlanilla = sumaPorDia;
           this.totalMes = sumaPorDia.reduce((acumulador, valorActual) => acumulador + valorActual, 0);
         }
+      
       }
       this.mostrar_carga_todo = false
     }, 50);
@@ -1545,107 +1599,106 @@ export class EquiposHerramientasComponent implements OnInit {
       }
     }
   }
+  
+  async seleccionCelda(i: number, j: number) {
+    this.selFilPlan = i;
 
-  async seleccionCelda(i, j) {
-    this.selFilPlan = i
     if (this.evitandoDobleEjecucion) {
       return;
     }
-    const tipoFila = this.tablaPlanilla[i]?.tipo;
+
+    const filaActual = this.tablaPlanilla[i];
+    if (!filaActual) return;
+
+    const tipoFila = filaActual.tipo;
+
+    // Para GLOBAL y MES la selección es a nivel de fila, no de celda diaria
     if (tipoFila === 'GLOBAL' || tipoFila === 'MES') {
-      // Para GLOBAL y MES, no hacer nada al hacer clic en celda
       return;
     }
+
+    // Actualizar obligatoriamente el tipo seleccionado
+    this.tipoSeleccionado = tipoFila;
+
     if (this.celdaSel[0] !== i || this.celdaSel[1] !== j) {
       if (this.equipoEditado) {
         this.evitandoDobleEjecucion = true;
         await this.guardarActualizarCambiosDesagregado(true);
         this.evitandoDobleEjecucion = false;
       }
-      this.buscando = true
-      this.celdaSel = [i, j]
-      // this.formDesagregado.reset()
-      this.id_desagregado.reset()
-      this.horas_dia.reset()
-      this.minutos_dia.reset()
-      this.coste_dia.reset()
-      this.observaciones.reset()
-      // this.observaciones.enable()
-      this.horas_dia.enable()
-      while (this.tiempos.value.length) {
-        this.tiempos.removeAt(0);
-      }
-      let dataDiaEquipo = null
-      this.coste_unitario.setValue(this.tablaPlanilla[i].precio_unitario)
-      this.unidad.setValue(this.tablaPlanilla[i].unidad)
-      this.tiempo_programado.setValue(this.tablaPlanilla[i].cantidad)
-      if (this.tablaPlanilla[i].tipo == 'MES') {
-        dataDiaEquipo = this.tablaPlanilla[i].valorMensual
-      } else if (this.tablaPlanilla[i].tipo == 'GLOBAL') {
-        dataDiaEquipo = this.tablaPlanilla[i].valorGlobal
+
+      this.buscando = true;
+      this.celdaSel = [i, j];
+
+      // Resetear campos del formulario desagregado
+      this.id_desagregado.reset();
+      this.horas_dia.reset();
+      this.minutos_dia.reset();
+      this.coste_dia.reset();
+      this.observaciones.reset();
+
+      if (tipoFila === 'DIA') {
+        this.horas_dia.disable({ emitEvent: false });
       } else {
-        dataDiaEquipo = this.tablaPlanilla[i].planilla[j]
-        if (this.tablaPlanilla[i].tipo == 'DIA') {
-          this.horas_dia.disable()
-        }
+        this.horas_dia.enable({ emitEvent: false });
       }
+
+      // Limpiar el FormArray de tiempos
+      this.tiempos.clear({ emitEvent: false });
+
+      // Cargar datos estáticos de la fila
+      this.coste_unitario.setValue(filaActual.precio_unitario, { emitEvent: false });
+      this.unidad.setValue(filaActual.unidad, { emitEvent: false });
+      this.tiempo_programado.setValue(filaActual.cantidad, { emitEvent: false });
+
+      const dataDiaEquipo = filaActual.planilla?.[j];
+
       if (dataDiaEquipo) {
-        const tiempos = dataDiaEquipo.horas_detalle
-
-        if (tiempos) {
-          const esFecha = this.tipoSeleccionado === 'MES' || this.tipoSeleccionado === 'GLOBAL';
-
-          // Separar por '/' para obtener cada fila
+        if (dataDiaEquipo.horas_detalle) {
           const filas = dataDiaEquipo.horas_detalle.split('/');
 
           filas.forEach((fila: string) => {
-            // Separar por '|' para obtener inicio y fin
             const [valor1, valor2, valor3] = fila.split('|');
 
-            // Crear el grupo según el tipo
-            const grupoControles: any = {
-              tiempo: [0]
-            };
-
-            if (esFecha) {
-              grupoControles.fechaInicio = [valor1 || '', Validators.required];
-              grupoControles.fechaFin = [valor2 || '', Validators.required];
-            } else {
-              grupoControles.inicio = [valor1 || '', Validators.required];
-              grupoControles.fin = [valor2 || '', Validators.required];
-            }
-            grupoControles.tiempo = [valor3 || 0];
-            const nuevoGrupo = this.fb.group(grupoControles, {
+            // Al ser DIA u H-M siempre requiere controles de horario ('inicio' y 'fin')
+            const grupoControles = this.fb.group({
+              inicio: [valor1 || '', Validators.required],
+              fin: [valor2 || '', Validators.required],
+              tiempo: [valor3 || 0]
+            }, {
               validators: [this.validarFila.bind(this)]
             });
 
-            this.tiempos.push(nuevoGrupo);
+            this.tiempos.push(grupoControles);
           });
-          if (this.tiempos.value.length) {
+
+          if (this.tiempos.length > 0) {
             await this.actualizarTiempoUtilizado(false);
-            this.observaciones.enable()
+            this.observaciones.enable({ emitEvent: false });
           } else {
-            await this.calcularSaldo()
+            await this.calcularSaldo();
           }
-          this.equipoEditado = false
         }
 
-        this.id_desagregado.setValue(dataDiaEquipo.id_desagregado)
-        this.horas_dia.setValue(dataDiaEquipo.horas_dia)
-        let total = 0
-        this.tablaPlanilla[i].desagregadosCompleto.forEach(ele => {
-          total += Number(ele.horas_dia);
-        });
-        this.tiempo_utilizado.setValue(total)
-        const saldo = this.tiempo_programado.value - total
-        this.saldo_utilizar.setValue(saldo)
-        this.minutos_dia.setValue(dataDiaEquipo.minutos_dia)
-        this.observaciones.setValue(dataDiaEquipo.observaciones)
-        this.coste_dia.setValue(dataDiaEquipo.costo_dia)
-      } else {
+        this.id_desagregado.setValue(dataDiaEquipo.id_desagregado, { emitEvent: false });
+        this.horas_dia.setValue(dataDiaEquipo.horas_dia, { emitEvent: false });
+        this.minutos_dia.setValue(dataDiaEquipo.minutos_dia, { emitEvent: false });
+        this.observaciones.setValue(dataDiaEquipo.observaciones, { emitEvent: false });
+        this.coste_dia.setValue(dataDiaEquipo.costo_dia, { emitEvent: false });
 
+        // Recalcular acumulados del equipo
+        let total = 0;
+        if (Array.isArray(filaActual.desagregadosCompleto)) {
+          filaActual.desagregadosCompleto.forEach((ele: any) => {
+            total += Number(ele.horas_dia || 0);
+          });
+        }
+        this.tiempo_utilizado.setValue(total, { emitEvent: false });
+        this.saldo_utilizar.setValue((this.tiempo_programado.value || 0) - total, { emitEvent: false });
       }
-      this.buscando = false
+
+      this.equipoEditado = false;
+      this.buscando = false;
     }
   }
 
@@ -1751,6 +1804,7 @@ export class EquiposHerramientasComponent implements OnInit {
     }
 
   }
+
   calcularSaldo(): void {
     const filaActual = this.tablaPlanilla[this.selFilPlan];
     if (!filaActual) return;
@@ -2068,7 +2122,9 @@ export class EquiposHerramientasComponent implements OnInit {
   //     SwalService.error()
   //   }
   // }
+
   async guardarActualizarCambiosDesagregado(cambio = false): Promise<boolean | void> {
+
 
     if (!this.equipoEditado) {
       this.toaster.info('Ningún cambio realizado', '', {
@@ -2172,48 +2228,90 @@ export class EquiposHerramientasComponent implements OnInit {
           if (resp[0]?.mensaje === '1') {
             const rowClonada = { ...targetRow };
 
+            // 1. Actualización inmutable de la colección principal
+            const arrayCompleto = [...(rowClonada.desagregadosCompleto || [])];
+            const indice = arrayCompleto.findIndex(ele => ele.id_desagregado === obj.id_desagregado);
+
+            const objetoActualizado = {
+              ...obj,
+              fechaRegistroGlobal: data.fechaRegistroGlobal,
+              costo_dia: Number(data.coste_dia) || 0,
+              horas_dia: Number(data.horas_dia) || 0
+            };
+
+            if (indice !== -1) {
+              arrayCompleto[indice] = objetoActualizado;
+            } else {
+              arrayCompleto.push(objetoActualizado);
+            }
+            rowClonada.desagregadosCompleto = arrayCompleto;
+
+            // 2. Mapeo según el tipo de fila
             if (fila.tipo === 'H-M' || fila.tipo === 'DIA') {
               const planillaCopy = [...(rowClonada.planilla || [])];
-              planillaCopy[this.celdaSel[1]] = { ...obj };
+              planillaCopy[this.celdaSel[1]] = { ...objetoActualizado };
               rowClonada.planilla = planillaCopy;
+
             } else if (fila.tipo === 'MES') {
-              rowClonada.valorMensual = { ...obj };
+              rowClonada.valorMensual = { ...objetoActualizado };
               const arrayMes = await this.evaluarGlobalMes(obj.horas_detalle, 'MES');
               rowClonada.arrayMes = arrayMes;
 
               const total = arrayMes.reduce((acc: number, ele: any) => acc + (Number(ele) || 0), 0);
               rowClonada.total_hm = total;
               rowClonada.parcial = total * (Number(rowClonada.precio_unitario) || 0);
+
             } else {
               // Caso GLOBAL
               rowClonada.valorGlobal = {
-                ...obj,
+                ...objetoActualizado,
                 fechaRegistroGlobal: data.fechaRegistroGlobal,
               };
 
+              // Reconstruir arrayMes para tipo GLOBAL parseando rangos de fechas
               const totalDias = this.calendarioFiltrado?.dias?.length || 0;
               const arrayMesGlobal = new Array(totalDias).fill(0);
-              const fechaGlobalStr = (data.fechaRegistroGlobal || '').split('T')[0];
 
-              const idxDia = this.calendarioFiltrado?.dias?.findIndex(
-                (d: any) => (d.fecha || '').split('T')[0] === fechaGlobalStr
-              );
+              rowClonada.desagregadosCompleto.forEach((item: any) => {
+                if (item.horas_detalle && item.horas_detalle.trim() !== '') {
+                  // 1. Separar cada rango registrado (ej: "2024-11-01|2024-11-02|2")
+                  const rangos = item.horas_detalle.split('/');
 
-              if (idxDia !== -1 && idxDia !== undefined) {
-                arrayMesGlobal[idxDia] = Number(data.coste_dia) || Number(rowClonada.total_registrado) || Number(rowClonada.parcial) || 0;
-              }
+                  rangos.forEach((rangoStr: string) => {
+                    const partes = rangoStr.split('|');
+                    if (partes.length >= 2) {
+                      const fInicio = new Date(partes[0] + 'T00:00:00');
+                      const fFin = new Date(partes[1] + 'T00:00:00');
+
+                      // 2. Mapear cada día del calendario filtrado
+                      this.calendarioFiltrado?.dias?.forEach((diaCal: any, idxDia: number) => {
+                        const fDiaCal = new Date(diaCal.fecha.split('T')[0] + 'T00:00:00');
+
+                        // Comprobar si el día actual cae dentro del rango [fInicio, fFin]
+                        if (fDiaCal >= fInicio && fDiaCal <= fFin) {
+                          // Asigna 1 (o la marca requerida para cada día del rango en la matriz)
+                          arrayMesGlobal[idxDia] = 1;
+                        }
+                      });
+                    }
+                  });
+                } else {
+                  // Si no tiene horas_detalle pero sí una fecha individual
+                  const fechaItemStr = (item.fechaRegistroGlobal || item.fecha || '').split('T')[0];
+                  const idxDia = this.calendarioFiltrado?.dias?.findIndex(
+                    (d: any) => (d.fecha || '').split('T')[0] === fechaItemStr
+                  );
+
+                  if (idxDia !== -1 && idxDia !== undefined && (Number(item.costo_dia) > 0 || Number(item.horas_dia) > 0)) {
+                    arrayMesGlobal[idxDia] = 1;
+                  }
+                }
+              });
+
               rowClonada.arrayMes = arrayMesGlobal;
             }
 
-            // Colección completa inmutable
-            const arrayCompleto = [...(rowClonada.desagregadosCompleto || [])];
-            const indice = arrayCompleto.findIndex(ele => ele.id_desagregado === obj.id_desagregado);
-            if (indice !== -1) {
-              arrayCompleto[indice] = { ...obj, fechaRegistroGlobal: data.fechaRegistroGlobal };
-              rowClonada.desagregadosCompleto = arrayCompleto;
-            }
-
-            // Asignar objeto completamente clonado al índice principal
+            // Asignar objeto completamente clonado a la tabla
             this.tablaPlanilla[targetIndex] = rowClonada;
 
             if (!esGlobal) {
@@ -2247,10 +2345,19 @@ export class EquiposHerramientasComponent implements OnInit {
           const resp = await this.equiposServiciosService.guardarDesagregadoEquipo(obj);
 
           if (resp[0]?.id_desagregado) {
-            const nuevoObj = { ...obj, id_desagregado: resp[0].id_desagregado };
+            const nuevoObj = {
+              ...obj,
+              id_desagregado: resp[0].id_desagregado,
+              fechaRegistroGlobal: data.fechaRegistroGlobal,
+              costo_dia: Number(data.coste_dia) || 0,
+              horas_dia: Number(data.horas_dia) || 0
+            };
             const rowClonada = { ...targetRow };
 
-            if (fila.tipo === 'H-M' || fila.tipo === 'DIA') {
+            // Usar targetRow.tipo para garantizar consistencia con el índice destino
+            const tipoFilaTarget = targetRow.tipo || fila.tipo;
+
+            if (tipoFilaTarget === 'H-M' || tipoFilaTarget === 'DIA') {
               const planillaCopy = [...(rowClonada.planilla || [])];
               planillaCopy[this.celdaSel[1]] = { ...nuevoObj };
               rowClonada.planilla = planillaCopy;
@@ -2266,7 +2373,7 @@ export class EquiposHerramientasComponent implements OnInit {
               } else {
                 this.calcularSaldo();
               }
-            } else if (fila.tipo === 'MES') {
+            } else if (tipoFilaTarget === 'MES') {
               rowClonada.valorMensual = { ...nuevoObj };
               const arrayMes = await this.evaluarGlobalMes(nuevoObj.horas_detalle, 'MES');
               rowClonada.arrayMes = arrayMes;
@@ -2281,29 +2388,49 @@ export class EquiposHerramientasComponent implements OnInit {
 
               this.tablaPlanilla[targetIndex] = rowClonada;
             } else {
-              // Caso GLOBAL
-              rowClonada.valorGlobal = {
-                ...nuevoObj,
-                fechaRegistroGlobal: data.fechaRegistroGlobal,
-              };
+              // Caso GLOBAL: Reconstrucción robusta de arrayMesGlobal
+              rowClonada.valorGlobal = { ...nuevoObj };
 
               const totalDias = this.calendarioFiltrado?.dias?.length || 0;
               const arrayMesGlobal = new Array(totalDias).fill(0);
-              const fechaGlobalStr = (data.fechaRegistroGlobal || '').split('T')[0];
 
-              const idxDia = this.calendarioFiltrado?.dias?.findIndex(
-                (d: any) => (d.fecha || '').split('T')[0] === fechaGlobalStr
-              );
-
-              if (idxDia !== -1 && idxDia !== undefined) {
-                arrayMesGlobal[idxDia] = Number(data.coste_dia) || Number(rowClonada.total_registrado) || Number(rowClonada.parcial) || 0;
-              }
-              rowClonada.arrayMes = arrayMesGlobal;
-              rowClonada.desagregadosCompleto = [
+              const nuevaColeccion = [
                 ...(rowClonada.desagregadosCompleto || []),
-                { ...nuevoObj, fechaRegistroGlobal: data.fechaRegistroGlobal },
+                { ...nuevoObj }
               ];
+              rowClonada.desagregadosCompleto = nuevaColeccion;
 
+              // Evaluamos la colección completa contemplando tanto horas_detalle (rangos) como fechas puntuales
+              rowClonada.desagregadosCompleto.forEach((item: any) => {
+                if (item.horas_detalle && item.horas_detalle.trim() !== '') {
+                  const rangos = item.horas_detalle.split('/');
+                  rangos.forEach((rangoStr: string) => {
+                    const partes = rangoStr.split('|');
+                    if (partes.length >= 2 && partes[0] && partes[1]) {
+                      const fInicio = new Date(partes[0] + 'T00:00:00');
+                      const fFin = new Date(partes[1] + 'T00:00:00');
+
+                      this.calendarioFiltrado?.dias?.forEach((diaCal: any, idxDia: number) => {
+                        const fDiaCal = new Date(diaCal.fecha.split('T')[0] + 'T00:00:00');
+                        if (fDiaCal >= fInicio && fDiaCal <= fFin) {
+                          arrayMesGlobal[idxDia] = 1;
+                        }
+                      });
+                    }
+                  });
+                } else {
+                  const fechaItemStr = (item.fechaRegistroGlobal || item.fecha || '').split('T')[0];
+                  const idxDia = this.calendarioFiltrado?.dias?.findIndex(
+                    (d: any) => (d.fecha || '').split('T')[0] === fechaItemStr
+                  );
+
+                  if (idxDia !== -1 && idxDia !== undefined && (Number(item.costo_dia) > 0 || Number(item.horas_dia) > 0)) {
+                    arrayMesGlobal[idxDia] = Number(item.costo_dia) || Number(item.horas_dia) || 1;
+                  }
+                }
+              });
+
+              rowClonada.arrayMes = arrayMesGlobal;
               this.tablaPlanilla[targetIndex] = rowClonada;
             }
 
@@ -2368,7 +2495,9 @@ export class EquiposHerramientasComponent implements OnInit {
 
             const totalDias = this.calendarioFiltrado?.dias?.length || 0;
             rowClonada.arrayMes = new Array(totalDias).fill(0);
-            rowClonada.desagregadosCompleto = [];
+            rowClonada.desagregadosCompleto = (rowClonada.desagregadosCompleto || []).filter(
+              (item: any) => item.id_desagregado !== idDesagregado
+            );
 
             this.tablaPlanilla[targetIndex] = rowClonada;
           }
@@ -2393,10 +2522,9 @@ export class EquiposHerramientasComponent implements OnInit {
         }
       }
 
-      // Clonación del array principal para forzar detección de cambios en la UI
+      // Forzar detección de cambios en Angular reasignando la tabla
       this.tablaPlanilla = [...this.tablaPlanilla];
       this.mostrar_carga_todo = false;
-
     } catch (error) {
       this.mostrar_carga_todo = false;
       console.error('Error en guardarActualizarCambiosDesagregado:', error);
@@ -2463,6 +2591,7 @@ export class EquiposHerramientasComponent implements OnInit {
 
     tipoControl.valueChanges.subscribe((nuevoTipo: string) => {
       const idFila = form.get('id_fila')?.value;
+      const idGrupo = form.get('id_grupo')?.value;
 
       if (nuevoTipo === 'GLOBAL') {
         const filasExistentes = this.obtenerFilasPorRequerimiento(idFila);
@@ -2496,25 +2625,40 @@ export class EquiposHerramientasComponent implements OnInit {
       const cantidadCtrl = form.get('cantidad');
       const precioCtrl = form.get('precio_unitario');
       const totalCtrl = form.get('total_registrado');
-      const tiempoCtrl = form.get('tiempo_registrado'); // 👈 Capturamos el control de tiempo
-
-      const filaReqIndex = this.fila_requerimiento?.value;
-      const requerimiento = this.tablaRequerimientos[filaReqIndex];
+      const tiempoCtrl = form.get('tiempo_registrado');
+      const parcialCtrl = form.get('parcial');
 
       if (nuevoTipo === 'GLOBAL') {
-        const cantInicial = requerimiento?.cantidad ?? 0;
-        const precioInicial = requerimiento?.precio ?? 0;
-        const totalInicial = requerimiento?.parcial ?? (cantInicial * precioInicial);
+        // 1. Buscamos el requerimiento correspondiente por id_grupo e id_fila
+        // (si fila_requerimiento no tiene un valor seleccionado aún)
+        let requerimiento = null;
+        const filaReqIndex = this.fila_requerimiento?.value;
 
-        // Asignamos los valores del requerimiento
+        if (filaReqIndex !== null && filaReqIndex !== '' && this.tablaRequerimientos[filaReqIndex]) {
+          requerimiento = this.tablaRequerimientos[filaReqIndex];
+        } else {
+          requerimiento = this.tablaRequerimientos.find(
+            req => Number(req.idgrupo) === Number(idGrupo) && Number(req.idfila) === Number(idFila)
+          );
+        }
+
+        // 2. Extraemos los valores del requerimiento o mantenemos los que ya tenía el form como fallback
+        const cantInicial = Number(requerimiento?.cantidad ?? cantidadCtrl?.value) || 0;
+        const precioInicial = Number(requerimiento?.precio ?? precioCtrl?.value) || 0;
+        const totalInicial = Number(requerimiento?.parcial ?? (cantInicial * precioInicial)) || 0;
+
+        // 3. Asignamos los valores al formulario
         cantidadCtrl?.setValue(cantInicial, { emitEvent: false });
         precioCtrl?.setValue(precioInicial, { emitEvent: false });
         totalCtrl?.setValue(totalInicial, { emitEvent: false });
-        tiempoCtrl?.setValue(cantInicial, { emitEvent: false }); // 👈 Seteamos tiempo_registrado con la cantidad del requerimiento
+        tiempoCtrl?.setValue(cantInicial, { emitEvent: false });
+        parcialCtrl?.setValue(totalInicial, { emitEvent: false });
 
+        // Deshabilitamos controles para GLOBAL
         cantidadCtrl?.disable({ emitEvent: false });
         precioCtrl?.disable({ emitEvent: false });
       } else {
+        // Si cambia a otro tipo diferente de GLOBAL, rehabilitamos los controles
         cantidadCtrl?.enable({ emitEvent: false });
         precioCtrl?.enable({ emitEvent: false });
       }
@@ -2789,6 +2933,7 @@ export class EquiposHerramientasComponent implements OnInit {
     const fechaObj = new Date(fechaRaw);
     return fechaObj.toISOString().split('T')[0];
   }
+
   async seleccionFilaPlanrow(row: any, i: number) {
     if (this.evitandoDobleEjecucion) {
       return;
@@ -2798,10 +2943,9 @@ export class EquiposHerramientasComponent implements OnInit {
       return;
     }
 
-    // 1. OBTENER LA FILA ANTERIOR (donde ocurrieron los cambios)
+    // 1. EVALUAR Y EJECUTAR AUTOGUARDADO EN LA FILA ANTERIOR
     const filaAnterior = this.selFilPlan !== null ? this.tablaPlanilla[this.selFilPlan] : null;
 
-    // 2. EVALUAR Y EJECUTAR AUTOGUARDADO EN LA FILA ANTERIOR
     if (this.equipoEditado && filaAnterior && (filaAnterior.tipo === 'GLOBAL' || filaAnterior.tipo === 'MES')) {
       this.evitandoDobleEjecucion = true;
       try {
@@ -2813,8 +2957,8 @@ export class EquiposHerramientasComponent implements OnInit {
       }
     }
 
-    // 3. CAMBIAR DE SELECCIÓN A LA NUEVA FILA
-    this.celdaSel = [null, null];
+    // 2. RESETEAR SELECCIÓN Y LIMPIAR DATOS DE DETALLE
+    this.celdaSel = [null, null]; // Se resetea explícitamente la celda previa
     this.buscando = true;
     this.detalleMensual = [];
     this.acumuladoCantidades = [];
@@ -2825,21 +2969,18 @@ export class EquiposHerramientasComponent implements OnInit {
       this.selFilPlan = i;
     }
 
-    // Limpieza previa del formulario
-    this.formDesagregado.reset(undefined, { emitEvent: false });
-    this.tiempos.clear({ emitEvent: false }); // Uso optimizado en lugar de while
+    // Limpieza modular del formulario y los FormArray de tiempos
+    this.limpiarFormularioDetalle();
 
+    // Actualizar el tipo de selección ANTES de procesar los datos
     this.tipoSeleccionado = row.tipo;
 
-    // -------------------------------------------------------------
-    // CASO 1: TIPO GLOBAL
-    // -------------------------------------------------------------
+    // 3. CASO GLOBAL
     if (row.tipo === 'GLOBAL') {
       this.fechaRegistroGlobal.enable({ emitEvent: false });
-
-      this.coste_unitario.setValue(this.tablaPlanilla[i].precio_unitario, { emitEvent: false });
-      this.unidad.setValue(this.tablaPlanilla[i].unidad, { emitEvent: false });
-      this.tiempo_programado.setValue(this.tablaPlanilla[i].cantidad, { emitEvent: false });
+      this.coste_unitario.setValue(row.precio_unitario, { emitEvent: false });
+      this.unidad.setValue(row.unidad, { emitEvent: false });
+      this.tiempo_programado.setValue(row.cantidad, { emitEvent: false });
 
       const dataDiaEquipo = row.valorGlobal;
 
@@ -2855,12 +2996,9 @@ export class EquiposHerramientasComponent implements OnInit {
           dataDiaEquipo.fecha ||
           (row.desagregadosCompleto && row.desagregadosCompleto[0]?.fecha);
 
-        if (fechaRaw) {
-          this.fechaRegistroGlobal.setValue(this.formatearFechaInput(fechaRaw), { emitEvent: false });
-        } else {
-          this.fechaRegistroGlobal.setValue('', { emitEvent: false });
-        }
+        this.fechaRegistroGlobal.setValue(fechaRaw ? this.formatearFechaInput(fechaRaw) : '', { emitEvent: false });
 
+        // Parsear la estructura mediante método común
         this.cargarDetalleTiempos(dataDiaEquipo.horas_detalle, true);
       } else {
         this.limpiarCamposDesagregado();
@@ -2869,13 +3007,11 @@ export class EquiposHerramientasComponent implements OnInit {
 
       this.calcularTotalesYSaldos(i);
     }
-    // -------------------------------------------------------------
-    // CASO 2: TIPO MES
-    // -------------------------------------------------------------
+    // 4. CASO MES
     else if (row.tipo === 'MES') {
-      this.coste_unitario.setValue(this.tablaPlanilla[i].precio_unitario, { emitEvent: false });
-      this.unidad.setValue(this.tablaPlanilla[i].unidad, { emitEvent: false });
-      this.tiempo_programado.setValue(this.tablaPlanilla[i].cantidad, { emitEvent: false });
+      this.coste_unitario.setValue(row.precio_unitario, { emitEvent: false });
+      this.unidad.setValue(row.unidad, { emitEvent: false });
+      this.tiempo_programado.setValue(row.cantidad, { emitEvent: false });
 
       const dataDiaEquipo = row.valorMensual;
 
@@ -2893,14 +3029,16 @@ export class EquiposHerramientasComponent implements OnInit {
 
       this.calcularTotalesYSaldos(i);
     }
-    // -------------------------------------------------------------
-    // CASO 3: TIPO DIA
-    // -------------------------------------------------------------
-    else if (row.tipo === 'DIA') {
-      this.horas_dia.disable({ emitEvent: false });
+    // 5. CASO DIA / H-M
+    else if (row.tipo === 'DIA' || row.tipo === 'H-M') {
+      if (row.tipo === 'DIA') {
+        this.horas_dia.disable({ emitEvent: false });
+      } else {
+        this.horas_dia.enable({ emitEvent: false });
+      }
+      this.limpiarCamposDesagregado();
     }
 
-    // Reseteamos bandera de edición ya que cargamos los datos de la nueva fila
     this.equipoEditado = false;
 
     if (this.selFilPlan !== null) {
@@ -2914,6 +3052,17 @@ export class EquiposHerramientasComponent implements OnInit {
     this.buscando = false;
   }
 
+  private limpiarFormularioDetalle(): void {
+    this.formDesagregado.reset(undefined, { emitEvent: false });
+    this.id_desagregado.setValue(null, { emitEvent: false });
+    this.horas_dia.setValue(null, { emitEvent: false });
+    this.minutos_dia.setValue(null, { emitEvent: false });
+    this.coste_dia.setValue(null, { emitEvent: false });
+    this.observaciones.setValue(null, { emitEvent: false });
+
+    // Limpia por completo la colección dinámica
+    this.tiempos.clear({ emitEvent: false });
+  }
   // =============================================================
   // MÉTODOS AUXILIARES
   // =============================================================
@@ -4029,27 +4178,16 @@ export class EquiposHerramientasComponent implements OnInit {
     }
   }
 
-  esFechaGlobalRegistrada(row: any, diaHeader: any): boolean {
-    // 1. Validar que sea STRICTAMENTE tipo GLOBAL
-    if (!row || row.tipo !== 'GLOBAL' || !diaHeader) {
-      return false;
-    }
 
-    // 2. Extraer la fecha guardada en la fila para GLOBAL
-    const fechaGuardada =
-      row.valorGlobal?.fechaRegistroGlobal ||
-      row.valorGlobal?.fecha ||
-      (row.desagregadosCompleto && row.desagregadosCompleto[0]?.fecha);
+  esFechaGlobalRegistrada(row: any, diaCalendario: any): boolean {
+    if (!row || !diaCalendario || !row.desagregadosCompleto) return false;
 
-    // 3. Obtener la fecha de la columna (ajusta 'fecha' según la propiedad exacta de tu objeto diaHeader)
-    const fechaColumna = diaHeader.fecha || diaHeader.fecha_str;
+    const fechaCalStr = (diaCalendario.fecha || '').split('T')[0];
 
-    if (!fechaGuardada || !fechaColumna) {
-      return false;
-    }
-
-    // 4. Comparar ambas fechas en formato YYYY-MM-DD
-    return this.formatearFechaInput(fechaGuardada) === this.formatearFechaInput(fechaColumna);
+    return row.desagregadosCompleto.some((item: any) => {
+      const fechaItemStr = (item.fechaRegistroGlobal || item.fecha || '').split('T')[0];
+      return fechaItemStr === fechaCalStr;
+    });
   }
 
 

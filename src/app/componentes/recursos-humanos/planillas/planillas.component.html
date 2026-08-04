@@ -304,7 +304,7 @@
             <button mat-raised-button color="primary" class="h-mat" style="margin-left: 1rem;"
                 (click)="listarAsistenciasMovil()">
                 <mat-icon>search</mat-icon>
-                Buscar
+
             </button>
         </div>
 
@@ -416,7 +416,7 @@
                     </mat-option>
                 </mat-select>
             </mat-form-field>
-            <div class="col-4 d-flex">
+            <div class="col-5 d-flex">
                 <mat-slide-toggle class="mx-3" [(ngModel)]="ocultarSinAsistencia">
                     Ocultar sin asistencia
                 </mat-slide-toggle>
@@ -432,15 +432,11 @@
                 </mat-slide-toggle>
                 <button mat-raised-button color="primary" class="h-mat" (click)="filtroListadoCargos()">
                     <mat-icon>search</mat-icon>
-                    Buscar
+
                 </button>
             </div>
-            <div class="col-2 d-flex justify-content-end pr-0">
-                <!-- <button  mat-raised-button color="warn" class="h-mat"
-                    style="background-color: green;" (click)="aprobarPlanilla()">
-                    <mat-icon>check</mat-icon>
-                    APROBAR PLANILLA MES
-                </button> -->
+            <div class="col-1 d-flex justify-content-end pr-0">
+
                 <span *ngIf="sinPresAnalitico" class="badge bg-danger"
                     style="height: 35px;align-content: center;cursor: pointer;"
                     title="Registre un presupuesto analítico primero caso contrario los totales seran un monto de 0">
@@ -501,11 +497,39 @@
                             <tr *ngFor="let row of this.tablaFiltrada; let i = index;trackBy: trackByFn"
                                 (click)="this.usuarioSeleccionado = row; filTabFil = i">
                                 <ng-container *ngIf="row.mostrar && row.asistenciaExistente">
-                                    <ng-container *ngIf="!row.id_cargo && !row.id_usuario">
+                                    <!-- <ng-container *ngIf="!row.id_cargo && !row.id_usuario">
                                         <td [colSpan]="calendarioFiltrado[0]?.colspan + 13" class="bg-area "
                                             [ngClass]="{'col-sticky-area': columnasFijasActivas}">
                                             <div class="ml-1 text-danger font-weight-bold">
                                                 {{row.area}}
+                                            </div>
+
+                                        </td>
+                                    </ng-container> -->
+                                    <ng-container *ngIf="!row.id_cargo && !row.id_usuario">
+                                        <td [colSpan]="(calendarioFiltrado[0]?.colspan || 0) + 13" class="bg-area p-0"
+                                            [ngClass]="{'col-sticky-area': columnasFijasActivas}">
+
+                                            <!-- Contenedor pegajoso (Sticky) para que el texto y botón permanezcan siempre visibles a la izquierda al hacer scroll -->
+                                            <div class="sticky-area-content d-flex align-items-center px-3 py-1"
+                                                [ngStyle]="columnasFijasActivas ? {'position': 'sticky', 'left': '0px', 'width': 'fit-content'} : {}">
+
+                                                <!-- Nombre del Área -->
+                                                <div class="text-danger font-weight-bold mr-3" style="font-size: 13px;">
+                                                    {{ row.area }}
+                                                </div>
+
+                                                <!-- Botón de Configuración pegado a la descripción -->
+                                                <div>
+                                                    <button type="button"
+                                                        class="btn btn-sm btn-outline-primary btn-mini2"
+                                                        (click)="abrirModalConfigArea(row)"
+                                                        ngbTooltip="Ver Configuración y Montos de Área"
+                                                        container="body">
+                                                        <i class="fa fa-cog mr-1"></i> Config. Área
+                                                    </button>
+                                                </div>
+
                                             </div>
 
                                         </td>
@@ -841,142 +865,7 @@
     </div>
 </ng-container>
 
-<!-- <ng-container *ngIf="activetab == 4">
-    <div class=" h-content ">
-        <div class="col-12 d-flex px-0">
-            <mat-form-field appearance="outline" class="mff-reduc col-3">
-                <mat-label>Mes</mat-label>
-                <mat-select [(ngModel)]="mesSelAcum">
-                    <mat-option *ngFor="let mes of mesesAcum; let i=index" [value]="i">
-                        {{mes}}
-                    </mat-option>
 
-                </mat-select>
-            </mat-form-field>
-            <mat-form-field appearance="outline" class="mff-reduc col-3">
-                <mat-label>Area</mat-label>
-                <mat-select [(ngModel)]="areaSelAcum" (ngModelChange)="cambioAreaAcum()">
-                    <mat-option [value]="''">Todas</mat-option>
-                    <mat-option *ngFor="let area of areasAcum" [value]="area.id_area">
-                        {{area.descripcion}}
-                    </mat-option>
-
-                </mat-select>
-            </mat-form-field>
-            <mat-form-field appearance="outline" class="mff-reduc col-3">
-                <mat-label>Cargo</mat-label>
-                <mat-select [(ngModel)]="cargoSelAcum" [disabled]="!areaSelAcum">
-                    <mat-option [value]="''">Todos</mat-option>
-                    <mat-option *ngFor="let cargo of cargosFiltradosAcum" [value]="cargo.id_cargo">
-                        {{cargo.descripcion}}
-                    </mat-option>
-                </mat-select>
-            </mat-form-field>
-            <button mat-raised-button color="primary" class="h-50" (click)="filtroAcum()">
-                <mat-icon>search</mat-icon>
-                Buscar
-            </button>
-        </div>
-        <div class="col-12 overflow-auto">
-            <table class="table-bordered tab-10">
-                <thead class="text-center">
-                    <tr>
-                     
-                        <th rowspan="3">Cargo</th>
-                        <th rowspan="3">Categoria</th>
-                        <th [colSpan]="calendarioFiltrado2?.dias?.length * 2">
-                            {{calendarioFiltrado2?.mes}} - {{calendarioFiltrado2?.anio}}
-                        </th>
-                        <th rowspan="3">Total Mes</th>
-                    </tr>
-                    <tr>
-                        <ng-container *ngFor="let dia of calendarioFiltrado2?.dias">
-                            <th colspan="2">
-                                <div class="dia-numero">{{dia.numero_dia_mes}} - {{dia.abreviatura}}</div>
-                            </th>
-                        </ng-container>
-                    </tr>
-                    <tr>
-                        <ng-container *ngFor="let dia of calendarioFiltrado2?.dias">
-                            <th appAnchocol [ancho]="40">
-                                Cant.
-                            </th>
-                            <th appAnchocol [ancho]="70">
-                                Monto
-                            </th>
-                        </ng-container>
-                    </tr>
-                </thead>
-         
-                <tbody>
-                    <ng-container *ngFor="let row of tablaAcumFiltrada; let i = index">
-                        <tr *ngIf="!row.es_cabecera_area" [ngClass]="{ 
-                'font-weight-bolder': row.es_encabezado_area || row.es_total_area, 
-                'bg-area': row.es_encabezado_area, 
-                'bg-total': row.es_total_area
-            }">
-
-                            <td [ngClass]="{'pl-3': !row.es_encabezado_area && !row.es_total_area}">
-                                {{ row.descripcion_cargo || row.descripcion_area }}
-                            </td>
-
-                            <td class="text-center">
-                                <ng-container *ngIf="!row.es_encabezado_area && !row.es_total_area">
-                                    {{ getRomanNumeral(row.tipo_cargo) }}
-                                </ng-container>
-                            </td>
-
-                            <ng-container *ngFor="let dia of row.calendario">
-                                <td class="text-center">
-                                    <ng-container *ngIf="dia.cantidad_asignaciones && !row.es_encabezado_area">
-                                        {{ dia.cantidad_asignaciones }}
-                                    </ng-container>
-                                </td>
-
-                                <td>
-                                    <div class="d-flex justify-content-between align-items-center"
-                                        *ngIf="dia.monto_dia && !row.es_encabezado_area">
-                                        <span class="text-muted small">S/.</span>
-                                        <span>{{ dia.monto_dia | number:'0.2-2' }}</span>
-                                    </div>
-                                </td>
-                            </ng-container>
-
-                            <td>
-                                <div class="d-flex justify-content-between align-items-center" *ngIf="row.costo_total">
-                                    <span class="text-muted small">S/.</span>
-                                    <span>{{ row.costo_total | number:'0.2-2' }}</span>
-                                </div>
-                            </td>
-                        </tr>
-                    </ng-container>
-                </tbody>
-                <tfoot>
-                    <tr *ngIf="tablaAcumFiltrada.length">
-                        <th colspan="2" class="text-center">TOTAL </th>
-                        <ng-container *ngFor="let diaAcumulado of totalesAcumulados?.acumulados">
-                            <th></th>
-                            <th>
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <span class="text-muted small text-white">S/.</span>
-
-                                    <span>{{diaAcumulado | number:'0.2-2'}}</span>
-                                </div>
-                            </th>
-                        </ng-container>
-                        <th>
-                            <div class="d-flex justify-content-between align-items-center">
-                                <span class="text-muted small text-white">S/.</span>
-
-                                <span>{{totalesAcumulados?.totalGeneral | number:'0.2-2'}}</span>
-                            </div>
-                        </th>
-                    </tr>
-                </tfoot>
-            </table>
-        </div>
-    </div>
-</ng-container> -->
 <ng-container *ngIf="activetab == 4">
     <div class="h-content">
         <!-- Filtros y Controles -->
@@ -1012,7 +901,7 @@
 
             <button mat-raised-button color="primary" class="h-50" (click)="filtroAcum()">
                 <mat-icon>search</mat-icon>
-                Buscar
+
             </button>
 
             <!-- TOGGLE DE COLUMNAS FIJAS -->
@@ -1850,6 +1739,225 @@
                 (click)="guardarLoteUsuarioExtras()">
                 Guardar
 
+            </button>
+        </div>
+    </div>
+</app-modal-basic>
+
+<app-modal-basic #modalconfArea [dialogClass]="'modal-xl modalgrande'">
+    <!-- CABECERA DEL MODAL -->
+    <div class="app-modal-header">
+        <h4 class="modal-title tit-modal1">
+            <b>Configuración de Área: <span class="text-primary">{{ areaSeleccionadaM?.descripcion ||
+                    areaSeleccionadaM?.area || 'General' }}</span></b>
+        </h4>
+        <button type="button" class="close basic-close" (click)="cerramodalConfArea()">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+
+    <!-- CUERPO DEL MODAL -->
+    <div class="app-modal-body p-3">
+        <div *ngIf="areaSeleccionadaM; else noData">
+
+            <!-- ALERTAS Y AVISOS INFORMATIVOS -->
+            <div *ngIf="areaSeleccionadaM?.configuracion?.esPredeterminada || !areaSeleccionadaM?.monto"
+                class="alert alert-warning py-2 px-3 mb-3 d-flex align-items-center rounded shadow-sm text-dark"
+                style="font-size: 12px;">
+                <i class="fa fa-exclamation-triangle fa-lg mr-2 text-warning text-dark"></i>
+                <div>
+                    <div *ngIf="areaSeleccionadaM?.configuracion?.esPredeterminada">
+                        <b>Configuración del Sistema:</b> El área no cuenta con una configuración personalizada
+                        guardada; se están aplicando los parámetros por defecto del proyecto.
+                    </div>
+                    <div *ngIf="!areaSeleccionadaM?.monto">
+                        <b>Sin Presupuesto Analítico:</b> No existen montos ni costos de jornal registrados para esta
+                        área en el presupuesto analítico de RH.
+                    </div>
+                </div>
+            </div>
+
+            <!-- ======================================================= -->
+            <!-- SECCIÓN 1: MATRIZ DE CATEGORÍAS SALARIALES POR CARGO   -->
+            <!-- ======================================================= -->
+            <div class="d-flex justify-content-between align-items-center border-bottom pb-1 mb-2">
+                <h6 class="text-primary font-weight-bold mb-0" style="font-size: 13px;">
+                    <i class="fa fa-table mr-1"></i> Categorías Salariales por Cargo (Parciales)
+                </h6>
+                <span class="badge bg-info text-white" *ngIf="areaSeleccionadaM?.cargosArea?.length">
+                    {{ areaSeleccionadaM.cargosArea.length }} Cargo(s)
+                </span>
+            </div>
+
+            <!-- TABLA DE CATEGORÍAS SALARIALES Y PARCIALES -->
+            <div class="table-responsive mb-3 border rounded shadow-sm">
+                <table class="table table-sm table-bordered text-center align-middle mb-0" style="font-size: 11px;">
+                    <thead class="bg-primary text-white">
+                        <tr *ngIf="areaSeleccionadaM?.cargosArea?.length; else sinCargos">
+                            <th class="align-middle text-start px-2" style="width: 200px;">DESCRIPCIÓN</th>
+                            <ng-container *ngFor="let cargo of areaSeleccionadaM?.cargosArea">
+                                <th class="align-middle px-2">{{ cargo.descripcion }}</th>
+                            </ng-container>
+                        </tr>
+                        <ng-template #sinCargos>
+                            <tr>
+                                <th class="align-middle text-start px-2" style="width: 200px;">DESCRIPCIÓN</th>
+                                <th class="text-center text-warning fw-normal">Sin cargos para esta área</th>
+                            </tr>
+                        </ng-template>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let catNum of [1, 2, 3, 4, 5]">
+                            <td class="fw-bold bg-light text-start px-2">
+                                JORNAL CATEGORIA {{ catNum }}
+                            </td>
+                            <td *ngFor="let cargo of areaSeleccionadaM?.cargosArea">
+                                <span class="fw-bold text-dark">
+                                    S/. {{ (cargo['parcial_cat_' + catNum] || 0) | number:'1.2-2' }}
+                                </span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- ======================================================= -->
+            <!-- SECCIÓN 2: DESCUENTOS, BONOS Y TIEMPOS                   -->
+            <!-- ======================================================= -->
+            <div class="row">
+
+                <!-- COLUMNA IZQUIERDA: CONFIGURACIÓN DE DESCUENTOS -->
+                <div class="col-md-6">
+                    <h6 class="text-danger font-weight-bold mb-2" style="font-size: 13px;">
+                        Configuración de Descuentos
+                    </h6>
+
+                    <div class="table-responsive border rounded shadow-sm" style="max-height: 380px; overflow-y: auto;">
+                        <table class="table table-sm table-bordered text-center align-middle mb-0"
+                            style="font-size: 11px;">
+                            <thead class="bg-primary text-white sticky-top">
+                                <tr>
+                                    <th style="width: 45px;">Cód.</th>
+                                    <th class="text-start">Tipo de Incidencia</th>
+                                    <th style="width: 60px;">Influye cant.</th>
+                                    <th style="width: 140px;">Porcentaje Descuento (día)</th>
+                                    <th style="width: 90px;">% Efectivo (Paga Dia)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr *ngFor="let item of areaSeleccionadaM?.configuracion?.descuentosList">
+                                    <td class="fw-bold bg-light">{{ item.codigo }}</td>
+                                    <td class="text-start px-2">{{ item.descripcion }}</td>
+                                    <td>
+                                        <span class="badge" [ngClass]="item.influye ? 'bg-success' : 'bg-secondary'"
+                                            style="font-size: 9px; padding: 3px 6px;">
+                                            {{ item.influye ? 'SÍ' : 'NO' }}
+                                        </span>
+                                    </td>
+                                    <td class="bg-light">
+                                        <div class="d-flex align-items-center justify-content-center">
+                                            <span class="mr-1 text-muted">100 % -</span>
+                                            <input type="number" [disabled]="true"
+                                                class="form-control form-control-sm text-center px-1 py-0 mx-1"
+                                                style="width: 50px; height: 22px; font-size: 11px;"
+                                                [(ngModel)]="item.porcentaje_descuento"
+                                                (ngModelChange)="item.porcentaje_efectivo = 100 - item.porcentaje_descuento">
+                                            <span class="text-muted">%</span>
+                                        </div>
+                                    </td>
+                                    <td class="fw-bold text-dark bg-light">{{ item.porcentaje_efectivo }}%</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- COLUMNA DERECHA: CONFIGURACIÓN DE BONIFICACIONES Y TIEMPOS -->
+                <div class="col-md-6 d-flex flex-column justify-content-between">
+                    <div>
+                        <h6 class="text-success font-weight-bold mb-2" style="font-size: 13px;">
+                            Configuración de Bonificaciones
+                        </h6>
+
+                        <div class="table-responsive border rounded shadow-sm mb-3">
+                            <table class="table table-sm table-bordered text-center align-middle mb-0"
+                                style="font-size: 11px;">
+                                <thead class="bg-primary text-white">
+                                    <tr>
+                                        <th style="width: 45px;">Cód.</th>
+                                        <th class="text-start">Tipo de Bono</th>
+                                        <th style="width: 60px;">Influye cant.</th>
+                                        <th style="width: 140px;">Porcentaje Bono (día)</th>
+                                        <th style="width: 90px;">% Efectivo (Paga Dia)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr *ngFor="let bono of areaSeleccionadaM?.configuracion?.bonificacionesList">
+                                        <td class="fw-bold bg-light">{{ bono.codigo }}</td>
+                                        <td class="text-start px-2">{{ bono.descripcion }}</td>
+                                        <td>
+                                            <span class="badge" [ngClass]="bono.influye ? 'bg-success' : 'bg-secondary'"
+                                                style="font-size: 9px; padding: 3px 6px;">
+                                                {{ bono.influye ? 'SÍ' : 'NO' }}
+                                            </span>
+                                        </td>
+                                        <td class="bg-light">
+                                            <div class="d-flex align-items-center justify-content-center">
+                                                <span class="text-success mr-1">100 % +</span>
+                                                <input type="number" [disabled]="true"
+                                                    class="form-control form-control-sm text-center px-1 py-0 mx-1 border-success text-success fw-bold"
+                                                    style="width: 50px; height: 22px; font-size: 11px;"
+                                                    [(ngModel)]="bono.porcentaje_bono"
+                                                    (ngModelChange)="bono.porcentaje_efectivo = 100 + bono.porcentaje_bono">
+                                                <span class="text-success">%</span>
+                                            </div>
+                                        </td>
+                                        <td class="fw-bold text-dark bg-light">{{ bono.porcentaje_efectivo }}%</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- TARJETAS EDITABLES DE TARDANZA Y TIEMPO EXTRA -->
+                    <div class="row g-2 mt-auto pt-2">
+                        <div class="col-6">
+                            <div class="form-group mb-0">
+                                <label class="text-muted font-weight-bold mb-1" style="font-size: 11px;">Tardanza
+                                    (minutos)</label>
+                                <input type="number" class="form-control form-control-sm" [disabled]="true"
+                                    [(ngModel)]="areaSeleccionadaM.configuracion.tardanza" style="font-size: 12px;">
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="form-group mb-0">
+                                <label class="text-muted font-weight-bold mb-1" style="font-size: 11px;">Tiempo extra
+                                    (minutos)</label>
+                                <input type="number" class="form-control form-control-sm" [disabled]="true"
+                                    [(ngModel)]="areaSeleccionadaM.configuracion.tiempo_extra" style="font-size: 12px;">
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+
+        <!-- SPINNER DE CARGA -->
+        <ng-template #noData>
+            <div class="text-center py-5">
+                <i class="fa fa-spinner fa-spin fa-2x text-primary mb-2"></i>
+                <p class="text-muted mb-0">Obteniendo configuración del área...</p>
+            </div>
+        </ng-template>
+    </div>
+
+    <!-- PIE DEL MODAL -->
+    <div class="app-modal-footer w-100">
+        <div class="row px-3 justify-content-end">
+            <button type="button" class="btn btn-sm btn-secondary ripple" (click)="cerramodalConfArea()">
+                <i class="fa fa-times mr-1"></i> Cerrar
             </button>
         </div>
     </div>

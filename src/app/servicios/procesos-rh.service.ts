@@ -67,8 +67,89 @@ export class ProcesosRhService {
     Sábado: "Sa",
     Domingo: "Do"
   };
-
+  tipos = [
+    { codigo: 'A', tipo: 'ASISTIO', porcentaje: null, influye_cantidad: 1 },
+    { codigo: 'T', tipo: 'TARDANZA', porcentaje: 10, influye_cantidad: 1 },
+    { codigo: 'TI', tipo: 'TARDANZA INJUSTIFICADA', porcentaje: 10, influye_cantidad: 1 },
+    { codigo: 'TJ', tipo: 'TARDANZA JUSTIFICADA', porcentaje: null, influye_cantidad: 1 },
+    { codigo: 'F', tipo: 'FALTA', porcentaje: 100, influye_cantidad: 0 },
+    { codigo: 'FI', tipo: 'FALTA INJUSTIFICADA', porcentaje: 100, influye_cantidad: 0 },
+    { codigo: 'FJ', tipo: 'FALTA JUSTIFICADA', porcentaje: null, influye_cantidad: 0 },
+    { codigo: 'FM', tipo: 'DESCANSO MEDICO', porcentaje: null, influye_cantidad: 0 },
+    { codigo: 'FV', tipo: 'VACACIONES', porcentaje: null, influye_cantidad: 0 },
+    { codigo: 'PE', tipo: 'PERMISO', porcentaje: null, influye_cantidad: 0 },
+    { codigo: 'D1', tipo: 'DESCUENTO OPCIONAL 1', porcentaje: null, influye_cantidad: 1 },
+    { codigo: 'D2', tipo: 'DESCUENTO OPCIONAL 2', porcentaje: null, influye_cantidad: 1 },
+    { codigo: 'D3', tipo: 'DESCUENTO OPCIONAL 3', porcentaje: null, influye_cantidad: 0 },
+    { codigo: 'OBS', tipo: 'OBSERVADO', porcentaje: 100, influye_cantidad: 0 },
+    { codigo: 'IN', tipo: 'INCOMPLETO', porcentaje: 100, influye_cantidad: 0 },
+    { codigo: 'TEX', tipo: 'TEXTRA', porcentaje: null, influye_cantidad: 0 },
+    { codigo: 'BN', tipo: 'BONO DOMINICAL', porcentaje: null, influye_cantidad: 0 },
+    { codigo: 'BF', tipo: 'BONO FERIADO', porcentaje: null, influye_cantidad: 0 },
+    { codigo: 'B1', tipo: 'BONO OPCIONAL 1', porcentaje: null, influye_cantidad: 1 },
+    { codigo: 'B2', tipo: 'BONO OPCIONAL 2', porcentaje: null, influye_cantidad: 1 },
+    { codigo: 'B3', tipo: 'BONO OPCIONAL 3', porcentaje: null, influye_cantidad: 0 },
+  ];
   constructor(private recursosHumanosService: RecursosHumanosService) { }
+
+  // async calendarioXAsignaciones(idProyecto: number): Promise<any> {
+  //   const [
+  //     [areas, cargos],
+  //     respAsignaciones,
+  //     montosAreas
+  //   ] = await Promise.all([
+  //     this.recursosHumanosService.listarCargosPorArea({ id_proyecto: idProyecto }),
+  //     this.recursosHumanosService.listarAsignacionesProyecto({ id_proyecto: idProyecto }),
+  //     this.listarMontosAreaPresAnaliticoRH(idProyecto)
+  //   ]);
+
+  //   const { calendario: calendarioRaw, asignaciones, fecha_maxima, fecha_minima } = respAsignaciones;
+  //   const calendario = this.agruparPorAnioMes(calendarioRaw, this.abreviaturas, []);
+
+  //   const [asistencias, [configuraciones, feriados]] = await Promise.all([
+  //     this.recursosHumanosService.listarRegistrosAsistencia({
+  //       id_proyecto: idProyecto,
+  //       fecha_inicio: fecha_minima,
+  //       fecha_fin: fecha_maxima
+  //     }),
+  //     this.recursosHumanosService.listarHorarioYFeriadosArea({
+  //       id_proyecto: idProyecto,
+  //       id_area: 0
+  //     })
+  //   ]);
+  //   const asistenciasMap = this.crearMapaAsistenciasPorUsuario(asistencias);
+  //   console.log('asistenciasMap', asistenciasMap)
+  //   const configuracionesMap = this.crearMapaConfiguraciones(configuraciones);
+  //   console.log('configuracionesMap', configuracionesMap)
+  //   const montosAreasMap = this.crearMapaMontosPorArea(montosAreas);
+  //   console.log('montosAreasMap', montosAreasMap)
+  //   const consolidadoGeneral = this.procesarAreasYAsignaciones(
+  //     areas,
+  //     cargos,
+  //     asignaciones,
+  //     calendario,
+  //     asistenciasMap,
+  //     configuracionesMap,
+  //     montosAreasMap,
+  //     feriados
+  //   );
+
+  //   // 1. Primero agrupar los datos reales por meses
+  //   const consolidadoPorMesesBase = this.agruparConsolidadoPorMeses(consolidadoGeneral, calendario);
+
+  //   // 2. Insertar cabeceras y calcular total de área DENTRO de cada mes
+  //   const consolidadoPorMeses = this.procesarCabecerasYTotalesPorMes(consolidadoPorMesesBase);
+
+  //   // 3. Obtener totales globales por día y mes
+  //   const totalesGlobales = this.calcularTotalesGlobales(consolidadoPorMeses, this.tipos); return {
+  //     consolidadoPorMeses,
+  //     calendario,
+  //     areas,
+  //     cargos,
+  //     totales_globales: totalesGlobales, // Nuevo objeto con totales
+  //     sinPresAnalitico: montosAreas.length ? false : true
+  //   };
+  // }
 
   async calendarioXAsignaciones(idProyecto: number): Promise<any> {
     const [
@@ -95,9 +176,23 @@ export class ProcesosRhService {
         id_area: 0
       })
     ]);
+
     const asistenciasMap = this.crearMapaAsistenciasPorUsuario(asistencias);
     const configuracionesMap = this.crearMapaConfiguraciones(configuraciones);
     const montosAreasMap = this.crearMapaMontosPorArea(montosAreas);
+
+    // -------------------------------------------------------------
+    // NUEVO: Agrupar la información de configuración y montos por área
+    // -------------------------------------------------------------
+    const areasConDetalle = areas.map((area: any) => {
+      const idArea = area.id_area || area.id; // Ajusta según la propiedad de ID de tu objeto área
+      return {
+        ...area,
+        monto: montosAreasMap.get(idArea) || null,
+        configuracion: configuracionesMap.get(idArea) || null
+      };
+    });
+
     const consolidadoGeneral = this.procesarAreasYAsignaciones(
       areas,
       cargos,
@@ -109,14 +204,6 @@ export class ProcesosRhService {
       feriados
     );
 
-    // // Agregar cabeceras y totales de área
-    // const consolidadoConCabeceras = this.agregarCabecerasYTotalArea(consolidadoGeneral);
-
-    // // Agrupar por meses con la nueva estructura
-    // const consolidadoPorMeses = this.agruparConsolidadoPorMesesConTotales(consolidadoConCabeceras, calendario);
-
-    // // Obtener totales globales por día y mes
-    // const totalesGlobales = this.calcularTotalesGlobales(consolidadoPorMeses);
     // 1. Primero agrupar los datos reales por meses
     const consolidadoPorMesesBase = this.agruparConsolidadoPorMeses(consolidadoGeneral, calendario);
 
@@ -124,14 +211,17 @@ export class ProcesosRhService {
     const consolidadoPorMeses = this.procesarCabecerasYTotalesPorMes(consolidadoPorMesesBase);
 
     // 3. Obtener totales globales por día y mes
-    const totalesGlobales = this.calcularTotalesGlobales(consolidadoPorMeses);
+    const totalesGlobales = this.calcularTotalesGlobales(consolidadoPorMeses, this.tipos);
+
+    // Retornamos el nuevo parámetro 'areasDetalle' junto con la respuesta
     return {
       consolidadoPorMeses,
       calendario,
       areas,
       cargos,
-      totales_globales: totalesGlobales, // Nuevo objeto con totales
-      sinPresAnalitico: montosAreas.length ? false : true
+      areasDetalle: areasConDetalle, // <-- NUEVO PARÁMETRO
+      totales_globales: totalesGlobales,
+      sinPresAnalitico: !montosAreas.length
     };
   }
 
@@ -196,6 +286,7 @@ export class ProcesosRhService {
 
     return Array.from(this.mapaToArrayYOrdenar(mesesMap));
   }
+
   private mapaToArrayYOrdenar(mesesMap: Map<string, ConsolidadoPorMes>): ConsolidadoPorMes[] {
     const mesesOrden: { [key: string]: number } = {
       'enero': 1, 'febrero': 2, 'marzo': 3, 'abril': 4,
@@ -281,96 +372,6 @@ export class ProcesosRhService {
       };
     });
   }
-  // // Auxiliar para sumar días y costos del área en el mes
-  // private construirTotalAreaParaMes(itemsArea: ConsolidadoItem[], primeraArea: ConsolidadoItem): ConsolidadoItem {
-  //   const mapaDiasTotal = new Map<string, { cantidad_asignaciones: number; monto_dia: number }>();
-  //   let costoTotalArea = 0;
-  //   let cantidadTotalArea = 0;
-
-  //   itemsArea.forEach(item => {
-  //     costoTotalArea += item.costo_total || 0;
-  //     cantidadTotalArea += item.cantidad || 0;
-
-  //     item.calendario.forEach(dia => {
-  //       if (!mapaDiasTotal.has(dia.fecha)) {
-  //         mapaDiasTotal.set(dia.fecha, { cantidad_asignaciones: 0, monto_dia: 0 });
-  //       }
-  //       const acumuladoDia = mapaDiasTotal.get(dia.fecha)!;
-  //       acumuladoDia.cantidad_asignaciones += (dia.cantidad_asignaciones || 0);
-  //       acumuladoDia.monto_dia += (dia.monto_dia || 0);
-  //     });
-  //   });
-
-  //   // Convertir el mapa acumulado de días en el array de calendario del total del área
-  //   const calendarioTotalArea = Array.from(mapaDiasTotal.entries()).map(([fecha, val]) => ({
-  //     fecha,
-  //     cantidad_asignaciones: val.cantidad_asignaciones,
-  //     monto_dia: val.monto_dia
-  //   }));
-
-  //   return {
-  //     id_area: primeraArea.id_area,
-  //     descripcion_area: `TOTAL ${primeraArea.descripcion_area}`,
-  //     id_cargo: null,
-  //     descripcion_cargo: '',
-  //     tipo_cargo: '',
-  //     cantidad: cantidadTotalArea,
-  //     asignaciones: [],
-  //     calendario: calendarioTotalArea, // ¡Ahora el total del área SÍ TIENE DÍAS!
-  //     costo_total: costoTotalArea,
-  //     es_cabecera_area: false,
-  //     es_total_area: true
-  //   };
-  // }
-
-  // private procesarCabecerasYTotalesPorMes(consolidadoPorMeses: ConsolidadoPorMes[]): ConsolidadoPorMes[] {
-  //   return consolidadoPorMeses.map(mes => {
-  //     const itemsProcesados: ConsolidadoItem[] = [];
-  //     const itemsPorArea = new Map<number, ConsolidadoItem[]>();
-
-  //     // Agrupar los items del mes por id_area
-  //     mes.items.forEach(item => {
-  //       if (!itemsPorArea.has(item.id_area)) {
-  //         itemsPorArea.set(item.id_area, []);
-  //       }
-  //       itemsPorArea.get(item.id_area)!.push(item);
-  //     });
-
-  //     itemsPorArea.forEach((itemsArea, idArea) => {
-  //       if (itemsArea.length === 0) return;
-
-  //       const primeraArea = itemsArea[0];
-
-  //       // 1. Agregar CABECERA DE ÁREA
-  //       itemsProcesados.push({
-  //         id_area: primeraArea.id_area,
-  //         descripcion_area: primeraArea.descripcion_area,
-  //         id_cargo: null,
-  //         descripcion_cargo: '',
-  //         tipo_cargo: '',
-  //         cantidad: 0,
-  //         asignaciones: [],
-  //         calendario: [],
-  //         costo_total: 0,
-  //         es_cabecera_area: true,
-  //         es_total_area: false
-  //       });
-
-  //       // 2. Agregar los ITEMS (Cargos/Usuarios del área en este mes)
-  //       itemsProcesados.push(...itemsArea);
-
-  //       // 3. CALCULAR TOTAL DEL ÁREA PARA ESTE MES ESPECÍFICO
-  //       const totalAreaItem = this.construirTotalAreaParaMes(itemsArea, primeraArea);
-  //       itemsProcesados.push(totalAreaItem);
-  //     });
-
-  //     return {
-  //       ...mes,
-  //       items: itemsProcesados
-  //     };
-  //   });
-  // }
-
 
   private construirTotalAreaParaMes(itemsArea: ConsolidadoItem[], primeraArea: ConsolidadoItem): ConsolidadoItem {
     // Guardamos el objeto completo del día junto con los acumulados
@@ -418,254 +419,153 @@ export class ProcesosRhService {
       es_total_area: true
     };
   }
-  private agregarCabecerasYTotalArea(consolidadoGeneral: ConsolidadoItem[]): ConsolidadoItem[] {
-    const resultado: ConsolidadoItem[] = [];
 
-    // Agrupar items por área
-    const itemsPorArea = new Map<number, ConsolidadoItem[]>();
 
-    consolidadoGeneral.forEach(item => {
-      if (!itemsPorArea.has(item.id_area)) {
-        itemsPorArea.set(item.id_area, []);
-      }
-      itemsPorArea.get(item.id_area)!.push(item);
-    });
 
-    // Para cada área, agregar cabecera y luego los items
-    itemsPorArea.forEach((itemsArea, idArea) => {
-      if (itemsArea.length === 0) return;
+  // private calcularTotalesGlobales(consolidadoPorMeses: ConsolidadoPorMes[]): {
+  //   totales_por_mes: TotalesMes[];
+  //   totales_por_dia: { [fecha: string]: { cantidad_asignaciones: number; monto_dia: number } };
+  //   total_general: { cantidad_asignaciones: number; monto_total: number };
+  // } {
+  //   const totalesPorMes: TotalesMes[] = [];
+  //   const totalesPorDiaMap = new Map<string, { cantidad_asignaciones: number; monto_dia: number }>();
+  //   let totalCantidadGeneral = 0;
+  //   let totalMontoGeneral = 0;
 
-      const primeraArea = itemsArea[0];
+  //   // Procesar cada mes
+  //   consolidadoPorMeses.forEach(mes => {
+  //     const totalesDiaMes: { [fecha: string]: { cantidad_asignaciones: number; monto_dia: number } } = {};
+  //     let cantidadTotalMes = 0;
+  //     let montoTotalMes = 0;
 
-      // 1. Agregar cabecera del área (solo descripción, resto vacío)
-      const cabeceraArea: ConsolidadoItem = {
-        id_area: primeraArea.id_area,
-        descripcion_area: primeraArea.descripcion_area,
-        id_cargo: null,
-        descripcion_cargo: '',
-        tipo_cargo: '',
-        cantidad: 0,
-        asignaciones: [],
-        calendario: [], // Vacío para cabecera
-        costo_total: 0,
-        es_cabecera_area: true
-      };
-      resultado.push(cabeceraArea);
+  //     // Solo procesar los items que son totales de área (es_total_area === true)
+  //     const itemsTotalesArea = mes.items.filter(item => item.es_total_area);
 
-      // 2. Agregar todos los items del área
-      resultado.push(...itemsArea);
+  //     itemsTotalesArea.forEach(item => {
+  //       // Sumar al total general del mes
+  //       cantidadTotalMes += item.cantidad;
+  //       montoTotalMes += item.costo_total;
 
-      // 3. Calcular y agregar total del área (con el nombre del área)
-      const totalArea = this.calcularTotalArea(itemsArea);
-      resultado.push(totalArea);
-    });
+  //       // Acumular por día
+  //       item.calendario.forEach(dia => {
+  //         const fecha = dia.fecha;
 
-    return resultado;
-  }
+  //         // Acumular en el mapa global de días
+  //         if (!totalesPorDiaMap.has(fecha)) {
+  //           totalesPorDiaMap.set(fecha, { cantidad_asignaciones: 0, monto_dia: 0 });
+  //         }
 
-  private calcularTotalArea(itemsArea: ConsolidadoItem[]): ConsolidadoItem {
-    if (itemsArea.length === 0) {
-      throw new Error('No hay items para calcular el total del área');
-    }
+  //         const totalDia = totalesPorDiaMap.get(fecha)!;
+  //         totalDia.cantidad_asignaciones += dia.cantidad_asignaciones;
+  //         totalDia.monto_dia += dia.monto_dia;
 
-    const primeraArea = itemsArea[0];
+  //         // Acumular en el mapa del mes
+  //         if (!totalesDiaMes[fecha]) {
+  //           totalesDiaMes[fecha] = { cantidad_asignaciones: 0, monto_dia: 0 };
+  //         }
+  //         totalesDiaMes[fecha].cantidad_asignaciones += dia.cantidad_asignaciones;
+  //         totalesDiaMes[fecha].monto_dia += dia.monto_dia;
+  //       });
+  //     });
 
-    // Crear un mapa para acumular por fecha
-    const acumuladoPorFecha = new Map<string, {
-      monto_dia: number;
-      cantidad_asignaciones: number;
-      dia: string;
-      laborable: boolean;
-      feriado: boolean;
-      esDiaEspecial: boolean;
-      detalle_asistencias: AsistenciaDetalle[];
-    }>();
+  //     // Agregar totales del mes
+  //     totalesPorMes.push({
+  //       mes_key: mes.mes_key,
+  //       totales_dia: totalesDiaMes,
+  //       total_mes: {
+  //         cantidad_asignaciones: cantidadTotalMes,
+  //         monto_mes: montoTotalMes
+  //       }
+  //     });
 
-    // Procesar todos los items del área para acumular por fecha
-    itemsArea.forEach(item => {
-      item.calendario.forEach(dia => {
-        const fecha = dia.fecha;
+  //     // Acumular en totales generales
+  //     totalCantidadGeneral += cantidadTotalMes;
+  //     totalMontoGeneral += montoTotalMes;
+  //   });
 
-        if (!acumuladoPorFecha.has(fecha)) {
-          acumuladoPorFecha.set(fecha, {
-            monto_dia: 0,
-            cantidad_asignaciones: 0,
-            dia: dia.dia,
-            laborable: dia.laborable,
-            feriado: dia.feriado,
-            esDiaEspecial: dia.esDiaEspecial,
-            detalle_asistencias: [] // No necesitamos detalle en el total
-          });
-        }
+  //   // Convertir el mapa de días a objeto
+  //   const totalesPorDia: { [fecha: string]: { cantidad_asignaciones: number; monto_dia: number } } = {};
+  //   totalesPorDiaMap.forEach((value, key) => {
+  //     totalesPorDia[key] = value;
+  //   });
 
-        const acumulado = acumuladoPorFecha.get(fecha)!;
-        acumulado.monto_dia += dia.monto_dia;
-        acumulado.cantidad_asignaciones += dia.cantidad_asignaciones;
-      });
-    });
-
-    // Convertir el mapa a array de CalendarioDia
-    const calendarioTotal: CalendarioDia[] = Array.from(acumuladoPorFecha.entries()).map(([fecha, data]) => ({
-      fecha,
-      dia: data.dia,
-      laborable: data.laborable,
-      feriado: data.feriado,
-      esDiaEspecial: data.esDiaEspecial,
-      monto_dia: data.monto_dia,
-      cantidad_asignaciones: data.cantidad_asignaciones,
-      detalle_asistencias: []
-    }));
-
-    // Calcular costo total
-    const costoTotal = calendarioTotal.reduce((sum, dia) => sum + dia.monto_dia, 0);
-
-    // Calcular cantidad total de asignaciones (suma de todas las asignaciones de todos los cargos)
-    const cantidadTotal = itemsArea.reduce((sum, item) => sum + item.cantidad, 0);
-
-    return {
-      id_area: primeraArea.id_area,
-      descripcion_area: null,
-      id_cargo: null,
-      descripcion_cargo: 'TOTAL',
-      tipo_cargo: '',
-      cantidad: cantidadTotal,
-      asignaciones: [],
-      calendario: calendarioTotal,
-      costo_total: costoTotal,
-      es_total_area: true
-    };
-  }
-
-  private agruparConsolidadoPorMesesConTotales(
-    consolidadoConCabeceras: ConsolidadoItem[],
-    calendario: any[]
-  ): ConsolidadoPorMes[] {
-    const mesesMap = new Map<string, ConsolidadoPorMes>();
-
-    // Primero, crear todos los meses del calendario
-    for (const anio of calendario) {
-      if (!anio || !anio.meses) continue;
-
-      for (const mes of anio.meses) {
-        if (!mes) continue;
-
-        const mesKey = `${mes.mes.toUpperCase()}-${anio.anio}`;
-        if (!mesesMap.has(mesKey)) {
-          mesesMap.set(mesKey, {
-            mes_key: mesKey,
-            mes: mes.mes,
-            anio: anio.anio,
-            items: [],
-            costo_total_mes: 0
-          });
-        }
-      }
-    }
-
-    // Para cada item del consolidado (incluyendo cabeceras y totales)
-    for (const item of consolidadoConCabeceras) {
-      if (!item || !item.calendario) continue;
-
-      // Agrupar días por mes
-      const diasPorMes = new Map<string, CalendarioDia[]>();
-      const costoPorMes = new Map<string, number>();
-
-      for (const dia of item.calendario) {
-        if (!dia || !dia.fecha) continue;
-
-        const fechaMoment = moment(dia.fecha, 'DD-MM-YYYY');
-        const mesKey = `${fechaMoment.format('MMMM').toUpperCase()}-${fechaMoment.year()}`;
-
-        if (!diasPorMes.has(mesKey)) {
-          diasPorMes.set(mesKey, []);
-          costoPorMes.set(mesKey, 0);
-        }
-
-        diasPorMes.get(mesKey)!.push(dia);
-        costoPorMes.set(mesKey, (costoPorMes.get(mesKey) || 0) + dia.monto_dia);
-      }
-
-      // Crear items por mes
-      for (const [mesKey, diasMes] of diasPorMes) {
-        const mesConsolidado = mesesMap.get(mesKey);
-        if (mesConsolidado) {
-          const itemParaMes: ConsolidadoItem = {
-            ...item,
-            calendario: diasMes,
-            costo_total: costoPorMes.get(mesKey) || 0
-          };
-
-          mesConsolidado.items.push(itemParaMes);
-
-          // Solo sumar al costo total del mes si no es cabecera (las cabeceras tienen costo 0)
-          if (!item.es_cabecera_area) {
-            mesConsolidado.costo_total_mes += itemParaMes.costo_total;
-          }
-        }
-      }
-    }
-
-    // Ordenar los meses
-    return Array.from(mesesMap.values())
-      .sort((a, b) => {
-        if (a.anio !== b.anio) return a.anio - b.anio;
-        const mesesNumeros: { [key: string]: number } = {
-          'enero': 1, 'febrero': 2, 'marzo': 3, 'abril': 4, 'mayo': 5, 'junio': 6,
-          'julio': 7, 'agosto': 8, 'septiembre': 9, 'octubre': 10, 'noviembre': 11, 'diciembre': 12
-        };
-        const mesNumA = mesesNumeros[a.mes.toLowerCase()] || 0;
-        const mesNumB = mesesNumeros[b.mes.toLowerCase()] || 0;
-        return mesNumA - mesNumB;
-      });
-  }
-
-  private calcularTotalesGlobales(consolidadoPorMeses: ConsolidadoPorMes[]): {
+  //   return {
+  //     totales_por_mes: totalesPorMes,
+  //     totales_por_dia: totalesPorDia,
+  //     total_general: {
+  //       cantidad_asignaciones: totalCantidadGeneral,
+  //       monto_total: totalMontoGeneral
+  //     }
+  //   };
+  // }
+  private calcularTotalesGlobales(
+    consolidadoPorMeses: ConsolidadoPorMes[],
+    tiposAsistencia: any[] // Se pasa el arreglo tipos con la propiedad influye_cantidad
+  ): {
     totales_por_mes: TotalesMes[];
     totales_por_dia: { [fecha: string]: { cantidad_asignaciones: number; monto_dia: number } };
     total_general: { cantidad_asignaciones: number; monto_total: number };
   } {
+    // Set con los códigos de tipo_asistencia que SÍ influyen (influye_cantidad === 1)
+    const codigosQueInfluyen = new Set(
+      (tiposAsistencia || [])
+        .filter(t => t.influye_cantidad === 1)
+        .map(t => t.codigo)
+    );
+
     const totalesPorMes: TotalesMes[] = [];
     const totalesPorDiaMap = new Map<string, { cantidad_asignaciones: number; monto_dia: number }>();
     let totalCantidadGeneral = 0;
     let totalMontoGeneral = 0;
 
-    // Procesar cada mes
     consolidadoPorMeses.forEach(mes => {
       const totalesDiaMes: { [fecha: string]: { cantidad_asignaciones: number; monto_dia: number } } = {};
       let cantidadTotalMes = 0;
       let montoTotalMes = 0;
 
-      // Solo procesar los items que son totales de área (es_total_area === true)
+      // Solo procesamos totales de área
       const itemsTotalesArea = mes.items.filter(item => item.es_total_area);
 
       itemsTotalesArea.forEach(item => {
-        // Sumar al total general del mes
-        cantidadTotalMes += item.cantidad;
-        montoTotalMes += item.costo_total;
-
-        // Acumular por día
         item.calendario.forEach(dia => {
           const fecha = dia.fecha;
 
-          // Acumular en el mapa global de días
+          // Si existen detalles de asistencia, contamos cuántas asistencias
+          // tienen un tipo_asistencia que SÍ influye en la cantidad.
+          let cantidadValidaDia = 0;
+
+          if (dia.detalle_asistencias && dia.detalle_asistencias.length > 0) {
+            cantidadValidaDia = dia.detalle_asistencias.filter(asist =>
+              codigosQueInfluyen.has(asist.tipo_asistencia)
+            ).length;
+          } else {
+            // Si no hay detalle explícito pero hay cantidad_asignaciones precalculada
+            cantidadValidaDia = dia.cantidad_asignaciones || 0;
+          }
+
+          const montoDia = dia.monto_dia || 0;
+
+          // Acumular totales del mes
+          cantidadTotalMes += cantidadValidaDia;
+          montoTotalMes += montoDia;
+
+          // Acumular en mapa global de días
           if (!totalesPorDiaMap.has(fecha)) {
             totalesPorDiaMap.set(fecha, { cantidad_asignaciones: 0, monto_dia: 0 });
           }
-
           const totalDia = totalesPorDiaMap.get(fecha)!;
-          totalDia.cantidad_asignaciones += dia.cantidad_asignaciones;
-          totalDia.monto_dia += dia.monto_dia;
+          totalDia.cantidad_asignaciones += cantidadValidaDia;
+          totalDia.monto_dia += montoDia;
 
-          // Acumular en el mapa del mes
+          // Acumular en mapa del mes
           if (!totalesDiaMes[fecha]) {
             totalesDiaMes[fecha] = { cantidad_asignaciones: 0, monto_dia: 0 };
           }
-          totalesDiaMes[fecha].cantidad_asignaciones += dia.cantidad_asignaciones;
-          totalesDiaMes[fecha].monto_dia += dia.monto_dia;
+          totalesDiaMes[fecha].cantidad_asignaciones += cantidadValidaDia;
+          totalesDiaMes[fecha].monto_dia += montoDia;
         });
       });
 
-      // Agregar totales del mes
       totalesPorMes.push({
         mes_key: mes.mes_key,
         totales_dia: totalesDiaMes,
@@ -675,12 +575,10 @@ export class ProcesosRhService {
         }
       });
 
-      // Acumular en totales generales
       totalCantidadGeneral += cantidadTotalMes;
       totalMontoGeneral += montoTotalMes;
     });
 
-    // Convertir el mapa de días a objeto
     const totalesPorDia: { [fecha: string]: { cantidad_asignaciones: number; monto_dia: number } } = {};
     totalesPorDiaMap.forEach((value, key) => {
       totalesPorDia[key] = value;
@@ -695,8 +593,6 @@ export class ProcesosRhService {
       }
     };
   }
-
-  // Los demás métodos se mantienen igual...
   private crearMapaAsistenciasPorUsuario(asistencias: any[]): Map<string, Map<number, any>> {
     const mapa = new Map<string, Map<number, any>>();
     if (!asistencias || !Array.isArray(asistencias)) {
@@ -761,109 +657,6 @@ export class ProcesosRhService {
 
     return mapa;
   }
-
-  // private procesarAreasYAsignaciones(
-  //   areas: any[],
-  //   cargos: any[],
-  //   asignaciones: any[],
-  //   calendario: any[],
-  //   asistenciasMap: Map<string, Map<number, any>>,
-  //   configuracionesMap: Map<number, any>,
-  //   montosAreasMap: Map<number, Map<string, Map<number, number>>>,
-  //   feriados: any[]
-  // ): ConsolidadoItem[] {
-  //   const cargosPorArea = this.agruparCargosPorArea(cargos);
-  //   const asignacionesPorCargo = this.agruparAsignacionesPorCargo(asignaciones);
-  //   const consolidadoMap = new Map<string, ConsolidadoItem>();
-  //   for (const area of areas) {
-  //     if (!area) continue;
-  //     let horarioConfArea = configuracionesMap.get(area.id_area);
-  //     if (!horarioConfArea) {
-  //       horarioConfArea = {
-  //         id_configuracion: null,
-  //         id_proyecto: area.id_proyecto,
-  //         id_area: area.id_area,
-  //         inicio_semana: 'LUNES',
-  //         dias_nolaborables: 'DOMINGO',
-  //         hora_ingreso_manana: '07:30:00|07:30:00|07:30:00|07:30:00|07:30:00|07:30:00|',
-  //         hora_salida_manana: '12:00:00|12:00:00|12:00:00|12:00:00|12:00:00|13:00:00|',
-  //         hora_ingreso_tarde: '14:00:00|14:00:00|14:00:00|14:00:00|14:00:00||',
-  //         hora_salida_tarde: '18:00:00|18:00:00|18:00:00|18:00:00|18:00:00||',
-  //         totales_dia: 48,
-  //         descuentos: "0|10|10|0|100|100|0|0|0|0|0|0|0|100|100|0|0|0|0|0|0",
-  //         tardanza: 10,
-  //         tiempo_extra: 0
-  //       }
-  //     }
-  //     const areaMontosMap = montosAreasMap.get(area.id_area);
-  //     const cargosArea = cargosPorArea.get(area.id_area) || [];
-
-  //     for (const cargo of cargosArea) {
-  //       if (!cargo) continue;
-
-  //       const asignacionesCargo = asignacionesPorCargo.get(cargo.id_cargo) || [];
-  //       const asignacionesPorTipo = new Map<string, any[]>();
-
-  //       asignacionesCargo.forEach(asignacion => {
-  //         if (!asignacion) return;
-  //         const key = asignacion.tipo_cargo || '';
-  //         if (!asignacionesPorTipo.has(key)) {
-  //           asignacionesPorTipo.set(key, []);
-  //         }
-  //         asignacionesPorTipo.get(key)!.push(asignacion);
-  //       });
-  //       for (const [tipoCargo, asignacionesGrupo] of asignacionesPorTipo) {
-  //         const key = `${area.id_area}_${cargo.id_cargo}_${tipoCargo}`;
-
-  //         let costoDia = 0;
-  //         if (areaMontosMap && tipoCargo) {
-  //           for (const [tipo, cargosMap] of areaMontosMap) {
-  //             if (tipo && tipo.endsWith(tipoCargo)) {
-  //               costoDia = cargosMap.get(cargo.id_cargo) || 0;
-  //               break;
-  //             }
-  //           }
-  //         }
-
-  //         const feriadosSoloFecha = feriados.filter(ele => {
-  //           if (!ele || !ele.areas) return false;
-  //           const areas = ele.areas?.split('|');
-  //           return areas && areas.includes(area.id_area.toString());
-  //         }).map(ele => ele.fecha?.split('T')[0]).filter(Boolean);
-
-  //         const { calendarioProcesado, costoTotal } = this.procesarDiasCalendarioGrupo(
-  //           calendario,
-  //           asistenciasMap,
-  //           costoDia,
-  //           horarioConfArea,
-  //           feriadosSoloFecha,
-  //           asignacionesGrupo
-  //         );
-
-  //         if (!consolidadoMap.has(key)) {
-  //           consolidadoMap.set(key, {
-  //             id_area: area.id_area,
-  //             descripcion_area: area.descripcion || '',
-  //             id_cargo: cargo.id_cargo,
-  //             descripcion_cargo: cargo.descripcion || '',
-  //             tipo_cargo: tipoCargo,
-  //             cantidad: asignacionesGrupo.length,
-  //             asignaciones: asignacionesGrupo,
-  //             calendario: calendarioProcesado,
-  //             costo_total: costoTotal
-  //           });
-  //         } else {
-  //           const item = consolidadoMap.get(key)!;
-  //           item.cantidad += asignacionesGrupo.length;
-  //           item.asignaciones.push(...asignacionesGrupo);
-  //           item.costo_total += costoTotal;
-  //         }
-  //       }
-  //     }
-  //   }
-
-  //   return Array.from(consolidadoMap.values());
-  // }
 
   private procesarAreasYAsignaciones(
     areas: any[],
@@ -1199,6 +992,7 @@ export class ProcesosRhService {
 
     return { calendarioProcesado, costoTotal };
   }
+
   private agruparCargosPorArea(cargos: any[]): Map<number, any[]> {
     const mapa = new Map<number, any[]>();
     if (!cargos || !Array.isArray(cargos)) {

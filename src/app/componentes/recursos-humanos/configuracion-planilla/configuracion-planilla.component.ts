@@ -166,27 +166,27 @@ export class ConfiguracionPlanillaComponent implements OnInit {
   //   { codigo: 'BF', tipo: 'BONO FERIADO O NO LABORABLE', porcentaje: null },
   // ]
   tipos = [
-    { codigo: 'A', tipo: 'ASISTIO', porcentaje: null },
-    { codigo: 'T', tipo: 'TARDANZA', porcentaje: 10 },
-    { codigo: 'TI', tipo: 'TARDANZA INJUSTIFICADA', porcentaje: 10 },
-    { codigo: 'TJ', tipo: 'TARDANZA JUSTIFICADA', porcentaje: null },
-    { codigo: 'F', tipo: 'FALTA', porcentaje: 100 },
-    { codigo: 'FI', tipo: 'FALTA INJUSTIFICADA', porcentaje: 100 },
-    { codigo: 'FJ', tipo: 'FALTA JUSTIFICADA', porcentaje: null },
-    { codigo: 'FM', tipo: 'DESCANSO MEDICO', porcentaje: null },
-    { codigo: 'FV', tipo: 'VACACIONES', porcentaje: null },
-    { codigo: 'PE', tipo: 'PERMISO', porcentaje: null },
-    { codigo: 'D1', tipo: 'DESCUENTO OPCIONAL 1', porcentaje: null },
-    { codigo: 'D2', tipo: 'DESCUENTO OPCIONAL 2', porcentaje: null },
-    { codigo: 'D3', tipo: 'DESCUENTO OPCIONAL 3', porcentaje: null },
-    { codigo: 'OBS', tipo: 'OBSERVADO', porcentaje: 100 },
-    { codigo: 'IN', tipo: 'INCOMPLETO', porcentaje: 100 },
-    { codigo: 'TEX', tipo: 'TEXTRA', porcentaje: null },
-    { codigo: 'BN', tipo: 'BONO DOMINICAL', porcentaje: null },
-    { codigo: 'BF', tipo: 'BONO FERIADO', porcentaje: null },
-    { codigo: 'B1', tipo: 'BONO OPCIONAL 1', porcentaje: null },
-    { codigo: 'B2', tipo: 'BONO OPCIONAL 2', porcentaje: null },
-    { codigo: 'B3', tipo: 'BONO OPCIONAL 3', porcentaje: null },
+    { codigo: 'A', tipo: 'ASISTIO', porcentaje: null, influye_cantidad: 1 },
+    { codigo: 'T', tipo: 'TARDANZA', porcentaje: 10, influye_cantidad: 1 },
+    { codigo: 'TI', tipo: 'TARDANZA INJUSTIFICADA', porcentaje: 10, influye_cantidad: 1 },
+    { codigo: 'TJ', tipo: 'TARDANZA JUSTIFICADA', porcentaje: null, influye_cantidad: 1 },
+    { codigo: 'F', tipo: 'FALTA', porcentaje: 100, influye_cantidad: 0 },
+    { codigo: 'FI', tipo: 'FALTA INJUSTIFICADA', porcentaje: 100, influye_cantidad: 0 },
+    { codigo: 'FJ', tipo: 'FALTA JUSTIFICADA', porcentaje: null, influye_cantidad: 0 },
+    { codigo: 'FM', tipo: 'DESCANSO MEDICO', porcentaje: null, influye_cantidad: 0 },
+    { codigo: 'FV', tipo: 'VACACIONES', porcentaje: null, influye_cantidad: 0 },
+    { codigo: 'PE', tipo: 'PERMISO', porcentaje: null, influye_cantidad: 0 },
+    { codigo: 'D1', tipo: 'DESCUENTO OPCIONAL 1', porcentaje: null, influye_cantidad: 1 },
+    { codigo: 'D2', tipo: 'DESCUENTO OPCIONAL 2', porcentaje: null, influye_cantidad: 1 },
+    { codigo: 'D3', tipo: 'DESCUENTO OPCIONAL 3', porcentaje: null, influye_cantidad: 0 },
+    { codigo: 'OBS', tipo: 'OBSERVADO', porcentaje: 100, influye_cantidad: 0 },
+    { codigo: 'IN', tipo: 'INCOMPLETO', porcentaje: 100, influye_cantidad: 0 },
+    { codigo: 'TEX', tipo: 'TEXTRA', porcentaje: null, influye_cantidad: 0 },
+    { codigo: 'BN', tipo: 'BONO DOMINICAL', porcentaje: null, influye_cantidad: 0 },
+    { codigo: 'BF', tipo: 'BONO FERIADO', porcentaje: null, influye_cantidad: 0 },
+    { codigo: 'B1', tipo: 'BONO OPCIONAL 1', porcentaje: null, influye_cantidad: 1 },
+    { codigo: 'B2', tipo: 'BONO OPCIONAL 2', porcentaje: null, influye_cantidad: 1 },
+    { codigo: 'B3', tipo: 'BONO OPCIONAL 3', porcentaje: null, influye_cantidad: 0 },
   ];
   dias = [
     "LUNES",
@@ -595,7 +595,8 @@ export class ConfiguracionPlanillaComponent implements OnInit {
         categoria_t4: row.categoria_t4 ? 1 : 0,
         categoria_t5: row.categoria_t5 ? 1 : 0,
         habilitado: row.cargo_habilitado ? 1 : 0,
-        texto: row.texto ? row.texto : ''
+        texto: row.texto ? row.texto : '',
+        ind_gp: row.ind_gp
       }
       const resp = await this.recursosHumanosService.actualizarCargoArea(obj)
       if (resp[0]) {
@@ -1133,7 +1134,8 @@ export class ConfiguracionPlanillaComponent implements OnInit {
         categoria_t4: row.categoria_t4 ? 1 : 0,
         categoria_t5: row.categoria_t5 ? 1 : 0,
         habilitado: row.habilitado ? 1 : 0,
-        texto: this.basicContent ? this.basicContent : ''
+        texto: this.basicContent ? this.basicContent : '',
+        ind_gp: row.ind_gp
       }
       const resp = await this.recursosHumanosService.actualizarCargoArea(obj)
       if (resp[0]) {
@@ -3353,6 +3355,96 @@ export class ConfiguracionPlanillaComponent implements OnInit {
     await this.listarHorarioYFeriadosArea()
   }
 
+  // async listarHorarioYFeriadosArea() {
+  //   try {
+  //     this.mostrar_carga_todo = true
+  //     this.tablaHorario = []
+  //     this.cantHorasSemana = 0
+  //     this.cantHorasDescanso = 0
+  //     this.tablaFeriados = []
+  //     this.diasNoLaborablesArray = []
+  //     this.tardanza = 0
+  //     this.tiempo_extra = 0
+  //     const obj = {
+  //       id_proyecto: this.idProyecto,
+  //       id_area: this.areaSelecHorarios
+  //     }
+  //     let horario = null
+  //     const resp = await this.recursosHumanosService.listarHorarioYFeriadosArea(obj)
+  //     if (resp[0]) {
+  //       if (!resp[0].length) {
+  //         horario = {
+  //           id_configuracion: null,
+  //           id_proyecto: this.idProyecto,
+  //           id_area: this.areaSelecHorarios,
+  //           inicio_semana: 'LUNES',
+  //           dias_nolaborables: 'DOMINGO',
+  //           hora_ingreso_manana: '07:30:00|07:30:00|07:30:00|07:30:00|07:30:00|07:30:00|',
+  //           hora_salida_manana: '12:00:00|12:00:00|12:00:00|12:00:00|12:00:00|13:00:00|',
+  //           hora_ingreso_tarde: '14:00:00|14:00:00|14:00:00|14:00:00|14:00:00||',
+  //           hora_salida_tarde: '18:00:00|18:00:00|18:00:00|18:00:00|18:00:00||',
+  //           totales_dia: 48,
+  //           descuentos: '0|10|10|0|100|100|0|0|0|0|0|0|0|0|0|100|100|0|0|0|0|0|0',
+  //           tardanza: 10,
+  //           tiempo_extra: 0
+  //         }
+
+  //       } else {
+  //         horario = resp[0][0]
+  //       }
+  //     }
+  //     this.dataHorario = horario
+  //     if (resp[1]) {
+  //       this.tablaFeriados = resp[1].map(ele => {
+  //         // Convertir el string '1|2|3' en array de strings
+  //         const areasArray = ele.areas ? ele.areas.split('|') : [];
+
+  //         // Verificar si areaSelecHorarios está en el array
+  //         // Nota: areaSelecHorarios podría ser string o number, así que convertimos a string
+  //         const activo = areasArray.includes(this.areaSelecHorarios.toString());
+  //         return {
+  //           ...ele,  // Mantener todas las propiedades originales
+  //           activo: activo
+  //         };
+  //       })
+  //     }
+  //     this.inicioSemana = horario.inicio_semana
+  //     this.tardanza = horario.tardanza
+  //     this.tiempo_extra = horario.tiempo_extra
+  //     const diasNoLaborables = horario.dias_nolaborables.split('|')
+  //     this.diasNoLaborablesArray = this.dias.map(ele => diasNoLaborables.includes(ele))
+  //     this.cantHorasDescanso = this.calcularHorasEntreTurnos(horario.hora_salida_manana, horario.hora_ingreso_tarde)
+  //     this.cantHorasSemana = this.calcularTotalHorasSemana(horario.hora_ingreso_manana, horario.hora_salida_manana, horario.hora_ingreso_tarde, horario.hora_salida_tarde)
+  //     const porcentajes = horario.descuentos.split('|')
+  //     if (porcentajes.length) {
+  //       this.tiposAsistencia = this.tipos.map((ele, index) => { ele.porcentaje = porcentajes[index]; return ele })
+  //     } else {
+  //       this.tiposAsistencia = JSON.parse(JSON.stringify(this.tipos))
+  //     }
+  //     const a = horario.hora_ingreso_manana.split('|')
+  //     a.unshift('Hora ingreso mañana')
+  //     this.tablaHorario.push(a)
+  //     const b = horario.hora_salida_manana.split('|')
+  //     b.unshift('Hora salida mañana')
+  //     this.tablaHorario.push(b)
+  //     const mediodia = ['Hora de descanso', null, null, null, null, null, null, null]
+  //     this.tablaHorario.push(mediodia)
+  //     const c = horario.hora_ingreso_tarde.split('|')
+  //     c.unshift('Hora entrada tarde')
+  //     this.tablaHorario.push(c)
+  //     const d = horario.hora_salida_tarde.split('|')
+  //     d.unshift('Hora salida tarde')
+  //     this.tablaHorario.push(d)
+  //     this.mostrar_carga_todo = false
+  //   } catch (error) {
+  //     this.mostrar_carga_todo = false
+  //     console.log(error)
+  //     SwalService.error()
+  //   }
+  //   const obj = {
+
+  //   }
+  // }
   async listarHorarioYFeriadosArea() {
     try {
       this.mostrar_carga_todo = true
@@ -3363,12 +3455,15 @@ export class ConfiguracionPlanillaComponent implements OnInit {
       this.diasNoLaborablesArray = []
       this.tardanza = 0
       this.tiempo_extra = 0
+
       const obj = {
         id_proyecto: this.idProyecto,
         id_area: this.areaSelecHorarios
       }
+
       let horario = null
       const resp = await this.recursosHumanosService.listarHorarioYFeriadosArea(obj)
+
       if (resp[0]) {
         if (!resp[0].length) {
           horario = {
@@ -3377,73 +3472,76 @@ export class ConfiguracionPlanillaComponent implements OnInit {
             id_area: this.areaSelecHorarios,
             inicio_semana: 'LUNES',
             dias_nolaborables: 'DOMINGO',
-            hora_ingreso_manana: '07:30:00|07:30:00|07:30:00|07:30:00|07:30:00|07:30:00|',
-            hora_salida_manana: '12:00:00|12:00:00|12:00:00|12:00:00|12:00:00|13:00:00|',
-            hora_ingreso_tarde: '14:00:00|14:00:00|14:00:00|14:00:00|14:00:00||',
-            hora_salida_tarde: '18:00:00|18:00:00|18:00:00|18:00:00|18:00:00||',
+            hora_ingreso_manana: '07:30|07:30|07:30|07:30|07:30|07:30|',
+            hora_salida_manana: '12:00|12:00|12:00|12:00|12:00|13:00|',
+            hora_ingreso_tarde: '14:00|14:00|14:00|14:00|14:00||',
+            hora_salida_tarde: '18:00|18:00|18:00|18:00|18:00||',
             totales_dia: 48,
             descuentos: '0|10|10|0|100|100|0|0|0|0|0|0|0|0|0|100|100|0|0|0|0|0|0',
             tardanza: 10,
             tiempo_extra: 0
           }
-
         } else {
           horario = resp[0][0]
         }
       }
+
       this.dataHorario = horario
+
       if (resp[1]) {
         this.tablaFeriados = resp[1].map(ele => {
-          // Convertir el string '1|2|3' en array de strings
           const areasArray = ele.areas ? ele.areas.split('|') : [];
-
-          // Verificar si areaSelecHorarios está en el array
-          // Nota: areaSelecHorarios podría ser string o number, así que convertimos a string
           const activo = areasArray.includes(this.areaSelecHorarios.toString());
-          return {
-            ...ele,  // Mantener todas las propiedades originales
-            activo: activo
-          };
+          return { ...ele, activo };
         })
       }
+
       this.inicioSemana = horario.inicio_semana
       this.tardanza = horario.tardanza
       this.tiempo_extra = horario.tiempo_extra
-      const diasNoLaborables = horario.dias_nolaborables.split('|')
+
+      const diasNoLaborables = horario.dias_nolaborables ? horario.dias_nolaborables.split('|') : []
       this.diasNoLaborablesArray = this.dias.map(ele => diasNoLaborables.includes(ele))
+
       this.cantHorasDescanso = this.calcularHorasEntreTurnos(horario.hora_salida_manana, horario.hora_ingreso_tarde)
       this.cantHorasSemana = this.calcularTotalHorasSemana(horario.hora_ingreso_manana, horario.hora_salida_manana, horario.hora_ingreso_tarde, horario.hora_salida_tarde)
-      const porcentajes = horario.descuentos.split('|')
+
+      const porcentajes = horario.descuentos ? horario.descuentos.split('|') : []
       if (porcentajes.length) {
-        this.tiposAsistencia = this.tipos.map((ele, index) => { ele.porcentaje = porcentajes[index]; return ele })
+        this.tiposAsistencia = this.tipos.map((ele, index) => {
+          ele.porcentaje = porcentajes[index] !== undefined ? porcentajes[index] : null;
+          return ele;
+        })
       } else {
         this.tiposAsistencia = JSON.parse(JSON.stringify(this.tipos))
       }
-      const a = horario.hora_ingreso_manana.split('|')
-      a.unshift('Hora ingreso mañana')
-      this.tablaHorario.push(a)
-      const b = horario.hora_salida_manana.split('|')
-      b.unshift('Hora salida mañana')
-      this.tablaHorario.push(b)
-      const mediodia = ['Hora de descanso', null, null, null, null, null, null, null]
-      this.tablaHorario.push(mediodia)
-      const c = horario.hora_ingreso_tarde.split('|')
-      c.unshift('Hora entrada tarde')
-      this.tablaHorario.push(c)
-      const d = horario.hora_salida_tarde.split('|')
-      d.unshift('Hora salida tarde')
-      this.tablaHorario.push(d)
+
+      // Helper para normalizar los arreglos de hora a exactamente 7 días
+      const formatearFilaHoras = (titulo: string, strHoras: string) => {
+        // Split y recortar/rellenar a 7 elementos exactamente
+        const horasArray = (strHoras || '').split('|').slice(0, 7);
+        while (horasArray.length < 7) {
+          horasArray.push('');
+        }
+        return [titulo, ...horasArray];
+      };
+
+      // Construcción de la matriz desacoplada
+      this.tablaHorario = [
+        formatearFilaHoras('Hora ingreso mañana', horario.hora_ingreso_manana),
+        formatearFilaHoras('Hora salida mañana', horario.hora_salida_manana),
+        ['Hora de descanso', '', '', '', '', '', '', ''],
+        formatearFilaHoras('Hora entrada tarde', horario.hora_ingreso_tarde),
+        formatearFilaHoras('Hora salida tarde', horario.hora_salida_tarde)
+      ];
+
       this.mostrar_carga_todo = false
     } catch (error) {
       this.mostrar_carga_todo = false
-      console.log(error)
+      console.error(error)
       SwalService.error()
     }
-    const obj = {
-
-    }
   }
-
   calcularHorasEntreTurnos(hora_salida_manana, hora_ingreso_tarde): number {
     // Separar los strings por pipe
     const salidasManana = hora_salida_manana.split('|');
@@ -3530,58 +3628,100 @@ export class ConfiguracionPlanillaComponent implements OnInit {
     return (horas * 60) + minutos;
   }
 
+  // async actualizarHorario() {
+  //   const diasNolabo = this.diasNoLaborablesArray
+  //     .map((ele, index) => ele ? this.dias[index] : null)
+  //     .filter(ele => ele !== null)
+  //     .join('|');
+  //   const hora_ingreso_manana = this.tablaHorario[0].filter((ele, index) => index > 0).join('|')
+  //   const hora_salida_manana = this.tablaHorario[1].filter((ele, index) => index > 0).join('|')
+  //   const hora_ingreso_tarde = this.tablaHorario[3].filter((ele, index) => index > 0).join('|')
+  //   const hora_salida_tarde = this.tablaHorario[4].filter((ele, index) => index > 0).join('|')
+  //   const descuentos = this.tiposAsistencia.map((ele, index) => ele.porcentaje).join('|')
+  //   if (this.dataHorario.id_configuracion) {
+
+  //     const obj = {
+  //       id_configuracion: this.dataHorario.id_configuracion,
+  //       id_proyecto: this.dataHorario.id_proyecto,
+  //       id_area: this.dataHorario.id_area,
+  //       inicio_semana: this.inicioSemana,
+  //       dias_nolaborables: diasNolabo,
+  //       hora_ingreso_manana: hora_ingreso_manana,
+  //       hora_salida_manana: hora_salida_manana,
+  //       hora_ingreso_tarde: hora_ingreso_tarde,
+  //       hora_salida_tarde: hora_salida_tarde,
+  //       totales_dia: this.cantHorasDescanso,
+  //       descuentos: descuentos,
+  //       tardanza: this.tardanza,
+  //       tiempo_extra: this.tiempo_extra
+  //     }
+
+  //     const resp = await this.recursosHumanosService.actualizarHorarioArea(obj)
+  //   } else {
+
+  //     const obj = {
+  //       id_proyecto: this.dataHorario.id_proyecto,
+  //       id_area: this.dataHorario.id_area,
+  //       inicio_semana: this.inicioSemana,
+  //       dias_nolaborables: diasNolabo,
+  //       hora_ingreso_manana: hora_ingreso_manana,
+  //       hora_salida_manana: hora_salida_manana,
+  //       hora_ingreso_tarde: hora_ingreso_tarde,
+  //       hora_salida_tarde: hora_salida_tarde,
+  //       totales_dia: this.cantHorasDescanso,
+  //       descuentos: descuentos,
+  //       tardanza: this.tardanza,
+  //       tiempo_extra: this.tiempo_extra
+  //     }
+
+  //     const resp = await this.recursosHumanosService.guardarHorarioArea(obj)
+  //     if (resp) {
+  //       this.dataHorario.id_configuracion = resp[0].id_configuracion
+  //     }
+  //   }
+
+  // }
+
   async actualizarHorario() {
     const diasNolabo = this.diasNoLaborablesArray
       .map((ele, index) => ele ? this.dias[index] : null)
       .filter(ele => ele !== null)
       .join('|');
-    const hora_ingreso_manana = this.tablaHorario[0].filter((ele, index) => index > 0).join('|')
-    const hora_salida_manana = this.tablaHorario[1].filter((ele, index) => index > 0).join('|')
-    const hora_ingreso_tarde = this.tablaHorario[3].filter((ele, index) => index > 0).join('|')
-    const hora_salida_tarde = this.tablaHorario[4].filter((ele, index) => index > 0).join('|')
-    const descuentos = this.tiposAsistencia.map((ele, index) => ele.porcentaje).join('|')
+
+    // Tomar exactamente los 7 días de la semana (índices del 1 al 7)
+    const hora_ingreso_manana = this.tablaHorario[0].slice(1, 8).join('|')
+    const hora_salida_manana = this.tablaHorario[1].slice(1, 8).join('|')
+    const hora_ingreso_tarde = this.tablaHorario[3].slice(1, 8).join('|')
+    const hora_salida_tarde = this.tablaHorario[4].slice(1, 8).join('|')
+
+    const descuentos = this.tiposAsistencia.map(ele => ele.porcentaje ?? '').join('|')
+
+    const objPayload = {
+      id_proyecto: this.dataHorario.id_proyecto,
+      id_area: this.dataHorario.id_area,
+      inicio_semana: this.inicioSemana,
+      dias_nolaborables: diasNolabo,
+      hora_ingreso_manana,
+      hora_salida_manana,
+      hora_ingreso_tarde,
+      hora_salida_tarde,
+      totales_dia: this.cantHorasDescanso,
+      descuentos,
+      tardanza: this.tardanza,
+      tiempo_extra: this.tiempo_extra
+    }
+
     if (this.dataHorario.id_configuracion) {
-
-      const obj = {
-        id_configuracion: this.dataHorario.id_configuracion,
-        id_proyecto: this.dataHorario.id_proyecto,
-        id_area: this.dataHorario.id_area,
-        inicio_semana: this.inicioSemana,
-        dias_nolaborables: diasNolabo,
-        hora_ingreso_manana: hora_ingreso_manana,
-        hora_salida_manana: hora_salida_manana,
-        hora_ingreso_tarde: hora_ingreso_tarde,
-        hora_salida_tarde: hora_salida_tarde,
-        totales_dia: this.cantHorasDescanso,
-        descuentos: descuentos,
-        tardanza: this.tardanza,
-        tiempo_extra: this.tiempo_extra
-      }
-
-      const resp = await this.recursosHumanosService.actualizarHorarioArea(obj)
+      await this.recursosHumanosService.actualizarHorarioArea({
+        ...objPayload,
+        id_configuracion: this.dataHorario.id_configuracion
+      })
     } else {
-
-      const obj = {
-        id_proyecto: this.dataHorario.id_proyecto,
-        id_area: this.dataHorario.id_area,
-        inicio_semana: this.inicioSemana,
-        dias_nolaborables: diasNolabo,
-        hora_ingreso_manana: hora_ingreso_manana,
-        hora_salida_manana: hora_salida_manana,
-        hora_ingreso_tarde: hora_ingreso_tarde,
-        hora_salida_tarde: hora_salida_tarde,
-        totales_dia: this.cantHorasDescanso,
-        descuentos: descuentos,
-        tardanza: this.tardanza,
-        tiempo_extra: this.tiempo_extra
-      }
-
-      const resp = await this.recursosHumanosService.guardarHorarioArea(obj)
-      if (resp) {
+      const resp = await this.recursosHumanosService.guardarHorarioArea(objPayload)
+      if (resp && resp[0]) {
         this.dataHorario.id_configuracion = resp[0].id_configuracion
       }
     }
-
   }
 
   changeNoLaborable() {
@@ -3597,37 +3737,42 @@ export class ConfiguracionPlanillaComponent implements OnInit {
   }
 
 
-  showTimePicker(event: Event, i: number, j: number) {
+  showTimePicker(event: Event) {
     event.stopPropagation();
+    const input = event.target as HTMLInputElement & { showPicker?: () => void };
 
-    const input = event.target as HTMLInputElement;
-
-    // Usar type assertion para decirle a TypeScript que confíe en nosotros
-    const inputWithPicker = input as HTMLInputElement & {
-      showPicker?: () => void;
-    };
-
-    // Verificar si showPicker existe
-    if (inputWithPicker.showPicker) {
-      inputWithPicker.showPicker();
-    } else {
-      // Fallback para navegadores que no soportan showPicker
-      input.focus();
-      input.click();
+    if (input && typeof input.showPicker === 'function') {
+      try {
+        input.showPicker();
+      } catch (e) {
+        // Ignorar si el navegador no permite abrir el picker programáticamente en este contexto
+      }
     }
   }
 
+  trackByIndex(index: number): number {
+    return index;
+  }
   finalizarEdicion() {
-    this.celdaEditable = [];
     const horario = {
-      hora_ingreso_manana: this.tablaHorario[0].slice(1).join('|'),
-      hora_salida_manana: this.tablaHorario[1].slice(1).join('|'),
-      hora_ingreso_tarde: this.tablaHorario[3].slice(1).join('|'),
-      hora_salida_tarde: this.tablaHorario[4].slice(1).join('|'),
-    }
-    this.cantHorasDescanso = this.calcularHorasEntreTurnos(horario.hora_salida_manana, horario.hora_ingreso_tarde)
-    this.cantHorasSemana = this.calcularTotalHorasSemana(horario.hora_ingreso_manana, horario.hora_salida_manana, horario.hora_ingreso_tarde, horario.hora_salida_tarde)
-    this.actualizarHorario()
+      hora_ingreso_manana: this.tablaHorario[0].slice(1, 8).join('|'),
+      hora_salida_manana: this.tablaHorario[1].slice(1, 8).join('|'),
+      hora_ingreso_tarde: this.tablaHorario[3].slice(1, 8).join('|'),
+      hora_salida_tarde: this.tablaHorario[4].slice(1, 8).join('|'),
+    };
+
+    // Solo recalculamos totales en memoria para la interfaz
+    this.cantHorasDescanso = this.calcularHorasEntreTurnos(horario.hora_salida_manana, horario.hora_ingreso_tarde);
+    this.cantHorasSemana = this.calcularTotalHorasSemana(
+      horario.hora_ingreso_manana,
+      horario.hora_salida_manana,
+      horario.hora_ingreso_tarde,
+      horario.hora_salida_tarde
+    );
+
+    // NOTA: Si necesitas guardar automáticamente en BD al cambiar una casilla, 
+    // asegúrate de que guardar/actualizar no vuelva a formatear `tablaHorario`.
+    this.actualizarHorario();
   }
 
 
@@ -3879,7 +4024,6 @@ export class ConfiguracionPlanillaComponent implements OnInit {
   async cambioAreaPres() {
     this.cargosFiltradosPres = []
     this.cargosFiltradosPres = this.cargos.filter(ele => ele.id_area == this.areaSeleccionadaPres)
-
     await this.listarPresAnaliticoArea();
   }
 
@@ -3888,9 +4032,10 @@ export class ConfiguracionPlanillaComponent implements OnInit {
       this.mostrar_carga_todo = true;
       this.tablaPresAnalitico = [];
       this.tablaPresAnaliticoFooter = [];
-      // this.horasJornal = 8
+
       if (this.cargosFiltradosPres.length === 0) {
         console.warn('No hay cargos configurados');
+        this.mostrar_carga_todo = false;
         return;
       }
 
@@ -3900,15 +4045,13 @@ export class ConfiguracionPlanillaComponent implements OnInit {
       };
 
       const resp2 = await this.recursosHumanosService.listarPresAnaliticoRH(obj);
-      let array = [];
-      let array2 = [];
-      resp2.forEach(element => {
-        let cargos = [];
-        if (element.cargos) {
-          cargos = this.convertirStringACargoFila(element.cargos);
-        } else {
-          cargos = this.getCargosPorDefecto();
-        }
+      let array: filaPresAnalitico[] = [];
+      let array2: filaPresAnalitico[] = [];
+
+      resp2.forEach((element: any) => {
+        // Sincronizar siempre contra this.cargosFiltradosPres
+        const cargosSincronizados = this.convertirYCompletarCargos(element.cargos);
+
         const fila: filaPresAnalitico = {
           abreviatura: element.abreviatura,
           descripcion: element.descripcion,
@@ -3917,27 +4060,76 @@ export class ConfiguracionPlanillaComponent implements OnInit {
           id_presupuesto: element.id_presupuesto,
           id_proyecto: element.id_proyecto,
           item: element.item,
-          cargos: cargos
+          cargos: cargosSincronizados
         };
-        if (element.item.includes('0-')) {
 
-          array2.push(fila)
+        if (element.item.includes('0-')) {
+          array2.push(fila);
         } else {
           array.push(fila);
         }
       });
 
-
       this.tablaPresAnalitico = array;
-      // await this.recalcularTodasFormulas();
-      this.tablaPresAnaliticoFooter = array2
+      this.tablaPresAnaliticoFooter = array2;
       this.mostrar_carga_todo = false;
 
     } catch (error) {
-      console.log(error);
+      console.error(error);
       SwalService.error();
       this.mostrar_carga_todo = false;
     }
+  }
+
+  convertirYCompletarCargos(cadena: string): cargoFila[] {
+    // 1. Extraer los datos guardados en un Map para búsqueda rápida por id_cargo
+    const mapaGuardado = new Map<number, cargoFila>();
+
+    if (cadena && cadena.trim() !== '') {
+      const elementos = cadena.split('|').filter(item => item.trim() !== '');
+
+      elementos.forEach(item => {
+        const partes = item.split('/');
+        const id_cargo = parseInt(partes[0].trim(), 10);
+
+        if (!isNaN(id_cargo)) {
+          let porcentaje: number | null = null;
+          let parcial: number = 0;
+
+          if (partes.length === 3) {
+            porcentaje = partes[1].trim() !== '' ? parseFloat(partes[1].trim()) : null;
+            parcial = partes[2].trim() !== '' ? parseFloat(partes[2].trim()) : 0;
+          } else if (partes.length === 2) {
+            if (partes[1].trim() !== '') {
+              if (partes[1].includes('.')) {
+                porcentaje = parseFloat(partes[1].trim());
+              } else {
+                parcial = parseFloat(partes[1].trim());
+              }
+            }
+          }
+
+          mapaGuardado.set(id_cargo, { id_cargo, porcentaje, parcial });
+        }
+      });
+    }
+
+    // 2. Construir la lista final iterando STRICTAMENTE sobre this.cargosFiltradosPres
+    return this.cargosFiltradosPres.map(cargoRef => {
+      const idCargo = cargoRef.id_cargo || cargoRef.id;
+
+      if (mapaGuardado.has(idCargo)) {
+        // Si el cargo existía en el registro guardado, usamos los datos guardados
+        return mapaGuardado.get(idCargo)!;
+      } else {
+        // Si el cargo es nuevo y no existía guardado, se inicializa con 0/null
+        return {
+          id_cargo: idCargo,
+          porcentaje: null,
+          parcial: 0
+        };
+      }
+    });
   }
 
   convertirStringACargoFila(cadena: string): cargoFila[] {
@@ -5712,6 +5904,45 @@ export class ConfiguracionPlanillaComponent implements OnInit {
     } finally {
       this.mostrar_carga_todo = false;
     }
+  }
+
+  // Función auxiliar para convertir "HH:mm" a minutos totales
+  private timeToMinutes(timeStr: string): number {
+    if (!timeStr || timeStr === '--:--' || timeStr.trim() === '') return 0;
+    const parts = timeStr.split(':');
+    if (parts.length < 2) return 0;
+    const hours = parseInt(parts[0], 10);
+    const minutes = parseInt(parts[1], 10);
+    return (isNaN(hours) ? 0 : hours * 60) + (isNaN(minutes) ? 0 : minutes);
+  }
+
+  // Calcula el total trabajadas en un día específico (columna j)
+  calcularHorasPorDia(colIndex: number): string {
+    // j es el índice del día, en la matriz las columnas de horario corresponden a j+1
+    const j = colIndex + 1;
+
+    if (!this.tablaHorario || this.tablaHorario.length < 5) return '0 h';
+
+    // 1. Minutos turno mañana (Fila 1 - Fila 0)
+    const ingresoManana = this.timeToMinutes(this.tablaHorario[0]?.[j]);
+    const salidaManana = this.timeToMinutes(this.tablaHorario[1]?.[j]);
+    let minsManana = salidaManana - ingresoManana;
+    if (minsManana < 0) minsManana = 0;
+
+    // 2. Minutos turno tarde (Fila 4 - Fila 3)
+    const entradaTarde = this.timeToMinutes(this.tablaHorario[3]?.[j]);
+    const salidaTarde = this.timeToMinutes(this.tablaHorario[4]?.[j]);
+    let minsTarde = salidaTarde - entradaTarde;
+    if (minsTarde < 0) minsTarde = 0;
+
+    const totalMinutos = minsManana + minsTarde;
+
+    if (totalMinutos <= 0) return '0 h';
+
+    const horas = Math.floor(totalMinutos / 60);
+    const minutos = totalMinutos % 60;
+
+    return minutos > 0 ? `${horas}h ${minutos}m` : `${horas} h`;
   }
 }
 

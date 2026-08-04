@@ -272,6 +272,7 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
   @ViewChild("modalvinculo") modalvinculo: ModalBasicComponent;
   @ViewChild("modalPlanillaAprobada") modalPlanillaAprobada: ModalBasicComponent;
   @ViewChild("modalPlanillaVinculo") modalPlanillaVinculo: ModalBasicComponent;
+  @ViewChild("modalconfArea") modalconfArea: ModalBasicComponent;
   @ViewChild('tablaContainer') tablaContainer!: ElementRef;
   usuarioSeleccionado: any;
   filTabFil = null
@@ -319,6 +320,8 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
   sinPresAnalitico = false
   columnasFijasActivas: boolean = true;
   columnasFijasActivas2: boolean = true;
+  areaSeleccionadaM: any = null;
+  areasDetalle = null
   @Input() set tabproyecto(value: any) {
 
     this.idProyecto = value.get('id_proyecto').value;
@@ -499,6 +502,7 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
       this.mesesAcum = consolidado.consolidadoPorMeses?.map(ele => { return ele.mes_key })
       this.areasAcum = consolidado.areas
       this.cargosAcum = consolidado.cargos
+      this.areasDetalle = consolidado.areasDetalle
       this.consolidado = this.agregarEncabezadosArea(consolidado.consolidadoPorMeses);
       this.calendarioCompleto = consolidado.calendario
       this.mostrar_carga_todo = false
@@ -1266,7 +1270,7 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
       const areasAProcesar = this.areaSeleccionada
         ? this.areas.filter(a => a.id_area == this.areaSeleccionada)
         : this.areas;
-
+      this.mostrarSelColum = this.areaSeleccionada && this.cargoSeleccionada ? true : false
       for (const area of areasAProcesar) {
         let totalArea = 0;
         let areaGrupo: filaTabla[] = [];
@@ -7473,6 +7477,125 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
     return 'PENDIENTE';
   }
 
+  abrirModalConfigArea(row: any) {
+    const idArea = row.id_area || row.id;
+
+    // 1. Obtener la información del área
+    let areaDetalle = this.areasDetalle?.find((a: any) => (a.id_area || a.id) === idArea);
+
+    if (!areaDetalle) {
+      areaDetalle = {
+        id_area: idArea,
+        descripcion: row.area || row.descripcion,
+        monto: row.monto || {},
+        configuracion: row.configuracion || null
+      };
+    }
+
+    this.areaSeleccionadaM = JSON.parse(JSON.stringify(areaDetalle));
+
+    // 2. Referencia a la fuente de montos (Map anidado)
+    const fuenteMontos: Map<string, any> = areaDetalle.monto || row.monto;
+
+    // 3. Filtrar cargos correspondientes al área
+    const cargosDelArea = this.cargos?.filter((c: any) => c.id_area === idArea) || [];
+
+    this.areaSeleccionadaM.cargosArea = cargosDelArea.map((cargo: any) => {
+      const idCargo = cargo.id_cargo;
+      const cargoMapeado: any = {
+        ...cargo,
+        descripcion: cargo.descripcion || cargo.cargo
+      };
+
+      // 4. Recorrer las 5 categorías salariales para leer el monto específico del mapa anidado
+      [1, 2, 3, 4, 5].forEach((catNum) => {
+        const keyCategoria = `JORNAL CATEGORIA ${catNum}`;
+        let mapaInterno = fuenteMontos instanceof Map ? fuenteMontos.get(keyCategoria) : fuenteMontos?.[keyCategoria];
+
+        let montoCalculado = 0;
+
+        if (mapaInterno) {
+          // Evaluar si el mapa interno es un Map JS o un Objeto plano {}
+          if (mapaInterno instanceof Map) {
+            montoCalculado = mapaInterno.get(idCargo) ?? mapaInterno.get(Number(idCargo)) ?? 0;
+          } else if (typeof mapaInterno === 'object') {
+            montoCalculado = mapaInterno[idCargo] ?? mapaInterno[String(idCargo)] ?? 0;
+          }
+        }
+
+        // Asignar el valor a la propiedad parcial_cat_X
+        cargoMapeado[`parcial_cat_${catNum}`] = montoCalculado;
+      });
+
+      return cargoMapeado;
+    });
+
+    // 5. Procesar Descuentos y Bonificaciones
+    this.procesarDescuentosYBonos();
+
+    // 6. Abrir la Modal
+    this.modalconfArea.show();
+  }
+
+  private procesarDescuentosYBonos() {
+    if (this.areaSeleccionadaM?.configuracion?.descuentos) {
+      const rawDescuentos = this.areaSeleccionadaM.configuracion.descuentos;
+
+      if (typeof rawDescuentos === 'string') {
+        const valores = rawDescuentos.split('|');
+
+        const catalogoDescuentos = [
+          { codigo: 'A', descripcion: 'ASISTIO', influye: true },
+          { codigo: 'T', descripcion: 'TARDANZA', influye: true },
+          { codigo: 'TI', descripcion: 'TARDANZA INJUSTIFICADA', influye: true },
+          { codigo: 'TJ', descripcion: 'TARDANZA JUSTIFICADA', influye: true },
+          { codigo: 'F', descripcion: 'FALTA', influye: false },
+          { codigo: 'FI', descripcion: 'FALTA INJUSTIFICADA', influye: false },
+          { codigo: 'FJ', descripcion: 'FALTA JUSTIFICADA', influye: false },
+          { codigo: 'FM', descripcion: 'DESCANSO MEDICO', influye: false },
+          { codigo: 'FV', descripcion: 'VACACIONES', influye: false },
+          { codigo: 'PE', descripcion: 'PERMISO', influye: false },
+          { codigo: 'D1', descripcion: 'DESCUENTO OPCIONAL 1', influye: true },
+          { codigo: 'D2', descripcion: 'DESCUENTO OPCIONAL 2', influye: true },
+          { codigo: 'D3', descripcion: 'DESCUENTO OPCIONAL 3', influye: false }
+        ];
+
+        this.areaSeleccionadaM.configuracion.descuentosList = catalogoDescuentos.map((inc, idx) => {
+          const dctoVal = parseFloat(valores[idx]) || 0;
+          return {
+            codigo: inc.codigo,
+            descripcion: inc.descripcion,
+            influye: inc.influye,
+            porcentaje_descuento: dctoVal,
+            porcentaje_efectivo: 100 - dctoVal
+          };
+        });
+
+        const catalogoBonos = [
+          { codigo: 'BN', descripcion: 'BONO DOMINICAL', influye: false },
+          { codigo: 'BF', descripcion: 'BONO FERIADO', influye: false },
+          { codigo: 'B1', descripcion: 'BONO OPCIONAL 1', influye: true },
+          { codigo: 'B2', descripcion: 'BONO OPCIONAL 2', influye: true },
+          { codigo: 'B3', descripcion: 'BONO OPCIONAL 3', influye: false }
+        ];
+
+        this.areaSeleccionadaM.configuracion.bonificacionesList = catalogoBonos.map((bono, idx) => {
+          const bonoVal = parseFloat(valores[13 + idx]) || 0;
+          return {
+            codigo: bono.codigo,
+            descripcion: bono.descripcion,
+            influye: bono.influye,
+            porcentaje_bono: bonoVal,
+            porcentaje_efectivo: 100 + bonoVal
+          };
+        });
+      }
+    }
+  }
+
+  cerramodalConfArea() {
+    this.modalconfArea.hide();
+  }
 }
 
 
