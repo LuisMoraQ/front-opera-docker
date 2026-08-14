@@ -856,7 +856,7 @@ export class PrincipalService {
     const url = this.enviUrl + '/api/programacion/relInsPrograDetallado';
     return this.http.post<any>(url, formData).pipe(
       map(res => {
-  
+
         if (!res) {
           throw new Error
         }
@@ -1292,4 +1292,6 @@ export class PrincipalService {
       })
     ).toPromise();
   }
+
+
 }

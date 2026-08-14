@@ -817,7 +817,7 @@
                   <ng-container *ngIf="tipoSeleccionado == 'H-M'">Horas </ng-container> total dia
                 </div>
                 <input type="number" class="form-control form-control-sm" formControlName="horas_dia"
-                  (blur)="cambioHorasDia()" *ngIf="tipoSeleccionado == 'H-M' || tipoSeleccionado == 'DIA'">
+                  (change)="cambioHorasDia()" *ngIf="tipoSeleccionado == 'H-M' || tipoSeleccionado == 'DIA'">
                 <div class="fw-bold" *ngIf="tipoSeleccionado == 'H-M' || tipoSeleccionado == 'DIA'">Coste utilizado
                   <ng-container *ngIf="tipoSeleccionado == 'H-M' || tipoSeleccionado == 'DIA'">por
                     dia</ng-container>

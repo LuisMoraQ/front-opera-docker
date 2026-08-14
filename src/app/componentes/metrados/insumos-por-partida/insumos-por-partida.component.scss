@@ -1,9 +1,9 @@
 .h-contenedor {
-    height: calc(100dvh - 13rem);
+  height: calc(100dvh - 13rem);
 }
 
 .h-tabla-pres {
-    height: calc(100dvh - 18rem);
+  height: calc(100dvh - 18rem);
 }
 
 .mini-tabla {
@@ -19,6 +19,7 @@
   width: 40px;
   text-align: center;
 }
+
 .mini-tabla input {
   width: 35px;
   font-size: 10px;
@@ -29,4 +30,61 @@
 .diaSeleccionado {
   background-color: yellow !important;
   color: black !important;
+}
+
+.highlight {
+  background-color: #E1E1E1 !important;
+}
+
+.texto-truncado {
+  max-width: 250px;
+  /* Ajusta este valor al ancho máximo que desees */
+  white-space: nowrap;
+  /* Evita que el texto baje a una segunda línea */
+  overflow: hidden;
+  /* Oculta el sobrante */
+  text-overflow: ellipsis;
+  /* Muestra los tres puntos (...) */
+}
+
+/* Cabecera de Secciones (MANO DE OBRA, EQUIPO, etc.) */
+.fila-cabecera-grupo {
+  height: 22px !important;
+  max-height: 22px !important;
+  background-color: #e9ecef !important;
+  font-weight: bold !important;
+  font-size: 11px !important;
+  color: #212529;
+  text-transform: uppercase;
+}
+
+/* Reducción de padding interno en la cabecera */
+.fila-cabecera-grupo td {
+  padding: 0px 4px !important;
+  height: 22px !important;
+  line-height: 22px !important;
+  vertical-align: middle !important;
+}
+
+/* Filas de Detalle (No cabecera) */
+.fila-detalle td {
+  padding: 2px 4px !important;
+  vertical-align: middle !important;
+}
+
+/* Alineación a la izquierda explícita para la descripción */
+.text-left {
+  text-align: left !important;
+}
+
+.text-center {
+  text-align: center !important;
+}
+
+.sticky-foot {
+  position: sticky;
+  bottom: 0;
+  z-index: 5;
+  background-color: #ffffff;
+  border-top: 2px solid #ccc !important;
 }

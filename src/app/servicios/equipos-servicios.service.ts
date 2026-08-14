@@ -104,20 +104,20 @@ export class EquiposServiciosService {
     ).toPromise();
   }
 
- actualizarDesagregadoEquipo(params: any = {}): Promise<any> {
-  const url = this.enviUrl + '/api/equiposservicios/actualizarDesagregadoEquipo';
+  actualizarDesagregadoEquipo(params: any = {}): Promise<any> {
+    const url = this.enviUrl + '/api/equiposservicios/actualizarDesagregadoEquipo';
 
-  // Enviar el objeto JSON directo (sin FormData)
-  return this.http.post<any>(url, params).pipe(
-    map(res => {
-      if (!res) {
-        throw new Error('Respuesta vacía');
-      }
-      return res;
-    }),
-    catchError(err => throwError(() => err))
-  ).toPromise();
-}
+    // Enviar el objeto JSON directo (sin FormData)
+    return this.http.post<any>(url, params).pipe(
+      map(res => {
+        if (!res) {
+          throw new Error('Respuesta vacía');
+        }
+        return res;
+      }),
+      catchError(err => throwError(() => err))
+    ).toPromise();
+  }
 
   eliminarDesagregadoEquipo(params = {}): Promise<any> {
     let formData: FormData = new FormData();
@@ -224,6 +224,107 @@ export class EquiposServiciosService {
         console.error('Error en la petición:', err);
         return throwError(err);
       })
+    ).toPromise();
+  }
+
+  listadoDesagregadoEquipo(params = {}): Promise<any> {
+    let formData: FormData = new FormData();
+    Object.entries(params).forEach(([key, value]) => {
+      formData.append(key, value as string);
+    });
+
+    const url = this.enviUrl + '/api/equiposservicios/listadoDesagregadoEquipo';
+
+    return this.http.post<any>(url, formData).pipe(
+      map(res => {
+        if (!res) throw new Error();
+        return res;
+      }),
+      catchError(err => throwError(err))
+    ).toPromise();
+  }
+
+  guardarMovimientoSaldo(datos: any): Promise<any> {
+    const formData = new FormData();
+
+    formData.append('accion', datos.accion || '');
+    formData.append('id_reg', (datos.id_reg ?? 0).toString());
+    formData.append('indice', (datos.indice ?? 0).toString());
+    formData.append('tipo', (datos.tipo ?? 2).toString());
+    formData.append('fecha', datos.fecha || '');
+    formData.append('monto_registro', (datos.monto_registro ?? 0).toString());
+
+    // Campos para Tipo 2
+    formData.append('id_equipo', (datos.id_equipo ?? 0).toString());
+    formData.append('id_desagregado', (datos.id_desagregado ?? 0).toString());
+
+    // Campos para Tipo 3
+    formData.append('idregmov', (datos.idregmov ?? 0).toString());
+    formData.append('nrosalida', (datos.nrosalida ?? 0).toString());
+    formData.append('idsalida', (datos.idsalida ?? 0).toString());
+    formData.append('indrep', (datos.indrep ?? 0).toString());
+    formData.append('id_registro', (datos.id_registro ?? 0).toString());
+
+    formData.append('id_proyecto', (datos.id_proyecto ?? 0).toString());
+
+    const url = `${this.enviUrl}/api/equiposservicios/guardarMovimientoSaldo`;
+
+    return this.http.post<any>(url, formData).pipe(
+      map(res => res),
+      catchError(err => {
+        console.error('Error al procesar el saldo:', err);
+        return throwError(err);
+      })
+    ).toPromise();
+  }
+
+  listarRegistroMontoActividades(obj: { indice: number; fecha: string, id_proyecto: number }): Promise<any> {
+    const formData = new FormData();
+    formData.append('indice', (obj.indice || 0).toString());
+    formData.append('fecha', obj.fecha || '');
+    formData.append('id_proyecto', (obj.id_proyecto || 0).toString());
+    const url = `${this.enviUrl}/api/equiposservicios/listarRegistroMontoActividades`;
+
+    return this.http.post<any>(url, formData).pipe(
+      map(res => res),
+      catchError(err => {
+        console.error('Error al listar montos de actividades:', err);
+        return throwError(err);
+      })
+    ).toPromise();
+  }
+
+  listarAcuePartida(params = {}): Promise<any> {
+    let formData: FormData = new FormData();
+    Object.entries(params).forEach(([key, value]) => {
+      formData.append(key, value as string);
+    });
+
+    const url = this.enviUrl + '/api/equiposservicios/listarAcuePartida';
+
+    return this.http.post<any>(url, formData).pipe(
+      map(res => {
+        if (!res) throw new Error();
+        return res;
+      }),
+      catchError(err => throwError(err))
+    ).toPromise();
+  }
+
+  listarAcuePartidaAnteriores(params = {}): Promise<any> {
+    let formData: FormData = new FormData();
+    Object.entries(params).forEach(([key, value]) => {
+      formData.append(key, value as string);
+    });
+
+    const url = this.enviUrl + '/api/equiposservicios/listarAcuePartidaAnteriores';
+
+    return this.http.post<any>(url, formData).pipe(
+      map(res => {
+        if (!res) throw new Error();
+        return res;
+      }),
+      catchError(err => throwError(err))
     ).toPromise();
   }
 }

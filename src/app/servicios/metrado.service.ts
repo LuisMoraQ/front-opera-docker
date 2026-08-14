@@ -1071,4 +1071,51 @@ export class MetradoService {
       catchError(err => throwError(err))
     ).toPromise();
   }
+
+  listarPresupuestoActiv(params = {}): Promise<any> {
+    let formData: FormData = new FormData();
+
+    Object.entries(params).forEach(([key, value]) => {
+
+      formData.append(key, value as string);
+
+    });
+
+    const url = this.enviUrl + '/api/metrados/listarPresupuestoActiv';
+
+    return this.http.post<any>(url, formData).pipe(
+      map(res => {
+        if (!res) {
+          throw new Error("No se pudo obtener la información.");
+        }
+        return res;
+      }),
+      catchError(err => throwError(err))
+    ).toPromise();
+  }
+
+  listarCalendarioRegistroActividades(params: { id_proyecto: string; anio_mes: string }): Promise<any> {
+    let formData: FormData = new FormData();
+    Object.entries(params).forEach(([key, value]) => formData.append(key, value as string));
+
+    const url = this.enviUrl + '/api/metrados/listarCalendarioRegistroActividades';
+    return this.http.post<any>(url, formData).toPromise();
+  }
+
+  listarJornada(params: { id_proyecto: any; fecha?: any }): Promise<any> {
+    let formData: FormData = new FormData();
+    Object.entries(params).forEach(([key, value]) => {
+      formData.append(key, value as string);
+    });
+    const url = this.enviUrl + '/api/metrados/listarJornada';
+
+
+    return this.http.post<any>(url, formData).pipe(
+      map(res => {
+        if (!res) throw new Error('Sin respuesta');
+        return res;
+      }),
+      catchError(err => throwError(() => err))
+    ).toPromise();
+  }
 }
