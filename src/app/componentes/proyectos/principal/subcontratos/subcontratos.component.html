@@ -1,0 +1,1391 @@
+<app-cargando [bloquearTodo]="true" *ngIf="mostrar_carga_todo"></app-cargando>
+<div id="divbut" style="width: calc(100% - 58px);margin-left:44px" class="hidescroll m-b-10">
+    <span *ngIf="scrollbut" class="icscrol-l" (click)="rigthDivBut()"><i
+            class="icofont icofont-caret-left icono-but"></i></span>
+    <div class="row" style="width: 805px;margin-right: 0px;margin-left: 0px;">
+        <button class="btn btn-sm btn-outline-secondary btn-menu-top" type="button" (mouseup)="quitarfoco($event)"
+            (click)="cambioVista(1)" style="padding: 4px 8px" [ngClass]="{ 'btn-custom-active': subvista == 1 }">
+            <i class="fa fa-list"></i> PANEL SUBCONTRATOS Y OTROS
+        </button>
+        <button class="btn btn-sm btn-outline-secondary btn-menu-top" type="button" (mouseup)="quitarfoco($event)"
+            style="padding: 4px 8px" (click)="cambioVista(2)" [ngClass]="{ 'btn-custom-active': subvista == 2 }">
+            <i class="fa fa-list"></i> RELACION REQUERIMIENTO
+        </button>
+        <button class="btn btn-sm btn-outline-secondary btn-menu-top" type="button" (mouseup)="quitarfoco($event)"
+            style="padding: 4px 8px" (click)="cambioVista(3)" [ngClass]="{ 'btn-custom-active': subvista == 3 }">
+            <i class="fa fa-list"></i> PLANILLAS SUBCONTRATOS Y OTROS
+        </button>
+    </div>
+    <span *ngIf="scrollbut" class="icscrol-r" (click)="leftDivBut()"><i
+            class="icofont icofont-caret-right icono-but"></i></span>
+</div>
+
+<div class="h-contenedor d-flex">
+    <ng-container *ngIf="subvista == 1">
+        <div class="row h-100 m-0">
+
+            <!-- COLUMNA IZQUIERDA -->
+            <div class="col-6 px-0 h-100">
+                <mat-form-field appearance="outline" class="mff-reduc col-12">
+                    <mat-label>REGISTRO</mat-label>
+                    <mat-select [(ngModel)]="id_registro" (ngModelChange)="this.cambioDataRegistro()">
+                        <mat-option *ngFor="let registro of listaRegistros; let i=index" [value]="registro.id_registro">
+                            {{registro.detalle}}
+                        </mat-option>
+
+                    </mat-select>
+                </mat-form-field>
+                <div class="row  m-0 d-flex flex-column" style="height: calc(100% - 4rem);">
+
+                    <div class="col-12 px-0 overflow-auto flex-fill">
+                        <h4>REGISTRO DE ACTIVIDADES QUE VINCULAN LOS RECURSOS</h4>
+                        <table class="table-bordered tab-9">
+                            <table class="table-bordered tab-9">
+                                <thead class="headsticky text-center">
+                                    <tr>
+                                        <th appAnchocol [ancho]="35" rowspan="2"></th>
+                                        <th colspan="1"></th>
+                                        <th colspan="5">Presupuesto</th>
+                                        <th colspan="2">Variacion Presupuestal</th>
+                                        <!-- <th appAnchocol [ancho]="80" rowspan="2">Estado</th> -->
+                                    </tr>
+                                    <tr>
+
+                                        <th appAnchocol [ancho]="200" [detalle]="true">Detalle Requerimiento</th>
+                                        <th appAnchocol [ancho]="35">Tipo Gasto</th>
+                                        <th appAnchocol [ancho]="60">Estado</th>
+                                        <th appAnchocol [ancho]="60">Exp.Tecnico</th>
+                                        <th appAnchocol [ancho]="78">Requerimiento</th>
+                                        <th appAnchocol [ancho]="42">Pres. Ejecutado</th>
+                                        <th appAnchocol [ancho]="42">Saldo</th>
+                                        <th appAnchocol [ancho]="42">%</th>
+
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <ng-container *ngIf="tablaRegActividades.length;else notablaRegActividades">
+                                        <tr *ngFor="let row of tablaRegActividades; let i = index"
+                                            (click)="selTablaRegAct(row,i)"
+                                            [ngClass]="{'highlight':this.filSelRegAct == i}">
+                                            <td class="text-center">{{i+1}}</td>
+                                            <td appAnchocol [ancho]="200" [detalle]="true">
+                                                <div class="recortatext1l" placement="top"
+                                                    ngbTooltip="{{row.descripcion}}" container="body">
+                                                    {{row.descripcion}}
+                                                </div>
+                                            </td>
+                                            <td class="text-center">{{row.tipo ? row.tipo: 'CD'}}</td>
+                                            <td class="text-center">
+                                                <label *ngIf="row.estado==0" class="label label-est"
+                                                    style="background-color: 'darkorange';">Borrador</label>
+                                                <label *ngIf="row.estado==1"
+                                                    class="label label-info label-est">Requerimiento</label>
+                                                <label *ngIf="row.estado==3"
+                                                    class="label label-primary label-est">Cotización</label>
+                                                <label *ngIf="row.estado==2" class="label label-success label-est">Orden
+                                                    Atención</label>
+                                            </td>
+                                            <td>
+                                                <div class="w-100 d-flex justify-content-between ">
+                                                    <div style="opacity: 0.6;">S/.</div>
+                                                    <div>{{row.parcial | number:'0.2-2'}}</div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="w-100 d-flex justify-content-between ">
+                                                    <div style="opacity: 0.6;">S/.</div>
+                                                    <div>{{row.reqsol | number:'0.2-2'}}</div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="w-100 d-flex justify-content-between ">
+                                                    <div style="opacity: 0.6;">S/.</div>
+                                                    <div>{{row.presupuestoEjecutado | number:'0.2-2'}}</div>
+                                                </div>
+                                            </td>
+                                            <td>
+
+                                                <div class="w-100 d-flex justify-content-between ">
+                                                    <div style="opacity: 0.6;">S/.</div>
+                                                    <div>{{row.saldo | number:'0.2-2'}}</div>
+                                                </div>
+                                            </td>
+                                            <td class="text-right" [class.text-success]="row.porcentaje >= 0"
+                                                [class.text-danger]="row.porcentaje < 0">
+                                                {{ row.porcentaje | number:'0.2-2' }}%
+                                            </td>
+                                            <!-- <td>{{row.estado}}</td> -->
+                                        </tr>
+                                    </ng-container>
+                                    <ng-template #notablaRegActividades>
+                                        <tr class="h-celda">
+                                            <td class="mat-cell text-center" colspan="9">
+                                                <label *ngIf="!buscando3">No se encontraron resultados</label>
+                                                <div *ngIf="buscando3" class="preloader3 loader-block">
+                                                    <div class="circ1"></div>
+                                                    <div class="circ2"></div>
+                                                    <div class="circ3"></div>
+                                                    <div class="circ4"></div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </ng-template>
+                                </tbody>
+                            </table>
+                        </table>
+                    </div>
+
+                    <div class="col-12 px-0 overflow-auto flex-fill">
+                        <h4>DESAGREGADO DEL REQUERIMIENTO</h4>
+                        <table class="table-bordered tab-9">
+                            <table class="table-bordered tab-9">
+                                <thead class="headsticky text-center">
+                                    <tr>
+                                        <th appAnchocol [ancho]="35" rowspan="2">Item</th>
+                                        <th appAnchocol [ancho]="200" [detalle]="true" rowspan="2">Detalle Requerimiento
+                                        </th>
+                                        <th appAnchocol [ancho]="50" rowspan="2">Unidad</th>
+                                        <th colspan="3"> Detalle Solicitado</th>
+                                        <th colspan="3"> Recurso Utilizado</th>
+                                        <th appAnchocol [ancho]="80" rowspan="2">Saldo</th>
+                                        <th appAnchocol [ancho]="80" rowspan="2">Indicador</th>
+
+                                    </tr>
+                                    <tr>
+
+
+                                        <th appAnchocol [ancho]="80">Cantidad</th>
+                                        <th appAnchocol [ancho]="90">PU</th>
+                                        <th appAnchocol [ancho]="90">Parcial</th>
+                                        <th appAnchocol [ancho]="80">Cantidad</th>
+                                        <th appAnchocol [ancho]="90">PU</th>
+                                        <th appAnchocol [ancho]="90">Parcial</th>
+
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <ng-container *ngIf="tablaRequerimientos.length;else notablaRequerimientos">
+                                        <tr *ngFor="let row of tablaRequerimientos; let i = index"
+                                            (click)="selTablaReq(row,i)" [ngClass]="{'highlight':this.filSelReq == i}">
+                                            <td class="text-center">{{'E-'+row.idfila}}</td>
+                                            <td [ngbTooltip]="row.descripcion" container="body" appAnchocol
+                                                [ancho]="200">
+                                                <div
+                                                    style=" overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                                                    {{row.descripcion}}
+                                                </div>
+                                            </td>
+                                            <td class="text-center">{{row.unidad}}</td>
+                                            <td class="text-center">{{row.cantidad | number:'0.2-2'}}</td>
+                                            <td>
+                                                <div class="w-100 d-flex justify-content-between ">
+                                                    <div style="opacity: 0.6;">S/.</div>
+                                                    <div>{{row.precio | number:'0.2-2'}}</div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="w-100 d-flex justify-content-between ">
+                                                    <div style="opacity: 0.6;">S/.</div>
+                                                    <div>{{row.parcial | number:'0.2-2'}}</div>
+                                                </div>
+                                            </td>
+                                            <td class="text-center">
+                                                <div
+                                                    *ngIf="row.cantidad_usada == null && (row.todos_iguales == null || row.todos_iguales == false); else cantidadNormal">
+                                                    <i class="fa fa-minus text-danger"></i>
+                                                </div>
+                                                <ng-template #cantidadNormal>
+                                                    {{row.cantidad_usada | number:'0.2-2'}}
+                                                </ng-template>
+                                            </td>
+
+                                            <td>
+                                                <div class="text-center"
+                                                    *ngIf="row.cantidad_usada == null && (row.todos_iguales == null || row.todos_iguales == false); else precioNormal">
+                                                    <!-- <div class="w-100 d-flex justify-content-between"> -->
+                                                    <!-- <div style="opacity: 0.6;">S/.</div> -->
+                                                    <div><i class="fa fa-minus text-danger"></i></div>
+                                                    <!-- </div> -->
+                                                </div>
+                                                <ng-template #precioNormal>
+                                                    <div class="w-100 d-flex justify-content-between">
+                                                        <div style="opacity: 0.6;">S/.</div>
+                                                        <div>{{row.precio_usada | number:'0.2-2'}}</div>
+                                                    </div>
+                                                </ng-template>
+                                            </td>
+
+                                            <td>
+                                                <div class="w-100 d-flex justify-content-between">
+                                                    <div style="opacity: 0.6;">S/.</div>
+                                                    <div>{{row.parcial_usada | number:'0.2-2'}}</div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="w-100 d-flex justify-content-between font-weight-bolder"
+                                                    [ngClass]="{'text-danger':row.saldo <0 , 'text-primary':row.saldo >=0}">
+                                                    <div style="opacity: 0.6;">S/.</div>
+                                                    <div>{{row.saldo | number:'0.2-2'}}</div>
+                                                </div>
+                                            </td>
+                                            <td class="text-center">
+                                                <!-- {{row.indicador}} -->
+                                                <span class="badge bg-success pos-badge" style="padding-top: 4px;"
+                                                    *ngIf="row.estado == 1">EJECUCION</span>
+                                                <span class="badge bg-danger pos-badge" style="padding-top: 4px;"
+                                                    *ngIf="row.estado == 2">CULMINADO</span>
+                                            </td>
+
+                                        </tr>
+                                    </ng-container>
+                                    <ng-template #notablaRequerimientos>
+                                        <tr class="h-celda">
+                                            <td class="mat-cell text-center" colspan="9">
+                                                <label *ngIf="!buscando3">No se encontraron resultados</label>
+                                                <div *ngIf="buscando3" class="preloader3 loader-block">
+                                                    <div class="circ1"></div>
+                                                    <div class="circ2"></div>
+                                                    <div class="circ3"></div>
+                                                    <div class="circ4"></div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </ng-template>
+                                </tbody>
+                            </table>
+                        </table>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- COLUMNA DERECHA -->
+            <div class="col-6 px-0 h-100">
+
+                <div class="row  m-0 d-flex">
+
+                    <div class="col-12  h-acciones d-flex ">
+
+                        <button class="btn btn-mini btn-group-mini btn-outline-primary d-flex"
+                            (click)="abrirModalSubcontrato()"
+                            *ngIf="filSelRegAct !== null && this.tablaRegActividades[this.filSelRegAct]?.estado == 2">
+                            <i class="fa fa-plus icono-but" aria-hidden="true"></i>Subcontrato
+                        </button>
+
+                    </div>
+
+                    <div class="col-12  overflow-auto">
+                        <table class="table-bordered tab-9">
+                            <thead class="headsticky text-center">
+                                <tr>
+                                    <th appAnchocol [ancho]="35" rowspan="2">
+                                        <div class="w-100" style="cursor: pointer;" (click)="toggleTodo()"
+                                            title="Expandir/Contraer todos">
+                                            <a *ngIf="todosExpandidos" style="color:red; width: 14px;">
+                                                <i class="icofont icofont-caret-up"></i>
+                                            </a>
+                                            <a *ngIf="!todosExpandidos" style="color:#06bb06; width: 14px;">
+                                                <i class="icofont icofont-caret-down"></i>
+                                            </a>
+                                        </div>
+                                    </th>
+                                    <th appAnchocol [ancho]="200" [detalle]="true" rowspan="2">Descripcion subcontrato
+                                    </th>
+                                    <!-- <th appAnchocol [ancho]="50" rowspan="2">Placa Serie</th> -->
+                                    <!-- <th appAnchocol [ancho]="80" rowspan="2"> Fecha Solicitada</th> -->
+                                    <th appAnchocol [ancho]="50" rowspan="2">Unidad</th>
+                                    <th appAnchocol [ancho]="50" rowspan="2">Cant Req.</th>
+                                    <th colspan="3"> Registro de subcontrato utilizado</th>
+                                    <th appAnchocol [ancho]="80" rowspan="2">Estado</th>
+                                    <th appAnchocol [ancho]="50" rowspan="2" *ngIf="filSelRegAct !== null"></th>
+                                </tr>
+                                <tr>
+
+
+                                    <th appAnchocol [ancho]="70">Cantidad</th>
+                                    <th appAnchocol [ancho]="70">PU</th>
+                                    <th appAnchocol [ancho]="70">Parcial</th>
+
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <ng-container *ngIf="tablaSubcontratos.length; else notablaSubcontratos">
+                                    <tr *ngFor="let row of tablaSubcontratos; let i = index"
+                                        (click)="selTablaServ(row,i)"
+                                        [ngClass]="{'highlight':this.filSelSubc == i, 'font-weight-bolder':row.index_elemento==0}"
+                                        [hidden]="!row.visible">
+
+                                        <td class="text-center">
+                                            <ng-container *ngIf="row.index_elemento!==0; else servicio">{{'E-'+
+                                                row.id_fila}}</ng-container>
+                                            <ng-template #servicio>
+                                                <div class="w-100" style="cursor: pointer;"
+                                                    (click)="row.icomost == '0' ? toggleOn(row, i) : toggleOff(row, i)">
+                                                    <a *ngIf="row.icomost == '0'" style="color:#06bb06; width: 14px;">
+                                                        <i class="icofont icofont-caret-down"></i>
+                                                    </a>
+                                                    <a *ngIf="row.icomost == '1'" style="color:red; width: 14px;">
+                                                        <i class="icofont icofont-caret-up"></i>
+                                                    </a>
+                                                </div>
+                                            </ng-template>
+                                        </td>
+                                        <td [ngbTooltip]="row.descripcion" container="body" appAnchocol [ancho]="200">
+                                            <div
+                                                style=" overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                                                {{row.descripcion}}
+                                            </div>
+                                        </td>
+                                        <!-- <td class="text-center">{{row.placa}}</td> -->
+                                        <!-- <td class="text-center">{{row.fecha_solicitud | date:'dd-MM-yyyy'}}</td> -->
+                                        <td class="text-center">{{row.unidad}}</td>
+                                        <td class="text-right">
+                                            <ng-container *ngIf="row.index_elemento!==0">
+                                                {{row.cantidad | number:'0.2-2'}}
+                                            </ng-container>
+                                        </td>
+                                        <td class="text-center">
+                                            <ng-container *ngIf="row.index_elemento!==0">
+                                                {{row.tiempo_registrado | number:'0.2-2'}}
+                                            </ng-container>
+
+                                        </td>
+                                        <td>
+                                            <div class="w-100 d-flex justify-content-between "
+                                                *ngIf="row.index_elemento!==0">
+                                                <div style="opacity: 0.6;">S/.</div>
+                                                <div>{{row.precio_unitario | number:'0.2-2'}}</div>
+                                            </div>
+
+                                        </td>
+                                        <td>
+                                            <div class="w-100 d-flex justify-content-between ">
+                                                <div style="opacity: 0.6;">S/.</div>
+                                                <div>
+                                                    <ng-container *ngIf="row.index_elemento!==0; else TotalSum">
+                                                        {{row.total_registrado | number:'0.2-2'}}
+                                                    </ng-container>
+                                                    <ng-template #TotalSum>
+                                                        {{calcularSum(row,i) | number:'0.2-2'}}
+                                                    </ng-template>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="text-center"> <span class="badge bg-success pos-badge"
+                                                style="padding-top: 4px;" *ngIf="row.estado == 1">EJECUCION</span>
+                                            <span class="badge bg-warning pos-badge" style="padding-top: 4px;"
+                                                *ngIf="row.estado == 2">CULMINADO</span>
+                                        </td>
+                                        <td *ngIf="filSelRegAct !== null" class="text-center">
+                                            <ng-container
+                                                *ngIf=" this.tablaRegActividades[this.filSelRegAct]?.estado == 2">
+                                                <button class="btn btn-mini2 btn-success" placement="top"
+                                                    ngbTooltip="agregar" container="body"
+                                                    *ngIf="row.index_elemento == 0" (click)="abrirModalSubcontratos()"
+                                                    (mouseup)="quitarfoco($event);">
+                                                    <i class="fa fa-plus icono-but"></i>
+                                                </button>
+                                                <button class="btn btn-mini2 btn-secondary" placement="top"
+                                                    ngbTooltip="editar" container="body" *ngIf="row.index_elemento == 0"
+                                                    (click)="abrirModalSubcontratos(row)"
+                                                    (mouseup)="quitarfoco($event);">
+                                                    <i class="fa fa-edit icono-but"></i>
+                                                </button>
+                                                <button class="btn btn-mini2 btn-danger" placement="top"
+                                                    ngbTooltip="eliminar" container="body"
+                                                    *ngIf="row.index_elemento == 0" (click)="eliminarGrupo(row, i)"
+                                                    (mouseup)="quitarfoco($event);">
+                                                    <i class="fa fa-trash icono-but"></i>
+                                                </button>
+                                                <button class="btn btn-mini2 btn-info" placement="top"
+                                                    ngbTooltip="editar estado" container="body"
+                                                    *ngIf="row.index_elemento !== 0" (click)="abrirModalEstado(row, i)"
+                                                    (mouseup)="quitarfoco($event);">
+                                                    <i class="fa fa-check icono-but"></i>
+                                                </button>
+                                            </ng-container>
+                                        </td>
+                                    </tr>
+                                </ng-container>
+                                <ng-template #notablaSubcontratos>
+                                    <tr class="h-celda">
+                                        <td class="mat-cell text-center" colspan="8">
+                                            <label *ngIf="!buscando3">No se encontraron resultados</label>
+                                            <div *ngIf="buscando3" class="preloader3 loader-block">
+                                                <div class="circ1"></div>
+                                                <div class="circ2"></div>
+                                                <div class="circ3"></div>
+                                                <div class="circ4"></div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </ng-template>
+                            </tbody>
+                        </table>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </ng-container>
+    <ng-container *ngIf="subvista == 2">
+        <div class="h-100 m-0  px-3 w-100">
+            <div class="col-12 d-flex px-0">
+                <mat-form-field appearance="outline" class="mff-reduc col-2">
+                    <mat-label>Mes</mat-label>
+                    <mat-select [(ngModel)]="mesSeleccionado" (ngModelChange)="cambioMes()">
+                        <mat-option *ngFor="let mes of calendario; let i=index" [value]="i">
+                            {{mes.mes_nombre}} - {{mes.anio}}
+                        </mat-option>
+
+                    </mat-select>
+                </mat-form-field>
+                <mat-form-field appearance="outline" class="mff-reduc col-3">
+                    <mat-label>Requerimiento</mat-label>
+                    <mat-select [(ngModel)]="grupoSeleccionado" (ngModelChange)="cambioArea()">
+                        <mat-option [value]="''">Todos</mat-option>
+                        <mat-option *ngFor="let grupo of tablaRegActividades; let i = index" [value]="i">
+                            {{grupo.descripcion}}
+                        </mat-option>
+
+                    </mat-select>
+                </mat-form-field>
+                <div class="col-2">
+                    <label>Ver Detalle :</label>
+                    <div class="switch switch-primary d-inline m-r-10" style="margin-left: 10px;">
+                        <input type="checkbox" id="switch-p-1" [checked]="verDetalle ? true : false"
+                            (change)="onVerDetalleChange()">
+                        <label for="switch-p-1" class="cr"></label>
+                    </div>
+                </div>
+                <mat-form-field appearance="outline" class="mff-reduc col-2" *ngIf="verDetalle">
+                    <mat-label>Detalle</mat-label>
+                    <mat-select [(ngModel)]="verDetalle" (ngModelChange)="cambioDetalle()">
+                        <!-- <mat-option [value]="''">Ocultar</mat-option> -->
+                        <mat-option [value]="'desagregado'">Registro informacion</mat-option>
+                        <mat-option [value]="'mensual'">Resumen menual</mat-option>
+                    </mat-select>
+                </mat-form-field>
+                <div class="col-2">
+                    <label>Columna Estatica :</label>
+                    <div class="switch switch-primary d-inline m-r-10" style="margin-left: 10px;">
+                        <input type="checkbox" id="switch-p-2" [(ngModel)]='columnasEstatica'>
+                        <label for="switch-p-2" class="cr"></label>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 px-0">
+                <div class=" overflow-auto"
+                    [ngClass]="{'tabla-plantilla': this.verDetalle , 'tabla-plantilla-completo':!this.verDetalle }">
+                    <table class="table-bordered tab-10">
+                        <thead class="text-center headsticky">
+                            <tr [ngClass]="{'h-22': !calendarioFiltrado?.dias.length }">
+                                <th rowspan="2" appAnchocol [ancho]="40" [ngClass]="{'static1h': columnasEstatica}">
+                                    <div class="w-100" style="cursor: pointer;" (click)="toggleTodoNueva()"
+                                        title="Expandir/Contraer todos">
+                                        <a *ngIf="todosExpandidosNueva" style="color:red; width: 14px;">
+                                            <i class="icofont icofont-caret-up"></i>
+                                        </a>
+                                        <a *ngIf="!todosExpandidosNueva" style="color:#06bb06; width: 14px;">
+                                            <i class="icofont icofont-caret-down"></i>
+                                        </a>
+                                    </div>
+                                </th>
+                                <th rowspan="2" appAnchocol [ancho]="250" [ngClass]="{'static2h': columnasEstatica}">
+                                    MAQUINARIA Y EQUIPO</th>
+                                <!-- <th rowspan="2" appAnchocol [ancho]="60">MODELO</th> -->
+                                <!-- <th rowspan="2" appAnchocol [ancho]="80">TIPO REGISTRO</th> -->
+                                <th rowspan="2" appAnchocol [ancho]="60">UNIDAD </th>
+                                <ng-container *ngIf="calendarioFiltrado">
+                                    <th [colSpan]="calendarioFiltrado?.total_dias" class="mes-header">
+                                        {{calendarioFiltrado?.mes_display}}
+                                    </th>
+                                </ng-container>
+
+                                <th rowspan="2" appAnchocol [ancho]="60">TOTAL HM</th>
+                                <th rowspan="2" appAnchocol [ancho]="80">P.U.</th>
+                                <th rowspan="2" appAnchocol [ancho]="90">PARCIAL</th>
+                                <th rowspan="2" appAnchocol [ancho]="80">ESTADO</th>
+                            </tr>
+
+                            <tr>
+
+                                <ng-container *ngFor="let dia of calendarioFiltrado?.dias">
+                                    <!-- <ng-container *ngFor="let dia of mes.dias"> -->
+                                    <th class="dia-header" [ngClass]="{
+                            'laborable': dia.es_laborable,
+                            'no-laborable': !dia.es_laborable,
+                            'feriado': dia.feriado
+                        }" appAnchocol [ancho]="45">
+                                        <div class="dia-numero">{{dia.dia_numero}}</div>
+                                        <div class="dia-abreviatura">{{dia.dia_semana_corto}}</div>
+                                    </th>
+                                    <!-- </ng-container> -->
+                                </ng-container>
+
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <ng-container *ngIf="tablaPlanilla.length; else elseTemplate">
+                                <tr *ngFor="let row of this.tablaPlanilla; let i = index"
+                                    [ngClass]="{'font-weight-bolder':row.item == 0, 'highlight3': selFilPlan == i ,'cabecera-bg':row.item == 0}"
+                                    (click)="seleccionFilaPlanrow(row,i)" [hidden]="!row.visible">
+                                    <td class="text-center"
+                                        [ngClass]="{'static1 ': columnasEstatica, 'bg-white':row.item !== 0 && columnasEstatica}">
+                                        <ng-container *ngIf="row.item !== 0; else toggleButton">
+                                            {{row.item}}
+                                        </ng-container>
+                                        <ng-template #toggleButton>
+                                            <div class="w-100" style="cursor: pointer;"
+                                                (click)="row.icomost == '0' ? toggleOnNueva(row, i) : toggleOffNueva(row, i)">
+                                                <a *ngIf="row.icomost == '0'" style="color:#06bb06; width: 14px;">
+                                                    <i class="icofont icofont-caret-down"></i>
+                                                </a>
+                                                <a *ngIf="row.icomost == '1'" style="color:red; width: 14px;">
+                                                    <i class="icofont icofont-caret-up"></i>
+                                                </a>
+                                            </div>
+                                        </ng-template>
+                                    </td>
+                                    <td [ngClass]="{'static2 ': columnasEstatica, 'bg-white':row.item !== 0 && columnasEstatica}"
+                                        appAnchocol [ancho]="250">
+
+                                        <div class="recortatext1l" placement="top" ngbTooltip="{{row.descripcion}}"
+                                            container="body">
+                                            {{row.descripcion}}
+                                        </div>
+                                    </td>
+                                    <!-- <td>{{row.placa}}</td> -->
+                                    <td class="text-center">{{row.unidad}}</td>
+                                    <!-- <td class="text-center">{{row.tipo}}</td> -->
+                                    <ng-container *ngIf="row.item !== 0; else cabecera">
+                                        <ng-container *ngIf="row.tipo !=='GLOBAL' && row.tipo !== 'MES'">
+                                            <td class="text-center" *ngFor="let dia of row.planilla;let j = index"
+                                                [ngClass]="{'bg-info': i === celdaSel[0] && j === celdaSel[1] }"
+                                                (click)="seleccionCelda(i,j)">
+                                                <ng-container *ngIf="dia?.horas_dia">{{dia.horas_dia |
+                                                    number:'0.2-2'}}</ng-container>
+                                            </td>
+                                        </ng-container>
+                                        <ng-container *ngIf="row.tipo == 'GLOBAL' || row.tipo == 'MES'">
+                                            <td class="text-center" *ngFor="let dia of row.arrayMes; let j = index"
+                                                [ngClass]="{
+        'celda-global-fecha': esFechaGlobalRegistrada(row, calendarioFiltrado?.dias[j])
+      }">
+                                                <!-- Muestra el número SOLO si 'dia' tiene un valor mayor a 0 -->
+                                                <ng-container *ngIf="dia && dia > 0">{{ dia }}</ng-container>
+                                            </td>
+                                        </ng-container>
+                                    </ng-container>
+                                    <ng-template #cabecera>
+                                        <td [colSpan]="calendarioFiltrado?.total_dias">
+
+                                        </td>
+                                    </ng-template>
+                                    <td class="text-center">{{row.total_hm | number:'0.2-2'}}</td>
+                                    <td class="text-right">
+                                        <ng-container *ngIf="row.item !== 0">
+                                            <span class="float-left text-muted">S/</span>
+                                            <span class="float-right"> {{row.precio_unitario | number:'0.2-2'}}</span>
+                                        </ng-container>
+                                    </td>
+                                    <td>
+                                        <ng-container *ngIf="row.item !== 0">
+                                            <span class="float-left text-muted">S/</span>
+                                            <span class="float-right">
+                                                <ng-container *ngIf="row.tipo !== 'GLOBAL'; else tipGlob">
+                                                    {{row.parcial | number:'0.2-2'}}
+                                                </ng-container>
+                                                <ng-template #tipGlob>
+                                                    {{row.total_registrado | number:'0.2-2'}}
+                                                </ng-template>
+                                            </span>
+                                        </ng-container>
+                                    </td>
+                                    <td class="text-center">
+                                        <!-- {{row.estado}} -->
+                                        <span class="badge bg-success pos-badge" style="padding-top: 4px;"
+                                            *ngIf="row.estado == 1">EJECUCION</span>
+                                        <span class="badge bg-danger pos-badge" style="padding-top: 4px;"
+                                            *ngIf="row.estado == 2">CULMINADO</span>
+                                    </td>
+                                </tr>
+                            </ng-container>
+                            <ng-template #elseTemplate>
+                                <tr class="h-celda">
+                                    <td class="mat-cell text-center" colspan="8">
+                                        <label *ngIf="!buscando3">No se encontraron resultados</label>
+                                        <div *ngIf="buscando3" class="preloader3 loader-block">
+                                            <div class="circ1"></div>
+                                            <div class="circ2"></div>
+                                            <div class="circ3"></div>
+                                            <div class="circ4"></div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </ng-template>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="contenedor-desagregado row" [formGroup]="formDesagregado" *ngIf="verDetalle">
+                    <ng-container *ngIf="!buscando; else buscandoData">
+                        <ng-container *ngIf="verDetalle == 'desagregado'">
+                            <div class="col-12 d-flex justify-content-between">
+                                <div class="col">
+                                    <h6 class="fw-bold">REGISTRO DESAGREGADO DE EQUIPO <ng-container
+                                            *ngIf="celdaSel[1] !== null">-
+                                            {{calendarioFiltrado?.dias[celdaSel[1]]?.fecha_display}}</ng-container></h6>
+                                </div>
+
+                                <div class="col d-flex justify-content-end pr-0">
+                                    <button type="button" class="btn btn-mini2 btn-danger d-flex" placement="top"
+                                        *ngIf="id_desagregado.value && tablaPlanilla[selFilPlan]?.estado == 1"
+                                        (click)="eliminarDesagregado()" ngbTooltip="Eliminar Registro"
+                                        (mouseup)="quitarfoco($event)" container="body">
+                                        <i class="fa fa-trash icono-but"></i> Eliminar
+                                    </button>
+                                    <button type="button" class="btn btn-mini2  d-flex" placement="top"
+                                        *ngIf="tablaPlanilla[selFilPlan]?.estado == 1"
+                                        [ngClass]="{'btn-warning': id_desagregado.value, 'btn-success': !id_desagregado.value}"
+                                        (click)="guardarActualizarCambiosDesagregado()" ngbTooltip="Guardar cambios"
+                                        (mouseup)="quitarfoco($event)" container="body">
+                                        <i class="fa fa-save icono-but"></i> <ng-container
+                                            *ngIf="id_desagregado.value">Actualizar</ng-container>
+                                        <ng-container *ngIf="!id_desagregado.value">Guardar</ng-container>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- COLUMNA 1: Datos Generales -->
+                            <div class="col-2 h-100">
+                                <div class="fw-bold">Orden Generada</div>
+                                <input type="text" class="form-control form-control-sm" formControlName="ordenServicio">
+
+                                <div class="fw-bold">Proveedor</div>
+                                <input type="text" class="form-control form-control-sm" formControlName="proveedor">
+
+                                <div class="fw-bold">Teléfono</div>
+                                <input type="text" class="form-control form-control-sm me-2" formControlName="telefono"
+                                    placeholder="Teléfono">
+
+                                <div class="fw-bold">Correo</div>
+                                <input type="email" class="form-control form-control-sm" formControlName="correo">
+                            </div>
+
+                            <!-- COLUMNA 2: Totales y Saldo -->
+                            <div class="col-3 h-100">
+                                <div class="d-flex col-12" style="flex-wrap: wrap;">
+                                    <div class="col-6 pl-0">
+                                        <div class="fw-bold">Costo Unitario</div>
+                                        <input type="text" class="form-control form-control-sm"
+                                            formControlName="coste_unitario">
+                                    </div>
+                                    <div class="col-6 pr-0">
+                                        <div class="fw-bold">Unidad</div>
+                                        <input type="text" class="form-control form-control-sm"
+                                            formControlName="unidad">
+                                    </div>
+
+                                    <div class="fw-bold w-100 mt-1">Total Requerido</div>
+                                    <input type="text" class="form-control form-control-sm"
+                                        formControlName="tiempo_programado">
+
+                                    <div class="fw-bold w-100 mt-1">Total Atendido</div>
+                                    <input type="text" class="form-control form-control-sm"
+                                        formControlName="tiempo_utilizado">
+
+                                    <div class="fw-bold w-100 mt-1">Saldo por Utilizar</div>
+                                    <input type="text" class="form-control form-control-sm"
+                                        formControlName="saldo_utilizar">
+                                </div>
+                            </div>
+
+                            <!-- COLUMNA 3: Mini-Tabla Dinámica -->
+                            <div class="col-4 h-100">
+                                <div>
+                                    <!-- MODO H-M O DIA CON CELDA SELECCIONADA -->
+                                    <ng-container
+                                        *ngIf="(tipoSeleccionado === 'H-M' || tipoSeleccionado === 'DIA') && celdaSel[0] !== null && celdaSel[1] !== null">
+                                        <table class="table-bordered tab-10 w-100">
+                                            <thead class="table-light" style="position: sticky; top: 0;">
+                                                <tr class="text-center">
+                                                    <th>Cantidad</th>
+                                                    <th>PU</th>
+                                                    <th>Parcial S/</th>
+                                                    <!-- Botón Agregar Fila -->
+                                                    <th style="width: 40px;">
+                                                        <button type="button" class="btn btn-mini2 btn-primary"
+                                                            (click)="agregarTiempo()"
+                                                            *ngIf="selFilPlan !== null && tablaPlanilla[selFilPlan]?.estado == 1">
+                                                            +
+                                                        </button>
+                                                    </th>
+                                                </tr>
+                                            </thead>
+
+                                            <tbody formArrayName="tiempos">
+                                                <ng-container *ngIf="tiempos.controls.length > 0; else noControls">
+                                                    <tr *ngFor="let tiempo of tiempos.controls; let idx = index"
+                                                        [formGroupName]="idx">
+
+                                                        <!-- Cantidad (Editable) -->
+                                                        <td>
+                                                            <input type="number"
+                                                                class="form-control form-control-sm text-center"
+                                                                formControlName="cantidad" (input)="calcularTiempo(idx)"
+                                                                (blur)="calcularTiempo(idx)">
+                                                        </td>
+
+                                                        <!-- PU (No editable, toma el Costo Unitario) -->
+                                                        <td>
+                                                            <input type="text"
+                                                                class="form-control form-control-sm bg-light text-center"
+                                                                [value]="formDesagregado.get('coste_unitario')?.value"
+                                                                readonly>
+                                                        </td>
+
+                                                        <!-- Parcial S/ (Calculado) -->
+                                                        <td>
+                                                            <input type="text"
+                                                                class="form-control form-control-sm bg-light text-center"
+                                                                [value]="(tiempo.get('parcial')?.value || 0) | number:'1.2-2'"
+                                                                readonly>
+                                                        </td>
+
+                                                        <!-- Acción Eliminar Fila -->
+                                                        <td class="text-center">
+                                                            <button type="button"
+                                                                class="btn btn-sm btn-danger py-0 px-1"
+                                                                (click)="eliminarTiempo(idx)">
+                                                                ×
+                                                            </button>
+                                                        </td>
+
+                                                    </tr>
+                                                </ng-container>
+
+                                                <ng-template #noControls>
+                                                    <tr>
+                                                        <td class="text-center text-muted" colspan="4">
+                                                            No hay registros agregados
+                                                        </td>
+                                                    </tr>
+                                                </ng-template>
+                                            </tbody>
+                                        </table>
+                                    </ng-container>
+
+                                    <!--
+                    =====================================================
+                    CÓDIGO DE TIPOS MES Y GLOBAL DESACTIVADOS/COMENTADOS
+                    =====================================================
+                    <ng-container *ngIf="tipoSeleccionado === 'GLOBAL' || tipoSeleccionado === 'MES'">
+                        ...
+                    </ng-container>
+                    -->
+
+                                    <!-- Mensaje si no se ha seleccionado celda -->
+                                    <ng-container
+                                        *ngIf="(tipoSeleccionado === 'H-M' || tipoSeleccionado === 'DIA') && (celdaSel[0] === null || celdaSel[1] === null)">
+                                        <div class="alert alert-info text-center my-2" role="alert">
+                                            <i class="fa fa-info-circle me-1"></i> Seleccione un día en el calendario
+                                            para ingresar o ver el detalle.
+                                        </div>
+                                    </ng-container>
+                                </div>
+                            </div>
+
+                            <!-- COLUMNA 4: Totales del Día y Observaciones -->
+                            <div class="col-3 h-100">
+                                <div class="fw-bold" *ngIf="tipoSeleccionado == 'H-M' || tipoSeleccionado == 'DIA'">
+                                    Total utilizada por Dia
+                                </div>
+                                <input type="number" class="form-control form-control-sm" formControlName="horas_dia"
+                                    (change)="cambioHorasDia()"
+                                    *ngIf="tipoSeleccionado == 'H-M' || tipoSeleccionado == 'DIA'" readonly>
+
+                                <div class="fw-bold" *ngIf="tipoSeleccionado == 'H-M' || tipoSeleccionado == 'DIA'">
+                                    Costo utilizado del Dia
+                                </div>
+                                <input type="text" class="form-control form-control-sm" formControlName="coste_dia"
+                                    *ngIf="tipoSeleccionado == 'H-M' || tipoSeleccionado == 'DIA'" readonly>
+
+                                <div class="fw-bold">
+                                    Observaciones de trabajos Realizado durante el Dia
+                                </div>
+                                <textarea class="form-control form-control-sm" formControlName="observaciones" rows="5"
+                                    (blur)="equipoEditado = true" placeholder="Observaciones..."></textarea>
+                            </div>
+                        </ng-container>
+
+                        <ng-container *ngIf="verDetalle == 'mensual'">
+                            <div *ngIf="this.selFilPlan !== null">
+                                <h4 class="font-weigth-bolder">{{tablaPlanilla[this.selFilPlan].descripcion}}</h4>
+                            </div>
+
+                            <!-- Tabla Mensual -->
+                            <div class="overflow-auto" *ngIf="this.selFilPlan !== null">
+                                <table class="table-bordered tab-10">
+                                    <thead>
+                                        <tr class="text-center">
+                                            <th rowspan="2" style="min-width: 120px;">Concepto</th>
+                                            <th *ngFor="let mes of detalleMensual" [attr.colspan]="1"
+                                                style="min-width: 100px;">
+                                                {{mes.mes_display}}
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td class="font-weight-bold">Cantidad</td>
+                                            <td *ngFor="let mes of detalleMensual" class="text-right">
+                                                {{ mes.cantidad | number:'0.2-2' }}
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="font-weight-bold bg-light">Cantidad Acumulada</td>
+                                            <td *ngFor="let mes of detalleMensual; let i = index"
+                                                class="text-right bg-light">
+                                                {{ calcularAcumuladoCantidad(i) | number:'0.2-2' }}
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="font-weight-bold">Parcial</td>
+                                            <td *ngFor="let mes of detalleMensual" class="text-right">
+                                                <span class="float-left text-muted">S/</span>
+                                                {{ mes.parcial | number:'0.2-2' }}
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="font-weight-bold bg-light">Parcial Acumulado</td>
+                                            <td *ngFor="let mes of detalleMensual; let i = index"
+                                                class="text-right bg-light">
+                                                <span class="float-left text-muted">S/</span>
+                                                {{ calcularAcumuladoParcial(i) | number:'0.2-2' }}
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <!-- Tabla Resumen por Año -->
+                            <div class="mt-4" *ngIf="resumenPorAnio.length > 0">
+                                <h5 class="font-weight-bold">RESUMEN POR AÑO</h5>
+                                <div class="overflow-auto">
+                                    <table class="table-bordered tab-10">
+                                        <thead>
+                                            <tr class="text-center">
+                                                <th style="min-width: 120px;">Concepto</th>
+                                                <th *ngFor="let anio of resumenPorAnio" style="min-width: 100px;">
+                                                    {{ anio.anio }}
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td class="font-weight-bold">Cantidad</td>
+                                                <td *ngFor="let anio of resumenPorAnio" class="text-right">
+                                                    {{ anio.cantidad_total | number:'0.2-2' }}
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td class="font-weight-bold">Parcial</td>
+                                                <td *ngFor="let anio of resumenPorAnio" class="text-right">
+                                                    <span class="float-left text-muted">S/</span>
+                                                    {{ anio.parcial_total | number:'0.2-2' }}
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </ng-container>
+                    </ng-container>
+
+                    <ng-template #buscandoData>
+                        <div *ngIf="buscando" class="preloader3 loader-block w-100 h-100">
+                            <div class="circ1"></div>
+                            <div class="circ2"></div>
+                            <div class="circ3"></div>
+                            <div class="circ4"></div>
+                        </div>
+                    </ng-template>
+                </div>
+            </div>
+        </div>
+    </ng-container>
+    <ng-container *ngIf="subvista == 3">
+        <div class="h-100 m-0 px-3 w-100">
+            <div class="col-12 d-flex px-0 align-items-center">
+                <mat-form-field appearance="outline" class="mff-reduc col-3">
+                    <mat-label>Mes</mat-label>
+                    <mat-select [(ngModel)]="mesSeleccionado" (ngModelChange)="cambioMes()">
+                        <mat-option *ngFor="let mes of calendario; let i=index" [value]="i">
+                            {{mes.mes_nombre}} - {{mes.anio}}
+                        </mat-option>
+                    </mat-select>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" class="mff-reduc col-3">
+                    <mat-label>Requerimiento</mat-label>
+                    <mat-select [(ngModel)]="grupoSeleccionado" (ngModelChange)="cambioArea()">
+                        <mat-option [value]="''">Todos</mat-option>
+                        <mat-option *ngFor="let grupo of tablaRegActividades; let i = index" [value]="i">
+                            {{grupo.descripcion}}
+                        </mat-option>
+                    </mat-select>
+                </mat-form-field>
+
+                <!-- SWITCH 1: COLUMNAS ESTÁTICAS -->
+                <div class="col-3">
+                    <label>Columnas Estáticas :</label>
+                    <div class="switch switch-primary d-inline m-r-10" style="margin-left: 10px;">
+                        <input type="checkbox" id="switch-p-1" [(ngModel)]='columnasEstatica'>
+                        <label for="switch-p-1" class="cr"></label>
+                    </div>
+                </div>
+
+                <!-- 🟢 NUEVO SWITCH 2: MOSTRAR HORAS Y PRECIO EN LUGAR DE TOTAL MONETARIO -->
+                <div class="col-3">
+                    <label>Ver Horas / P.U. :</label>
+                    <div class="switch switch-primary d-inline m-r-10" style="margin-left: 10px;">
+                        <input type="checkbox" id="switch-p-2" [(ngModel)]='mostrarDetalleHoras'>
+                        <label for="switch-p-2" class="cr"></label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 px-0">
+                <div class="overflow-auto tabla-plantilla-completo">
+                    <table class="table-bordered tab-10">
+                        <thead class="text-center" style="position: sticky; top: 0;">
+                            <tr [ngClass]="{'h-22': !calendarioFiltrado?.dias.length }">
+                                <th rowspan="2" appAnchocol [ancho]="40" [ngClass]="{'static1h': columnasEstatica}">
+                                    <div class="w-100" style="cursor: pointer;" (click)="toggleTodoNueva2()"
+                                        title="Expandir/Contraer todos">
+                                        <a *ngIf="todosExpandidosNueva2" style="color:red; width: 14px;">
+                                            <i class="icofont icofont-caret-up"></i>
+                                        </a>
+                                        <a *ngIf="!todosExpandidosNueva2" style="color:#06bb06; width: 14px;">
+                                            <i class="icofont icofont-caret-down"></i>
+                                        </a>
+                                    </div>
+                                </th>
+
+                                <!-- 🟢 REDUCCIÓN DE TAMAÑO DE LA COLUMNA DESCRIPCIÓN (ej. de 150 a 100) -->
+                                <th rowspan="2" appAnchocol [ancho]="100" [detalle]="true"
+                                    [ngClass]="{'static2h': columnasEstatica}">
+                                    MAQUINARIA Y EQUIPO
+                                </th>
+                                <th rowspan="2" appAnchocol [ancho]="60">MODELO</th>
+                                <th rowspan="2" appAnchocol [ancho]="80">TIPO REGISTRO</th>
+
+                                <!-- CABECERA DINÁMICA DE DÍAS DEL MES -->
+                                <ng-container *ngIf="calendarioFiltrado">
+                                    <th [colSpan]="mostrarDetalleHoras ? (calendarioFiltrado?.total_dias * 2) : calendarioFiltrado?.total_dias"
+                                        class="mes-header">
+                                        {{calendarioFiltrado?.mes_display}}
+                                    </th>
+                                </ng-container>
+
+                                <th rowspan="2" appAnchocol [ancho]="60">TOTAL HM</th>
+                                <th rowspan="2" appAnchocol [ancho]="80">P.U.</th>
+                                <th rowspan="2" appAnchocol [ancho]="90">PARCIAL</th>
+                                <th rowspan="2" appAnchocol [ancho]="80">ESTADO</th>
+                            </tr>
+
+                            <!-- SUB-CABECERA DÍAS DEL MES -->
+                            <tr>
+                                <ng-container *ngFor="let dia of calendarioFiltrado?.dias">
+                                    <th [attr.colspan]="mostrarDetalleHoras ? 2 : 1" class="dia-header" [ngClass]="{
+                          'laborable': dia.es_laborable,
+                          'no-laborable': !dia.es_laborable,
+                          'feriado': dia.feriado
+                      }" appAnchocol [ancho]="mostrarDetalleHoras ? 70 : 45">
+                                        <div class="dia-numero">{{dia.dia_numero}}</div>
+                                        <div class="dia-abreviatura">{{dia.dia_semana_corto}}</div>
+                                    </th>
+                                </ng-container>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            <ng-container *ngIf="tablaPlanilla.length; else elseTemplate">
+                                <tr *ngFor="let row of this.tablaPlanilla; let i = index"
+                                    [ngClass]="{'font-weight-bolder':row.item == 0, 'highlight3': selFilPlan == i ,'cabecera-bg':row.item == 0}"
+                                    (click)="selFilPlan=i" [hidden]="!row.visible">
+
+                                    <td class="text-center"
+                                        [ngClass]="{'static1 ': columnasEstatica, 'bg-white':row.item !== 0 && columnasEstatica}">
+                                        <ng-container *ngIf="row.item !== 0; else toggleButton2">
+                                            {{row.item}}
+                                        </ng-container>
+                                        <ng-template #toggleButton2>
+                                            <div class="w-100" style="cursor: pointer;"
+                                                (click)="row.icomost == '0' ? toggleOnNueva2(row, i) : toggleOffNueva2(row, i)">
+                                                <a *ngIf="row.icomost == '0'" style="color:#06bb06; width: 14px;">
+                                                    <i class="icofont icofont-caret-down"></i>
+                                                </a>
+                                                <a *ngIf="row.icomost == '1'" style="color:red; width: 14px;">
+                                                    <i class="icofont icofont-caret-up"></i>
+                                                </a>
+                                            </div>
+                                        </ng-template>
+                                    </td>
+
+                                    <td
+                                        [ngClass]="{'static2 ': columnasEstatica, 'bg-white':row.item !== 0 && columnasEstatica}">
+                                        <div class="recortatext1l" placement="top" ngbTooltip="{{row.descripcion}}"
+                                            container="body">
+                                            {{row.descripcion}}
+                                        </div>
+                                    </td>
+
+                                    <td>{{row.placa}}</td>
+                                    <td class="text-center">{{row.tipo_registro}}</td>
+
+                                    <!-- FILAS DE DATOS DE DÍAS -->
+                                    <ng-container *ngIf="row.item !== 0; else cabecera">
+
+                                        <!-- MODO NORMAL: MUESTRA TOTAL MONETARIO DEL DÍA -->
+                                        <ng-container *ngIf="!mostrarDetalleHoras">
+                                            <ng-container *ngIf="row.tipo !== 'GLOBAL' && row.tipo !== 'MES'">
+                                                <td class="text-center" *ngFor="let dia of row.planilla">
+                                                    <ng-container *ngIf="dia?.horas_dia">
+                                                        {{ (dia.costo_dia || (dia.horas_dia * row.precio_unitario)) |
+                                                        number:'0.2-2' }}
+                                                    </ng-container>
+                                                </td>
+                                            </ng-container>
+
+                                            <ng-container *ngIf="row.tipo === 'GLOBAL' || row.tipo === 'MES'">
+                                                <td class="text-center" *ngFor="let dia of row.planilla">
+                                                    <ng-container *ngIf="dia">
+                                                        {{ (dia.costo_dia || row.precio_unitario) | number:'0.2-2' }}
+                                                    </ng-container>
+                                                </td>
+                                            </ng-container>
+                                        </ng-container>
+
+                                        <!-- 🟢 MODO ACTIVADO: MUESTRA 2 COLUMNAS (HORAS Y PRECIO UNITARIO) -->
+                                        <!-- MODO ACTIVADO: MUESTRA 2 COLUMNAS (HORAS Y PRECIO UNITARIO) -->
+                                        <ng-container *ngIf="mostrarDetalleHoras">
+                                            <ng-container *ngFor="let dia of row.planilla">
+
+                                                <!-- Condición: ¿Existen horas laboradas mayores a 0? -->
+                                                <ng-container
+                                                    *ngIf="dia?.horas_dia && dia.horas_dia > 0; else celdaVacia">
+
+                                                    <!-- Celda de Horas -->
+                                                    <td class="text-center bg-light-cell border-end-0">
+                                                        <small>{{ dia.horas_dia }}</small>
+                                                    </td>
+
+                                                    <!-- Celda de Precio Unitario -->
+                                                    <td class="text-end text-muted">
+                                                        <small>S/ {{ row.precio_unitario | number:'0.2-2' }}</small>
+                                                    </td>
+
+                                                </ng-container>
+
+                                                <!-- Plantilla cuando horas_dia es 0, null o undefined -->
+                                                <ng-template #celdaVacia>
+                                                    <td class="border-end-0"></td>
+                                                    <td></td>
+                                                </ng-template>
+
+                                            </ng-container>
+                                        </ng-container>
+
+                                    </ng-container>
+
+                                    <ng-template #cabecera>
+                                        <td
+                                            [colSpan]="mostrarDetalleHoras ? (calendarioFiltrado?.total_dias * 2) : calendarioFiltrado?.total_dias">
+                                        </td>
+                                    </ng-template>
+
+                                    <td class="text-center">{{row.total_hm}}</td>
+                                    <td class="text-right">
+                                        <ng-container *ngIf="row.item !== 0">
+                                            <span class="float-left text-muted">S/</span>
+                                            <span class="float-right"> {{row.precio_unitario | number:'0.2-2'}}</span>
+                                        </ng-container>
+                                    </td>
+                                    <td>
+                                        <ng-container *ngIf="row.item !== 0">
+                                            <span class="float-left text-muted">S/</span>
+                                            <span class="float-right"> {{row.parcial | number:'0.2-2'}}</span>
+                                        </ng-container>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge bg-success pos-badge" style="padding-top: 4px;"
+                                            *ngIf="row.estado == 1">EJECUCION</span>
+                                        <span class="badge bg-danger pos-badge" style="padding-top: 4px;"
+                                            *ngIf="row.estado == 2">CULMINADO</span>
+                                    </td>
+                                </tr>
+                            </ng-container>
+
+                            <ng-template #elseTemplate>
+                                <tr class="h-celda">
+                                    <td class="mat-cell text-center" colspan="8">
+                                        <label *ngIf="!buscando3">No se encontraron resultados</label>
+                                        <div *ngIf="buscando3" class="preloader3 loader-block">
+                                            <div class="circ1"></div>
+                                            <div class="circ2"></div>
+                                            <div class="circ3"></div>
+                                            <div class="circ4"></div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </ng-template>
+                        </tbody>
+
+                        <!-- PIE DE PÁGINA (TOTALES) -->
+                        <tfoot *ngIf="sumaPorDiaPlanilla && sumaPorDiaPlanilla.length > 0"
+                            style="background: #f8f9fa; font-weight: bold;">
+                            <tr>
+                                <th colspan="2" class="text-end fw-bold" [ngClass]="{'static1h': columnasEstatica}">
+                                    TOTAL POR DÍA:</th>
+                                <th colspan="2" class="text-end fw-bold"></th>
+
+                                <!-- Ajusta dinámicamente los colspan del footer -->
+                                <th *ngFor="let total of sumaPorDiaPlanilla"
+                                    [attr.colspan]="mostrarDetalleHoras ? 2 : 1" class="text-center fw-bold">
+                                    <span style="opacity: 0.6;">S/</span> {{ total | number:'0.2-2' }}
+                                </th>
+
+                                <th class="text-center fw-bold" colspan="2">TOTAL MES:</th>
+                                <th class="text-end fw-bold text-primary text-right">
+                                    <span style="opacity: 0.6;">S/</span> {{ totalMes | number:'1.2-2' }}
+                                </th>
+                                <th></th>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </ng-container>
+</div>
+
+<app-modal-basic #modalSubContratoCabecera [dialogClass]="'modal-sm'">
+    <div class="app-modal-header">
+        <h4 class="modal-title tit-modal1"><b>Datos Subcontrato</b></h4>
+        <button type="button" class="close basic-close" (click)="cerrarModalSubcontrato()">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+    <div class="app-modal-body">
+        <form [formGroup]="formSubcontratoCabecera">
+            <div class="row ">
+                <mat-form-field appearance="outline" class="mff-reduc col-sm-12 col-12">
+                    <mat-label>Descripcion</mat-label>
+                    <input matInput type="text" autocomplete="off" maxlength="255" formControlName="descripcion"
+                        [maxLength]="150">
+                </mat-form-field>
+                <!-- <mat-form-field appearance="outline" class="mff-reduc col-sm-12 col-12">
+          <mat-label>Fecha Solicitud</mat-label>
+          <input matInput type="date" formControlName="fecha_solicitada">
+        </mat-form-field> -->
+
+            </div>
+        </form>
+    </div>
+    <div class="app-modal-footer w-100">
+        <div class="row px-3 justify-content-between">
+
+            <button type="button" style="margin-right: 5px;" class="btn btn-sm btn-danger ripple"
+                (click)="cerrarModalSubcontrato()">Cerrar</button>
+            <button type="button" style="margin-right: 5px;" class="btn btn-sm btn-success ripple"
+                (click)="agregarSubcontrato()">
+                Guardar</button>
+        </div>
+    </div>
+</app-modal-basic>
+
+<app-modal-basic #modalSubContrato [dialogClass]="'modal-lg modalgrande3'">
+    <div class="app-modal-header">
+        <h4 class="modal-title tit-modal1"><b>Datos Equipo</b></h4>
+        <button type="button" class="close basic-close" (click)="cerrarModalEquipo()">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+    <div class="app-modal-body">
+        <form [formGroup]="formSubcontratos">
+            <div class="row mb-3" *ngIf="!actualizarSubcontratos">
+                <div class="col-sm-10 col-10">
+                    <mat-form-field appearance="outline" class="mff-reduc w-100">
+                        <mat-label>Requerimiento</mat-label>
+                        <select matNativeControl formControlName="fila_requerimiento">
+                            <option value="">Seleccione un requerimiento</option>
+                            <ng-container *ngFor="let row of tablaRequerimientos; let i = index">
+                                <option *ngIf="!requerimientoEsGlobal(row.idfila)" [value]="i">
+                                    {{'E-' + row.idfila}} => {{row.descripcion}}
+                                </option>
+                            </ng-container>
+                        </select>
+                    </mat-form-field>
+                </div>
+                <div class="col-sm-2 col-2">
+                    <button type="button" class="btn btn-primary btn-mini w-100 d-felx" (click)="agregarFila()"
+                        [disabled]="!formSubcontratos.get('fila_requerimiento')?.value">
+                        <i class="fa fa-plus"></i> Agregar
+                    </button>
+                </div>
+            </div>
+            <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+                <table class="table-bordered tab-10">
+                    <thead class="table-light text-center"
+                        style="position: sticky; top: 0; background: white; z-index: 1;">
+                        <tr>
+                            <th appAnchocol [ancho]="50">Item</th>
+                            <th appAnchocol [ancho]="200" [detalle]="true">Equipo</th>
+                            <!-- <th appAnchocol [ancho]="100">Placa</th> -->
+                            <th appAnchocol [ancho]="70">Und</th>
+                            <th appAnchocol [ancho]="80">Cant. Req</th>
+                            <th appAnchocol [ancho]="80">Cant. Regis.</th>
+                            <th appAnchocol [ancho]="100">P.U.</th>
+                            <th appAnchocol [ancho]="100">Parcial</th>
+                            <th appAnchocol [ancho]="100">Tipo Registro</th>
+                            <!-- <th appAnchocol [ancho]="100">Tipo</th> -->
+                            <th appAnchocol [ancho]="40"></th>
+                        </tr>
+                    </thead>
+                    <tbody formArrayName="subcontratos">
+                        <tr *ngFor="let subcontrato of subcontratos.controls; let i = index" [formGroupName]="i"
+                            class="fila-24">
+
+                            <td class="celda-item">
+                                <span class="form-control-plaintext text-center texto-24">{{
+                                    subcontrato.get('item')?.value
+                                    }}</span>
+                            </td>
+
+                            <!-- Descripción en modo solo lectura -->
+                            <td>
+                                <input type="text" class="form-control form-control-sm input-24"
+                                    formControlName="descripcion">
+                            </td>
+
+                            <!-- Placa en modo solo lectura -->
+                            <!-- <td>
+                                <input type="text" class="form-control form-control-sm input-24" formControlName="placa"
+                                    readonly>
+                            </td> -->
+
+                            <td>
+                                <span class="form-control-plaintext text-center texto-24">{{
+                                    subcontrato.get('unidad')?.value
+                                    }}</span>
+                            </td>
+
+                            <!-- Cantidad en solo texto -->
+                            <td>
+                                <span class="form-control-plaintext text-end texto-24">
+                                    {{ subcontrato.get('cantidad')?.value | number:'1.2-2' }}
+                                </span>
+                            </td>
+
+                            <td>
+                                <span class="form-control-plaintext text-center texto-24">
+                                    {{ subcontrato.get('tiempo_registrado')?.value }}
+                                </span>
+                            </td>
+
+                            <!-- Precio Unitario en solo texto -->
+                            <td>
+                                <span class="form-control-plaintext text-end texto-24">
+                                    {{ subcontrato.get('precio_unitario')?.value | number:'1.2-2' }}
+                                </span>
+                            </td>
+
+                            <td>
+                                <span class="form-control-plaintext text-end texto-24">
+                                    {{ subcontrato.get('total_registrado')?.value | number:'1.2-2' }}
+                                </span>
+                            </td>
+
+                            <!-- Selects Deshabilitados -->
+                            <td>
+                                <select class="form-control form-control-sm input-24" formControlName="tipo_registro">
+                                    <option value="ALQUILADO">ALQUILADO</option>
+                                    <option value="PROPIO">PROPIO</option>
+                                </select>
+                            </td>
+                            <!--
+                            <td>
+                                <select class="form-control form-control-sm input-24" formControlName="tipo"
+                                    [attr.disabled]="true">
+                                    <option value="H-M">H-M</option>
+                                    <option value="DIA">DIA</option>
+                                    <option value="MES">MES</option>
+                                    <option value="GLOBAL">GLOBAL</option>
+                                </select>
+                            </td> -->
+
+                            <!-- Se remueve o deshabilita el botón de acción -->
+                            <td class="text-center celda-accion">
+                                <button type="button"
+                                    *ngIf="subcontrato.get('estado')?.value == 1 && subcontrato.get('tiempo_registrado')?.value <= 0"
+                                    class="btn btn-danger btn-sm boton-24" (click)="eliminarFilaModal(i)">
+                                    <i class="fa fa-trash mr-0"></i>
+                                </button>
+                            </td>
+                        </tr>
+
+                        <tr *ngIf="subcontratos.length === 0" class="fila-24">
+                            <td colspan="11" class="text-center text-muted py-3">
+                                No hay servicios agregados.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </form>
+    </div>
+    <div class="app-modal-footer w-100">
+        <div class="row px-3 justify-content-between">
+
+            <button type="button" style="margin-right: 5px;" class="btn btn-sm btn-danger ripple"
+                (click)="cerrarModalEquipo()">Cerrar</button>
+            <button type="button" style="margin-right: 5px;" class="btn btn-sm btn-success ripple"
+                (click)="!actualizarSubcontratos ? agregarEquipo():actualizarSubcontratosServicio()">
+                <ng-container *ngIf="!actualizarSubcontratos"> Guardar</ng-container>
+                <ng-container *ngIf="actualizarSubcontratos"> Actualizar</ng-container>
+            </button>
+        </div>
+    </div>
+</app-modal-basic>
+
+<app-modal-basic #modalEstado [dialogClass]="'modal-sm'">
+    <div class="app-modal-header">
+        <h4 class="modal-title tit-modal1"><b>Estado Equipo</b></h4>
+        <button type="button" class="close basic-close" (click)="cerrarModalEstado()">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+    <div class="app-modal-body">
+        <div class="row">
+            <mat-form-field appearance="outline" class="mff-reduc col-sm-12 col-12">
+                <mat-label>Estado</mat-label>
+                <mat-select [(ngModel)]="estadoModificado">
+                    <mat-option value="1">EJECUCION</mat-option>
+                    <mat-option value="2">CULMINADO</mat-option>
+                </mat-select>
+            </mat-form-field>
+        </div>
+    </div>
+    <div class="app-modal-footer w-100">
+        <div class="row px-3 justify-content-between">
+
+            <button type="button" style="margin-right: 5px;" class="btn btn-sm btn-danger ripple"
+                (click)="cerrarModalEstado()">Cerrar</button>
+            <button type="button" style="margin-right: 5px;" class="btn btn-sm btn-success ripple"
+                (click)="actualizarEstadoSubcontrato()">
+                Guardar</button>
+        </div>
+    </div>
+</app-modal-basic>

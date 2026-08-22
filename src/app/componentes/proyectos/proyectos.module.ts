@@ -72,6 +72,7 @@ import { MetradosModule } from '../metrados/metrados.module';
 import { AlmacenModule } from '../almacen/almacen.module';
 import { RecursosHumanosModule } from '../recursos-humanos/recursos-humanos.module';
 import { EquiposHerramientasComponent } from './principal/equipos-herramientas/equipos-herramientas.component';
+import { SubcontratosComponent } from './principal/subcontratos/subcontratos.component';
 
 @NgModule({
   declarations: [
@@ -108,6 +109,7 @@ import { EquiposHerramientasComponent } from './principal/equipos-herramientas/e
     DataProyectoComponent,
     AddproybiplanComponent,
     EquiposHerramientasComponent,
+    SubcontratosComponent,
     
   ],
   imports: [

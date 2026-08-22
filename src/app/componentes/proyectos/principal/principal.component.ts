@@ -165,29 +165,21 @@ export class PrincipalComponent implements OnInit, OnDestroy {
   dataSourceColor = [];
   cargocompo = true;
   arrmenuproy = [
-    1,  // ID1  - Configuración General
-    1,  // ID2  - Data del Proyecto
-    1,  // ID3  - Convocatorias RR.HH
-    1,  // ID4  - Planilla de RR.HH
-    1,  // ID5  - Registro de Asistencia
-    1,  // ID6  - Solicitante de Procura
-    1,  // ID7  - Logística y Abastecimiento
-    1,  // ID8  - Ingreso y Salida Materiales
-    1,  // ID9  - Reporte de Almacen
-    1,  // ID10 - Ingreso y Salida Equipos
-    1,  // ID11 - Reporte de Equipos
-    1,  // ID12 - Registro de Pagos
-    1,  // ID13 - Reporte Financiero  
-    1,  // ID14 - Registro Metrado    
-    1,  // ID15 - Vincular Actividades
-    1,  // ID16 - Registro Fotográfico
-    1,  // ID17 - Cuaderno de Incidencias
-    1,  // ID18 - Mejora Continua
-    1,  // ID19 - Reporte Valor Ganado
-    1,  // ID20 - Valorización y Metrados
-    1,  // ID21 - Procura y Almacen
-    1,  // ID22 - Recursos Humanos
-    1   // ID23 - Reporte Físico - Financiero
+    1, // ID1
+    1, // ID2
+    1, // ID3
+    1, // ID4
+    1, // ID5
+    1, // ID6
+    1, // ID7
+    1, // ID8
+    1, // ID9
+    1, // ID10
+    1, // ID11
+    1, // ID12
+    1, // ID13
+    1, // ID14
+    1  // ID15 - Subcontratos (Permiso de visibilidad)
   ];
 
   constructor(
@@ -271,10 +263,13 @@ export class PrincipalComponent implements OnInit, OnDestroy {
       }
     })
   }
+
   ngAfterContentChecked(): void {
     this.changeDetector.detectChanges();
   }
+
   @HostListener('window:resize', ['$event'])
+
   onResize(event) {
     var windowHeight = window.innerHeight;
     var resto = 220;
@@ -295,20 +290,25 @@ export class PrincipalComponent implements OnInit, OnDestroy {
     }
     return
   }
+
   pintar() {
     this.titulo1 = this.aspectos.tipoPresupuesto.split('|');
     this.titulo1color = this.aspectos.colorPresupuesto.split('|');
     this.titulo1letra = this.aspectos.letraPresupuesto.split('|');
   }
+
   limpiarfiltro() {
     this.busqueda = '';
   }
+
   limpiarfiltro2() {
     this.busqueda2 = '';
   }
+
   limpiarfiltro3() {
     this.busqueda3 = '';
   }
+
   limpiarfiltro4() {
     this.busqueda4 = '';
   }
@@ -350,6 +350,7 @@ export class PrincipalComponent implements OnInit, OnDestroy {
       this.buscando = false;
     }
   }
+
   async ordenarJerarquia(arr) {
     if (!arr || arr.length === 0) {
       return [];
@@ -408,6 +409,7 @@ export class PrincipalComponent implements OnInit, OnDestroy {
     this.active = this.formProyecto.value[this.formProyecto.value.length - 1].indice_tab
     this.mostrar_carga_todo = false;
   }
+
   async listarDepartamentos() {
     this.departamentos = await this.configuracionService.Departamento()
   }
@@ -452,6 +454,7 @@ export class PrincipalComponent implements OnInit, OnDestroy {
     // console.log('distritosRecuperados', distritosRecuperados);
     datosProyecto.get('lista_distritos').setValue(distritosRecuperados)
   }
+
   toggleOn(id: string) {
     for (let row of this.dataSourceorg) {
       if (row.id_grupo == id) {
@@ -463,6 +466,7 @@ export class PrincipalComponent implements OnInit, OnDestroy {
       }
     }
   }
+
   toggleOff(id: string) {
     for (let row of this.dataSourceorg) {
       if (row.id_grupo == id) {
@@ -474,6 +478,7 @@ export class PrincipalComponent implements OnInit, OnDestroy {
       }
     }
   }
+
   cambindicesel(row: any, ind: any) {
     //const row = this.dataSourceorg[ind]
     if (row.nro == "") {
@@ -485,6 +490,7 @@ export class PrincipalComponent implements OnInit, OnDestroy {
       }
     }
   }
+
   async abrirProyectoEspecifico(row, i, compar = false) {
     if (compar) {
       this.mostrar_carga_todo = true;
@@ -590,6 +596,7 @@ export class PrincipalComponent implements OnInit, OnDestroy {
     }
     localStorage.setItem('principal', JSON.stringify(true))
   }
+
   async verGrupoProyecto() {
     const modalRef = this.modalService.open(AgrupacionProyectosComponent, { size: 'lg', backdrop: 'static', windowClass: 'pcoded', keyboard: false })
     const result = await modalRef.result

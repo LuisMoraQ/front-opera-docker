@@ -10,6 +10,7 @@ import { SwalService } from 'src/app/servicios/swal.service';
 import { ModalBasicComponent } from 'src/app/shared/modal-basic/modal-basic.component';
 import { ChangeDetectorRef } from '@angular/core';
 import { PrincipalService } from 'src/app/servicios/principal.service';
+import { SubcontratosService } from 'src/app/servicios/subcontratos.service';
 export interface rowacu {//revisar parametros de esta fila
   id_proyecto: any;
   indice: any;
@@ -169,7 +170,7 @@ export class InsumosPorPartidaComponent implements OnInit {
   @ViewChild("modalRegistroSaldo") modalRegistroSaldo: ModalBasicComponent;
   @ViewChild("modalComparativaPartida") modalComparativaPartida: ModalBasicComponent;
 
-  constructor(private equiposServiciosService: EquiposServiciosService, private cdRef: ChangeDetectorRef, private toaster: ToastrService, public metradoService: MetradoService, private presuservice: PresupuestosService, public formService: FormsService, public principalService: PrincipalService) { }
+  constructor(private equiposServiciosService: EquiposServiciosService, private cdRef: ChangeDetectorRef, private toaster: ToastrService, public metradoService: MetradoService, private presuservice: PresupuestosService, public formService: FormsService, public principalService: PrincipalService, private subcontratosService: SubcontratosService) { }
 
   async ngOnInit() {
     try {
@@ -1193,6 +1194,27 @@ export class InsumosPorPartidaComponent implements OnInit {
         // Vinculamos los registros obtenidos de top_registro_monto_actividades a los equipos
         const listadoRegistros = Array.isArray(resRegistrosBD) ? resRegistrosBD : [];
         this.asignarRegistrosAEquipos(listadoRegistros);
+      } else if (row.tipo == 4) {
+        const objDesagregado = {
+          id_proyecto: this.id_proyecto,
+          fecha: fecha,
+          tipocontra: row.tipocontra || 4
+        };
+
+        const objRegistrosBD = {
+          indice: idPartidaSel,
+          fecha: fecha,
+          id_proyecto: this.id_proyecto
+        };
+
+        const [resDesagregado, resRegistrosBD] = await Promise.all([
+          this.subcontratosService.listadoDesagregadoSubcontrato(objDesagregado),
+          this.equiposServiciosService.listarRegistroMontoActividades(objRegistrosBD)
+        ]);
+        this.procesarDataParaModal(resDesagregado);
+        // Vinculamos los registros obtenidos de top_registro_monto_actividades a los equipos
+        const listadoRegistros = Array.isArray(resRegistrosBD) ? resRegistrosBD : [];
+        this.asignarRegistrosAEquipos(listadoRegistros, true);
       }
       this.busquedaMod = '';
       this.modalRegistroSaldo.show();
@@ -1221,12 +1243,15 @@ export class InsumosPorPartidaComponent implements OnInit {
     return saldo < 0 ? 0 : saldo;
   }
 
-  asignarRegistrosAEquipos(listadoRegistrosBD: any[]) {
+  asignarRegistrosAEquipos(listadoRegistrosBD: any[], esSubcontrato: boolean = false) {
     const idPartidaSel = this.datasourcePri[this.filaSel]?.indice;
     const fechaActual = this.diaSeleccionado?.fecha;
     const esTipo3 = this.tipoSel == 3;
 
     if (!this.listadoAgrupado || !Array.isArray(this.listadoAgrupado)) return;
+
+    // Determinar dinámicamente el nombre de la propiedad clave según la entidad
+    const campoId = esSubcontrato ? 'id_subcontrato' : 'id_equipo';
 
     // 1. PRIMER NIVEL: Iterar las Cabeceras Principal
     this.listadoAgrupado.forEach((cabecera: any) => {
@@ -1236,24 +1261,37 @@ export class InsumosPorPartidaComponent implements OnInit {
         cabecera.subcabeceras.forEach((sub: any) => {
           if (sub && Array.isArray(sub.equipos)) {
 
-            // 3. TERCER NIVEL: Iterar los Equipos / Materiales
+            // 3. TERCER NIVEL: Iterar los Equipos / Materiales / Subcontratos
             sub.equipos.forEach((eq: any) => {
 
-              // Asignar a eq.registros todos los registros correspondientes al equipo/material
+              // Asignar a eq.registros los registros correspondientes
+              // En asignarRegistrosAEquipos:
+
               eq.registros = (listadoRegistrosBD || []).filter((r: any) => {
                 const coincideTipo = Number(r.tipo) === Number(this.tipoSel);
 
                 if (esTipo3) {
-                  // Para Tipo 3: DEBEN coincidir idregmov, nrosalida, idsalida e id_registro
                   return coincideTipo &&
                     Number(r.idregmov) === Number(eq.idregmov) &&
                     Number(r.nrosalida) === Number(eq.nrosalida) &&
                     Number(r.idsalida) === Number(eq.idsalida) &&
                     Number(r.id_registro) === Number(eq.id_registro);
                 } else {
-                  // Para Tipo 2: Debe coincidir id_equipo
-                  return coincideTipo &&
-                    Number(r.id_equipo) === Number(eq.id_equipo);
+                  // 1. Obtener los IDs del registro BD
+                  const idRegistroBD = r[campoId] ?? r.id_equipo;
+                  const idDesagregadoBD = r.id_desagregado;
+
+                  // 2. Obtener los IDs del ítem en la lista (equipos / subcontratos)
+                  const idItemLista = eq[campoId] ?? eq.id_equipo;
+                  const idDesagregadoLista = eq.id_registro_desagregado ?? eq.id_desagregado;
+
+                  // 3. Comparación priorizando ID Desagregado o ID principal
+                  const coincideId = Number(idRegistroBD) === Number(idItemLista);
+                  const coincideDesagregado = idDesagregadoBD && idDesagregadoLista
+                    ? Number(idDesagregadoBD) === Number(idDesagregadoLista)
+                    : true;
+
+                  return coincideTipo && coincideId && coincideDesagregado;
                 }
               });
 
@@ -1297,7 +1335,7 @@ export class InsumosPorPartidaComponent implements OnInit {
 
         await this.formatoTAblaACue(rowActual, acueDia);
         this.calcularTotalesGrupoAcue();
-
+        await this.marcarDiasConRegistro()
       }
 
       // Reiniciamos el flag
@@ -1308,6 +1346,8 @@ export class InsumosPorPartidaComponent implements OnInit {
 
 
   procesarDataParaModal(dataPlana: any[]) {
+    const esSubcontrato = this.tipoSel == 4;
+
     const resultado = dataPlana.reduce((acc, curr) => {
       let cabecera = acc.find((c: any) => c.id_registro_cabecera === curr.id_registro_cabecera);
       if (!cabecera) {
@@ -1329,12 +1369,17 @@ export class InsumosPorPartidaComponent implements OnInit {
         cabecera.subcabeceras.push(subcabecera);
       }
 
-      if (curr.id_equipo !== null) {
+      // Evaluación del ID dinámico según sea Subcontrato (tipoSel == 4) o Equipo
+      const idEntidad = esSubcontrato ? curr.id_subcontrato : curr.id_equipo;
+
+      if (idEntidad !== null && idEntidad !== undefined) {
         subcabecera.equipos.push({
+          // Mantiene ambas propiedades para compatibilidad de binding en HTML
           id_equipo: curr.id_equipo,
+          id_subcontrato: curr.id_subcontrato,
           unidad: curr.unidad,
           placa: curr.placa,
-          descripcion_equipo: curr.descripcion_equipo,
+          descripcion_equipo: curr.descripcion_equipo || curr.descripcion_subcontrato,
           id_registro_desagregado: curr.id_registro_desagregado,
           horas_dia: curr.horas_dia,
           minutos_dia: curr.minutos_dia,
@@ -1353,7 +1398,6 @@ export class InsumosPorPartidaComponent implements OnInit {
     // Guardamos ambas referencias
     this.listadoAgrupadoOriginal = JSON.parse(JSON.stringify(resultado));
     this.listadoAgrupado = resultado;
-
   }
 
   filtrarTabla() {
@@ -1509,7 +1553,6 @@ export class InsumosPorPartidaComponent implements OnInit {
     if (nuevoMonto === montoAnterior) return;
 
     const esTipo3 = this.tipoSel == 3;
-
     // CASO 1: ELIMINAR
     if ((nuevoMonto === null || nuevoMonto === 0) && equipo.registro_dia?.id_reg) {
       const payload: any = {
@@ -1531,15 +1574,20 @@ export class InsumosPorPartidaComponent implements OnInit {
         payload.id_equipo = 0;
         payload.id_desagregado = 0;
       } else {
-        payload.id_equipo = equipo.id_equipo || 0;
+        // Para Tipo 4 (Subcontratos) toma id_subcontrato; para Tipo 1 y 2 toma id_equipo
+        const idEntidad = (this.tipoSel == 4) ? equipo.id_subcontrato : equipo.id_equipo;
+
+        // Se asigna al campo 'id_equipo' del payload
+        payload.id_equipo = idEntidad || 0;
         payload.id_desagregado = equipo.id_registro_desagregado || 0;
+
+        // Reseteo de campos de Tipo 3
         payload.idregmov = 0;
         payload.nrosalida = 0;
         payload.idsalida = 0;
         payload.indrep = 0;
         payload.id_registro = 0;
       }
-
       const res = await this.equiposServiciosService.guardarMovimientoSaldo(payload);
 
       equipo.registros = equipo.registros.filter((r: any) => r.id_reg !== equipo.registro_dia.id_reg);
@@ -1575,15 +1623,17 @@ export class InsumosPorPartidaComponent implements OnInit {
       payload.id_equipo = 0;
       payload.id_desagregado = 0;
     } else {
-      payload.id_equipo = equipo.id_equipo || 0;
+      // Si es tipo 4 toma id_subcontrato, de lo contrario toma id_equipo
+      payload.id_equipo = (this.tipoSel == 4 ? equipo.id_subcontrato : equipo.id_equipo) || 0;
       payload.id_desagregado = equipo.id_registro_desagregado || 0;
+
+      // Limpieza de propiedades del Tipo 3
       payload.idregmov = 0;
       payload.nrosalida = 0;
       payload.idsalida = 0;
       payload.indrep = 0;
       payload.id_registro = 0;
     }
-
     const res = await this.equiposServiciosService.guardarMovimientoSaldo(payload);
     const dataRes = Array.isArray(res) && res.length > 0 ? res[0] : res;
 

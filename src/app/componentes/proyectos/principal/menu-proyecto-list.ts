@@ -96,7 +96,6 @@
 //         "verImagen":true
 //     }
 // ]
-
 export const menuAgrupado = [
   {
     titulo: 'DATA GENERAL',
@@ -130,6 +129,12 @@ export const menuAgrupado = [
     titulo: 'EQUIPO MECANICO',
     items: [
       { id: 9, name: "Equipos y Herramientas", icon: "fa fa-building", imagen: "ictiempro1.png", verImagen: true }
+    ]
+  },
+  {
+    titulo: 'SUB CONTRATOS',
+    items: [
+      { id: 15, name: "Ing. y sal. subcontratos", icon: "fa fa-building", imagen: "ictiempro1.png", verImagen: true }
     ]
   },
   {

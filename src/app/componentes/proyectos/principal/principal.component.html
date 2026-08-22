@@ -565,7 +565,7 @@
                                 [ngbTooltip]="!ocultarMenu ? 'Ocultar Menu' : 'Mostrar Menu'"><i class="fa icono-but"
                                   [ngClass]="{'fa-arrow-left': !ocultarMenu, 'fa-arrow-right': ocultarMenu}"></i></button>
                             </div>
-                            <ng-container *ngIf="tab.get('menu_proyecto_seleccionado').value == 0">
+                            <!-- <ng-container *ngIf="tab.get('menu_proyecto_seleccionado').value == 0">
                               <app-aspectos-generales [tabproyecto]="tab"
                                 (tabChange)="onTabChange($event)"></app-aspectos-generales>
                             </ng-container>
@@ -573,7 +573,6 @@
                               <app-data-proyecto [tabproyecto]="tab"></app-data-proyecto>
                             </ng-container>
                             <ng-container *ngIf="tab.get('menu_proyecto_seleccionado').value == 2">
-                              <!-- <app-presdirecto [tabproyecto]="tab"></app-presdirecto> -->
                               <app-insumos-por-partida [tabproyecto]="tab"></app-insumos-por-partida>
                             </ng-container>
                             <ng-container *ngIf="tab.get('menu_proyecto_seleccionado').value == 3">
@@ -589,41 +588,95 @@
                               <app-panelelabreq [tabproyecto]="tab"></app-panelelabreq>
                             </ng-container>
                             <ng-container *ngIf="tab.get('menu_proyecto_seleccionado').value == 7">
-                              <!-- <app-hoja-metrados [tabproyecto]="tab"></app-hoja-metrados> -->
                               <app-panelalmc [tabproyecto]="tab"></app-panelalmc>
                             </ng-container>
                             <ng-container *ngIf="tab.get('menu_proyecto_seleccionado').value == 8">
-                              <!-- <app-formula-polinomica [idProyecto]="tab.get('id_proyecto').value"
-                                [tabproyecto]="tab"></app-formula-polinomica> -->
                               <app-equipos-herramientas [tabproyecto]="tab"></app-equipos-herramientas>
                             </ng-container>
                             <ng-container *ngIf="tab.get('menu_proyecto_seleccionado').value == 9">
-                              <!-- <app-panel-recursos-humanos [idProyecto]="tab.get('id_proyecto').value"
-                                [tabproyecto]="tab" [ocultarMenu]="ocultarMenu"
-                                [nombreProyecto]="tab.get('nombre_proyecto').value"></app-panel-recursos-humanos> -->
-
+                              <app-subcontratos [tabproyecto]="tab"></app-subcontratos>
+                            </ng-container>
+                            <ng-container *ngIf="tab.get('menu_proyecto_seleccionado').value == 10">
                               <app-configuracion-planilla [idProyecto]="tab.get('id_proyecto').value"
                                 [tabproyecto]="tab" [ocultarMenu]="ocultarMenu"
                                 [nombreProyecto]="tab.get('nombre_proyecto').value"></app-configuracion-planilla>
                             </ng-container>
-                            <ng-container *ngIf="tab.get('menu_proyecto_seleccionado').value == 10">
-                              <!-- <app-panel-recursos-humanos [idProyecto]="tab.get('id_proyecto').value" [tabproyecto]="tab"
-                                [ocultarMenu]="ocultarMenu"
-                                [nombreProyecto]="tab.get('nombre_proyecto').value"></app-panel-recursos-humanos> -->
-                            </ng-container>
-                            <!-- <ng-container *ngIf="tab.get('menu_proyecto_seleccionado').value == 10">
-                              <app-especificaciones-tecnicas [idProyecto]="tab.get('id_proyecto').value"
-                                [tabproyecto]="tab">
-                              </app-especificaciones-tecnicas>
-                            </ng-container> -->
-                            <ng-container *ngIf="tab.get('menu_proyecto_seleccionado').value ==11">
-                              <app-informes-reportes [tabproyecto]="tab"></app-informes-reportes>
+                            <ng-container *ngIf="tab.get('menu_proyecto_seleccionado').value == 11">
+
                             </ng-container>
                             <ng-container *ngIf="tab.get('menu_proyecto_seleccionado').value ==12">
-                              <app-planillas [tabproyecto]="tab"></app-planillas>
+                              <app-informes-reportes [tabproyecto]="tab"></app-informes-reportes>
                             </ng-container>
                             <ng-container *ngIf="tab.get('menu_proyecto_seleccionado').value ==13">
+                              <app-planillas [tabproyecto]="tab"></app-planillas>
+                            </ng-container>
+                            <ng-container *ngIf="tab.get('menu_proyecto_seleccionado').value ==14">
                               <app-reportes-rh [tabproyecto]="tab"></app-reportes-rh>
+                            </ng-container> -->
+                            <ng-container *ngIf="tab.get('menu_proyecto_seleccionado').value == 0">
+                              <app-aspectos-generales [tabproyecto]="tab"
+                                (tabChange)="onTabChange($event)"></app-aspectos-generales>
+                            </ng-container>
+
+                            <ng-container *ngIf="tab.get('menu_proyecto_seleccionado').value == 1">
+                              <app-data-proyecto [tabproyecto]="tab"></app-data-proyecto>
+                            </ng-container>
+
+                            <ng-container *ngIf="tab.get('menu_proyecto_seleccionado').value == 2">
+                              <app-insumos-por-partida [tabproyecto]="tab"></app-insumos-por-partida>
+                            </ng-container>
+
+                            <ng-container *ngIf="tab.get('menu_proyecto_seleccionado').value == 3">
+                              <app-metradosdiarios [tabproyecto]="tab"></app-metradosdiarios>
+                            </ng-container>
+
+                            <ng-container *ngIf="tab.get('menu_proyecto_seleccionado').value == 4">
+                              <app-presindir [tabproyecto]="tab"></app-presindir>
+                            </ng-container>
+
+                            <ng-container *ngIf="tab.get('menu_proyecto_seleccionado').value == 5">
+                              <app-panelprocura [tabproyecto]="tab"></app-panelprocura>
+                            </ng-container>
+
+                            <ng-container *ngIf="tab.get('menu_proyecto_seleccionado').value == 6">
+                              <app-panelelabreq [tabproyecto]="tab"></app-panelelabreq>
+                            </ng-container>
+
+                            <ng-container *ngIf="tab.get('menu_proyecto_seleccionado').value == 7">
+                              <app-panelalmc [tabproyecto]="tab"></app-panelalmc>
+                            </ng-container>
+
+                            <ng-container *ngIf="tab.get('menu_proyecto_seleccionado').value == 8">
+                              <app-equipos-herramientas [tabproyecto]="tab"></app-equipos-herramientas>
+                            </ng-container>
+
+                            <!-- RESTAURADO A SU VALOR ORIGINAL (9) -->
+                            <ng-container *ngIf="tab.get('menu_proyecto_seleccionado').value == 9">
+                              <app-configuracion-planilla [idProyecto]="tab.get('id_proyecto').value"
+                                [tabproyecto]="tab" [ocultarMenu]="ocultarMenu"
+                                [nombreProyecto]="tab.get('nombre_proyecto').value"></app-configuracion-planilla>
+                            </ng-container>
+
+                            <ng-container *ngIf="tab.get('menu_proyecto_seleccionado').value == 10">
+
+                            </ng-container>
+
+                            <!-- RESTAURADOS A SUS VALORES ORIGINALES (11, 12, 13) -->
+                            <ng-container *ngIf="tab.get('menu_proyecto_seleccionado').value == 11">
+                              <app-informes-reportes [tabproyecto]="tab"></app-informes-reportes>
+                            </ng-container>
+
+                            <ng-container *ngIf="tab.get('menu_proyecto_seleccionado').value == 12">
+                              <app-planillas [tabproyecto]="tab"></app-planillas>
+                            </ng-container>
+
+                            <ng-container *ngIf="tab.get('menu_proyecto_seleccionado').value == 13">
+                              <app-reportes-rh [tabproyecto]="tab"></app-reportes-rh>
+                            </ng-container>
+
+                            <!-- SUBCONTRATOS (15 - 1 = 14) -->
+                            <ng-container *ngIf="tab.get('menu_proyecto_seleccionado').value == 14">
+                              <app-subcontratos [tabproyecto]="tab"></app-subcontratos>
                             </ng-container>
                           </app-card>
                         </div>
