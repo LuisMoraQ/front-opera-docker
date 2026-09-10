@@ -1424,4 +1424,164 @@ export class RecursosHumanosService {
             catchError(err => throwError(err))
         ).toPromise();
     }
+
+    listarCuadrillaDia(params = {}): Promise<any> {
+        let formData: FormData = new FormData();
+        Object.entries(params).forEach(([key, value]) => {
+            formData.append(key, value as string);
+        });
+
+        const url = this.enviUrl + '/api/recursoshumanos/listarCuadrillaDia';
+        return this.http.post<any>(url, formData).pipe(
+            map(res => {
+                if (!res) {
+                    throw new Error('Sin respuesta del servidor');
+                }
+                return res;
+            }),
+            catchError(err => throwError(() => err))
+        ).toPromise();
+    }
+
+    listarCuadrillaFechaOMayor(params = {}): Promise<any> {
+        let formData: FormData = new FormData();
+        Object.entries(params).forEach(([key, value]) => {
+            formData.append(key, value as string);
+        });
+
+        const url = this.enviUrl + '/api/recursoshumanos/listarCuadrillaFechaOMayor';
+        return this.http.post<any>(url, formData).pipe(
+            map(res => {
+                if (!res) {
+                    throw new Error('Sin respuesta del servidor');
+                }
+                return res;
+            }),
+            catchError(err => throwError(() => err))
+        ).toPromise();
+    }
+
+    guardarCuadrilla(formData: FormData): Promise<any> {
+        const url = `${this.enviUrl}/api/recursoshumanos/guardarCuadrilla `;
+
+        return this.http.post<any>(url, formData).pipe(
+            map(res => {
+                if (!res) {
+                    throw new Error('No se recibió respuesta del servidor');
+                }
+                return res;
+            }),
+            catchError(err => {
+                console.error('Error en guardarCuadrilla:', err);
+                return throwError(() => err);
+            })
+        ).toPromise();
+    }
+
+    eliminarCuadrilla(formData: FormData): Promise<any> {
+        const url = `${this.enviUrl}/api/recursoshumanos/eliminarCuadrilla`;
+
+        return this.http.post<any>(url, formData).pipe(
+            map(res => {
+                if (!res) {
+                    throw new Error('No se recibió respuesta del servidor');
+                }
+                return res;
+            }),
+            catchError(err => {
+                console.error('Error en eliminarCuadrilla:', err);
+                return throwError(() => err);
+            })
+        ).toPromise();
+    }
+
+    listarActividadesCuadrilla(params: { id_proyecto: string | number, fecha: string }): Promise<any> {
+        const formData: FormData = new FormData();
+        formData.append('id_proyecto', params.id_proyecto.toString());
+        formData.append('fecha', params.fecha);
+
+        const url = `${this.enviUrl}/api/recursoshumanos/listarActividadesCuadrilla`;
+        return this.http.post<any>(url, formData).pipe(
+            map(res => {
+                if (!res) throw new Error('Sin respuesta del servidor');
+                return res;
+            }),
+            catchError(err => throwError(() => err))
+        ).toPromise();
+    }
+
+    // Servicio para guardar, actualizar o eliminar actividades/cabeceras
+    guardarActividadCuadrilla(formData: FormData): Promise<any> {
+        const url = `${this.enviUrl}/api/recursoshumanos/guardarActividadCuadrilla`;
+        return this.http.post<any>(url, formData).pipe(
+            map(res => {
+                if (!res) throw new Error('Sin respuesta del servidor');
+                return res;
+            }),
+            catchError(err => throwError(() => err))
+        ).toPromise();
+    }
+
+    duplicarCuadrillasDia(formData: FormData): Promise<any> {
+        const url = `${this.enviUrl}/api/recursoshumanos/duplicarCuadrillasDia`;
+
+        return this.http.post<any>(url, formData).pipe(
+            map(res => {
+                if (!res) {
+                    throw new Error('Sin respuesta del servidor');
+                }
+                return res;
+            }),
+            catchError(err => throwError(() => err))
+        ).toPromise();
+    }
+
+    guardarActividadesMasivo(actividades: any[]): Promise<any> {
+        const url = `${this.enviUrl}/api/recursoshumanos/guardarActividadesMasivo`;
+        return this.http.post<any>(url, actividades).pipe(
+            map(res => {
+                if (!res) throw new Error('Sin respuesta del servidor');
+                return res;
+            }),
+            catchError(err => throwError(() => err))
+        ).toPromise();
+    }
+
+    listarPresupuestoProyecto(params: { id_proyecto: string }): Promise<any> {
+        let formData: FormData = new FormData();
+        Object.entries(params).forEach(([key, value]) => {
+            formData.append(key, value as string);
+        });
+
+        const url = this.enviUrl + '/api/recursoshumanos/listarPrespuestoSimplificado';
+
+        return this.http.post<any>(url, formData).pipe(
+            map(res => {
+                if (!res) {
+                    throw new Error("No se pudo obtener el presupuesto del proyecto.");
+                }
+                return res; // Retorna la lista de partidas del presupuesto
+            }),
+            catchError(err => throwError(err))
+        ).toPromise();
+    }
+
+    guardarVinculosMasivo(payload: any[]): Promise<any> {
+        const url = `${this.enviUrl}/api/recursoshumanos/guardarVinculosMasivo`;
+        return this.http.post<any>(url, payload).pipe(
+            map(res => {
+                if (!res) throw new Error('Sin respuesta del servidor');
+                return res;
+            }),
+            catchError(err => throwError(() => err))
+        ).toPromise();
+    }
+
+    listarCalendarioRegistroVinculos(params: { id_proyecto: string; anio_mes: string }): Promise<any> {
+        let formData: FormData = new FormData();
+        Object.entries(params).forEach(([key, value]) => formData.append(key, value as string));
+
+        const url = this.enviUrl + '/api/recursoshumanos/listarCalendarioRegistroVinculos';
+        return this.http.post<any>(url, formData).toPromise();
+    }
 }

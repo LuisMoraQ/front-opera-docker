@@ -1,0 +1,1191 @@
+<div id="divbut" style="width: calc(100% - 58px); margin-left: 44px" class="hidescroll m-b-10">
+    <div class="row " style="margin-right: 0px; margin-left: 0px">
+        <button class="btn btn-sm btn-outline-secondary btn-menu-top" type="button" (mouseup)="quitarfoco($event)"
+            (click)="cambioVista(1)" style="padding: 4px 8px" [ngClass]="{ active: subvista === 1 }">
+            <i class="fa fa-list"></i>ASIGNACION DE PERSONAL
+        </button>
+        <button class="btn btn-sm btn-outline-secondary btn-menu-top" type="button" (mouseup)="quitarfoco($event)"
+            style="padding: 4px 8px" [ngClass]="{ active: subvista === 2 }" (click)="cambioVista(2)">
+            <i class="fa fa-list"></i> VINCULO DE ACTIVIDADES
+        </button>
+        <button class="btn btn-sm btn-outline-secondary btn-menu-top" type="button" (mouseup)="quitarfoco($event)"
+            style="padding: 4px 8px" [ngClass]="{ active: subvista === 3 }" (click)="cambioVista(3)">
+            <i class="fa fa-list"></i> ASIGNACION DE PERDIDA DE OBRA
+        </button>
+        <button class="btn btn-sm btn-outline-secondary btn-menu-top" type="button" (mouseup)="quitarfoco($event)"
+            style="padding: 4px 8px" [ngClass]="{ active: subvista === 3 }" (click)="cambioVista(3)">
+            <i class="fa fa-list"></i> CONTROL DIARIO
+        </button>
+    </div>
+</div>
+<div class="row px-3 d-flex ">
+    <ng-container *ngIf="subvista == 1">
+        <div class="col-12 d-flex pl-0 mb-3">
+            <mat-form-field appearance="outline" class="mff-reduc my-form-field col-3" [floatLabel]="'always'">
+                <mat-label>Mes</mat-label>
+                <select matNativeControl [(ngModel)]="mesSeleccionado" (change)="cambioMes()">
+                    <option *ngFor="let mes of meses; let index = index" [value]="index">
+                        {{mes.mes}}
+                    </option>
+                </select>
+            </mat-form-field>
+            <div class="col-9 px-0" style="overflow: auto">
+                <table class="mini-tabla tab-10 table-bordered w-100">
+                    <thead class="text-center">
+                        <tr>
+                            <th>REGISTRO</th>
+                            <th *ngFor="let dia of dias; let i = index" (click)="seleccionDia(dia)"
+                                [ngClass]="{'diaSeleccionado':diaSeleccionado == dia}">
+                                {{dia.descripcion_dia}}
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-center">
+                        <tr>
+                            <td>ESTADO</td>
+                            <td *ngFor="let dia of dias; let i = index" (click)="seleccionDia(dia)"
+                                [ngClass]="{'diaSeleccionado': diaSeleccionado == dia}">
+
+                                <!-- 1. Si estado es 1: Muestra ícono de OK (Check verde) -->
+                                <i *ngIf="dia.estado === 1" class="fa fa-check-circle text-success"
+                                    style="font-size: 16px;"></i>
+
+                                <!-- 2. Si estado es 0 y la fecha es menor a la fecha actual: Muestra ícono de error/asistencia pendiente (Cruz roja) -->
+                                <i *ngIf="dia.estado === 0 && dia.fecha < fechaHoy"
+                                    class="fa fa-times-circle text-danger" style="font-size: 16px;"></i>
+
+                                <!-- 3. Si la fecha es igual o mayor a hoy y estado es 0: Queda vacío (no entra a ningún ngIf) -->
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="w-100 tabla-limp overflow-auto h-tabla-pres d-flex">
+
+            <!-- TABLA DE PERSONAL Y CUADRILLAS -->
+            <div class="col-5">
+                <div class="row mb-2 px-3 justify-content-between align-items-center">
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-sm btn-primary mr-1" (click)="abrirModalCrearCuadrilla()"
+                            [disabled]="!diaSeleccionado || modoAgrupar || modoVincularPersonal">
+                            <i class="fa fa-plus"></i> Cuadrilla
+                        </button>
+
+                        <button type="button" class="btn btn-sm btn-secondary mr-1"
+                            (click)="abrirModalReemplazarCuadrilla()"
+                            [disabled]="!diaSeleccionado || modoAgrupar || modoVincularPersonal">
+                            <i class="fa fa-refresh"></i> Reemplazar Cuadrilla
+                        </button>
+
+                        <button type="button" class="btn btn-sm mr-1"
+                            [ngClass]="modoAgrupar ? 'btn-warning' : 'btn-outline-primary'"
+                            (click)="toggleModoAgrupar()" [disabled]="!diaSeleccionado || modoVincularPersonal">
+                            <i class="fa" [ngClass]="modoAgrupar ? 'fa-times' : 'fa-object-group'"></i>
+                            {{ modoAgrupar ? 'Cancelar Agrupación' : 'Agrupar Personal' }}
+                        </button>
+
+
+
+                        <!-- BOTÓN MODO VINCULAR PERSONAL / ACTIVIDADES -->
+                        <button type="button" class="btn btn-sm ml-1"
+                            [ngClass]="modoVincularPersonal ? 'btn-danger' : 'btn-outline-info'"
+                            (click)="toggleModoVincularPersonal()"
+                            [disabled]="!diaSeleccionado || modoAgrupar || modoAgruparActividades">
+                            <i class="fa" [ngClass]="modoVincularPersonal ? 'fa-times' : 'fa-check-square-o'"></i>
+                            {{ modoVincularPersonal ? 'Cancelar Vincular' : 'Vincular Selección' }}
+                        </button>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="tab-10 table-bordered table-hover table-sm py-0 my-0">
+                        <thead>
+                            <tr class="bg-primary text-white text-center font-weight-bold" style="font-size: 11px;">
+                                <th *ngIf="modoVincularPersonal" style="width: 30px; vertical-align: middle;">
+                                    <input type="checkbox"
+                                        (change)="toggleSeleccionarTodosUsuarios($event.target.checked)" />
+                                </th>
+                                <th *ngIf="modoAgrupar" style="width: 55px; vertical-align: middle;">Mover</th>
+                                <th style="width: 35px; vertical-align: middle;">N°</th>
+                                <th style="vertical-align: middle;">Cuadrilla / Personal</th>
+                                <th style="width: 100px; vertical-align: middle;">Cargo / Tipo</th>
+                                <th style="width: 90px; vertical-align: middle;">Jornal</th>
+                                <th style="width: 45px; vertical-align: middle;">Acc.</th>
+                            </tr>
+                        </thead>
+
+                        <tbody *ngFor="let grupoUsr of listaEstructuradaCuadrillas; let gIdx = index">
+                            <!-- ========================================== -->
+                            <!-- CABECERA DE CUADRILLA O PERSONAL SIN CUADRILLA -->
+                            <!-- ========================================== -->
+                            <tr class="bg-light font-weight-bold" style="background-color: #fceada !important;">
+                                <td *ngIf="modoVincularPersonal" class="text-center align-middle py-1">
+                                    <input type="checkbox" [checked]="esCuadrillaTotalmenteSeleccionada(grupoUsr)"
+                                        (change)="toggleSeleccionarCuadrilla(grupoUsr, $any($event.target).checked)" />
+                                </td>
+
+                                <!-- BOTÓN EN CABECERA PARA AGRUPAR EN MODO AGRUPAR -->
+                                <td *ngIf="modoAgrupar" class="text-center align-middle py-1">
+                                    <button *ngIf="grupoUsr.id_cuadrilla !== null" type="button"
+                                        class="btn btn-xs btn-success font-weight-bold px-1 py-0"
+                                        title="Mover usuarios marcados a esta cuadrilla" [disabled]="mostrar_carga_todo"
+                                        (click)="moverUsuariosMarcadosACuadrilla(grupoUsr)">
+                                        <i class="fa"
+                                            [ngClass]="mostrar_carga_todo ? 'fa-spinner fa-spin' : 'fa-level-down'"></i>
+                                        Mover
+                                    </button>
+                                </td>
+
+
+                                <td [attr.colspan]="4" class="py-1 px-2 align-middle">
+                                    <span class="text-dark font-weight-bold" style="font-size: 12px;">
+                                        {{ grupoUsr.descripcion }}
+                                    </span>
+                                </td>
+                                <td class="text-center align-middle py-1">
+                                    <div class="d-flex justify-content-around align-items-center">
+                                        <span class="badge badge-pill text-white px-2 py-1"
+                                            [ngClass]="grupoUsr.id_cuadrilla === null ? 'bg-success' : 'bg-info'"
+                                            style="font-size: 10px;">
+                                            {{ (gIdx + 1) < 10 ? '0' + (gIdx + 1) : (gIdx + 1) }} </span>
+                                                <button *ngIf="grupoUsr.id_cuadrilla !== null" type="button"
+                                                    class="btn btn-xs btn-outline-danger p-0 px-1 ml-1"
+                                                    (click)="eliminarCuadrilla(grupoUsr)"
+                                                    title="Eliminar esta cuadrilla">
+                                                    <i class="fa fa-times"></i>
+                                                </button>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <!-- ========================================== -->
+                            <!-- FILAS DE INTEGRANTES / PERSONAL             -->
+                            <!-- ========================================== -->
+                            <tr *ngFor="let usr of grupoUsr.integrantes" style="font-size: 11px;">
+                                <td *ngIf="modoVincularPersonal" class="text-center align-middle py-1">
+                                    <input type="checkbox" [checked]="esUsuarioSeleccionado(usr)"
+                                        (change)="toggleSeleccionUsuario(usr, $any($event.target).checked)" />
+                                </td>
+
+                                <!-- SLIDER EN MODO AGRUPAR (Solo en 'Personal sin cuadrilla') -->
+                                <td *ngIf="modoAgrupar" class="text-center align-middle py-1">
+                                    <label *ngIf="grupoUsr.id_cuadrilla === null" class="switch my-0 align-middle">
+                                        <input type="checkbox"
+                                            [checked]="usuariosSlidersMap.has(usr.id_usuario ?? usr.id)"
+                                            (change)="toggleSliderUsuario(usr, $any($event.target).checked)" />
+                                        <span class="slider-toggle"></span>
+                                    </label>
+                                </td>
+
+                                <td class="text-center align-middle py-1 text-muted font-weight-bold">
+                                    {{ usr.indexGlobal }}
+                                </td>
+                                <td class="text-left py-1 px-2">
+                                    {{ usr.nombres }} {{ usr.apellidos }}
+                                </td>
+                                <td class="text-center align-middle py-1 px-1 text-uppercase font-weight-bold text-muted"
+                                    style="font-size: 10px;">
+                                    {{ getCargoTipoFormat(usr) }}
+                                </td>
+                                <td class="text-center align-middle py-1 font-weight-bold"
+                                    [ngClass]="(!usr.horaJornada || usr.horaJornada === '00:00') ? 'text-danger' : 'text-dark'">
+                                    {{ usr.horaJornada || '00:00' }}
+                                </td>
+                                <td class="text-center align-middle py-1">
+                                    <button *ngIf="grupoUsr.id_cuadrilla !== null"
+                                        class="btn btn-xs btn-outline-warning p-0 px-1" [disabled]="mostrar_carga_todo"
+                                        (click)="quitarUsuarioDeCuadrilla(usr, grupoUsr)"
+                                        title="Quitar de esta cuadrilla">
+                                        <i class="fa"
+                                            [ngClass]="mostrar_carga_todo ? 'fa-spinner fa-spin' : 'fa-user-times'"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- ========================================== -->
+            <!-- TABLA DE ACTIVIDADES                      -->
+            <!-- ========================================== -->
+            <div class="col-7">
+                <div class="row mb-2 px-3 justify-content-between align-items-center">
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-sm btn-primary mr-1" (click)="agregarActividadSinAgrupar()"
+                            [disabled]="!diaSeleccionado || modoAgruparActividades || modoVincularPersonal">
+                            <i class="fa fa-plus"></i> Actividad
+                        </button>
+
+                        <button type="button" class="btn btn-sm btn-outline-primary mr-1"
+                            (click)="agregarMultiplesActividades()"
+                            [disabled]="!diaSeleccionado || modoAgruparActividades || modoVincularPersonal">
+                            <i class="fa fa-plus-square"></i> N Actividades
+                        </button>
+
+                        <button type="button" class="btn btn-sm"
+                            [ngClass]="modoAgruparActividades ? 'btn-warning' : 'btn-outline-primary'"
+                            (click)="toggleModoAgruparActividades()"
+                            [disabled]="!diaSeleccionado || modoVincularPersonal">
+                            <i class="fa" [ngClass]="modoAgruparActividades ? 'fa-times' : 'fa-object-group'"></i>
+                            {{ modoAgruparActividades ? 'Cancelar Agrupación' : 'Agrupar Actividades' }}
+                        </button>
+
+                        <button *ngIf="modoAgruparActividades" type="button" class="btn btn-sm btn-success ml-1"
+                            (click)="confirmarAgrupamientoActividades()">
+                            <i class="fa fa-save"></i> Guardar Agrupamiento
+                        </button>
+
+                        <button type="button" class="btn btn-sm btn-outline-info ml-1"
+                            (click)="abrirModalCopiarActividades()"
+                            [disabled]="!diaSeleccionado || modoAgruparActividades || modoVincularPersonal">
+                            <i class="fa fa-copy"></i> Copiar Actividades
+                        </button>
+
+                        <!-- BOTÓN NUEVO: VINCULAR CON PRESUPUESTO -->
+                        <button type="button" class="btn btn-sm btn-outline-secondary ml-1"
+                            (click)="abrirModalVinculacion()"
+                            [disabled]="!diaSeleccionado || modoAgruparActividades || modoVincularPersonal">
+                            <i class="fa fa-balance-scale"></i> Vincular Presupuesto
+                        </button>
+
+                        <!-- BOTÓN PARA EJECUTAR LA VINCULACIÓN MASIVA -->
+                        <button *ngIf="modoVincularPersonal" type="button"
+                            class="btn btn-sm btn-success ml-2 font-weight-bold" (click)="procesarVinculacionMasiva()">
+                            <i class="fa fa-link"></i> Aplicar Vinculación
+                        </button>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="tab-10 table-bordered table-hover table-sm py-0 my-0">
+                        <thead>
+                            <tr class="bg-primary text-white text-center font-weight-bold" style="font-size: 11px;">
+                                <th *ngIf="modoVincularPersonal" style="width: 30px; vertical-align: middle;">
+                                    <input type="checkbox"
+                                        (change)="toggleSeleccionarTodasActividades($event.target.checked)" />
+                                </th>
+                                <th style="width: 35px; vertical-align: middle;">N°</th>
+                                <th *ngIf="modoAgruparActividades" style="width: 110px; vertical-align: middle;">Mover a
+                                </th>
+                                <th style="width: 80px; vertical-align: middle;">Asignación</th>
+                                <th style="vertical-align: middle;">Descripción de Actividades</th>
+                                <th style="width: 100px; vertical-align: middle;">Ubicación</th>
+                                <th style="width: 45px; vertical-align: middle;">Unid</th>
+                                <th style="width: 60px; vertical-align: middle;">Metrado</th>
+                                <th style="width: 65px; vertical-align: middle;">Horas</th>
+                                <th style="width: 75px; vertical-align: middle;">Tipo</th>
+                                <th style="width: 45px; vertical-align: middle;">Acc.</th>
+                            </tr>
+                        </thead>
+
+                        <tbody *ngFor="let grupo of listaEstructuradaActividades; let gIdx = index">
+                            <tr class="bg-light font-weight-bold" style="background-color: #fceada !important;">
+                                <td *ngIf="modoVincularPersonal" class="text-center align-middle py-1">
+                                    <input type="checkbox" [checked]="esGrupoActividadesTotalmenteSeleccionado(grupo)"
+                                        (change)="toggleSeleccionarGrupoActividades(grupo, $any($event.target).checked)" />
+                                </td>
+                                <td [attr.colspan]="modoAgruparActividades ? 9 : 8" class="py-1 px-2 align-middle">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="text-dark font-weight-bold" style="font-size: 12px;">
+                                            {{ grupo.descripcion }}
+                                        </span>
+                                        <span *ngIf="grupo.cuadrilla !== null"
+                                            class="badge badge-light border text-dark font-weight-bold px-2 py-1"
+                                            style="font-size: 11px;">
+                                            <i class="fa fa-clock-o mr-1 text-primary"></i> Total: {{ grupo.horasTotal
+                                            || '00:00' }}
+                                        </span>
+                                    </div>
+                                </td>
+                                <td class="text-center align-middle py-1">
+                                    <div class="d-flex justify-content-around align-items-center">
+                                        <span class="badge badge-pill text-white px-2 py-1"
+                                            [ngClass]="grupo.cuadrilla === null ? 'bg-success' : 'bg-info'"
+                                            style="font-size: 10px;">
+                                            {{ (gIdx + 1) < 10 ? '0' + (gIdx + 1) : (gIdx + 1) }} </span>
+                                                <button *ngIf="grupo.cuadrilla !== null" type="button"
+                                                    class="btn btn-xs btn-outline-danger p-0 px-1 ml-1"
+                                                    (click)="eliminarCabeceraActividades(grupo)"
+                                                    title="Eliminar cabecera">
+                                                    <i class="fa fa-times"></i>
+                                                </button>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <tr *ngFor="let act of grupo.actividades; let aIdx = index" style="font-size: 11px;">
+                                <td *ngIf="modoVincularPersonal" class="text-center align-middle py-1">
+                                    <input type="checkbox" [checked]="esActividadSeleccionada(act)"
+                                        (change)="toggleSeleccionActividad(act, $any($event.target).checked)" />
+                                </td>
+
+                                <!-- CORRECCIÓN DEL N°: Muestra el índice del elemento dentro de la lista de su grupo (1, 2, 3...) -->
+                                <td class="text-center align-middle py-1 text-muted font-weight-bold">
+                                    {{ aIdx + 1 }}
+                                </td>
+                                <td *ngIf="modoAgruparActividades" class="text-center align-middle p-1">
+                                    <select *ngIf="grupo.cuadrilla === null"
+                                        class="custom-select custom-select-sm px-1 py-0"
+                                        style="height: 24px; font-size: 10px; width: 100%;"
+                                        (focus)="actualizarOpcionesCabecerasActividades()"
+                                        (change)="prepararMovimientoActividad(act, $event.target.value)">
+                                        <option value="">-- Seleccionar --</option>
+                                        <option *ngFor="let opt of opcionesCabecerasDisponibles"
+                                            [value]="opt.cuadrilla">
+                                            {{ opt.descripcion }}
+                                        </option>
+                                    </select>
+                                </td>
+
+                                <td class="text-center align-middle py-1 px-1 cursor-pointer font-weight-bold text-primary"
+                                    (dblclick)="act.editandoCampo = 'usuarios'">
+
+                                    <span *ngIf="act.editandoCampo !== 'usuarios'">
+                                        {{ obtenerIndexGlobalDesdeIds(act.usuarios) }}
+                                    </span>
+
+                                    <input *ngIf="act.editandoCampo === 'usuarios'" type="text"
+                                        class="form-control form-control-sm text-center p-0"
+                                        style="font-size: 10px; height: 22px;"
+                                        [value]="obtenerIndexGlobalDesdeIds(act.usuarios)"
+                                        (blur)="onBlurAsignacionPersonal(act, $any($event.target).value)"
+                                        (keyup.enter)="$any($event.target).blur()"
+                                        (keyup.esc)="act.editandoCampo = null" autofocus />
+                                </td>
+
+                                <!-- 1. DESCRIPCIÓN -->
+                                <td class="text-left py-1 px-2 cursor-pointer"
+                                    (dblclick)="iniciarEdicionCampo(act, 'descripcion', inputDesc)">
+                                    <span *ngIf="act.editandoCampo !== 'descripcion'">{{ act.descripcion }}</span>
+                                    <input #inputDesc *ngIf="act.editandoCampo === 'descripcion'" type="text"
+                                        class="form-control form-control-sm p-1" style="font-size: 10px; height: 22px;"
+                                        [(ngModel)]="act.descripcion" (blur)="guardarEdicionCampo(act, 'descripcion')"
+                                        (keyup.enter)="guardarEdicionCampo(act, 'descripcion')"
+                                        (keyup.esc)="act.editandoCampo = null" />
+                                </td>
+
+                                <!-- 2. UBICACIÓN -->
+                                <td class="align-middle py-1 px-1 cursor-pointer"
+                                    (dblclick)="iniciarEdicionCampo(act, 'ubicacion', inputUbi)">
+                                    <span *ngIf="act.editandoCampo !== 'ubicacion'">{{ act.ubicacion }}</span>
+                                    <input #inputUbi *ngIf="act.editandoCampo === 'ubicacion'" type="text"
+                                        class="form-control form-control-sm p-1" style="font-size: 10px; height: 22px;"
+                                        [(ngModel)]="act.ubicacion" (blur)="guardarEdicionCampo(act, 'ubicacion')"
+                                        (keyup.enter)="guardarEdicionCampo(act, 'ubicacion')"
+                                        (keyup.esc)="act.editandoCampo = null" />
+                                </td>
+
+                                <!-- 3. UNIDAD -->
+                                <td class="text-center align-middle py-1 cursor-pointer"
+                                    (dblclick)="iniciarEdicionCampo(act, 'unidad', inputUni)">
+                                    <span *ngIf="act.editandoCampo !== 'unidad'">{{ act.unidad }}</span>
+                                    <input #inputUni *ngIf="act.editandoCampo === 'unidad'" type="text"
+                                        class="form-control form-control-sm text-center p-0"
+                                        style="font-size: 10px; height: 22px;" [(ngModel)]="act.unidad"
+                                        (blur)="guardarEdicionCampo(act, 'unidad')"
+                                        (keyup.enter)="guardarEdicionCampo(act, 'unidad')"
+                                        (keyup.esc)="act.editandoCampo = null" />
+                                </td>
+
+                                <!-- 4. METRADO -->
+                                <td class="text-right align-middle py-1 px-1 cursor-pointer"
+                                    (dblclick)="iniciarEdicionCampo(act, 'metrado', inputMet)">
+                                    <span *ngIf="act.editandoCampo !== 'metrado'">{{ act.metrado | number:'1.2-2'
+                                        }}</span>
+                                    <input #inputMet *ngIf="act.editandoCampo === 'metrado'" type="number" step="0.01"
+                                        class="form-control form-control-sm text-right p-0"
+                                        style="font-size: 10px; height: 22px;" [(ngModel)]="act.metrado"
+                                        (blur)="guardarEdicionCampo(act, 'metrado')"
+                                        (keyup.enter)="guardarEdicionCampo(act, 'metrado')"
+                                        (keyup.esc)="act.editandoCampo = null" />
+                                </td>
+
+                                <!-- 5. HORAS LABORADAS -->
+                                <td class="text-center align-middle py-1 cursor-pointer"
+                                    (dblclick)="iniciarEdicionCampo(act, 'horas_laborada', inputHoras)">
+                                    <span *ngIf="act.editandoCampo !== 'horas_laborada'">{{ act.horas_laborada }}</span>
+                                    <input #inputHoras *ngIf="act.editandoCampo === 'horas_laborada'" type="time"
+                                        class="form-control form-control-sm text-center p-0"
+                                        style="font-size: 10px; height: 22px;" [(ngModel)]="act.horas_laborada"
+                                        (blur)="guardarEdicionCampo(act, 'horas_laborada')"
+                                        (keyup.enter)="guardarEdicionCampo(act, 'horas_laborada')"
+                                        (keyup.esc)="act.editandoCampo = null" />
+                                </td>
+
+                                <td class="text-center align-middle py-1 px-1">
+                                    <select class="form-control form-control-sm text-center font-weight-bold p-0"
+                                        style="font-size: 10px; height: 22px;" [ngClass]="obtenerColorTipo(act.tipo)"
+                                        [ngModel]="act.tipo"
+                                        (change)="onChangeTipo(act, $any($event.target).value, act.tipo)">
+
+                                        <ng-container *ngFor="let t of tiposTrabajo">
+                                            <!-- Si la actividad NO es 'TT', no dibuja la opción cuyo valor sea 'TT' -->
+                                            <option *ngIf="act.tipo === 'TT' || t.value !== 'TT'" [value]="t.value"
+                                                [ngClass]="t.bgClass">
+                                                {{ t.label }}
+                                            </option>
+                                        </ng-container>
+
+                                    </select>
+                                </td>
+                                <td class="text-center align-middle py-1">
+                                    <button *ngIf="grupo.cuadrilla !== null" type="button"
+                                        class="btn btn-xs btn-outline-warning p-0 px-1"
+                                        (click)="quitarDeAgrupamiento(act)" title="Quitar del agrupamiento">
+                                        <i class="fa fa-unlink"></i>
+                                    </button>
+
+                                    <button *ngIf="grupo.cuadrilla === null" type="button"
+                                        class="btn btn-xs btn-outline-danger p-0 px-1"
+                                        (click)="eliminarActividadFisica(act)" title="Eliminar registro">
+                                        <i class="fa fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </ng-container>
+    <ng-container *ngIf="subvista == 2">
+        <!-- CABECERA INDEPENDIENTE PARA LA SUBVISTA DE VINCULACIÓN -->
+        <div class="col-12 d-flex pl-0 mb-3">
+
+            <!-- SELECTOR DE MES (Usa mesesVinculo y mesSeleccionadoVinculo) -->
+            <mat-form-field appearance="outline" class="mff-reduc my-form-field col-3" [floatLabel]="'always'">
+                <mat-label>Mes</mat-label>
+                <select matNativeControl [(ngModel)]="mesSeleccionadoVinculo" (change)="cambioMesVinculo()">
+                    <option *ngFor="let mes of mesesVinculo; let index = index" [value]="index">
+                        {{ mes.mes }}
+                    </option>
+                </select>
+            </mat-form-field>
+
+            <!-- TABLA HORIZONTAL DE DÍAS (Usa diasVinculo y diaSeleccionadoVinculo) -->
+            <div class="col-9 px-0" style="overflow: auto">
+                <table class="mini-tabla tab-10 table-bordered w-100">
+                    <thead class="text-center">
+                        <tr>
+                            <th>REGISTRO</th>
+                            <th *ngFor="let dia of diasVinculo; let i = index" (click)="seleccionDiaVinculo(dia)"
+                                [ngClass]="{'diaSeleccionado': diaSeleccionadoVinculo == dia}" style="cursor: pointer;">
+                                {{ dia.descripcion_dia }}
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-center">
+                        <tr>
+                            <td>ESTADO</td>
+                            <td *ngFor="let dia of diasVinculo; let i = index" (click)="seleccionDiaVinculo(dia)"
+                                [ngClass]="{'diaSeleccionado': diaSeleccionadoVinculo == dia}" style="cursor: pointer;">
+
+                                <!-- 1. Si estado es 1: Check verde -->
+                                <i *ngIf="dia.estado === 1" class="fa fa-check-circle text-success"
+                                    style="font-size: 16px;"></i>
+
+                                <!-- 2. Si estado es 0 y la fecha es menor a hoy: Cruz roja -->
+                                <i *ngIf="dia.estado === 0 && dia.fecha < fechaHoyVinculo"
+                                    class="fa fa-times-circle text-danger" style="font-size: 16px;"></i>
+
+                                <!-- 3. Si la fecha es igual o mayor a hoy y estado es 0: Queda vacío -->
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+        <div class="contenedor-vista-vinculacion">
+
+            <!-- BARRA DE ACCIONES SUPERIOR -->
+            <div class="d-flex align-items-center gap-2 mb-2 p-2 bg-light border rounded">
+                <button class="btn btn-outline-primary btn-sm" (click)="toggleModoSeleccionVinculo()">
+                    <i class="bi bi-check2-square"></i>
+                    {{ modoSeleccionVincularActivo ? 'Desactivar Selección' : 'Seleccionar Vínculos' }}
+                </button>
+
+                <button class="btn btn-primary btn-sm" (click)="generarPayloadGuardadoVinculo()">
+                    <i class="bi bi-save"></i> Guardar Registro
+                </button>
+            </div>
+
+            <!-- ESTRUCTURA PRINCIPAL DE TABLAS LADO A LADO -->
+            <div class="row">
+
+                <!-- TABLA IZQUIERDA: ACTIVIDADES DE CUADRILLAS -->
+                <div class="col-md-6">
+                    <div class="table-responsive border rounded" style="max-height: 650px; overflow-y: auto;">
+                        <table class="tab-10 table-bordered table-sm m-0 w-100"
+                            style="font-size: 11px; table-layout: fixed;">
+                            <thead>
+                                <tr class="bg-primary text-white text-center font-weight-bold">
+                                    <!-- NUEVA COLUMNA CHECKBOX (Solo visible en modo selección) -->
+                                    <th *ngIf="modoSeleccionVincularActivo" style="width: 35px;">Sel.</th>
+                                    <th style="width: 35px;">ITEM</th>
+                                    <th style="width: 160px;">DESCRIPCIÓN DE ACTIVIDADES REALIZADAS...</th>
+                                    <th style="width: 65px;">UBICACIÓN</th>
+                                    <th style="width: 40px;">UNID.</th>
+                                    <th style="width: 55px;">METRADO</th>
+                                    <th style="width: 55px;">HORAS</th>
+                                    <th style="width: 40px;">TIPO</th>
+                                    <th style="width: 50px;">VÍNCULO</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <ng-container *ngFor="let item of listaActividadesParaVinculo">
+
+                                    <!-- 1. CABECERA (GRUPO DE CUADRILLA O SIN AGRUPAMIENTO) -->
+                                    <tr *ngIf="item.es_cabecera" style="background-color: #fce8e6;"
+                                        class="font-weight-bold">
+                                        <!-- Checkbox para seleccionar TODO el grupo -->
+                                        <td *ngIf="modoSeleccionVincularActivo" class="text-center align-middle py-1">
+                                            <input type="checkbox" [(ngModel)]="item.seleccionadoVinculo"
+                                                (change)="toggleSeleccionarGrupo(item)">
+                                        </td>
+
+                                        <!-- Columna ITEM (A, B, C...) -->
+                                        <td class="text-center text-primary py-1 align-middle">
+                                            {{ item.item_label }}
+                                        </td>
+
+                                        <!-- Resto de la fila (colspan = 7 si está activo el checkbox, sino 7 también) -->
+                                        <td colspan="7"
+                                            class="text-left text-primary py-1 pl-2 text-uppercase align-middle text-truncate"
+                                            [title]="item.descripcion">
+                                            {{ item.descripcion }}
+                                        </td>
+                                    </tr>
+
+                                    <!-- 2. ACTIVIDAD REGULAR -->
+                                    <tr *ngIf="!item.es_cabecera">
+                                        <!-- Checkbox Individual de la Actividad -->
+                                        <td *ngIf="modoSeleccionVincularActivo" class="text-center align-middle p-1">
+                                            <input type="checkbox" [(ngModel)]="item.seleccionadoVinculo">
+                                        </td>
+
+                                        <!-- Columna ITEM (1, 2, 3...) Conserva siempre el número -->
+                                        <td class="text-center font-weight-bold align-middle p-1">
+                                            {{ item.item_label }}
+                                        </td>
+
+                                        <td class="align-middle px-1 text-truncate" [title]="item.descripcion">
+                                            {{ item.descripcion }}
+                                        </td>
+
+                                        <td class="text-center align-middle text-truncate" [title]="item.ubicacion">{{
+                                            item.ubicacion || '-' }}</td>
+                                        <td class="text-center align-middle">{{ item.unidad || '-' }}</td>
+                                        <td class="text-right align-middle pr-1">{{ item.metrado | number:'1.2-2' }}
+                                        </td>
+                                        <td class="text-center align-middle font-weight-bold text-success">{{
+                                            item.horas_laborada }}</td>
+                                        <td class="text-center align-middle">{{ item.tipo }}</td>
+
+                                        <!-- COLUMNA VÍNCULO (V / NV) -->
+                                        <td class="text-center align-middle font-weight-bold p-1">
+                                            <span *ngIf="item.indice " class="badge badge-success px-1"
+                                                title="Vinculado">
+                                                V
+                                            </span>
+                                            <span *ngIf="!item.indice " class="badge badge-secondary px-1"
+                                                title="No Vinculado">
+                                                NV
+                                            </span>
+                                        </td>
+                                    </tr>
+
+                                </ng-container>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- TABLA DERECHA: PARTIDAS DEL PRESUPUESTO -->
+                <div class="col-md-6" *ngIf="!cargandoPresupuesto">
+                    <div class="table-responsive border rounded" style="max-height: 650px; overflow-y: auto;">
+                        <!-- <div class="alert alert-info">
+                            Primer elemento procesado: {{ listaPresupuestoParaVinculo[3] | json }}
+                        </div> -->
+                        <table class="tab-10 table-bordered table-hover text-center w-100">
+                            <thead class="bg-primary text-white sticky-top" style="font-size: 11px;">
+                                <tr>
+                                    <th *ngIf="modoSeleccionVincularActivo"
+                                        style="width: 35px; vertical-align: middle;">Sel.</th>
+                                    <th style="width: 70px; vertical-align: middle;">Item</th>
+                                    <th style="vertical-align: middle;" class="text-left">Descripción Partida</th>
+                                    <th style="width: 50px; vertical-align: middle;">Unid.</th>
+                                    <th style="width: 70px; vertical-align: middle;">Metrado Diario</th>
+                                    <th style="width: 80px; vertical-align: middle;">Horas Laboradas</th>
+                                    <th style="width: 90px; vertical-align: middle;">Actividades Vinculadas</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr *ngFor="let partida of listaPresupuestoParaVinculo" style="font-size: 11px;"
+                                    [ngClass]="{'bg-light font-weight-bold': !partida.unidad}">
+
+                                    <!-- Checkbox selección -->
+                                    <td *ngIf="modoSeleccionVincularActivo" class="align-middle py-1">
+                                        <input type="checkbox" [(ngModel)]="partida.seleccionadoVinculo"
+                                            *ngIf="partida.unidad" [disabled]="!partida.unidad">
+                                    </td>
+
+                                    <!-- Ítem partida -->
+                                    <td class="text-left py-1 font-weight-bold" appPintarfilapre [tipo]="titulo1"
+                                        [color]="titulo1color" [letra]="titulo1letra" [item]="partida.item"
+                                        [separador]="'.'" [partida]="!!partida.unidad">
+                                        {{ partida.item }}
+                                    </td>
+
+                                    <!-- Descripción -->
+                                    <td class="align-middle py-1 px-2 text-left" appPintarfilapre [tipo]="titulo1"
+                                        [color]="titulo1color" [letra]="titulo1letra" [item]="partida.item"
+                                        [separador]="'.'" [partida]="!!partida.unidad"
+                                        [ngClass]="{'font-weight-bold': !partida.unidad}">
+                                        {{ partida.descripcion }}
+                                    </td>
+
+                                    <!-- Unidad -->
+                                    <td class="align-middle py-1 font-weight-bold text-success">
+                                        {{ partida.unidad || '-' }}
+                                    </td>
+
+                                    <!-- Metrado Diario -->
+                                    <td class="align-middle py-1 font-weight-bold">
+                                        <span *ngIf="partida.unidad">{{ partida.metrado_diario | number:'1.2-2'
+                                            }}</span>
+                                    </td>
+
+                                    <!-- Horas Laboradas Sumadas (Directo sin condiciones obstructivas) -->
+                                    <td class="align-middle py-1 font-weight-bold text-success">
+                                        <span *ngIf="partida.unidad">{{ partida.horas_laboradas_sumadas }}</span>
+                                    </td>
+
+                                    <!-- Actividades vinculadas con doble clic e inline edit -->
+                                    <td class="align-middle py-1 font-weight-bold text-primary position-relative"
+                                        style="cursor: pointer; min-width: 90px;"
+                                        (dblclick)="iniciarEdicionVinculo(partida)"
+                                        title="Doble clic para editar vinculación">
+
+                                        <!-- Modo Lectura -->
+                                        <ng-container
+                                            *ngIf="partidaEditandoId !== (partida.id_partida ?? partida.indice)">
+                                            <span *ngIf="partida.unidad">
+                                                {{ partida.string_indices_vinculados || '-' }}
+                                            </span>
+                                        </ng-container>
+
+                                        <!-- Modo Edición Inline -->
+                                        <ng-container
+                                            *ngIf="partidaEditandoId === (partida.id_partida ?? partida.indice)">
+                                            <input [id]="'input-vinculo-' + (partida.id_partida ?? partida.indice)"
+                                                type="text"
+                                                class="form-control form-control-sm text-center font-weight-bold p-0 text-primary border-primary"
+                                                style="height: 24px; font-size: 11px;"
+                                                [(ngModel)]="textoVinculoTemporal"
+                                                (keyup.enter)="guardarEdicionVinculo(partida)"
+                                                (keyup.escape)="cancelarEdicionVinculo()"
+                                                (blur)="guardarEdicionVinculo(partida)" />
+                                        </ng-container>
+                                    </td>
+
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </ng-container>
+</div>
+<app-modal-basic #modalServicio [dialogClass]="'modal-sm'">
+    <div class="app-modal-header">
+        <h4 class="modal-title tit-modal1"><b>Nueva Cuadrilla</b></h4>
+        <button type="button" class="close basic-close" (click)="cerrarModalServicio()">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+    <div class="app-modal-body">
+        <form [formGroup]="formCuadrilla">
+            <div class="form-group">
+                <label>Descripción de la Cuadrilla</label>
+                <input type="text" class="form-control" formControlName="descripcion"
+                    placeholder="Ej: Cuadrilla Alfa - tarrajeo" />
+            </div>
+        </form>
+    </div>
+    <div class="app-modal-footer w-100">
+        <div class="row px-3 justify-content-between">
+            <button type="button" class="btn btn-sm btn-danger ripple" (click)="cerrarModalServicio()">Cerrar</button>
+            <button type="button" class="btn btn-sm btn-success ripple" (click)="agregarCuadrilla()">Guardar</button>
+        </div>
+    </div>
+</app-modal-basic>
+
+<app-modal-basic #modalReemplazarCuadrilla [dialogClass]="'modal-lg'">
+    <div class="app-modal-header">
+        <h4 class="modal-title tit-modal1"><b>Copiar / Reemplazar Cuadrilla</b></h4>
+        <button type="button" class="close basic-close" (click)="cerrarModalReemplazar()">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+
+    <div class="app-modal-body">
+        <!-- Buscador de Fecha Origen -->
+        <div class="row mb-3 align-items-end">
+            <div class="col-md-5">
+                <label><b>Seleccionar Fecha a Copiar (Origen):</b></label>
+                <input type="date" class="form-control" [(ngModel)]="fechaOrigenConsulta">
+            </div>
+            <div class="col-md-3">
+                <button type="button" class="btn btn-primary btn-sm" (click)="consultarCuadrillaOrigen()"
+                    [disabled]="!fechaOrigenConsulta">
+                    <i class="fa fa-search"></i> Buscar Cuadrilla
+                </button>
+            </div>
+            <!-- <div class="col-md-4">
+                <div class="form-check pt-2">
+                    <input type="checkbox" class="form-check-input" id="checkReemplazarTareas"
+                        [(ngModel)]="reemplazarTareas">
+                    <label class="form-check-label font-weight-bold text-dark" for="checkReemplazarTareas">
+                        Reemplazar Tareas / Actividades
+                    </label>
+                </div>
+            </div> -->
+        </div>
+
+        <!-- Tabla Previa (Visualización de los datos del día origen) -->
+        <div class="table-responsive" *ngIf="cuadrillasRecuperadasModal.length > 0">
+            <table class="tab-10 table-bordered table-striped text-center">
+                <thead class="bg-primary text-white">
+                    <tr>
+                        <th style="width: 50px;">Nº</th>
+                        <th>CUADRILLA / PERSONAL</th>
+                        <th>CARGO / TIPO</th>
+                        <th>JORNAL LABORADO</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <ng-container *ngFor="let grupo of cuadrillasRecuperadasModal">
+                        <!-- Cabecera de la cuadrilla -->
+                        <tr class="table-warning">
+                            <td colspan="4" class="font-weight-bold text-left px-3">
+                                {{ grupo.descripcion || 'Personal sin cuadrilla' }}
+                            </td>
+                        </tr>
+                        <!-- Integrantes de la cuadrilla -->
+                        <tr *ngFor="let item of grupo.integrantes; let i = index">
+                            <td>{{ i + 1 }}</td>
+                            <td class="text-left">{{ item.nombres }} {{ item.apellidos }}</td>
+                            <td>{{ item.abreviatura_cargo }} - {{ item.tipo_cargo }}</td>
+                            <td class="text-danger font-weight-bold">00:00</td>
+                        </tr>
+                    </ng-container>
+                </tbody>
+            </table>
+        </div>
+
+        <div *ngIf="consultadoSinResultados" class="alert alert-info text-center mt-2">
+            No se encontraron registros de cuadrilla para la fecha seleccionada.
+        </div>
+    </div>
+
+    <div class="app-modal-footer w-100">
+        <div class="row px-3 justify-content-between">
+            <button type="button" class="btn btn-sm btn-danger" (click)="cerrarModalReemplazar()">Cancelar</button>
+            <button type="button" class="btn btn-sm btn-success" (click)="confirmarDuplicacion()"
+                [disabled]="cuadrillasRecuperadasModal.length === 0">
+                <i class="fa fa-refresh"></i> Reemplazar y Guardar
+            </button>
+        </div>
+    </div>
+</app-modal-basic>
+<app-modal-basic #modalCopiarActividades [dialogClass]="'modal-lg'">
+    <div class="app-modal-header">
+        <h4 class="modal-title tit-modal1"><b>Copiar / Acumular Actividades</b></h4>
+        <button type="button" class="close basic-close" (click)="cerrarModalCopiarActividades()">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+
+    <div class="app-modal-body">
+        <!-- Buscador de Fecha Origen -->
+        <div class="row mb-3 align-items-end">
+            <div class="col-md-5">
+                <label><b>Seleccionar Fecha a Copiar (Origen):</b></label>
+                <input type="date" class="form-control" [(ngModel)]="fechaOrigenActividades">
+            </div>
+            <div class="col-md-3">
+                <button type="button" class="btn btn-primary btn-sm btn-block" (click)="consultarActividadesOrigen()"
+                    [disabled]="!fechaOrigenActividades">
+                    <i class="fa fa-search"></i> Buscar Actividades
+                </button>
+            </div>
+        </div>
+
+        <!-- TABLA 1: RESULTADOS DE LA BÚSQUEDA -->
+        <div *ngIf="listaActividadesOrigen.length > 0" class="mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+                <h6 class="font-weight-bold text-primary m-0">1. Actividades del día {{ fechaOrigenActividades }}:</h6>
+                <button type="button" class="btn btn-sm btn-info" (click)="agregarSeleccionadasACesta()">
+                    <i class="fa fa-plus-circle"></i> Agregar Selección a la Lista ({{ contarSeleccionadas() }})
+                </button>
+            </div>
+
+            <div class="table-responsive" style="max-height: 200px; overflow-y: auto;">
+                <table class="tab-10 table-bordered table-striped text-center">
+                    <thead class="bg-primary text-white">
+                        <tr>
+                            <th style="width: 40px;">
+                                <input type="checkbox" [(ngModel)]="seleccionarTodosOrigen"
+                                    (change)="toggleSeleccionarTodosOrigen()">
+                            </th>
+                            <th style="width: 40px;">Nº</th>
+                            <th>DESCRIPCIÓN DE ACTIVIDADES</th>
+                            <th>UBICACIÓN</th>
+                            <th style="width: 70px;">UNID</th>
+                            <th style="width: 90px;">METRADO</th>
+                            <th style="width: 90px;">TIPO</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let act of listaActividadesOrigen; let i = index">
+                            <td>
+                                <input type="checkbox" [(ngModel)]="act.seleccionado">
+                            </td>
+                            <td class="font-weight-bold text-muted">{{ i + 1 }}</td>
+                            <td class="text-left px-2">{{ act.descripcion }}</td>
+                            <td class="text-left px-2">{{ act.ubicacion }}</td>
+                            <td>{{ act.unidad }}</td>
+                            <td class="text-right px-2">{{ act.metrado | number:'1.2-2' }}</td>
+                            <td>
+                                <span class="badge w-100 py-1" [ngClass]="obtenerColorTipo(act.tipo)">
+                                    {{ act.tipo }}
+                                </span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Mensaje sin resultados -->
+        <div *ngIf="consultadoActividadesSinResultados" class="alert alert-info text-center mt-2">
+            No se encontraron actividades registradas para la fecha seleccionada.
+        </div>
+
+        <hr class="my-3">
+
+        <!-- TABLA 2: ACTIVIDADES ACUMULADAS / CESTA DE COPIADO -->
+        <div>
+            <div class="d-flex justify-content-between align-items-center mb-1">
+                <h6 class="font-weight-bold text-success m-0">
+                    2. Actividades a Copiar al día {{ diaSeleccionado?.fecha }} ({{ listaActividadesAcumuladas.length }}
+                    agregadas):
+                </h6>
+                <button type="button" class="btn btn-sm btn-outline-danger" (click)="limpiarListaAcumulada()"
+                    *ngIf="listaActividadesAcumuladas.length > 0">
+                    <i class="fa fa-trash"></i> Vaciar Lista
+                </button>
+            </div>
+
+            <div class="table-responsive" style="max-height: 220px; overflow-y: auto;"
+                *ngIf="listaActividadesAcumuladas.length > 0; else sinAcumuladas">
+                <table class="tab-10 table-bordered table-striped text-center">
+                    <thead class="bg-success text-white">
+                        <tr>
+                            <th style="width: 40px;">Nº</th>
+                            <th>DESCRIPCIÓN</th>
+                            <th>UBICACIÓN</th>
+                            <th style="width: 70px;">UNID</th>
+                            <th style="width: 90px;">METRADO</th>
+                            <th style="width: 90px;">TIPO</th>
+                            <th style="width: 110px;">FECHA ORIGEN</th>
+                            <th style="width: 40px;"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let act of listaActividadesAcumuladas; let i = index">
+                            <td class="font-weight-bold text-muted">{{ i + 1 }}</td>
+                            <td class="text-left px-2">{{ act.descripcion }}</td>
+                            <td class="text-left px-2">{{ act.ubicacion }}</td>
+                            <td>{{ act.unidad }}</td>
+                            <td class="text-right px-2">{{ act.metrado | number:'1.2-2' }}</td>
+                            <td>
+                                <span class="badge w-100 py-1" [ngClass]="obtenerColorTipo(act.tipo)">
+                                    {{ act.tipo }}
+                                </span>
+                            </td>
+                            <td class="small font-weight-bold text-muted">{{ act.fechaOrigenReferencia }}</td>
+                            <td>
+                                <button type="button" class="btn btn-sm btn-mini2 btn-danger"
+                                    (click)="quitarDeAcumulados(i)">
+                                    <i class="fa fa-times"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <ng-template #sinAcumuladas>
+                <div class="alert alert-secondary text-center py-3 m-0">
+                    <i class="fa fa-info-circle mr-1"></i> No has añadido actividades a la lista acumulada. Busca
+                    actividades arriba y pulsa <b>"Agregar Selección a la Lista"</b>.
+                </div>
+            </ng-template>
+        </div>
+    </div>
+
+    <div class="app-modal-footer w-100">
+        <div class="row px-3 justify-content-between">
+            <button type="button" class="btn btn-sm btn-danger"
+                (click)="cerrarModalCopiarActividades()">Cancelar</button>
+            <button type="button" class="btn btn-sm btn-success" (click)="confirmarGuardarActividadesAcumuladas()"
+                [disabled]="listaActividadesAcumuladas.length === 0 || cargandoCopiaActividades">
+                <i class="fa" [ngClass]="cargandoCopiaActividades ? 'fa-spinner fa-spin' : 'fa-save'"></i>
+                Guardar Actividades ({{ listaActividadesAcumuladas.length }})
+            </button>
+        </div>
+    </div>
+</app-modal-basic>
+<app-modal-basic #modalVinculacionPresupuesto [dialogClass]="'modal-xl'">
+    <!-- HEADER DEL MODAL -->
+    <div class="app-modal-header">
+        <h4 class="modal-title tit-modal1"><b>Vincular Personal / Cuadrilla con Presupuesto</b></h4>
+        <button type="button" class="close basic-close" (click)="cerrarModalVinculacion()">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+
+    <!-- BODY DEL MODAL -->
+    <div class="app-modal-body">
+
+        <!-- SECCIÓN SUPERIOR: DOS TABLAS PARALELAS (CUADRILLA VS PRESUPUESTO) -->
+        <div class="row">
+
+            <!-- COLUMNA IZQUIERDA: TABLA DE CUADRILLA DEL DÍA -->
+            <div class="col-md-5 pr-md-1">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                    <h6 class="font-weight-bold text-primary m-0">1. Personal / Cuadrilla:</h6>
+                    <span class="badge badge-primary px-2 py-1">Fecha: {{ this.diaSeleccionado?.fecha }}</span>
+                </div>
+
+                <div class="table-responsive" style="max-height: 280px; overflow-y: auto;">
+                    <!-- TABLA PERSONAL / CUADRILLA (DENTRO DEL MODAL) -->
+                    <table class="tab-10 table-bordered table-hover text-center w-100">
+                        <thead class="bg-primary text-white sticky-top" style="font-size: 11px;">
+                            <tr>
+                                <th class="col-check" style="width: 35px;">
+                                    <!-- SELECCIONAR TODOS LOS USUARIOS DEL MODAL -->
+                                    <input type="checkbox"
+                                        (change)="toggleSeleccionarTodosUsuariosModal($any($event.target).checked)" />
+                                </th>
+                                <th style="width: 35px;">N°</th>
+                                <th class="text-left">Cuadrilla / Personal</th>
+                                <th style="width: 85px;">Cargo/Tipo</th>
+                                <th style="width: 65px;">Jornal</th>
+                                <th style="width: 35px;">Acc.</th>
+                            </tr>
+                        </thead>
+
+                        <tbody *ngFor="let grupoUsr of listaEstructuradaCuadrillas; let gIdx = index">
+                            <!-- CABECERA DE CUADRILLA -->
+                            <tr class="font-weight-bold" style="background-color: #fceada !important;">
+                                <td class="align-middle py-1">
+                                    <!-- SELECCIONAR CUADRILLA ENTERA EN MODAL -->
+                                    <input type="checkbox" [checked]="esCuadrillaTotalmenteSeleccionadaModal(grupoUsr)"
+                                        (change)="toggleSeleccionarCuadrillaModal(grupoUsr, $any($event.target).checked)" />
+                                </td>
+                                <td [attr.colspan]="4" class="py-1 px-2 text-left align-middle">
+                                    <span class="text-dark font-weight-bold" style="font-size: 11px;">
+                                        {{ grupoUsr.descripcion }}
+                                    </span>
+                                </td>
+                                <td class="align-middle py-1">
+                                    <span class="badge badge-pill text-white px-2 py-1"
+                                        [ngClass]="grupoUsr.id_cuadrilla === null ? 'bg-success' : 'bg-info'"
+                                        style="font-size: 10px;">
+                                        {{ (gIdx + 1) < 10 ? '0' + (gIdx + 1) : (gIdx + 1) }} </span>
+                                </td>
+                            </tr>
+
+                            <!-- INTEGRANTES DEL GRUPO -->
+                            <tr *ngFor="let usr of grupoUsr.integrantes" style="font-size: 11px;">
+                                <td class="align-middle py-1">
+                                    <!-- SELECCIONAR USUARIO INDIVIDUAL EN MODAL -->
+                                    <input type="checkbox" [checked]="esUsuarioSeleccionadoModal(usr)"
+                                        (change)="toggleSeleccionUsuarioModal(usr, $any($event.target).checked)" />
+                                </td>
+                                <td class="align-middle py-1 text-muted font-weight-bold">
+                                    {{ usr.indexGlobal }}
+                                </td>
+                                <td class="align-middle py-1 px-2 text-left">
+                                    {{ usr.nombres }} {{ usr.apellidos }}
+                                </td>
+                                <td class="align-middle py-1 text-uppercase font-weight-bold text-muted"
+                                    style="font-size: 10px;">
+                                    {{ getCargoTipoFormat(usr) }}
+                                </td>
+                                <td class="align-middle py-1 font-weight-bold"
+                                    [ngClass]="(!usr.horaJornada || usr.horaJornada === '00:00') ? 'text-danger' : 'text-dark'">
+                                    {{ usr.horaJornada || '00:00' }}
+                                </td>
+                                <td class="align-middle py-1">
+                                    <button *ngIf="grupoUsr.id_cuadrilla !== null"
+                                        class="btn btn-xs btn-outline-warning p-0 px-1" [disabled]="mostrar_carga_todo"
+                                        (click)="quitarUsuarioDeCuadrilla(usr, grupoUsr)">
+                                        <i class="fa"
+                                            [ngClass]="mostrar_carga_todo ? 'fa-spinner fa-spin' : 'fa-user-times'"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- COLUMNA DERECHA: TABLA DE PRESUPUESTO / PARTIDAS -->
+            <div class="col-md-7 pl-md-1 mt-3 mt-md-0">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                    <h6 class="font-weight-bold text-primary m-0">2. Partidas del Presupuesto:</h6>
+                </div>
+
+                <div class="table-responsive" style="max-height: 280px; overflow-y: auto;">
+                    <table class="tab-10 table-bordered table-hover text-center w-100">
+                        <thead class="bg-primary text-white sticky-top" style="font-size: 11px;">
+                            <tr>
+                                <th style="width: 35px; vertical-align: middle;">Sel.</th>
+                                <th style="width: 70px; vertical-align: middle;">Item</th>
+                                <th style="vertical-align: middle;" class="text-left">Descripción Partida</th>
+                                <th style="width: 60px; vertical-align: middle;">Unid.</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let partida of listaPresupuesto" style="font-size: 11px;"
+                                [ngClass]="{'bg-light': !esPartidaValida(partida)}">
+                                <td class="align-middle py-1">
+                                    <!-- Checkbox HABILITADO ÚNICAMENTE SI POSEE UNIDAD -->
+                                    <input type="checkbox" [(ngModel)]="partida.seleccionado" *ngIf="partida.unidad"
+                                        [disabled]="!esPartidaValida(partida)">
+                                </td>
+                                <td class="text-left py-1 font-weight-bold" appPintarfilapre [tipo]="titulo1"
+                                    [color]="titulo1color" [letra]="titulo1letra" [item]="partida.item"
+                                    [separador]="'.'" [partida]="partida.unidad!=''?true:false">{{ partida.item }}</td>
+                                <td class="align-middle py-1 px-2 text-left" appPintarfilapre [tipo]="titulo1"
+                                    [color]="titulo1color" [letra]="titulo1letra" [item]="partida.item"
+                                    [separador]="'.'" [partida]="partida.unidad!=''?true:false"
+                                    [ngClass]="{'font-weight-bold': !esPartidaValida(partida)}">
+                                    {{ partida.descripcion }}
+                                </td>
+                                <td class="align-middle py-1 font-weight-bold text-success" appPintarfilapre
+                                    [tipo]="titulo1" [color]="titulo1color" [letra]="titulo1letra" [item]="partida.item"
+                                    [separador]="'.'" [partida]="partida.unidad!=''?true:false">
+                                    {{ partida.unidad || '-' }}
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- BOTÓN ACCIÓN INTERMEDIA: GENERAR PARTIDAS -->
+        <div class="row my-3">
+            <div class="col-12 text-center">
+                <button type="button" class="btn btn-info btn-sm shadow-sm font-weight-bold px-4"
+                    (click)="generarActividadesPartidas()">
+                    <i class="fa fa-arrow-circle-down mr-1"></i> Generar Partidas Vinculadas
+                </button>
+            </div>
+        </div>
+
+        <hr class="my-2">
+
+        <!-- TABLA INFERIOR: ACTIVIDADES GENERADAS (TIPO TT) Y SU ASIGNACIÓN -->
+        <div class="row">
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                    <h6 class="font-weight-bold text-success m-0">
+                        3. Actividades Generadas a Guardar ({{ listaActividadesGeneradas.length }}):
+                    </h6>
+                    <button type="button" class="btn btn-sm btn-outline-danger py-0" (click)="limpiarGenerados()"
+                        *ngIf="listaActividadesGeneradas.length > 0">
+                        <i class="fa fa-trash"></i> Vaciar Generados
+                    </button>
+                </div>
+
+                <div class="table-responsive" style="max-height: 200px; overflow-y: auto;"
+                    *ngIf="listaActividadesGeneradas.length > 0; else sinGenerados">
+                    <!-- TABLA 3: ACTIVIDADES GENERADAS A GUARDAR -->
+                    <table class="tab-10  table-bordered table-hover text-center w-100">
+                        <thead class="bg-primary text-white" style="font-size: 11px;">
+                            <tr>
+                                <th style="width: 35px;">N°</th>
+                                <th style="width: 50px;">Tipo</th>
+                                <th class="text-left">Descripción de la Actividad</th>
+                                <th style="width: 60px;">Unid.</th>
+                                <th style="width: 120px;">Asignación</th>
+                                <th style="width: 35px;">Acc.</th>
+                            </tr>
+                        </thead>
+                        <tbody style="font-size: 11px;">
+                            <tr *ngFor="let item of listaActividadesGeneradas; let i = index">
+                                <td class="align-middle font-weight-bold">{{ i + 1 }}</td>
+                                <td class="align-middle">
+                                    <span class="badge badge-warning font-weight-bold px-2 py-1">{{ item.tipo }}</span>
+                                </td>
+                                <td class="align-middle text-left font-weight-bold text-uppercase">
+                                    {{ item.descripcion }}
+                                </td>
+                                <td class="align-middle font-weight-bold text-muted">
+                                    {{ item.unidad }}
+                                </td>
+                                <!-- Muestra directamente los correlativos "1, 2, 3" dentro del badge de asignación -->
+                                <td class="align-middle">
+                                    <span class="badge badge-info px-2 py-1 font-weight-bold" style="font-size: 11px;">
+                                        {{ item.asignacionVisual }}
+                                    </span>
+                                </td>
+                                <td class="align-middle">
+                                    <button type="button" class="btn btn-sm btn-mini2 btn-danger p-0 px-1"
+                                        (click)="eliminarActividadGenerada(i)">
+                                        <i class="fa fa-times"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <ng-template #sinGenerados>
+                    <div class="alert alert-secondary text-center py-2 m-0 style-font-sm">
+                        <i class="fa fa-info-circle mr-1"></i> Selecciona usuarios a la izquierda, partidas con unidad a
+                        la derecha y haz clic en <b>"Generar Partidas Vinculadas"</b>.
+                    </div>
+                </ng-template>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- FOOTER DEL MODAL -->
+    <div class="app-modal-footer w-100">
+        <div class="row px-3 justify-content-between w-100 m-0">
+            <button type="button" class="btn btn-sm btn-danger" (click)="cerrarModalVinculacion()">
+                Cancelar
+            </button>
+
+            <button type="button" class="btn btn-sm btn-success" (click)="guardarActividadesPresupuestoVinculadas()"
+                [disabled]="listaActividadesGeneradas.length === 0 ">
+                <i class="fa fa-save"></i>
+                Guardar Actividades ({{ listaActividadesGeneradas.length }})
+            </button>
+        </div>
+    </div>
+</app-modal-basic>
+<app-cargando [bloquearTodo]="true" *ngIf="mostrar_carga_todo"></app-cargando>

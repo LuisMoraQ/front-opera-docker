@@ -678,6 +678,9 @@
                             <ng-container *ngIf="tab.get('menu_proyecto_seleccionado').value == 14">
                               <app-subcontratos [tabproyecto]="tab"></app-subcontratos>
                             </ng-container>
+                            <ng-container *ngIf="tab.get('menu_proyecto_seleccionado').value == 15">
+                              <app-rh-por-partida [tabproyecto]="tab"></app-rh-por-partida>
+                            </ng-container>
                           </app-card>
                         </div>
                       </div>

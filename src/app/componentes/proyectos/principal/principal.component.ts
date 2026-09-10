@@ -179,7 +179,8 @@ export class PrincipalComponent implements OnInit, OnDestroy {
     1, // ID12
     1, // ID13
     1, // ID14
-    1  // ID15 - Subcontratos (Permiso de visibilidad)
+    1,  // ID15 - Subcontratos (Permiso de visibilidad)
+    1,
   ];
 
   constructor(
