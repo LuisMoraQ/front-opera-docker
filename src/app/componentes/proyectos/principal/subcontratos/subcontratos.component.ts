@@ -1001,7 +1001,6 @@ export class SubcontratosComponent implements OnInit {
         serviciosArray.push(equipo);
         i++;
       }
-
       const idsInsertados = await this.subcontratosService.guardarSubcontrato(serviciosArray);
 
       if (idsInsertados && idsInsertados.length > 0) {

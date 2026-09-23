@@ -13,7 +13,7 @@
             <i class="fa fa-list"></i> ASIGNACION DE PERDIDA DE OBRA
         </button>
         <button class="btn btn-sm btn-outline-secondary btn-menu-top" type="button" (mouseup)="quitarfoco($event)"
-            style="padding: 4px 8px" [ngClass]="{ active: subvista === 3 }" (click)="cambioVista(3)">
+            style="padding: 4px 8px" [ngClass]="{ active: subvista === 4 }" (click)="cambioVista(4)">
             <i class="fa fa-list"></i> CONTROL DIARIO
         </button>
     </div>
@@ -46,15 +46,12 @@
                             <td *ngFor="let dia of dias; let i = index" (click)="seleccionDia(dia)"
                                 [ngClass]="{'diaSeleccionado': diaSeleccionado == dia}">
 
-                                <!-- 1. Si estado es 1: Muestra ícono de OK (Check verde) -->
                                 <i *ngIf="dia.estado === 1" class="fa fa-check-circle text-success"
                                     style="font-size: 16px;"></i>
 
-                                <!-- 2. Si estado es 0 y la fecha es menor a la fecha actual: Muestra ícono de error/asistencia pendiente (Cruz roja) -->
-                                <i *ngIf="dia.estado === 0 && dia.fecha < fechaHoy"
+                                <!-- 2. Si estado es 0 y la fecha es menor a hoy: Cruz roja -->
+                                <i *ngIf="dia.estado === 0 && dia.fecha < fechaHoyVinculo"
                                     class="fa fa-times-circle text-danger" style="font-size: 16px;"></i>
-
-                                <!-- 3. Si la fecha es igual o mayor a hoy y estado es 0: Queda vacío (no entra a ningún ngIf) -->
                             </td>
                         </tr>
                     </tbody>
@@ -193,7 +190,7 @@
                                     {{ usr.horaJornada || '00:00' }}
                                 </td>
                                 <td class="text-center align-middle py-1">
-                                    <button *ngIf="grupoUsr.id_cuadrilla !== null"
+                                    <button *ngIf="grupoUsr.id_cuadrilla !== null" type="button"
                                         class="btn btn-xs btn-outline-warning p-0 px-1" [disabled]="mostrar_carga_todo"
                                         (click)="quitarUsuarioDeCuadrilla(usr, grupoUsr)"
                                         title="Quitar de esta cuadrilla">
@@ -224,7 +221,7 @@
                             <i class="fa fa-plus-square"></i> N Actividades
                         </button>
 
-                        <button type="button" class="btn btn-sm"
+                        <!-- <button type="button" class="btn btn-sm"
                             [ngClass]="modoAgruparActividades ? 'btn-warning' : 'btn-outline-primary'"
                             (click)="toggleModoAgruparActividades()"
                             [disabled]="!diaSeleccionado || modoVincularPersonal">
@@ -235,7 +232,7 @@
                         <button *ngIf="modoAgruparActividades" type="button" class="btn btn-sm btn-success ml-1"
                             (click)="confirmarAgrupamientoActividades()">
                             <i class="fa fa-save"></i> Guardar Agrupamiento
-                        </button>
+                        </button> -->
 
                         <button type="button" class="btn btn-sm btn-outline-info ml-1"
                             (click)="abrirModalCopiarActividades()"
@@ -502,12 +499,12 @@
 
             <!-- BARRA DE ACCIONES SUPERIOR -->
             <div class="d-flex align-items-center gap-2 mb-2 p-2 bg-light border rounded">
-                <button class="btn btn-outline-primary btn-sm" (click)="toggleModoSeleccionVinculo()">
+                <button type="button" class="btn btn-outline-primary btn-sm" (click)="toggleModoSeleccionVinculo()">
                     <i class="bi bi-check2-square"></i>
                     {{ modoSeleccionVincularActivo ? 'Desactivar Selección' : 'Seleccionar Vínculos' }}
                 </button>
 
-                <button class="btn btn-primary btn-sm" (click)="generarPayloadGuardadoVinculo()">
+                <button type="button" class="btn btn-primary btn-sm" (click)="generarPayloadGuardadoVinculo()">
                     <i class="bi bi-save"></i> Guardar Registro
                 </button>
             </div>
@@ -700,6 +697,315 @@
             </div>
         </div>
     </ng-container>
+    <ng-container *ngIf="subvista == 3">
+        <div class="col-12 d-flex pl-0 mb-3">
+            <mat-form-field appearance="outline" class="mff-reduc my-form-field col-3" [floatLabel]="'always'">
+                <mat-label>Mes</mat-label>
+                <select matNativeControl [(ngModel)]="mesSeleccionadoResumen" (change)="cambioMesResumen()">
+                    <option *ngFor="let mes of meses; let index = index" [value]="index">
+                        {{mes.mes}}
+                    </option>
+                </select>
+            </mat-form-field>
+            <div class="col-9 px-0" style="overflow: auto">
+                <table class="mini-tabla tab-10 table-bordered w-100">
+                    <thead class="text-center">
+                        <tr>
+                            <th>REGISTRO</th>
+                            <th *ngFor="let dia of dias; let i = index" (click)="seleccionDiaResumen(dia)"
+                                [ngClass]="{'diaSeleccionado': diaSeleccionadoResumen == dia}" style="cursor: pointer;">
+                                {{ dia.descripcion_dia }}
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-center">
+                        <tr>
+                            <td>ESTADO</td>
+                            <td *ngFor="let dia of dias; let i = index" (click)="seleccionDiaResumen(dia)"
+                                [ngClass]="{'diaSeleccionado': diaSeleccionadoResumen == dia}" style="cursor: pointer;">
+
+                                <!-- 1. Si estado es 1: Check verde -->
+                                <i *ngIf="dia.estado === 1" class="fa fa-check-circle text-success"
+                                    style="font-size: 16px;"></i>
+
+                                <!-- 2. Si estado es 0 y la fecha es menor a hoy: Cruz roja -->
+                                <i *ngIf="dia.estado === 0 && dia.fecha < fechaHoyVinculo"
+                                    class="fa fa-times-circle text-danger" style="font-size: 16px;"></i>
+
+                                <!-- 3. Si la fecha es igual o mayor a hoy y estado es 0: Queda vacío -->
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="col-12 px-0" style="overflow: auto">
+            <table class="tab-10 table-bordered table-striped text-center align-middle">
+                <thead class="table-dark">
+                    <tr>
+                        <th rowspan="2">N°</th>
+                        <th rowspan="2">DESCRIPCIÓN DE ACTIVIDADES REALIZADAS</th>
+                        <th rowspan="2">Ubicación / Frente de trabajo</th>
+                        <th rowspan="2">Usuarios Vinculados</th>
+
+                        <!-- Grupo 1: Número de Trabajadores -->
+                        <th [attr.colspan]="cargos?.length || 1">
+                            Cuadrilla (Número Trabajadores)
+                        </th>
+
+                        <!-- Grupo 2: Días/Hombre Procesados -->
+                        <th [attr.colspan]="cargos?.length || 1">
+                            Cantidad Utilizada por día (DH)
+                        </th>
+
+                        <th rowspan="2">Horas Laboradas</th>
+                        <th rowspan="2">Recurso Utilizado</th>
+                    </tr>
+                    <tr>
+                        <!-- Columnas Cuadrilla -->
+                        <th *ngFor="let cargo of cargos">
+                            {{ cargo.abreviatura }}
+                        </th>
+                        <!-- Columnas DH -->
+                        <th *ngFor="let cargo of cargos">
+                            {{ cargo.abreviatura }}
+                        </th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    <ng-container *ngFor="let partida of partidas">
+                        <!-- FILA DE LA PARTIDA (TOTALES) -->
+                        <tr class="fw-bold table-secondary text-start">
+                            <td class="text-center">{{ partida.item }}</td>
+                            <td class="text-left">{{ partida.descripcion }}</td>
+                            <td></td>
+                            <td></td>
+
+                            <!-- Totales Cuadrilla por Cargo -->
+                            <td *ngFor="let cargo of cargos" class="text-center fw-bold">
+                                {{ (partida.cuadrilla_total?.[cargo.key_cargo] || 0) | number:'1.2-2' }}
+                            </td>
+
+                            <!-- Totales DH por Cargo -->
+                            <td *ngFor="let cargo of cargos" class="text-center fw-bold text-primary">
+                                {{ (partida.cantidad_utilizada_dh_total?.[cargo.key_cargo] || 0) | number:'1.2-2' }}
+                            </td>
+
+                            <td></td>
+                            <td class="text-center fw-bold text-success">
+                                S/ {{ (partida.costo_total_partida || 0) | number:'1.2-2' }}
+                            </td>
+                        </tr>
+
+                        <!-- FILAS DE ACTIVIDADES -->
+                        <tr *ngFor="let act of partida.actividades">
+                            <td>{{ act.numero }}</td>
+                            <td class="text-start">{{ act.descripcion }}</td>
+                            <td>{{ act.ubicacion || '-' }}</td>
+                            <td>{{ act.usuarios || '-' }}</td>
+
+                            <!-- Valores Cuadrilla -->
+                            <td *ngFor="let cargo of cargos">
+                                <span *ngIf="(act.cuadrilla?.[cargo.key_cargo] || 0) > 0" class="badge bg-primary"
+                                    [title]="obtenerDetalleTooltip(act.usuarios_detalle, cargo.key_cargo)">
+                                    {{ act.cuadrilla[cargo.key_cargo] | number:'1.2-2' }}
+                                </span>
+                                <span *ngIf="!(act.cuadrilla?.[cargo.key_cargo])" class="text-muted">
+                                    0.00
+                                </span>
+                            </td>
+
+                            <!-- Valores Calculados DH -->
+                            <td *ngFor="let cargo of cargos">
+                                <span *ngIf="(act.cantidad_utilizada_dh?.[cargo.key_cargo] || 0) > 0"
+                                    class="fw-bold text-dark">
+                                    {{ act.cantidad_utilizada_dh[cargo.key_cargo] | number:'1.2-2' }}
+                                </span>
+                                <span *ngIf="!(act.cantidad_utilizada_dh?.[cargo.key_cargo])" class="text-muted">
+                                    0.00
+                                </span>
+                            </td>
+
+                            <td>{{ act.horas_laborada || '00:00:00' }} hrs</td>
+                            <td class="text-end fw-bold">
+                                S/ {{ (act.costo_actividad || 0) | number:'1.2-2' }}
+                            </td>
+                        </tr>
+                    </ng-container>
+
+                    <!-- MENSAJE TABLA VACÍA -->
+                    <tr *ngIf="!partidas || partidas.length === 0">
+                        <td [attr.colspan]="6 + ((cargos?.length || 0) * 2)" class="text-center py-4 text-muted">
+                            No se encontraron actividades en el periodo seleccionado.
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </ng-container>
+    <ng-container *ngIf="subvista == 4">
+        <div class="col-12 d-flex pl-0 mb-3">
+            <mat-form-field appearance="outline" class="mff-reduc my-form-field col-3" [floatLabel]="'always'">
+                <mat-label>Mes</mat-label>
+                <select matNativeControl [(ngModel)]="mesSeleccionadoControl" (change)="cambioMesControl()">
+                    <option *ngFor="let mes of meses; let index = index" [value]="index">
+                        {{mes.mes}}
+                    </option>
+                </select>
+            </mat-form-field>
+            <button type="button" class="btn btn-primary btn-sm" (click)="modalListaPerdidas()">
+                <i class="fa fa-plus"></i> Perdidas Frecuentes
+            </button>
+        </div>
+        <div class="w-100 tabla-limp overflow-auto h-tabla-pres d-flex">
+            <div class="col-4">
+
+                <table class="tab-10 table-bordered table-striped align-middle"
+                    style="table-layout: fixed; width: 100%;">
+                    <thead>
+                        <tr>
+                            <th class="col-descripcion text-start">DESCRIPCIÓN</th>
+                            <!-- <th class="col-monto text-center" style="width: 120px;">PARCIAL</th> -->
+                            <th class="col-monto text-center" style="width: 120px;">EJECUTADO</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let item of listaPresupuesto; let i = index" (click)="seleccionPartida(item,i)">
+
+                            <!-- Columna Unificada (Partida + Descripción) -->
+                            <td text-start appPintarfilapre [tipo]="titulo1"
+                                [ngClass]="{'highlight': item == filaSeleccionada}"
+                                [color]="item.item ? titulo1color : ''" [letra]="titulo1letra" [item]="item.item"
+                                [separador]="'.'" [partida]="item.unidad != ''"
+                                [attr.title]="item.item + ' ' + item.descripcion" [ngStyle]="{
+                    'padding-left.px': (item.item ? (item.item.length * 5) : 5),
+                    'text-align': 'left',
+                    'white-space': 'nowrap',
+                    'overflow': 'hidden',
+                    'text-overflow': 'ellipsis'
+                }">
+                                <span class="fw-bold me-2">{{ item.item }}</span>
+                                <span>{{ item.descripcion }}</span>
+                            </td>
+
+                            <!-- Columna Parcial -->
+                            <!-- <td class="col-monto text-center" appPintarfilapre [tipo]="titulo1"
+                                [ngClass]="{'row-seleccionado': item == filaSeleccionada}"
+                                [color]="item.item ? titulo1color : ''" [letra]="titulo1letra" [item]="item.item"
+                                [separador]="'.'" [partida]="item.unidad != ''">
+                                <ng-container *ngIf="item.unidad !== ''">
+                                    {{ item.parcial | currency:'PEN':'S/ ':'1.2-2' }}
+                                </ng-container>
+                            </td> -->
+
+                            <!-- Columna Ejecutado -->
+                            <td class="col-monto text-center" appPintarfilapre [tipo]="titulo1"
+                                [ngClass]="{'highlight': item == filaSeleccionada}"
+                                [color]="item.item ? titulo1color : ''" [letra]="titulo1letra" [item]="item.item"
+                                [separador]="'.'" [partida]="item.unidad != ''">
+                                <ng-container *ngIf="item.unidad !== ''">
+                                    {{ item.ejecutado | currency:'PEN':'S/ ':'1.2-2' }}
+                                </ng-container>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="col-8">
+                <div class="table-responsive" style="max-height: 500px; overflow-y: auto;">
+                    <table class="tab-10 table-bordered table-striped align-middle text-center table-sm">
+                        <thead class="bg-dark text-white sticky-top">
+                            <tr>
+                                <th style="width: 30px;">N°</th>
+                                <th style="width: 250px;" class="text-start">DESCRIPCIÓN DE ACTIVIDADES REALIZADAS</th>
+                                <th style="width: 100px;">Ubicación trabajo</th>
+                                <th style="width: 100px;">Fecha</th>
+                                <th style="width: 70px;">Tipo</th>
+                                <th style="width: 100px;">Cuadrilla</th>
+                                <th style="width: 80px;">Horas laboradas</th>
+                                <th style="width: 90px;">Costo por partida</th>
+                                <th style="width: 50px;">Selec</th>
+                                <th style="width: 90px;">% Influencia Pérdida</th>
+                                <th style="width: 200px;">Asignación de Pérdida más frecuente</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let act of listaActividadesPartida; let idx = index">
+                                <!-- 1. N° -->
+                                <td>{{ idx + 1 }}</td>
+
+                                <!-- 2. Descripción -->
+                                <td class="text-start" [attr.title]="act.descripcion">
+                                    <div class="text-truncate" style="max-width: 240px;">
+                                        {{ act.descripcion }}
+                                    </div>
+                                </td>
+
+                                <!-- 3. Ubicación -->
+                                <td>{{ act.ubicacion || '-' }}</td>
+
+                                <!-- 4. Fecha -->
+                                <td>{{ act.fecha | date:'dd/MM/yyyy' }}</td>
+
+                                <!-- 5. Tipo -->
+                                <td>
+                                    <span class="badge" [ngClass]="{
+                'bg-info': act.tipo === 'TC',
+                'bg-success': act.tipo === 'TP',
+                'bg-danger': act.tipo === 'TNC',
+                'bg-primary': act.tipo === 'TT'
+            }">
+                                        {{ act.tipo }}
+                                    </span>
+                                </td>
+
+                                <!-- 6. CUADRILLA (Asegúrate de NO usar act.cuadrilla) -->
+                                <td>{{ act.resumen_dh_formato }}</td>
+
+                                <!-- 7. Horas laboradas -->
+                                <td>{{ act.horas_laborada }}</td>
+
+                                <!-- 8. Costo por partida -->
+                                <td>{{ (act.costo || 0) | currency:'PEN':'S/ ':'1.2-2' }}</td>
+
+                                <!-- 9. Selec -->
+                                <td>
+                                    <input type="checkbox" [(ngModel)]="act.seleccionado">
+                                </td>
+
+                                <!-- 10. % Influencia Pérdida -->
+                                <td class="p-1 align-middle" style="width: 80px;">
+                                    <div class="d-flex align-items-center justify-content-center border rounded bg-white px-1"
+                                        style="height: 26px;">
+                                        <input type="number"
+                                            class="form-control border-0 p-0 text-center text-danger fw-bold shadow-none"
+                                            style="height: 100%; font-size: 12px; width: 35px;"
+                                            [(ngModel)]="act.influencia_perdida" (change)="onCambioPerdida(act)" min="0"
+                                            max="100">
+                                        <span class="text-muted fw-bold" style="font-size: 11px;">%</span>
+                                    </div>
+                                </td>
+
+                                <!-- 11. Asignación de Pérdida -->
+                                <td class="p-1 align-middle" style="width: 180px;">
+                                    <select
+                                        class="form-select form-select-sm text-danger fw-bold border-0 shadow-none py-0 px-1"
+                                        style="height: 26px; font-size: 11px; background-position: right 0.25rem center;"
+                                        [(ngModel)]="act.id_perdida_frecuente" (change)="onCambioPerdida(act)">
+                                        <option [ngValue]="null" disabled>-- Seleccione --</option>
+                                        <option *ngFor="let perdida of perdidasFrecuentes" [value]="perdida.id">
+                                            {{ perdida.descripcion }}
+                                        </option>
+                                    </select>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </ng-container>
 </div>
 <app-modal-basic #modalServicio [dialogClass]="'modal-sm'">
     <div class="app-modal-header">
@@ -803,6 +1109,7 @@
         </div>
     </div>
 </app-modal-basic>
+
 <app-modal-basic #modalCopiarActividades [dialogClass]="'modal-lg'">
     <div class="app-modal-header">
         <h4 class="modal-title tit-modal1"><b>Copiar / Acumular Actividades</b></h4>
@@ -952,6 +1259,7 @@
         </div>
     </div>
 </app-modal-basic>
+
 <app-modal-basic #modalVinculacionPresupuesto [dialogClass]="'modal-xl'">
     <!-- HEADER DEL MODAL -->
     <div class="app-modal-header">
@@ -1035,7 +1343,7 @@
                                     {{ usr.horaJornada || '00:00' }}
                                 </td>
                                 <td class="align-middle py-1">
-                                    <button *ngIf="grupoUsr.id_cuadrilla !== null"
+                                    <button *ngIf="grupoUsr.id_cuadrilla !== null" type="button"
                                         class="btn btn-xs btn-outline-warning p-0 px-1" [disabled]="mostrar_carga_todo"
                                         (click)="quitarUsuarioDeCuadrilla(usr, grupoUsr)">
                                         <i class="fa"
@@ -1185,6 +1493,77 @@
                 <i class="fa fa-save"></i>
                 Guardar Actividades ({{ listaActividadesGeneradas.length }})
             </button>
+        </div>
+    </div>
+</app-modal-basic>
+
+<app-modal-basic #modalPerdidas [dialogClass]="'modal-md'">
+    <div class="app-modal-header">
+        <h4 class="modal-title tit-modal1"><b>Gestión de Detalles de Pérdida</b></h4>
+        <button type="button" class="close basic-close" (click)="cerrarModal()">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+
+    <div class="app-modal-body">
+        <!-- Formulario Superior -->
+        <form [formGroup]="formPerdida" (ngSubmit)="guardarOActualizarPerdida()" class="mb-3">
+            <div class="row align-items-end">
+                <div class="col-8">
+                    <label class="form-label fw-bold mb-1">Descripción</label>
+                    <input type="text" class="form-control form-control-sm" formControlName="descripcion"
+                        placeholder="Ingrese descripción..." />
+                </div>
+                <div class="col-4 d-flex gap-1">
+                    <button type="submit" [disabled]="formPerdida.invalid" class="btn btn-sm w-100"
+                        [ngClass]="modoEdicion ? 'btn-warning text-white' : 'btn-success'">
+                        <i class="bi" [ngClass]="modoEdicion ? 'bi-pencil-square' : 'bi-plus-lg'"></i>
+                        {{ modoEdicion ? 'Actualizar' : 'Guardar' }}
+                    </button>
+                    <button type="button" *ngIf="modoEdicion" class="btn btn-sm btn-secondary"
+                        (click)="limpiarFormulario()">
+                        <i class="bi bi-x-circle"></i>
+                    </button>
+                </div>
+            </div>
+        </form>
+
+        <!-- Tabla de Mantenimiento -->
+        <div class="table-responsive" style="max-height: 250px; overflow-y: auto;">
+            <table class="tab-10 table-bordered table-striped table-sm align-middle text-center mb-0">
+                <thead class="bg-light sticky-top">
+                    <tr>
+                        <th style="width: 40px;">ID</th>
+                        <th class="text-start">Descripción</th>
+                        <th style="width: 80px;">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let item of listaTopPerdidas">
+                        <td>{{ item.id_perdida }}</td>
+                        <td class="text-start">{{ item.descripcion }}</td>
+                        <td>
+                            <button type="button" class="btn btn-sm btn-mini2 btn-outline-warning me-1 p-1"
+                                (click)="editarPerdida(item)" title="Editar">
+                                <i class="fa fa-pencil"></i>
+                            </button>
+                            <button type="button" class="btn  btn-sm btn-mini2 btn-outline-danger p-1"
+                                (click)="eliminarPerdidaItem(item.id_perdida)" title="Eliminar">
+                                <i class="fa fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    <tr *ngIf="listaTopPerdidas.length === 0">
+                        <td colspan="3" class="text-muted py-2">No hay pérdidas registradas</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="app-modal-footer w-100">
+        <div class="d-flex justify-content-end px-2">
+            <button type="button" class="btn btn-sm btn-danger ripple" (click)="cerrarModal()">Cerrar</button>
         </div>
     </div>
 </app-modal-basic>

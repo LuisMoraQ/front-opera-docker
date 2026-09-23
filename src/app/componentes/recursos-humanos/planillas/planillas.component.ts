@@ -2029,6 +2029,7 @@ export class PlanillasComponent implements OnInit, OnChanges, OnDestroy {
       }
     };
   }
+  
   getSelectClass(tipoCodigo: string): string {
     const clases: { [key: string]: string } = {
       // Tipos originales

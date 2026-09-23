@@ -799,7 +799,16 @@
                     </mat-select>
                 </mat-form-field>
             </div>
-
+            <div class="col-4 align-self-center">
+                <div class="custom-control custom-switch">
+                    <input type="checkbox" class="custom-control-input" id="customSwitch-cd"
+                        [checked]="areaSelecHorarios != null && areaSelecHorarios === uso_cd"
+                        [disabled]="areaSelecHorarios != null && areaSelecHorarios === uso_cd"
+                        (change)="cambioUsoAreaCostoDirecto($event.target.checked)" />
+                    <label class="custom-control-label pt-1" for="customSwitch-cd">Uso de horario en Costo
+                        Directo</label>
+                </div>
+            </div>
 
         </div>
         <div class="h-contenedor-horarios d-flex">
@@ -948,7 +957,7 @@
                         </ng-template>
                     </tbody>
                 </table>
-              
+
             </div>
             <div class="col-4  overflow-auto " style="position: relative; bottom: 2rem;">
                 <!-- <div class="card-header mt-1">

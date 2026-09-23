@@ -59,7 +59,7 @@ export interface ActividadCuadrilla {
   usuarios: string; // Ejemplo: "41,42" o "SR"
   cuadrilla: number | null;
   fecha: string;
-  cabecera: number; // 1 = Cabecera, 0 = Detalle
+  cabecera: string; // 1 = Cabecera, 0 = Detalle
   editandoCampo?: string | null;
 }
 
@@ -68,7 +68,7 @@ export interface GrupoActividades {
   descripcion: string;
   orden: number;
   horasTotal: string;
-  cabecera?: number;
+  cabecera?: string;
   actividades: ActividadCuadrilla[];
 }
 
@@ -94,7 +94,8 @@ export interface ActividadGenerada {
   asignacionVisual: string; // 'A - 1, 2'
   cuadrilla: number;
   fecha: string;
-  cabecera: number;
+  cabecera: string;
+  indice: string
 }
 
 // Interfaces exclusivas para el módulo de vinculación
@@ -171,6 +172,11 @@ export class RhPorPartidaComponent implements OnInit {
     this.solover = value.get('solover').value;
     this.moneda = datosproy.get('moneda').value.toString() == '0' ? 'S/' : '$';
     this.simbolo = datosrec.value.simbolo
+    if (this.colores) {
+      this.titulo1 = JSON.parse(this.colores).tipoPresupuesto.split('|');
+      this.titulo1color = JSON.parse(this.colores).colorPresupuesto.split('|');
+      this.titulo1letra = JSON.parse(this.colores).letraPresupuesto.split('|');
+    }
   }
 
   mesSeleccionado = null
@@ -180,12 +186,14 @@ export class RhPorPartidaComponent implements OnInit {
   diaSeleccionado = null
   listaEstructuradaCuadrillas = []
   formCuadrilla: FormGroup;
+  formPerdida: FormGroup;
   cuadrillaSeleccionadaModal: GrupoCuadrilla | null = null;
   listaBaseUsuarios = []
   @ViewChild("modalServicio") modalServicio: ModalBasicComponent;
   @ViewChild("modalReemplazarCuadrilla") modalReemplazarCuadrilla: ModalBasicComponent;
   @ViewChild('modalCopiarActividades') modalCopiarActividades: ModalBasicComponent;
   @ViewChild('modalVinculacionPresupuesto') modalVinculacionPresupuesto: ModalBasicComponent;
+  @ViewChild('modalPerdidas') modalPerdidas: ModalBasicComponent;
   modoAgrupar: boolean = false;
   idCuadrillaDestino: number | null = null;
   listaEstructuradaActividades: GrupoActividades[] = [];
@@ -211,6 +219,11 @@ export class RhPorPartidaComponent implements OnInit {
     this.formNuevaCuadrilla = this.fb.group({
       descripcionCuadrilla: ['', Validators.required],
       fechaAsignada: ['', Validators.required]
+    });
+
+    this.formPerdida = this.fb.group({
+      descripcion: ['', Validators.required],
+      id_perdida: [null]
     });
   }
   gruposActividades: GrupoActividades[] = [];
@@ -257,11 +270,30 @@ export class RhPorPartidaComponent implements OnInit {
   partidaEditandoId: number | string | null = null;
   textoVinculoTemporal: string = '';
   textoVinculoOriginal: string = '';
+
+  mesSeleccionadoResumen: number = 0;
+  mesesControl: any[] = [];
+  mesesResumen: any[] = [];
+  diasResumen: any[] = [];
+  diasControl: any[] = [];
+  diaSeleccionadoResumen: any = null;
+  cargos = []
+  partidas = []
+  mesSeleccionadoControl: number = 0
+  filaSeleccionada = null
+  listaActividadesPartida: any[] = [];
+  perdidasFrecuentes: any[] = []
+  idPerdidaSeleccionada: number | null = null;
+  listaTopPerdidas: any[] = [];
+  modoEdicion: boolean = false;
+  horasJornadaDia: number = 8.5;
+
   async ngOnInit() {
     try {
       this.mostrar_carga_todo = true
       this.idusuario = this.encriptadorService.recuperarlocalstory('idusuario');
       await this.calendario()
+      await this.marcarDiasConRegistroVinculo()
       this.mostrar_carga_todo = false
     } catch (error) {
       this.mostrar_carga_todo = false
@@ -279,9 +311,20 @@ export class RhPorPartidaComponent implements OnInit {
     if (this.subvista !== ind) {
       this.mostrar_carga_todo = true
       this.subvista = ind
+      if (ind == 1) {
 
-      if (ind == 2) {
+      } else if (ind == 2) {
         await this.inicializarSubvistaVinculacion()
+      } else if (ind == 3) {
+        await this.inicializarSubvistaResumen()
+      } else if (ind == 4) {
+        // await this.cargarPresupuesto()
+        this.mesSeleccionadoControl = 0
+        this.diaSeleccionadoResumen = null
+        this.listaPresupuesto = [];
+        this.listaActividadesPartida = []
+        this.filaSeleccionada = null
+        await this.cargarPresupuesto();
       }
       await this.marcarDiasConRegistroVinculo();
       this.mostrar_carga_todo = false
@@ -616,7 +659,7 @@ export class RhPorPartidaComponent implements OnInit {
         descripcion: `CUADRILLA (${descripcionCabecera})`,
         orden: orden,
         horasTotal: horasTotal,
-        cabecera: 1,
+        cabecera: '',
         actividades: actividades
       });
       orden++;
@@ -628,7 +671,7 @@ export class RhPorPartidaComponent implements OnInit {
       descripcion: 'SIN AGRUPAMIENTO',
       orden: orden,
       horasTotal: this.calcularSumaHoras(sinAgrupamiento),
-      cabecera: 0,
+      cabecera: '',
       actividades: sinAgrupamiento
     });
 
@@ -1063,13 +1106,12 @@ export class RhPorPartidaComponent implements OnInit {
       formData.append('metrado', (actividad.metrado ?? 0).toString());
       formData.append('horas_laborada', actividad.horas_laborada || '00:00:00');
       formData.append('tipo', actividad.tipo || '');
-      formData.append('indice', (actividad.indice || 0).toString());
+      formData.append('indice', actividad.indice || '');
       formData.append('usuarios', actividad.usuarios || 'SR');
       formData.append('cuadrilla', (actividad.cuadrilla ?? 0).toString());
       formData.append('fecha', fechaRaw); // Enviar en formato YYYY-MM-DD
-      formData.append('cabecera', (actividad.cabecera || 0).toString());
+      formData.append('cabecera', (actividad.cabecera || '').toString());
       formData.append('accion', accion);
-
       await this.RecursosHumanosService.guardarActividadCuadrilla(formData);
 
       if (carga) {
@@ -1247,7 +1289,7 @@ export class RhPorPartidaComponent implements OnInit {
       indice: 0,
       usuarios: 'SR',
       cuadrilla: 0,
-      cabecera: 0
+      cabecera: ''
     };
 
     // Persistir en backend y recargar la lista de actividades
@@ -1559,7 +1601,7 @@ export class RhPorPartidaComponent implements OnInit {
         usuarios: '', // Viaja como cadena vacía para que el SP asigne 'SR' por defecto
         cuadrilla: 0,
         fecha: fechaDestinoStr,
-        cabecera: 0
+        cabecera: ''
       }));
       await this.RecursosHumanosService.guardarActividadesMasivo(payloadEnvio);
 
@@ -1907,12 +1949,14 @@ export class RhPorPartidaComponent implements OnInit {
   }
 
   async agregarMultiplesActividades(): Promise<void> {
-    const inputCantidad = prompt('Ingrese la cantidad de actividades a crear:', '2');
-    if (!inputCantidad) return;
+    const result = await SwalService.inputNumber('Ingrese la cantidad de actividades a crear:', 'Aceptar');
 
-    const cantidad = parseInt(inputCantidad, 10);
+    // Si el usuario presiona "Cancelar" o cierra el modal, result.isConfirmed será false
+    if (!result.isConfirmed) return;
+
+    const cantidad = parseInt(result.value, 10);
+
     if (isNaN(cantidad) || cantidad <= 0) {
-      // alert('Ingrese una cantidad válida mayor a 0.');
       this.toaster.error(
         'Ingrese una cantidad válida mayor a 0.',
         '',
@@ -1933,7 +1977,6 @@ export class RhPorPartidaComponent implements OnInit {
 
       // Crear la lista con las N actividades en memoria
       const listaNuevasActividades: any[] = [];
-
       for (let i = 0; i < cantidad; i++) {
         listaNuevasActividades.push({
           id_actividad: 0,
@@ -1944,15 +1987,15 @@ export class RhPorPartidaComponent implements OnInit {
           metrado: 0,
           horas_laborada: '00:00:00',
           tipo: 'TC',
-          indice: 0,
+          indice: '0',       // Mantén '0' explícito en lugar de ''
           usuarios: 'SR',
           cuadrilla: 0,
           fecha: fechaLimpia,
-          cabecera: 0
+          cabecera: ''
         });
       }
 
-      // Petición única enviando el array JSON
+      // Petición única enviando el array JSON  
       await this.RecursosHumanosService.guardarActividadesMasivo(listaNuevasActividades);
 
       // Recargar tabla una sola vez
@@ -1996,6 +2039,7 @@ export class RhPorPartidaComponent implements OnInit {
   }
 
   cerrarModalVinculacion(): void {
+    this.modoVincularPersonal = false;
     this.modalVinculacionPresupuesto.hide();
   }
 
@@ -2070,13 +2114,12 @@ export class RhPorPartidaComponent implements OnInit {
         metrado: Number(item.metrado || 0),
         horas_laborada: '00:00:00',
         tipo: String(item.tipo || 'TT'), // Mantiene 'TT'
-        indice: idx + 1,
+        indice: item.indice || '',
         usuarios: String(item.usuarios || ''), // Viaja como "47,48"
         cuadrilla: 0,
         fecha: fechaDestinoStr,
-        cabecera: 0
+        cabecera: ''
       }));
-
 
       // Enviar al servicio
       await this.RecursosHumanosService.guardarActividadesMasivo(payloadEnvio);
@@ -2179,7 +2222,7 @@ export class RhPorPartidaComponent implements OnInit {
         indice: cadenaIndicesPartidas,    // Cadena concatenada: "5" o "5|6|7"
         cuadrilla: 0,
         fecha: fechaDestinoStr,
-        cabecera: 0
+        cabecera: ''
       };
 
       this.listaActividadesGeneradas.push(nuevaActividad);
@@ -2300,7 +2343,6 @@ export class RhPorPartidaComponent implements OnInit {
 
     const respuesta = await this.RecursosHumanosService.listarActividadesCuadrilla(queryObj) || [];
     const gruposEstructurados = this.agruparActividades(respuesta, this.listaBaseUsuarios);
-
     this.listaActividadesParaVinculo = [];
     let contadorLetra = 65;  // A, B, C...
     let contadorTarea = 1;   // 1, 2, 3...
@@ -2622,27 +2664,28 @@ export class RhPorPartidaComponent implements OnInit {
   }
 
   async marcarDiasConRegistroVinculo() {
-    if (!this.dias || this.dias.length === 0) return;
+    // Asegurarnos de evaluar el arreglo correcto (diasVinculo o dias)
 
-    // Extraer el año-mes en formato 'YYYY-MM' desde la primera fecha del array
-    const anioMes = this.dias[0].fecha.substring(0, 7);
+    const arregloDias = this.dias;
+    if (!arregloDias || arregloDias.length === 0) return;
+
+    const anioMes = arregloDias[0].fecha.substring(0, 7);
 
     const params = {
       id_proyecto: this.id_proyecto.toString(),
       anio_mes: anioMes
     };
-
     try {
-      // 1. Obtener los días que tienen al menos un índice vinculado desde la BD
       const diasVinculados: any[] = await this.RecursosHumanosService.listarCalendarioRegistroVinculos(params);
+      // Normalizar fechas al formato YYYY-MM-DD por si vienen con hora
+      const fechasConVinculoSet = new Set(
+        diasVinculados.map(item => String(item.fecha).split('T')[0])
+      );
 
-      // Set para búsquedas en O(1)
-      const fechasConVinculoSet = new Set(diasVinculados.map(item => item.fecha));
-
-      // 2. Actualizar la propiedad de estado según corresponda
-      this.dias.forEach(dia => {
-        // Puedes asignar una propiedad específica como 'estado_vinculo' o reutilizar 'estado'
-        dia.estado_vinculo = fechasConVinculoSet.has(dia.fecha) ? 1 : 0;
+      // Actualizar la propiedad 'estado' de cada día
+      arregloDias.forEach(dia => {
+        const fechaLimpia = String(dia.fecha).split('T')[0];
+        dia.estado = fechasConVinculoSet.has(fechaLimpia) ? 1 : 0;
       });
 
     } catch (error) {
@@ -2849,6 +2892,337 @@ export class RhPorPartidaComponent implements OnInit {
     } finally {
       this.mostrar_carga_todo = false; // Desbloquear pantalla
     }
+  }
+
+  async listaractividadesagrupadas(anio_mes: string, dia?: string) {
+    try {
+      const payload: any = {
+        id_proyecto: this.id_proyecto,
+        anio_mes: anio_mes
+      };
+
+      if (dia) {
+        payload.dia = dia;
+      }
+
+      const data = await this.RecursosHumanosService.listaractividadesagrupadas(payload);
+
+      this.cargos = data?.cargos || [];
+      this.partidas = data?.partidas || [];
+      this.horasJornadaDia = data?.horas_jornada_dia || 8.5;
+    } catch (error) {
+      console.error("Error al cargar actividades agrupadas:", error);
+    }
+  }
+
+  obtenerTooltipTrabajador(usuariosDetalle: any, keyCargo: string): string {
+    if (!usuariosDetalle || !usuariosDetalle[keyCargo]) return '';
+    return usuariosDetalle[keyCargo]
+      .map((u: any) => `${u.nombres} - Tarifa: S/ ${u.precio_unitario}`)
+      .join('\n');
+  }
+
+  async inicializarSubvistaResumen() {
+    if (!this.meses || this.meses.length === 0) {
+      this.mesesResumen = [];
+      this.diasResumen = [];
+      return;
+    }
+
+    // Copia profunda para romper referencias en memoria
+    this.mesesVinculo = JSON.parse(JSON.stringify(this.meses));
+    this.mesSeleccionadoVinculo = 0;
+
+    // Dispara el flujo del selector de la subvista
+    await this.cambioMesResumen();
+  }
+
+  async cambioMesResumen() {
+    this.mostrar_carga_todo = true;
+    const mesSelect = this.mesesVinculo[this.mesSeleccionadoVinculo];
+    const anioMesFormateado = mesSelect.dias[0].fecha.substring(0, 7);
+    // await this.listaractividadesagrupadas(anioMesFormateado);
+    this.mostrar_carga_todo = false;
+  }
+
+  obtenerDetalleTooltip(usuariosDetalle: any, keyCargo: string): string {
+    // 1. Validar que exista el objeto y la propiedad del cargo correspondiente
+    if (!usuariosDetalle || !usuariosDetalle[keyCargo] || usuariosDetalle[keyCargo].length === 0) {
+      return '';
+    }
+
+    // 2. Mapear cada usuario formateando su nombre y fechas de asignación
+    const listaUsuarios = usuariosDetalle[keyCargo].map((u: any) => {
+      const nombre = u.nombres || 'Usuario sin nombre';
+      const cargo = u.cargo_descripcion ? ` (${u.cargo_descripcion})` : '';
+      const inicio = u.fecha_inicio || '';
+      const fin = u.fecha_fin || '';
+
+      return `• ${nombre}${cargo}\n  Vigencia: ${inicio} al ${fin}`;
+    });
+
+    // 3. Unir todos los usuarios en un solo texto separado por saltos de línea
+    return listaUsuarios.join('\n\n');
+  }
+
+  cambioMesControl() {
+    this.mostrar_carga_todo = true;
+
+    const mesSelect = this.meses[this.mesSeleccionadoControl];
+    const anioMesFormateado = mesSelect.dias[0].fecha.substring(0, 7);
+
+    // 1. Reiniciar selección de fila y listado
+    this.filaSeleccionada = null;
+    this.listaActividadesPartida = [];
+
+    // 2. Reiniciar estados de formulario/edición
+    this.modoEdicion = false;
+    this.idPerdidaSeleccionada = null;
+
+    // 3. Reiniciar formulario de pérdida si aplica
+    if (this.formPerdida) {
+      this.formPerdida.reset();
+    }
+
+    this.mostrar_carga_todo = false;
+  }
+
+  // async seleccionPartida(item: any, i: number) {
+  //   try {
+  //     if (item == this.filaSeleccionada) {
+  //       return;
+  //     }
+  //     this.mostrar_carga_todo = true;
+  //     this.filaSeleccionada = item;
+  //     const mesSelect = this.meses[this.mesSeleccionadoVinculo];
+  //     const anioMesFormateado = mesSelect.dias[0].fecha.substring(0, 7);
+
+  //     const obj = {
+  //       id_proyecto: this.id_proyecto,
+  //       indice: item.indice,
+  //       mes: anioMesFormateado
+  //     };
+
+  //     const respuesta: any = await this.RecursosHumanosService.listarActividadesPartida(obj);
+
+  //     // Mapeo e interpretación de cabecera ('influencia|id_perdida')
+  //     this.listaActividadesPartida = (respuesta || []).map((act: any) => {
+  //       let influencia = 0;
+  //       let idPerdida = null;
+
+  //       if (act.cabecera && typeof act.cabecera === 'string' && act.cabecera.includes('|')) {
+  //         const partes = act.cabecera.split('|');
+  //         influencia = parseFloat(partes[0]) || 0;
+  //         idPerdida = partes[1] && partes[1] !== 'null' ? parseInt(partes[1], 10) : null;
+  //       }
+
+  //       return {
+  //         ...act,
+  //         seleccionado: act.seleccionado ?? false,
+  //         influencia_perdida: influencia,
+  //         id_perdida_frecuente: idPerdida
+  //       };
+  //     });
+  //     await this.obtenerPerdidas()
+  //     this.mostrar_carga_todo = false;
+  //   } catch (error) {
+  //     this.mostrar_carga_todo = false;
+  //     SwalService.error();
+  //   }
+  // }
+
+  async seleccionPartida(item: any, i: number) {
+    try {
+      if (item == this.filaSeleccionada) return;
+      this.mostrar_carga_todo = true;
+      this.filaSeleccionada = item;
+
+      const mesSelect = this.meses[this.mesSeleccionadoControl];
+      const anioMesFormateado = mesSelect.dias[0].fecha.substring(0, 7);
+
+      const payload = {
+        id_proyecto: this.id_proyecto,
+        indice: item.indice,
+        anio_mes: anioMesFormateado
+      };
+
+      const respuesta: any = await this.RecursosHumanosService.listarActividadesPorPartidaMensual(payload);
+
+      this.cargos = respuesta?.cargos || [];
+
+      this.listaActividadesPartida = (respuesta?.actividades || []).map((act: any) => {
+        let influencia = 0;
+        let idPerdida = null;
+
+        if (act.cabecera && typeof act.cabecera === 'string' && act.cabecera.includes('|')) {
+          const partes = act.cabecera.split('|');
+          influencia = parseFloat(partes[0]) || 0;
+          idPerdida = partes[1] && partes[1] !== 'null' ? parseInt(partes[1], 10) : null;
+        }
+
+        return {
+          ...act,
+          // Asegurar que resumen_dh_formato o cuadrilla_texto contengan la cadena procesada
+          resumen_dh_formato: typeof act.resumen_dh_formato === 'string' ? act.resumen_dh_formato : '-',
+          costo: act.costo_actividad ?? act.costo ?? 0,
+          seleccionado: act.seleccionado ?? false,
+          influencia_perdida: influencia,
+          id_perdida_frecuente: idPerdida
+        };
+      });
+      await this.obtenerPerdidas();
+      this.mostrar_carga_todo = false;
+    } catch (error) {
+      this.mostrar_carga_todo = false;
+      SwalService.error();
+    }
+  }
+  async modalListaPerdidas() {
+    this.limpiarFormulario();
+    await this.obtenerPerdidas();
+    this.modalPerdidas.show();
+  }
+
+  cerrarModal() {
+    this.modalPerdidas.hide();
+    this.limpiarFormulario();
+  }
+
+  limpiarFormulario() {
+    this.formPerdida.reset();
+    this.modoEdicion = false;
+    this.idPerdidaSeleccionada = null;
+  }
+
+  async obtenerPerdidas() {
+    try {
+      this.mostrar_carga_todo = true;
+      const res = await this.RecursosHumanosService.listarTopPerdidas({ id_proyecto: this.id_proyecto });
+      this.listaTopPerdidas = res || [];
+      this.perdidasFrecuentes = this.listaTopPerdidas.map(p => ({ id: p.id_perdida, descripcion: p.descripcion }));
+      this.mostrar_carga_todo = false;
+    } catch (error) {
+      this.mostrar_carga_todo = false;
+      SwalService.error();
+    }
+  }
+
+  async guardarOActualizarPerdida() {
+    if (this.formPerdida.invalid) return;
+
+    try {
+      this.mostrar_carga_todo = true;
+      const descripcion = this.formPerdida.get('descripcion')?.value;
+
+      if (this.modoEdicion && this.idPerdidaSeleccionada) {
+        await this.RecursosHumanosService.actualizarTopPerdida({
+          id_perdida: this.idPerdidaSeleccionada,
+          id_proyecto: this.id_proyecto,
+          descripcion: descripcion
+        });
+      } else {
+        await this.RecursosHumanosService.guardarTopPerdida({
+          id_proyecto: this.id_proyecto,
+          descripcion: descripcion
+        });
+      }
+
+      this.limpiarFormulario();
+      await this.obtenerPerdidas();
+    } catch (error) {
+      this.mostrar_carga_todo = false;
+      SwalService.error();
+    }
+  }
+
+  editarPerdida(item: any) {
+    this.modoEdicion = true;
+    this.idPerdidaSeleccionada = item.id_perdida;
+    this.formPerdida.patchValue({
+      descripcion: item.descripcion
+    });
+  }
+
+  async eliminarPerdidaItem(id_perdida: any) {
+    try {
+      this.mostrar_carga_todo = true;
+      await this.RecursosHumanosService.eliminarTopPerdida({ id_perdida });
+      if (this.idPerdidaSeleccionada === id_perdida) {
+        this.limpiarFormulario();
+      }
+      await this.obtenerPerdidas();
+    } catch (error) {
+      this.mostrar_carga_todo = false;
+      SwalService.error();
+    }
+  }
+
+  async onCambioPerdida(actividadEditada: any) {
+    const influencia = actividadEditada.influencia_perdida ?? 0;
+    const idPerdida = actividadEditada.id_perdida_frecuente ?? '';
+    const nuevaCabecera = `${influencia}|${idPerdida}`;
+
+    let filasAActualizar: any[] = [];
+
+    // Si la fila editada tiene checkbox activo, actualiza todas las que tengan checkbox activo
+    if (actividadEditada.seleccionado) {
+      filasAActualizar = this.listaActividadesPartida.filter(item => item.seleccionado);
+    } else {
+      // Si no, solo actualiza la fila actual
+      filasAActualizar = [actividadEditada];
+    }
+
+    // Mapeamos los N elementos al formato DTO del backend
+    const payload = filasAActualizar.map(act => {
+      // Sincronizar localmente en pantalla
+      act.influencia_perdida = influencia;
+      act.id_perdida_frecuente = idPerdida;
+      act.cabecera = nuevaCabecera;
+
+      return {
+        id_actividad: act.id_actividad,
+        id_proyecto: this.id_proyecto,
+        cabecera: nuevaCabecera
+      };
+    });
+
+    try {
+      this.mostrar_carga_todo = true;
+
+      // Llamada masiva en una sola petición HTTP
+      await this.RecursosHumanosService.actualizarCabecerasMasivo(payload);
+
+      this.mostrar_carga_todo = false;
+    } catch (error) {
+      this.mostrar_carga_todo = false;
+      SwalService.error();
+    }
+  }
+
+
+  async seleccionDiaResumen(dia: any) {
+    this.mostrar_carga_todo = true;
+    // await this.cargarPresupuesto();
+
+    // Si hace clic en el mismo día seleccionado, se desselecciona y se carga el acumulado mensual
+    if (this.diaSeleccionadoResumen === dia) {
+      this.diaSeleccionadoResumen = null;
+    } else {
+      this.diaSeleccionadoResumen = dia;
+    }
+
+    const mesSelect = this.mesesVinculo[this.mesSeleccionadoVinculo];
+    const anioMesFormateado = mesSelect.dias[0].fecha.substring(0, 7);
+
+    if (this.diaSeleccionadoResumen && this.diaSeleccionadoResumen.fecha) {
+      // Envia el día específico
+      await this.listaractividadesagrupadas(anioMesFormateado, this.diaSeleccionadoResumen.fecha);
+    } else {
+      // Envia sin parámetro 'dia' para retornar el acumulado del mes
+      await this.listaractividadesagrupadas(anioMesFormateado);
+    }
+
+    this.mostrar_carga_todo = false;
   }
 }
 

@@ -438,6 +438,8 @@ export class ConfiguracionPlanillaComponent implements OnInit {
   cargoSeleccionadoMaster: string | null = null;
   areasDisponiblesModal: any[] = [];
   cargosFiltradosModal: string[] = [];
+  uso_cd = 0
+  id_registro_area_Cd = null
 
   listaCompletaAreasMaestras: string[] = [
     'PERSONAL DIRECTIVO',
@@ -515,10 +517,10 @@ export class ConfiguracionPlanillaComponent implements OnInit {
     } else if (this.subvista == 4) {
       // this.areaSelecHorarios = null
       // this.areas = []
-
       if (!this.areaSelecHorarios && this.areas.length) {
         this.areaSelecHorarios = this.areas[0].id_area
-        await this.listarHorarioYFeriadosArea()
+        await this.listarHorarioYFeriadosArea(false)
+        await this.listarAreaCostoDirecto()
       }
     } else if (this.subvista == 5) {
       this.areaSeleccionadaPres = this.areas.length ? this.areas[0]?.id_area : null
@@ -529,6 +531,41 @@ export class ConfiguracionPlanillaComponent implements OnInit {
     this.mostrar_carga_todo = false
   }
 
+
+  async listarAreaCostoDirecto() {
+    const obj = { id_proyecto: this.idProyecto };
+    const resp = await this.recursosHumanosService.listarAreaCostoDirecto(obj);
+    if (resp && resp.length > 0) {
+      this.uso_cd = resp[0].id_area;
+      this.id_registro_area_Cd = resp[0].id_registro;
+    } else {
+      this.uso_cd = this.areas[0].id_area;
+      this.id_registro_area_Cd = null;
+    }
+  }
+
+  async cambioUsoAreaCostoDirecto(checked: boolean) {
+    if (checked) {
+      const payload = {
+        id_registro: this.id_registro_area_Cd || 0,
+        id_proyecto: this.idProyecto,
+        id_area: this.areaSelecHorarios
+      };
+      try {
+        const resp = await this.recursosHumanosService.guardarAreaCostoDirecto(payload);
+
+        if (resp && resp.length > 0) {
+          // Asignamos el id_registro retornado por el Stored Procedure
+          this.id_registro_area_Cd = resp[0].id_registro;
+
+          // Actualizamos uso_cd para que el checkbox se deshabilite y marque
+          this.uso_cd = this.areaSelecHorarios;
+        }
+      } catch (error) {
+        console.error('Error al guardar/actualizar costo directo:', error);
+      }
+    }
+  }
   quitarfoco(element: any) {
     element.target.blur();
     element.target.parentElement.blur();
@@ -3445,7 +3482,7 @@ export class ConfiguracionPlanillaComponent implements OnInit {
 
   //   }
   // }
-  async listarHorarioYFeriadosArea() {
+  async listarHorarioYFeriadosArea(cargar = true) {
     try {
       this.mostrar_carga_todo = true
       this.tablaHorario = []
@@ -3534,8 +3571,10 @@ export class ConfiguracionPlanillaComponent implements OnInit {
         formatearFilaHoras('Hora entrada tarde', horario.hora_ingreso_tarde),
         formatearFilaHoras('Hora salida tarde', horario.hora_salida_tarde)
       ];
+      if (cargar) {
+        this.mostrar_carga_todo = false
+      }
 
-      this.mostrar_carga_todo = false
     } catch (error) {
       this.mostrar_carga_todo = false
       console.error(error)

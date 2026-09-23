@@ -1,7 +1,7 @@
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { catchError, map } from 'rxjs/operators'
-import { BehaviorSubject, Subject, throwError } from 'rxjs'
+import { BehaviorSubject, Observable, Subject, throwError } from 'rxjs'
 import { environment } from 'src/environments/environment';
 
 @Injectable({
@@ -1584,4 +1584,182 @@ export class RecursosHumanosService {
         const url = this.enviUrl + '/api/recursoshumanos/listarCalendarioRegistroVinculos';
         return this.http.post<any>(url, formData).toPromise();
     }
+
+    listaractividadesagrupadas(params: { id_proyecto: string, anio_mes: string, dia?: string }): Promise<any> {
+        let formData: FormData = new FormData();
+        Object.entries(params).forEach(([key, value]) => {
+            if (value !== undefined && value !== null) {
+                formData.append(key, value as string);
+            }
+        });
+
+        const url = `${this.enviUrl}/api/recursoshumanos/listaractividadesagrupadas`;
+
+        return this.http.post<any>(url, formData).pipe(
+            map(res => {
+                if (!res) {
+                    throw new Error("No se pudo obtener el calendario de actividades.");
+                }
+                return res;
+            }),
+            catchError(err => throwError(() => err))
+        ).toPromise();
+    }
+
+    listarActividadesPartida(params = {}): Promise<any> {
+        let formData: FormData = new FormData();
+        Object.entries(params).forEach(([key, value]) => {
+            formData.append(key, value as string);
+        });
+
+        const url = this.enviUrl + '/api/recursoshumanos/listarActividadesPartida';
+        return this.http.post<any>(url, formData).pipe(
+            map(res => {
+                if (!res) {
+                    throw new Error('Sin respuesta del servidor');
+                }
+                return res;
+            }),
+            catchError(err => throwError(() => err))
+        ).toPromise();
+    }
+
+    guardarTopPerdida(params = {}): Promise<any> {
+        let formData: FormData = new FormData();
+        Object.entries(params).forEach(([key, value]) => {
+            formData.append(key, value as string);
+        });
+
+        const url = this.enviUrl + '/api/recursoshumanos/guardarTopPerdida';
+        return this.http.post<any>(url, formData).pipe(
+            map(res => {
+                if (!res) {
+                    throw new Error('Sin respuesta del servidor');
+                }
+                return res;
+            }),
+            catchError(err => throwError(() => err))
+        ).toPromise();
+    }
+
+    actualizarTopPerdida(params = {}): Promise<any> {
+        let formData: FormData = new FormData();
+        Object.entries(params).forEach(([key, value]) => {
+            formData.append(key, value as string);
+        });
+
+        const url = this.enviUrl + '/api/recursoshumanos/actualizarTopPerdida';
+        return this.http.post<any>(url, formData).pipe(
+            map(res => {
+                if (!res) {
+                    throw new Error('Sin respuesta del servidor');
+                }
+                return res;
+            }),
+            catchError(err => throwError(() => err))
+        ).toPromise();
+    }
+
+    eliminarTopPerdida(params = {}): Promise<any> {
+        let formData: FormData = new FormData();
+        Object.entries(params).forEach(([key, value]) => {
+            formData.append(key, value as string);
+        });
+
+        const url = this.enviUrl + '/api/recursoshumanos/eliminarTopPerdida';
+        return this.http.post<any>(url, formData).pipe(
+            map(res => {
+                if (!res) {
+                    throw new Error('Sin respuesta del servidor');
+                }
+                return res;
+            }),
+            catchError(err => throwError(() => err))
+        ).toPromise();
+    }
+
+    listarTopPerdidas(params = {}): Promise<any> {
+        let formData: FormData = new FormData();
+        Object.entries(params).forEach(([key, value]) => {
+            formData.append(key, value as string);
+        });
+
+        const url = this.enviUrl + '/api/recursoshumanos/listarTopPerdidas';
+        return this.http.post<any>(url, formData).pipe(
+            map(res => {
+                if (!res) throw new Error('Sin respuesta del servidor');
+                return res;
+            }),
+            catchError(err => throwError(() => err))
+        ).toPromise();
+    }
+
+    actualizarCabecerasMasivo(lista: any[]): Promise<any> {
+        const url = `${this.enviUrl}/api/recursoshumanos/actualizarCabecerasMasivo`;
+        return this.http.post<any>(url, lista).pipe(
+            map(res => {
+                if (!res) throw new Error('Sin respuesta del servidor');
+                return res;
+            }),
+            catchError(err => throwError(() => err))
+        ).toPromise();
+    }
+
+    listarActividadesPorPartidaMensual(params: { id_proyecto: string, indice: string, anio_mes: string }): Promise<any> {
+        let formData: FormData = new FormData();
+        Object.entries(params).forEach(([key, value]) => {
+            if (value !== undefined && value !== null) {
+                formData.append(key, value as string);
+            }
+        });
+
+        const url = `${this.enviUrl}/api/recursoshumanos/listaractividadesporpartidamensual`;
+
+        return this.http.post<any>(url, formData).pipe(
+            map(res => {
+                if (!res) throw new Error("No se pudo obtener las actividades de la partida.");
+                return res;
+            }),
+            catchError(err => throwError(() => err))
+        ).toPromise();
+    }
+
+    listarAreaCostoDirecto(params = {}): any {
+        let formData: FormData = new FormData();
+        Object.entries(params).forEach(([key, value]) => {
+            formData.append(key, value as string);
+        });
+        const url = this.enviUrl + '/api/recursoshumanos/listarAreaCostoDirecto';
+        return this.http.post<any>(url, formData).pipe(
+            map(res => {
+                if (!res) {
+                    throw new Error
+                }
+                return res
+            }),
+            catchError(err => throwError(err))
+        ).toPromise()
+    }
+
+    guardarAreaCostoDirecto(params: any = {}): Promise<any> {
+        const formData: FormData = new FormData();
+
+        Object.keys(params).forEach(key => {
+            formData.append(key, params[key] !== null && params[key] !== undefined ? params[key].toString() : '');
+        });
+
+        const url = this.enviUrl + '/api/recursoshumanos/guardarAreaCostoDirecto';
+
+        return this.http.post<any>(url, formData)
+            .pipe(
+                map(res => {
+                    if (!res) { throw new Error('Respuesta vacía del servidor'); }
+                    return res;
+                }),
+                catchError(err => throwError(err))
+            )
+            .toPromise();
+    }
 }
+
+
