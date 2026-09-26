@@ -106,15 +106,8 @@ export class EquiposServiciosService {
 
   actualizarDesagregadoEquipo(params: any = {}): Promise<any> {
     const url = this.enviUrl + '/api/equiposservicios/actualizarDesagregadoEquipo';
-
-    // Enviar el objeto JSON directo (sin FormData)
     return this.http.post<any>(url, params).pipe(
-      map(res => {
-        if (!res) {
-          throw new Error('Respuesta vacía');
-        }
-        return res;
-      }),
+      map(res => { if (!res) throw new Error('Respuesta vacía'); return res; }),
       catchError(err => throwError(() => err))
     ).toPromise();
   }

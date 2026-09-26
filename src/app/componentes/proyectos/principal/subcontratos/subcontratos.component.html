@@ -707,13 +707,22 @@
                                     <!-- MODO H-M O DIA CON CELDA SELECCIONADA -->
                                     <ng-container
                                         *ngIf="(tipoSeleccionado === 'H-M' || tipoSeleccionado === 'DIA') && celdaSel[0] !== null && celdaSel[1] !== null">
+                                        <div class="fw-bold mb-1 d-flex justify-content-between align-items-center">
+                                            <span>Registros</span>
+                                            <button type="button" class="btn btn-sm btn-outline-primary py-0 px-2"
+                                                [disabled]="!todasFilasValidasParaVincular"
+                                                ngbTooltip="Vincular todas las filas a la misma partida"
+                                                container="body" (click)="abrirModalVincularTodas()">
+                                                <i class="fa fa-link"></i> Vincular todo
+                                            </button>
+                                        </div>
+
                                         <table class="table-bordered tab-10 w-100">
                                             <thead class="table-light" style="position: sticky; top: 0;">
                                                 <tr class="text-center">
                                                     <th>Cantidad</th>
                                                     <th>PU</th>
                                                     <th>Parcial S/</th>
-                                                    <!-- Botón Agregar Fila -->
                                                     <th style="width: 40px;">
                                                         <button type="button" class="btn btn-mini2 btn-primary"
                                                             (click)="agregarTiempo()"
@@ -755,6 +764,22 @@
 
                                                         <!-- Acción Eliminar Fila -->
                                                         <td class="text-center">
+                                                            <button type="button"
+                                                                class="btn btn-sm btn-primary py-0 px-1 me-1"
+                                                                [ngClass]="{'btn-success': tiempo.get('idPartida')?.value}"
+                                                                ngbTooltip="Vincular a partida" container="body"
+                                                                (click)="abrirModalVincularPartida(idx)">
+                                                                <i class="fa fa-link"></i>
+                                                            </button>
+
+                                                            <button type="button"
+                                                                class="btn btn-sm btn-secondary py-0 px-1 me-1"
+                                                                *ngIf="tiempo.get('idPartida')?.value"
+                                                                ngbTooltip="Quitar vínculo" container="body"
+                                                                (click)="quitarVinculoPartida(idx)">
+                                                                <i class="fa fa-unlink"></i>
+                                                            </button>
+
                                                             <button type="button"
                                                                 class="btn btn-sm btn-danger py-0 px-1"
                                                                 (click)="eliminarTiempo(idx)">
@@ -1385,6 +1410,52 @@
                 (click)="cerrarModalEstado()">Cerrar</button>
             <button type="button" style="margin-right: 5px;" class="btn btn-sm btn-success ripple"
                 (click)="actualizarEstadoSubcontrato()">
+                Guardar</button>
+        </div>
+    </div>
+</app-modal-basic>
+
+<app-modal-basic #modalPartida [dialogClass]="'modal-sm'">
+    <div class="app-modal-header">
+        <h4 class="modal-title tit-modal1"><b>Vincular a Partida</b></h4>
+        <button type="button" class="close basic-close" (click)="cerrarModalVincularPartida()">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+    <div class="app-modal-body">
+        <div class="row">
+            <div class="col-12">
+                <label class="fw-bold mb-1">Partida</label>
+                <ng-select [appendTo]="'body'" [clearable]="true" [(ngModel)]="partidaSeleccionada"
+                    placeholder="ingrese descripcion..." [items]="listaPresupuesto" bindLabel="descripcion"
+                    [searchFn]="buscarPartida">
+                    <ng-template ng-label-tmp let-item="item">
+                        <span>{{ item.item + '-' + item.descripcion }}</span>
+                    </ng-template>
+                    <ng-template ng-option-tmp let-item="item" let-search="searchTerm" let-index="index">
+                        <span [ngClass]="{'text-muted': item.disabled}">
+                            {{ item.item + '-' + item.descripcion }}
+                            <small *ngIf="item.disabled" class="text-danger"> (sin unidad)</small>
+                        </span>
+                    </ng-template>
+                </ng-select>
+            </div>
+        </div>
+
+        <div class="row mt-2" *ngIf="partidaSeleccionada">
+            <div class="col-12">
+                <span class="badge bg-success">
+                    Seleccionado: {{partidaSeleccionada.item}} - {{partidaSeleccionada.descripcion}}
+                </span>
+            </div>
+        </div>
+    </div>
+    <div class="app-modal-footer w-100">
+        <div class="row px-3 justify-content-between">
+            <button type="button" style="margin-right: 5px;" class="btn btn-sm btn-danger ripple"
+                (click)="cerrarModalVincularPartida()">Cerrar</button>
+            <button type="button" style="margin-right: 5px;" class="btn btn-sm btn-success ripple"
+                [disabled]="!partidaSeleccionada" (click)="guardarVinculoPartida()">
                 Guardar</button>
         </div>
     </div>

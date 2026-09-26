@@ -167,7 +167,10 @@
                                 <td appAnchocol [ancho]="90" [ngClass]="{'highlight': filaSel == indice}"
                                     appPintarfilapre [tipo]="titulo1" [color]="titulo1color" [letra]="titulo1letra"
                                     [item]="row.item" [separador]="'.'" [partida]="row.unidad!=''?true:false">
-                                    {{row.cantidad | number: mask_parcial }}
+                                    <ng-container *ng>
+                                        {{row.cantidad | number: mask_parcial }}
+                                    </ng-container>
+                                    
                                 </td>
                                 <!-- <td appAnchocol [ancho]="90" [ngClass]="{'highlight': filaSel == indice}"
                                     appPintarfilapre [tipo]="titulo1" [color]="titulo1color" [letra]="titulo1letra"
@@ -680,16 +683,16 @@
                                     </td>
 
                                     <td class="text-center">{{ eq.unidad }}</td>
-                                    <td class="text-right">{{ (eq.horas_dia | number:'1.5-5') || '-' }}</td>
+                                    <td class="text-right">{{ (eq.horas_dia | number:'1.4-4') || '-' }}</td>
                                     <td class="text-right">
-                                        {{ (eq.horas_dia ? calcularSaldo(eq) : 0) | number:'1.5-5' }}
+                                        {{ (eq.horas_dia ? calcularSaldo(eq) : 0) | number:'1.4-4' }}
                                     </td>
 
                                     <td class="text-center p-1">
                                         <input *ngIf="eq.unidad && eq.horas_dia" type="text"
                                             class="form-control form-control-sm text-right px-1 py-0"
                                             style="height: 24px; font-size: 0.8rem;"
-                                            [textMask]="formService.maskUsAmountDecimal5" [(ngModel)]="eq.monto_input"
+                                            [textMask]="formService.maskUsAmountDecimal4" [(ngModel)]="eq.monto_input"
                                             (focus)="guardarValorPrevio(eq)" (ngModelChange)="validarYLimitarMonto(eq)"
                                             (blur)="procesarGuardadoRegistro(eq)" onClick="this.select();"
                                             autocomplete="off" />

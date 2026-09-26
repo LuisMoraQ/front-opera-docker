@@ -8,6 +8,7 @@ import { LogisticaService } from 'src/app/servicios/logistica.service';
 import { SubcontratosService } from 'src/app/servicios/subcontratos.service';
 import { SwalService } from 'src/app/servicios/swal.service';
 import { ModalBasicComponent } from 'src/app/shared/modal-basic/modal-basic.component';
+import { RecursosHumanosService } from 'src/app/servicios/recursoshumanos.service';
 
 export interface subcontrato {
   item: string;
@@ -95,6 +96,7 @@ export class SubcontratosComponent implements OnInit {
   @ViewChild("modalSubContratoCabecera") modalSubContratoCabecera: ModalBasicComponent;
   @ViewChild("modalSubContrato") modalSubContrato: ModalBasicComponent;
   @ViewChild("modalEstado") modalEstado: ModalBasicComponent;
+  @ViewChild('modalPartida') modalPartida: ModalBasicComponent;
   formDesagregado = new UntypedFormGroup({
     id_desagregado: new UntypedFormControl('', []),
     ordenServicio: new UntypedFormControl('', []),
@@ -162,8 +164,11 @@ export class SubcontratosComponent implements OnInit {
   get subcontratos(): FormArray {
     return this.formSubcontratos.get('subcontratos') as FormArray;
   }
-
-  constructor(private fb: FormBuilder, public formService: FormsService, private _logisticaService: LogisticaService, private equiposServiciosService: EquiposServiciosService, private encriptadorService: EncriptadorService, private subcontratosService: SubcontratosService, private toaster: ToastrService) { }
+  listaPresupuesto: any[] = [];
+  partidaSeleccionada: any = null;
+  idxTiempoVinculando: number | null = null;
+  vinculandoTodasFilas = false;
+  constructor(private RecursosHumanosService: RecursosHumanosService, private fb: FormBuilder, public formService: FormsService, private _logisticaService: LogisticaService, private equiposServiciosService: EquiposServiciosService, private encriptadorService: EncriptadorService, private subcontratosService: SubcontratosService, private toaster: ToastrService) { }
 
   async ngOnInit() {
     try {
@@ -1327,6 +1332,219 @@ export class SubcontratosComponent implements OnInit {
 
   }
 
+  // async guardarActualizarCambiosDesagregado(cambio = false): Promise<boolean | void> {
+
+  //   if (!this.subcontratoEditado) {
+  //     this.toaster.info('Ningún cambio realizado', '', {
+  //       closeButton: false,
+  //       positionClass: 'toast-bottom-right',
+  //       timeOut: 4000,
+  //     });
+  //     return;
+  //   }
+
+  //   try {
+  //     // ==========================================
+  //     // 1. VALIDACIÓN Y SERIALIZACIÓN DE TIEMPOS
+  //     // ==========================================
+  //     if (this.tiempos.invalid) {
+  //       if (!cambio) {
+  //         this.tiempos.markAllAsTouched();
+  //         this.toaster.error('Datos ingresados incorrectos', 'Error', {
+  //           closeButton: false,
+  //           positionClass: 'toast-bottom-right',
+  //           timeOut: 4000,
+  //         });
+  //       } else {
+  //         this.subcontratoEditado = false;
+  //       }
+  //       return;
+  //     }
+
+  //     const puBase = Number(this.formDesagregado.get('coste_unitario')?.value || 0);
+
+  //     const horasDetalleArray = this.tiempos.value.map((ele: any) => {
+  //       const cantidad = Number(ele.cantidad || 0);
+  //       const parcial = Number(ele.parcial || (cantidad * puBase));
+  //       return `${cantidad}|${puBase}|${parcial}|${ele.idPartida ?? ''}`;   // <-- agregado
+  //     });
+  //     const horasDetalle = horasDetalleArray.join('/');
+
+  //     const data = this.formDesagregado.getRawValue();
+  //     const tieneContenidoGuardable = Boolean(horasDetalle || Number(data.horas_dia) > 0);
+
+  //     // Si NO tiene datos Y Tampoco tiene id_desagregado (era nuevo y se limpió) -> Cancelar operación
+  //     if (!tieneContenidoGuardable && !data.id_desagregado) {
+  //       this.subcontratoEditado = false;
+  //       return;
+  //     }
+
+  //     this.mostrar_carga_todo = true;
+
+  //     // ==========================================
+  //     // 2. DETERMINACIÓN DE OBJETIVOS Y FECHA
+  //     // ==========================================
+  //     const targetIndex = this.celdaSel[0] ?? this.selFilPlan;
+  //     const diaSeleccionado = this.calendarioFiltrado?.dias?.[this.celdaSel[1]];
+  //     const targetRow = this.tablaPlanilla[targetIndex];
+  //     const fechaPayload = diaSeleccionado?.fecha;
+
+  //     if (!fechaPayload) {
+  //       this.mostrar_carga_todo = false;
+  //       if (cambio) this.subcontratoEditado = false;
+  //       return false;
+  //     }
+
+  //     if (tieneContenidoGuardable) {
+  //       if (data.id_desagregado) {
+  //         // ==========================================
+  //         // A. ACTUALIZACIÓN DE REGISTRO
+  //         // ==========================================
+  //         const obj = {
+  //           id_desagregado: data.id_desagregado,
+  //           id_proyecto: this.id_proyecto,
+  //           id_subcontrato: targetRow.id_subcontrato,
+  //           fecha: fechaPayload,
+  //           id_proveedor: null,
+  //           horas_dia: data.horas_dia,
+  //           minutos_dia: data.minutos_dia || 0,
+  //           costo_dia: data.coste_dia,
+  //           horas_detalle: horasDetalle,
+  //           observaciones: data.observaciones ?? '',
+  //         };
+
+  //         const resp = await this.subcontratosService.actualizarDesagregadoSubcontrato(obj);
+
+  //         if (resp[0]?.mensaje === '1') {
+  //           const rowClonada = { ...targetRow };
+  //           const arrayCompleto = [...(rowClonada.desagregadosCompleto || [])];
+  //           const indice = arrayCompleto.findIndex(ele => ele.id_desagregado === obj.id_desagregado);
+
+  //           const objetoActualizado = {
+  //             ...obj,
+  //             costo_dia: Number(data.coste_dia) || 0,
+  //             horas_dia: Number(data.horas_dia) || 0
+  //           };
+
+  //           if (indice !== -1) {
+  //             arrayCompleto[indice] = objetoActualizado;
+  //           } else {
+  //             arrayCompleto.push(objetoActualizado);
+  //           }
+  //           rowClonada.desagregadosCompleto = arrayCompleto;
+
+  //           const planillaCopy = [...(rowClonada.planilla || [])];
+  //           planillaCopy[this.celdaSel[1]] = { ...objetoActualizado };
+  //           rowClonada.planilla = planillaCopy;
+
+  //           this.tablaPlanilla[targetIndex] = rowClonada;
+
+  //           this.actualizarTotalesDia();
+  //           this.actualizarEstadoObservaciones();
+  //           this.calcularSaldo();
+
+  //           this.subcontratoEditado = false;
+  //           this.notificarExito();
+  //         } else {
+  //           SwalService.error();
+  //         }
+  //       } else {
+  //         // ==========================================
+  //         // B. CREACIÓN DE REGISTRO NUEVO
+  //         // ==========================================
+  //         const obj = {
+  //           id_proyecto: this.id_proyecto,
+  //           id_subcontrato: targetRow.id_subcontrato,
+  //           fecha: fechaPayload,
+  //           id_proveedor: null,
+  //           horas_dia: data.horas_dia,
+  //           minutos_dia: data.minutos_dia || 0,
+  //           costo_dia: data.coste_dia,
+  //           horas_detalle: horasDetalle,
+  //           observaciones: data.observaciones ?? '',
+  //         };
+
+  //         const resp = await this.subcontratosService.guardarDesagregadoSubcontrato(obj);
+
+  //         if (resp[0]?.id_desagregado) {
+  //           const nuevoObj = {
+  //             ...obj,
+  //             id_desagregado: resp[0].id_desagregado,
+  //             costo_dia: Number(data.coste_dia) || 0,
+  //             horas_dia: Number(data.horas_dia) || 0
+  //           };
+  //           const rowClonada = { ...targetRow };
+
+  //           const planillaCopy = [...(rowClonada.planilla || [])];
+  //           planillaCopy[this.celdaSel[1]] = { ...nuevoObj };
+  //           rowClonada.planilla = planillaCopy;
+
+  //           rowClonada.desagregadosCompleto = [
+  //             ...(rowClonada.desagregadosCompleto || []),
+  //             { ...nuevoObj },
+  //           ];
+
+  //           this.tablaPlanilla[targetIndex] = rowClonada;
+
+  //           this.id_desagregado.setValue(resp[0].id_desagregado, { emitEvent: false });
+
+  //           this.actualizarTotalesDia();
+  //           this.actualizarEstadoObservaciones();
+  //           this.calcularSaldo();
+
+  //           this.subcontratoEditado = false;
+  //           this.notificarExito();
+  //         } else {
+  //           SwalService.error();
+  //         }
+  //       }
+  //     } else if (data.id_desagregado) {
+  //       // ==========================================
+  //       // C. ELIMINACIÓN DE REGISTRO EXISTENTE
+  //       // ==========================================
+  //       const resp = await this.subcontratosService.eliminarDesagregadoSubcontrato({
+  //         id_desagregado: data.id_desagregado,
+  //       });
+
+  //       if (resp[0]?.mensaje === '1') {
+  //         this.tiempos.clear({ emitEvent: false });
+  //         const rowClonada = { ...targetRow };
+
+  //         const planillaCopy = [...(rowClonada.planilla || [])];
+  //         planillaCopy[this.celdaSel[1]] = null;
+  //         rowClonada.planilla = planillaCopy;
+
+  //         rowClonada.desagregadosCompleto = (rowClonada.desagregadosCompleto || []).filter(
+  //           (item: any) => item.id_desagregado !== data.id_desagregado
+  //         );
+
+  //         this.tablaPlanilla[targetIndex] = rowClonada;
+
+  //         this.id_desagregado.setValue('', { emitEvent: false });
+  //         this.minutos_dia.setValue(0, { emitEvent: false });
+  //         this.horas_dia.setValue(0, { emitEvent: false });
+  //         this.coste_dia.setValue(0, { emitEvent: false });
+  //         this.observaciones.setValue('', { emitEvent: false });
+
+  //         this.actualizarEstadoObservaciones();
+  //         this.calcularSaldo();
+
+  //         this.subcontratoEditado = false;
+  //         this.notificarExito();
+  //       } else {
+  //         SwalService.error();
+  //       }
+  //     }
+
+  //     this.tablaPlanilla = [...this.tablaPlanilla];
+  //     this.mostrar_carga_todo = false;
+  //   } catch (error) {
+  //     this.mostrar_carga_todo = false;
+  //     console.error('Error en guardarActualizarCambiosDesagregado:', error);
+  //     SwalService.error();
+  //   }
+  // }
+
   async guardarActualizarCambiosDesagregado(cambio = false): Promise<boolean | void> {
 
     if (!this.subcontratoEditado) {
@@ -1361,14 +1579,13 @@ export class SubcontratosComponent implements OnInit {
       const horasDetalleArray = this.tiempos.value.map((ele: any) => {
         const cantidad = Number(ele.cantidad || 0);
         const parcial = Number(ele.parcial || (cantidad * puBase));
-        return `${cantidad}|${puBase}|${parcial}`;
+        return `${cantidad}|${puBase}|${parcial}|${ele.idPartida ?? ''}`;
       });
       const horasDetalle = horasDetalleArray.join('/');
 
       const data = this.formDesagregado.getRawValue();
       const tieneContenidoGuardable = Boolean(horasDetalle || Number(data.horas_dia) > 0);
 
-      // Si NO tiene datos Y Tampoco tiene id_desagregado (era nuevo y se limpió) -> Cancelar operación
       if (!tieneContenidoGuardable && !data.id_desagregado) {
         this.subcontratoEditado = false;
         return;
@@ -1395,7 +1612,7 @@ export class SubcontratosComponent implements OnInit {
           // ==========================================
           // A. ACTUALIZACIÓN DE REGISTRO
           // ==========================================
-          const obj = {
+          const obj: any = {
             id_desagregado: data.id_desagregado,
             id_proyecto: this.id_proyecto,
             id_subcontrato: targetRow.id_subcontrato,
@@ -1407,6 +1624,14 @@ export class SubcontratosComponent implements OnInit {
             horas_detalle: horasDetalle,
             observaciones: data.observaciones ?? '',
           };
+
+          // NUEVO: sincronizar vínculos de partida
+          const regActividades = await this.sincronizarRegistrosActividades(
+            data.id_desagregado,
+            targetRow,
+            fechaPayload
+          );
+          obj.reg_actividades = regActividades;
 
           const resp = await this.subcontratosService.actualizarDesagregadoSubcontrato(obj);
 
@@ -1447,7 +1672,7 @@ export class SubcontratosComponent implements OnInit {
           // ==========================================
           // B. CREACIÓN DE REGISTRO NUEVO
           // ==========================================
-          const obj = {
+          const obj: any = {
             id_proyecto: this.id_proyecto,
             id_subcontrato: targetRow.id_subcontrato,
             fecha: fechaPayload,
@@ -1462,9 +1687,34 @@ export class SubcontratosComponent implements OnInit {
           const resp = await this.subcontratosService.guardarDesagregadoSubcontrato(obj);
 
           if (resp[0]?.id_desagregado) {
+            const idDesagregadoNuevo = resp[0].id_desagregado;
+
+            // NUEVO: sincronizar vínculos de partida
+            const regActividades = await this.sincronizarRegistrosActividades(
+              idDesagregadoNuevo,
+              targetRow,
+              fechaPayload
+            );
+
+            // Persistir reg_actividades en el registro recién creado
+            await this.subcontratosService.actualizarDesagregadoSubcontrato({
+              id_desagregado: idDesagregadoNuevo,
+              id_proyecto: this.id_proyecto,
+              id_subcontrato: targetRow.id_subcontrato,
+              fecha: fechaPayload,
+              id_proveedor: null,
+              horas_dia: obj.horas_dia,
+              minutos_dia: obj.minutos_dia,
+              costo_dia: obj.costo_dia,
+              horas_detalle: obj.horas_detalle,
+              observaciones: obj.observaciones,
+              reg_actividades: regActividades
+            });
+
             const nuevoObj = {
               ...obj,
-              id_desagregado: resp[0].id_desagregado,
+              id_desagregado: idDesagregadoNuevo,
+              reg_actividades: regActividades,
               costo_dia: Number(data.coste_dia) || 0,
               horas_dia: Number(data.horas_dia) || 0
             };
@@ -1481,7 +1731,7 @@ export class SubcontratosComponent implements OnInit {
 
             this.tablaPlanilla[targetIndex] = rowClonada;
 
-            this.id_desagregado.setValue(resp[0].id_desagregado, { emitEvent: false });
+            this.id_desagregado.setValue(idDesagregadoNuevo, { emitEvent: false });
 
             this.actualizarTotalesDia();
             this.actualizarEstadoObservaciones();
@@ -1497,6 +1747,10 @@ export class SubcontratosComponent implements OnInit {
         // ==========================================
         // C. ELIMINACIÓN DE REGISTRO EXISTENTE
         // ==========================================
+
+        // NUEVO: eliminar los registros vinculados en top_registro_monto_actividades
+        await this.eliminarTodosRegistrosActividades(data.id_desagregado, targetRow, fechaPayload);
+
         const resp = await this.subcontratosService.eliminarDesagregadoSubcontrato({
           id_desagregado: data.id_desagregado,
         });
@@ -2408,17 +2662,14 @@ export class SubcontratosComponent implements OnInit {
       this.buscando = true;
       this.celdaSel = [i, j];
 
-      // Resetear campos del formulario
       this.id_desagregado.reset();
       this.horas_dia.reset();
       this.minutos_dia.reset();
       this.coste_dia.reset();
       this.observaciones.reset();
 
-      // Limpiar el FormArray de tiempos
       this.tiempos.clear({ emitEvent: false });
 
-      // Cargar datos estáticos de la fila
       const pu = Number(filaActual.precio_unitario || 0);
       this.coste_unitario.setValue(pu, { emitEvent: false });
       this.unidad.setValue(filaActual.unidad, { emitEvent: false });
@@ -2427,18 +2678,22 @@ export class SubcontratosComponent implements OnInit {
       const dataDiaEquipo = filaActual.planilla?.[j];
 
       if (dataDiaEquipo) {
-        // 1. Reconstruir FormArray usando el nuevo formato (cantidad | pu | parcial)
+        // 1. Reconstruir FormArray usando el formato (cantidad | pu | parcial | idPartida)
         if (dataDiaEquipo.horas_detalle && dataDiaEquipo.horas_detalle.trim() !== '') {
           const filas = dataDiaEquipo.horas_detalle.split('/');
+          const regActividadesArr = (dataDiaEquipo.reg_actividades || '').split('/');
 
-          filas.forEach((filaStr: string) => {
-            const [cant, precioU, parc] = filaStr.split('|');
+          filas.forEach((filaStr: string, index: number) => {
+            const [cant, precioU, parc, idPart] = filaStr.split('|');
             const cantidadNum = Number(cant || 0);
             const parcialNum = Number(parc || (cantidadNum * pu));
+            const idRegActividadFila = regActividadesArr[index] || '';
 
             const grupoControles = this.fb.group({
               cantidad: [cantidadNum],
-              parcial: [parcialNum]
+              parcial: [parcialNum],
+              idPartida: [idPart || ''],                 // <-- nuevo
+              idRegActividad: [idRegActividadFila]        // <-- nuevo
             });
 
             this.tiempos.push(grupoControles);
@@ -2498,24 +2753,69 @@ export class SubcontratosComponent implements OnInit {
     }
   }
 
-  // Llama a la función al agregar
   agregarTiempo() {
     const tiempoForm = this.fb.group({
       cantidad: [0],
-      parcial: [0]
+      parcial: [0],
+      idPartida: [''],
+      idRegActividad: ['']
     });
     this.tiempos.push(tiempoForm);
 
-    this.subcontratoEditado = true; // <-- Marca el formulario como editado al agregar
+    this.subcontratoEditado = true;
     this.actualizarEstadoObservaciones();
   }
 
-  eliminarTiempo(idx: number) {
+  private calcularMontoFila(tiempoValue: any): number {
+    return Number(tiempoValue?.cantidad) || 0;
+  }
+  async eliminarTiempo(idx: number) {
+    const fg = this.tiempos.at(idx) as FormGroup;
+    const idRegExistente = fg.get('idRegActividad')?.value;
+
+    // Verificar si OTRA fila del FormArray sigue usando el mismo idRegActividad
+    const otrasFilasConMismoRegistro = this.tiempos.controls.filter((control, i) => {
+      if (i === idx) return false;
+      const otroId = (control as FormGroup).get('idRegActividad')?.value;
+      return idRegExistente && String(otroId || '') === String(idRegExistente);
+    }).length;
+
+    // Solo eliminar en BD si esta es la ÚLTIMA fila que referencia ese registro
+    if (idRegExistente && otrasFilasConMismoRegistro === 0) {
+      const targetIndex = this.celdaSel[0] ?? this.selFilPlan;
+      const diaSeleccionado = this.calendarioFiltrado?.dias?.[this.celdaSel[1]];
+      const targetRow = this.tablaPlanilla[targetIndex];
+      const fechaPayload = diaSeleccionado?.fecha;
+      const idDesagregado = this.id_desagregado.value;
+
+      try {
+        this.mostrar_carga_todo = true;
+        await this.equiposServiciosService.guardarMovimientoSaldo({
+          accion: 'ELIMINAR',
+          id_reg: Number(idRegExistente),
+          indice: 0,
+          tipo: 4,
+          fecha: fechaPayload,
+          monto_registro: 0,
+          id_equipo: targetRow.id_subcontrato,
+          id_desagregado: idDesagregado || 0,
+          id_proyecto: this.id_proyecto
+        });
+      } catch (error) {
+        console.error('Error al eliminar registro de actividad vinculado:', error);
+        SwalService.error();
+        this.mostrar_carga_todo = false;
+        return;
+      }
+      this.mostrar_carga_todo = false;
+    }
+    // Si otrasFilasConMismoRegistro > 0, NO se toca BD: el registro sigue vivo para las otras filas
+
     this.tiempos.removeAt(idx);
 
     this.subcontratoEditado = true;
     this.actualizarEstadoObservaciones();
-    this.actualizarTotalesDia(); // <-- Obligatorio para recalcular horas_dia y coste_dia
+    this.actualizarTotalesDia();
   }
   // Llama a la función al cargar la información inicial o resetear el formulario
   cargarDatosDesagregado(data: any) {
@@ -2561,7 +2861,6 @@ export class SubcontratosComponent implements OnInit {
       coste_dia: totalCosto
     });
   }
-
   async eliminarDesagregado() {
     try {
       const idxFila = this.celdaSel?.[0] ?? this.selFilPlan;
@@ -2577,6 +2876,11 @@ export class SubcontratosComponent implements OnInit {
       if (!sw.isConfirmed) return;
 
       this.mostrar_carga_todo = true;
+
+      // NUEVO: eliminar primero los registros vinculados en top_registro_monto_actividades
+      const diaSeleccionado = this.calendarioFiltrado?.dias?.[this.celdaSel?.[1]];
+      const fechaPayload = diaSeleccionado?.fecha;
+      await this.eliminarTodosRegistrosActividades(idEliminar, filaActual, fechaPayload);
 
       // 1. Llamada al servicio correcto de subcontratos
       const resp = await this.subcontratosService.eliminarDesagregadoSubcontrato({
@@ -2705,4 +3009,228 @@ export class SubcontratosComponent implements OnInit {
     this.todosExpandidosNueva2 = false;
   }
 
+  buscarPartida = (term: string, item: any): boolean => {
+    const texto = (term || '').toLowerCase();
+    return (item.item || '').toString().toLowerCase().includes(texto)
+      || (item.descripcion || '').toString().toLowerCase().includes(texto);
+  }
+
+  async cargarPresupuesto() {
+    const obj = { id_proyecto: this.id_proyecto };
+    try {
+      const resp = await this.RecursosHumanosService.listarPresupuestoProyecto(obj);
+      this.listaPresupuesto = (resp && resp.length)
+        ? resp.map((item: any) => ({
+          ...item,
+          seleccionado: false,
+          disabled: !item.unidad
+        }))
+        : [];
+    } catch (error) {
+      console.error('Error al cargar presupuesto:', error);
+      this.listaPresupuesto = [];
+    }
+  }
+
+  async abrirModalVincularPartida(idx: number): Promise<void> {
+    this.vinculandoTodasFilas = false;   // <-- nuevo: asegura que no quede en modo "todas"
+    this.mostrar_carga_todo = true
+    this.idxTiempoVinculando = idx;
+
+    if (!this.listaPresupuesto.length) {
+      await this.cargarPresupuesto();
+    }
+
+    const idActual = this.tiempos.at(idx).get('idPartida')?.value;
+    this.partidaSeleccionada = idActual
+      ? this.listaPresupuesto.find(p => String(p.indice) === String(idActual)) || null
+      : null;
+    this.mostrar_carga_todo = false
+    this.modalPartida.show();
+  }
+
+  async abrirModalVincularTodas(): Promise<void> {
+    if (!this.todasFilasValidasParaVincular) return;
+
+    this.mostrar_carga_todo = true;
+    if (!this.listaPresupuesto.length) {
+      await this.cargarPresupuesto();
+    }
+
+    this.vinculandoTodasFilas = true;
+    this.idxTiempoVinculando = null;
+    this.partidaSeleccionada = null;
+    this.mostrar_carga_todo = false;
+    this.modalPartida.show();
+  }
+  cerrarModalVincularPartida(): void {
+    this.modalPartida.hide();
+    this.idxTiempoVinculando = null;
+    this.partidaSeleccionada = null;
+    this.vinculandoTodasFilas = false;   // <-- nuevo
+  }
+  guardarVinculoPartida(): void {
+    if (!this.partidaSeleccionada) return;
+
+    if (this.vinculandoTodasFilas) {
+      // Vincular TODAS las filas actuales al mismo índice de partida
+      this.tiempos.controls.forEach((fg: any) => {
+        fg.get('idPartida')?.setValue(this.partidaSeleccionada.indice);
+        fg.markAsDirty();
+      });
+      this.subcontratoEditado = true;
+      this.cerrarModalVincularPartida();
+      return;
+    }
+
+    if (this.idxTiempoVinculando === null) return;
+
+    const control = this.tiempos.at(this.idxTiempoVinculando).get('idPartida');
+    control?.setValue(this.partidaSeleccionada ? this.partidaSeleccionada.indice : '');
+    control?.markAsDirty();
+    this.subcontratoEditado = true;
+
+    this.cerrarModalVincularPartida();
+  }
+
+  quitarVinculoPartida(idx: number): void {
+    const control = this.tiempos.at(idx).get('idPartida');
+    if (!control?.value) return;
+
+    control.setValue('');
+    control.markAsDirty();
+    this.subcontratoEditado = true;
+  }
+
+  private calcularMontoFilaSubcontrato(tiempoValue: any): number {
+    return Number(tiempoValue?.cantidad) || 0;
+  }
+
+  private async sincronizarRegistrosActividades(
+    idDesagregado: number,
+    targetRow: any,
+    fechaPayload: string
+  ): Promise<string> {
+
+    const controles = this.tiempos.controls as FormGroup[];
+    const regActividadesPorFila: string[] = new Array(controles.length).fill('');
+
+    const grupos = new Map<string, { indices: number[], montoTotal: number, idRegExistentes: Set<number> }>();
+
+    controles.forEach((fg, idx) => {
+      const val = fg.value;
+      const idPartida = val.idPartida ? String(Number(val.idPartida)) : null;
+      if (!idPartida) return;
+
+      const monto = this.calcularMontoFilaSubcontrato(val);
+      const idRegExistente = val.idRegActividad ? Number(val.idRegActividad) : 0;
+
+      if (!grupos.has(idPartida)) {
+        grupos.set(idPartida, { indices: [], montoTotal: 0, idRegExistentes: new Set() });
+      }
+      const g = grupos.get(idPartida)!;
+      g.indices.push(idx);
+      g.montoTotal += monto;
+      if (idRegExistente) g.idRegExistentes.add(idRegExistente);
+    });
+
+    for (const [idPartidaStr, grupo] of grupos.entries()) {
+      const idPartida = Number(idPartidaStr);
+      const idsExistentes = Array.from(grupo.idRegExistentes);
+      const idRegMaestro = idsExistentes.length ? idsExistentes[0] : 0;
+
+      const payload: any = {
+        accion: idRegMaestro ? 'ACTUALIZAR' : 'CREAR',
+        id_reg: idRegMaestro || 0,
+        indice: idPartida,
+        tipo: 4,
+        fecha: fechaPayload,
+        monto_registro: grupo.montoTotal,
+        id_equipo: targetRow.id_subcontrato,
+        id_desagregado: idDesagregado,
+        id_proyecto: this.id_proyecto
+      };
+
+      const res = await this.equiposServiciosService.guardarMovimientoSaldo(payload);
+      const dataRes = Array.isArray(res) && res.length > 0 ? res[0] : res;
+      const idRegFinal = dataRes?.id_reg || idRegMaestro;
+
+      for (const idSobrante of idsExistentes) {
+        if (idSobrante !== idRegFinal) {
+          await this.equiposServiciosService.guardarMovimientoSaldo({
+            accion: 'ELIMINAR',
+            id_reg: idSobrante,
+            indice: 0,
+            tipo: 4,
+            fecha: fechaPayload,
+            monto_registro: 0,
+            id_equipo: targetRow.id_subcontrato,
+            id_desagregado: idDesagregado,
+            id_proyecto: this.id_proyecto
+          });
+        }
+      }
+
+      grupo.indices.forEach(idx => {
+        controles[idx].get('idRegActividad')?.setValue(idRegFinal, { emitEvent: false });
+        regActividadesPorFila[idx] = idRegFinal ? String(idRegFinal) : '';
+      });
+    }
+
+    for (let idx = 0; idx < controles.length; idx++) {
+      const fg = controles[idx];
+      const val = fg.value;
+      const idPartida = val.idPartida ? Number(val.idPartida) : null;
+      if (idPartida) continue;
+
+      const idRegExistente = val.idRegActividad ? Number(val.idRegActividad) : 0;
+      if (idRegExistente) {
+        await this.equiposServiciosService.guardarMovimientoSaldo({
+          accion: 'ELIMINAR',
+          id_reg: idRegExistente,
+          indice: 0,
+          tipo: 4,
+          fecha: fechaPayload,
+          monto_registro: 0,
+          id_equipo: targetRow.id_subcontrato,
+          id_desagregado: idDesagregado,
+          id_proyecto: this.id_proyecto
+        });
+        fg.get('idRegActividad')?.setValue('', { emitEvent: false });
+      }
+      regActividadesPorFila[idx] = '';
+    }
+
+    return regActividadesPorFila.join('/');
+  }
+
+  private async eliminarTodosRegistrosActividades(idDesagregado: number, targetRow: any, fechaPayload: string): Promise<void> {
+    for (const control of this.tiempos.controls) {
+      const idRegExistente = (control as FormGroup).get('idRegActividad')?.value;
+      if (idRegExistente) {
+        await this.equiposServiciosService.guardarMovimientoSaldo({
+          accion: 'ELIMINAR',
+          id_reg: Number(idRegExistente),
+          indice: 0,
+          tipo: 4,
+          fecha: fechaPayload,
+          monto_registro: 0,
+          id_equipo: targetRow.id_subcontrato,
+          id_desagregado: idDesagregado,
+          id_proyecto: this.id_proyecto
+        });
+      }
+    }
+  }
+
+
+
+  get todasFilasValidasParaVincular(): boolean {
+    if (!this.tiempos.length) return false;
+
+    return this.tiempos.controls.every((fg: any) => {
+      const cantidad = Number(fg.get('cantidad')?.value || 0);
+      return cantidad > 0;
+    });
+  }
 }

@@ -7,6 +7,7 @@ import { EncriptadorService } from 'src/app/servicios/encriptador.service';
 import { EquiposServiciosService } from 'src/app/servicios/equipos-servicios.service';
 import { FormsService } from 'src/app/servicios/forms.service';
 import { LogisticaService } from 'src/app/servicios/logistica.service';
+import { RecursosHumanosService } from 'src/app/servicios/recursoshumanos.service';
 import { SwalService } from 'src/app/servicios/swal.service';
 import { ModalBasicComponent } from 'src/app/shared/modal-basic/modal-basic.component';
 export interface servicio {
@@ -87,6 +88,7 @@ export class EquiposHerramientasComponent implements OnInit {
   @ViewChild("modalServicio") modalServicio: ModalBasicComponent;
   @ViewChild("modalEquipo") modalEquipo: ModalBasicComponent;
   @ViewChild("modalEstado") modalEstado: ModalBasicComponent;
+  @ViewChild("modalPartida") modalPartida: ModalBasicComponent;
 
   formServicio = new UntypedFormGroup({
     id_servicio: new UntypedFormControl('', []),
@@ -176,7 +178,11 @@ export class EquiposHerramientasComponent implements OnInit {
   todosExpandidosNueva2 = true
 
   private evitandoDobleEjecucion = false;
-  constructor(private fb: FormBuilder, private cdRef: ChangeDetectorRef, private encriptadorService: EncriptadorService, private _logisticaService: LogisticaService, private toaster: ToastrService, public formService: FormsService, private equiposServiciosService: EquiposServiciosService) { }
+  listaPresupuesto = []
+  partidaSeleccionada: any = null;
+  idxTiempoVinculando: number | null = null;
+  vinculandoTodasFilas = false;
+  constructor(private RecursosHumanosService: RecursosHumanosService, private fb: FormBuilder, private cdRef: ChangeDetectorRef, private encriptadorService: EncriptadorService, private _logisticaService: LogisticaService, private toaster: ToastrService, public formService: FormsService, private equiposServiciosService: EquiposServiciosService) { }
 
   async ngOnInit() {
     try {
@@ -198,31 +204,7 @@ export class EquiposHerramientasComponent implements OnInit {
     }
   }
 
-  // async cambioDataRegistro() {j
-  //   this.mostrar_carga_todo = true
-  //   console.log('b')
-  //   setTimeout(async () => {
 
-  //     this.limpiarVariables()
-  //     // this.id_registro = this.listaRegistros[this.registroSeleccionado]?.id_registro
-  //     const obj = { id_proyecto: this.id_proyecto, id_registro: this.id_registro, tipocontra: 2 }
-  //     const resp = await this.equiposServiciosService.listarAgrupamientoRequerimientos(obj)
-  //     const desagregados = await this.listarDesagregadosEquipos()
-  //     await this.listarEquiposServicios(desagregados)
-  //     const tablaRegActividades = resp.agrupacion.map(element => {
-  //       element.servicios = this.tablaServiciosCompleto.filter(ele => ele.id_grupo == Number(element.idgrupo) && ele.id_registro == element.id_registro)
-  //       return element
-  //     })
-  //     this.tablaRegActividades = await this.procesarCantidadAcumulada(tablaRegActividades)
-  //     this.reqCompletos = resp.desagregados
-  //     this.grupoSeleccionado = ''
-  //     await this.calcularTotales()
-  //     this.iduser_local = this.encriptadorService.recuperarlocalstory('idusuario');
-  //     this.mostrar_carga_todo = false
-  //     console.log('c')
-  //   }, 0);
-
-  // }
   async cambioDataRegistro() {
     this.mostrar_carga_todo = true
     await new Promise(resolve => setTimeout(resolve, 0));
@@ -281,51 +263,7 @@ export class EquiposHerramientasComponent implements OnInit {
     this.resumenPorAnio = [];
   }
 
-  // procesarCantidadAcumulada(data) {
-  //   return data.map(actividad => {
-  //     // Calcular el total acumulado de todos los servicios de esta actividad
-  //     const totalActividad = actividad.servicios?.reduce((totalServicios, servicio) => {
-  //       const sumaServicio = servicio.desagregadosCompleto?.reduce((total, d) => {
-  //         if (servicio.tipo === 'H-M' || servicio.tipo === 'DIA') {
-  //           return total + (d.horas_dia || 0);
-  //         }
-  //         if (servicio.tipo === 'MES' || servicio.tipo === 'GLOBAL') {
-  //           const suma = d.horas_detalle?.split('/').reduce((sum, rango) => {
-  //             const partes = rango.split('|');
-  //             return sum + (parseFloat(partes[2]) || 0);
-  //           }, 0) || 0;
-  //           return total + suma;
-  //         }
-  //         return total;
-  //       }, 0) || 0;
-  //       return totalServicios + sumaServicio;
-  //     }, 0) || 0;
 
-  //     return {
-  //       ...actividad,
-  //       presupuestoEjecutado: totalActividad,
-  //       saldo: actividad.parcial - totalActividad,
-
-  //       porcentaje: actividad.parcial !== 0 ? ((actividad.parcial - totalActividad) / actividad.parcial) * 100 : 0,
-  //       servicios: actividad.servicios?.map(servicio => ({
-  //         ...servicio,
-  //         presupuestoEjecutado: servicio.desagregadosCompleto?.reduce((total, d) => {
-  //           if (servicio.tipo === 'H-M' || servicio.tipo === 'DIA') {
-  //             return total + (d.horas_dia || 0);
-  //           }
-  //           if (servicio.tipo === 'MES' || servicio.tipo === 'GLOBAL') {
-  //             const suma = d.horas_detalle?.split('/').reduce((sum, rango) => {
-  //               const partes = rango.split('|');
-  //               return sum + (parseFloat(partes[2]) || 0);
-  //             }, 0) || 0;
-  //             return total + suma;
-  //           }
-  //           return total;
-  //         }, 0) || 0
-  //       })) || []
-  //     };
-  //   });
-  // }
   procesarCantidadAcumulada(data) {
     return data.map(actividad => {
       // Calcular el total acumulado de todos los servicios de esta actividad
@@ -880,8 +818,9 @@ export class EquiposHerramientasComponent implements OnInit {
           this.sumaPorDiaPlanilla = sumaPorDia;
           this.totalMes = sumaPorDia.reduce((acumulador, valorActual) => acumulador + valorActual, 0);
         }
-      
+
       }
+      console.log('this.tablaPlanilla', this.tablaPlanilla)
       this.mostrar_carga_todo = false
     }, 50);
   }
@@ -1019,60 +958,6 @@ export class EquiposHerramientasComponent implements OnInit {
   cerrarModalEquipo() {
     this.modalEquipo.hide()
   }
-
-  // abrirModalEquipo(row?: servicio) {
-  //   this.actualizarEquipos = false
-  //   this.equipos.clear();
-
-  //   this.fila_requerimiento.reset('');
-
-  //   this.formEquipo.markAsPristine();
-  //   this.formEquipo.markAsUntouched();
-  //   this.formEquipo.updateValueAndValidity();
-  //   this.tablaEquiposAgregar = []
-  //   this.idEquiposEliminar = []
-  //   if (row) {
-  //     this.actualizarEquipos = true
-  //     const elementosGrupo = this.tablaServicios.filter(ele => ele.index_grupo == row.index_grupo && ele.index_elemento !== 0)
-  //     for (const requerimiento of elementosGrupo) {
-  //       const fecha_solicitud = requerimiento.fecha_solicitud
-  //         ? requerimiento.fecha_solicitud.split('T')[0]
-  //         : null;
-  //       const form = this.fb.group({
-  //         item: ['E-' + requerimiento.id_fila],
-  //         descripcion: [requerimiento?.descripcion || '', Validators.required],
-  //         placa: [requerimiento?.placa],
-  //         fecha_solicitud: [fecha_solicitud],
-  //         unidad: [requerimiento.unidad, [Validators.required]],
-  //         cantidad: [requerimiento.cantidad, [Validators.required]],
-  //         precio_unitario: [requerimiento.precio_unitario, [Validators.required]],
-  //         parcial: [requerimiento.cantidad * requerimiento.precio_unitario],
-  //         estado: [requerimiento?.estado],
-  //         index_grupo: [requerimiento?.index_grupo],
-  //         id_grupo: [requerimiento?.id_grupo],
-  //         id_equipo: [requerimiento?.id_equipo],
-  //         id_registro: [requerimiento.id_registro],
-  //         id_fila: [requerimiento?.id_fila],
-  //         ind_rep: [requerimiento?.ind_rep],
-  //         index_elemento: [requerimiento?.index_elemento],
-  //         id_proyecto: [requerimiento?.id_proyecto],
-  //         tipo_registro: [requerimiento?.tipo_registro],
-  //         tipo: [{
-  //           value: requerimiento?.tipo,
-  //           disabled: requerimiento?.desagregadosCompleto?.length > 0
-  //         }],
-  //         nroprov: [requerimiento?.nroprov],
-  //         desagregadosCompleto: [requerimiento?.desagregadosCompleto],
-  //         tiempo_registrado: [requerimiento?.tiempo_registrado],
-  //         total_registrado: [requerimiento?.total_registrado]
-  //       });
-  //       this.equipos.push(form)
-  //     }
-  //   } else {
-  //     this.actualizarEquipos = false
-  //   }
-  //   this.modalEquipo.show()
-  // }
 
   abrirModalEquipo(row?: servicio) {
     this.actualizarEquipos = false;
@@ -1599,7 +1484,7 @@ export class EquiposHerramientasComponent implements OnInit {
       }
     }
   }
-  
+
   async seleccionCelda(i: number, j: number) {
     this.selFilPlan = i;
 
@@ -1617,7 +1502,6 @@ export class EquiposHerramientasComponent implements OnInit {
       return;
     }
 
-    // Actualizar obligatoriamente el tipo seleccionado
     this.tipoSeleccionado = tipoFila;
 
     if (this.celdaSel[0] !== i || this.celdaSel[1] !== j) {
@@ -1630,7 +1514,6 @@ export class EquiposHerramientasComponent implements OnInit {
       this.buscando = true;
       this.celdaSel = [i, j];
 
-      // Resetear campos del formulario desagregado
       this.id_desagregado.reset();
       this.horas_dia.reset();
       this.minutos_dia.reset();
@@ -1643,10 +1526,8 @@ export class EquiposHerramientasComponent implements OnInit {
         this.horas_dia.enable({ emitEvent: false });
       }
 
-      // Limpiar el FormArray de tiempos
       this.tiempos.clear({ emitEvent: false });
 
-      // Cargar datos estáticos de la fila
       this.coste_unitario.setValue(filaActual.precio_unitario, { emitEvent: false });
       this.unidad.setValue(filaActual.unidad, { emitEvent: false });
       this.tiempo_programado.setValue(filaActual.cantidad, { emitEvent: false });
@@ -1656,15 +1537,18 @@ export class EquiposHerramientasComponent implements OnInit {
       if (dataDiaEquipo) {
         if (dataDiaEquipo.horas_detalle) {
           const filas = dataDiaEquipo.horas_detalle.split('/');
+          const regActividadesArr = (dataDiaEquipo.reg_actividades || '').split('/');
 
-          filas.forEach((fila: string) => {
-            const [valor1, valor2, valor3] = fila.split('|');
+          filas.forEach((fila: string, index: number) => {
+            const [valor1, valor2, valor3, valor4] = fila.split('|');
+            const idRegActividadFila = regActividadesArr[index] || '';
 
-            // Al ser DIA u H-M siempre requiere controles de horario ('inicio' y 'fin')
             const grupoControles = this.fb.group({
               inicio: [valor1 || '', Validators.required],
               fin: [valor2 || '', Validators.required],
-              tiempo: [valor3 || 0]
+              tiempo: [valor3 || 0],
+              idPartida: [valor4 || ''],
+              idRegActividad: [idRegActividadFila]
             }, {
               validators: [this.validarFila.bind(this)]
             });
@@ -1686,7 +1570,6 @@ export class EquiposHerramientasComponent implements OnInit {
         this.observaciones.setValue(dataDiaEquipo.observaciones, { emitEvent: false });
         this.coste_dia.setValue(dataDiaEquipo.costo_dia, { emitEvent: false });
 
-        // Recalcular acumulados del equipo
         let total = 0;
         if (Array.isArray(filaActual.desagregadosCompleto)) {
           filaActual.desagregadosCompleto.forEach((ele: any) => {
@@ -1702,10 +1585,195 @@ export class EquiposHerramientasComponent implements OnInit {
     }
   }
 
-  eliminarTiempo(index: number) {
+  async eliminarTiempo(index: number) {
+    const fg = this.tiempos.at(index) as FormGroup;
+    const idRegExistente = fg.get('idRegActividad')?.value;
+
+    const otrasFilasConMismoRegistro = this.tiempos.controls.filter((control, i) => {
+      if (i === index) return false;
+      const otroId = (control as FormGroup).get('idRegActividad')?.value;
+      return idRegExistente && String(otroId || '') === String(idRegExistente);
+    }).length;
+
+    if (idRegExistente && otrasFilasConMismoRegistro === 0) {
+      const fila = this.tablaPlanilla[this.selFilPlan];
+      let targetIndex = this.selFilPlan;
+      let diaSeleccionado = null;
+
+      if (fila.tipo === 'H-M' || fila.tipo === 'DIA') {
+        targetIndex = this.celdaSel[0];
+        diaSeleccionado = this.calendarioFiltrado?.dias?.[this.celdaSel[1]];
+      } else if (fila.tipo === 'MES') {
+        diaSeleccionado = this.calendarioFiltrado?.dias?.[0];
+      }
+
+      const targetRow = this.tablaPlanilla[targetIndex];
+      const fechaPayload = fila.tipo === 'GLOBAL'
+        ? this.formDesagregado.get('fechaRegistroGlobal')?.value
+        : diaSeleccionado?.fecha;
+      const idDesagregado = this.id_desagregado.value;
+
+      try {
+        this.mostrar_carga_todo = true;
+        await this.equiposServiciosService.guardarMovimientoSaldo({
+          accion: 'ELIMINAR',
+          id_reg: Number(idRegExistente),
+          indice: 0,
+          tipo: 2,
+          fecha: fechaPayload,
+          monto_registro: 0,
+          id_equipo: targetRow.id_equipo,
+          id_desagregado: idDesagregado || 0,
+          id_proyecto: this.id_proyecto
+        });
+      } catch (error) {
+        console.error('Error al eliminar registro de actividad vinculado:', error);
+        SwalService.error();
+        this.mostrar_carga_todo = false;
+        return;
+      }
+      this.mostrar_carga_todo = false;
+    }
+
     this.tiempos.removeAt(index);
+
+    // Revalidar todas las filas restantes tras eliminar
+    this.tiempos.controls.forEach((control) => {
+      control.updateValueAndValidity({ emitEvent: false });
+    });
+    this.tiempos.controls.forEach((control) => {
+      const fg = control as FormGroup;
+      const inicioVal = fg.get('inicio')?.value;
+      const finVal = fg.get('fin')?.value;
+      if (!inicioVal || !finVal) return;
+
+      if (fg.errors?.['inicioMayor'] || fg.errors?.['solapamiento']) {
+        fg.get('tiempo')?.setValue(0, { emitEvent: false });
+      } else {
+        const [hI, mI] = inicioVal.split(':').map(Number);
+        const [hF, mF] = finVal.split(':').map(Number);
+        const total = (hF * 60 + mF) - (hI * 60 + mI);
+        fg.get('tiempo')?.setValue(total > 0 ? total : 0, { emitEvent: false });
+      }
+    });
+
     this.actualizarTiempoUtilizado();
   }
+
+  private revalidarSolapamientoTodasLasFilas(): void {
+    if (this.tipoSeleccionado !== 'H-M' && this.tipoSeleccionado !== 'DIA') return;
+
+    this.tiempos.controls.forEach((control, idx) => {
+      control.updateValueAndValidity({ emitEvent: false });
+
+      const fg = control as FormGroup;
+      const inicioVal = fg.get('inicio')?.value;
+      const finVal = fg.get('fin')?.value;
+
+      if (!inicioVal || !finVal) {
+        if (fg.errors?.['solapamiento']) {
+          const { solapamiento, ...restErrors } = fg.errors;
+          fg.setErrors(Object.keys(restErrors).length ? restErrors : null);
+        }
+        return;
+      }
+
+      const [hI, mI] = inicioVal.split(':').map(Number);
+      const [hF, mF] = finVal.split(':').map(Number);
+      const inicioMin = hI * 60 + mI;
+      const finMin = hF * 60 + mF;
+
+      // Si fin <= inicio, ya es inválida por fechaInvalida: no evaluar solapamiento
+      if (finMin <= inicioMin) {
+        if (fg.errors?.['solapamiento']) {
+          const { solapamiento, ...restErrors } = fg.errors;
+          fg.setErrors(Object.keys(restErrors).length ? restErrors : null);
+        }
+        return;
+      }
+
+      const haySolapa = this.haySolapamientoHorario(inicioVal, finVal, idx);
+
+      if (haySolapa) {
+        fg.setErrors({ ...(fg.errors || {}), solapamiento: true });
+        fg.get('inicio')?.markAsTouched();
+        fg.get('fin')?.markAsTouched();
+        fg.get('tiempo')?.setValue(0, { emitEvent: false });
+      } else {
+        if (fg.errors?.['solapamiento']) {
+          const { solapamiento, ...restErrors } = fg.errors;
+          fg.setErrors(Object.keys(restErrors).length ? restErrors : null);
+        }
+        const total = finMin - inicioMin;
+        fg.get('tiempo')?.setValue(total, { emitEvent: false });
+      }
+    });
+
+    this.cdRef.detectChanges();
+  }
+
+  // private revalidarFilasTiempo(): void {
+  //   if (this.tipoSeleccionado !== 'H-M' && this.tipoSeleccionado !== 'DIA') return;
+
+  //   this.tiempos.controls.forEach((control, idx) => {
+  //     const fg = control as FormGroup;
+
+  //     // 1. Ejecutar el validador de grupo propio primero (validarFila), sin pisar después
+  //     fg.updateValueAndValidity({ emitEvent: false });
+
+  //     const inicioVal = fg.get('inicio')?.value;
+  //     const finVal = fg.get('fin')?.value;
+
+  //     if (!inicioVal || !finVal) {
+  //       // Sin datos suficientes: limpiar nuestros errores custom si quedaron pegados
+  //       this.limpiarErroresCustom(fg);
+  //       return;
+  //     }
+
+  //     const [hI, mI] = inicioVal.split(':').map(Number);
+  //     const [hF, mF] = finVal.split(':').map(Number);
+  //     const inicioMin = hI * 60 + mI;
+  //     const finMin = hF * 60 + mF;
+
+  //     // 2. Validar fin <= inicio (prioridad sobre solapamiento)
+  //     if (finMin <= inicioMin) {
+  //       fg.setErrors({ ...(fg.errors || {}), fechaInvalida: true });
+  //       fg.get('inicio')?.markAsTouched();
+  //       fg.get('fin')?.markAsTouched();
+  //       fg.get('tiempo')?.setValue(0, { emitEvent: false });
+  //       return;
+  //     } else if (fg.errors?.['fechaInvalida']) {
+  //       const { fechaInvalida, ...rest } = fg.errors;
+  //       fg.setErrors(Object.keys(rest).length ? rest : null);
+  //     }
+
+  //     // 3. Validar solapamiento con otras filas
+  //     const haySolapa = this.haySolapamientoHorario(inicioVal, finVal, idx);
+
+  //     if (haySolapa) {
+  //       fg.setErrors({ ...(fg.errors || {}), solapamiento: true });
+  //       fg.get('inicio')?.markAsTouched();
+  //       fg.get('fin')?.markAsTouched();
+  //       fg.get('tiempo')?.setValue(0, { emitEvent: false });
+  //     } else {
+  //       if (fg.errors?.['solapamiento']) {
+  //         const { solapamiento, ...rest } = fg.errors;
+  //         fg.setErrors(Object.keys(rest).length ? rest : null);
+  //       }
+  //       // Recalcular tiempo real, ya que pudo haber quedado en 0 por un error anterior
+  //       const total = finMin - inicioMin;
+  //       fg.get('tiempo')?.setValue(total, { emitEvent: false });
+  //     }
+  //   });
+
+  //   this.cdRef.detectChanges();
+  // }
+
+  // private limpiarErroresCustom(fg: FormGroup): void {
+  //   if (!fg.errors) return;
+  //   const { fechaInvalida, solapamiento, ...rest } = fg.errors;
+  //   fg.setErrors(Object.keys(rest).length ? rest : null);
+  // }
 
   cambioHorasDia() {
     while (this.tiempos.value.length) {
@@ -1715,72 +1783,52 @@ export class EquiposHerramientasComponent implements OnInit {
     this.minutos_dia.setValue(this.horas_dia.value * 60)
     this.equipoEditado = true
   }
-
   calcularTiempo(index: number) {
-    // 1. Notificar a todas las filas que deben re-validarse (para detectar choques mutuos)
-    this.tiempos.controls.forEach(control => {
+    if (this.tipoSeleccionado === 'MES' || this.tipoSeleccionado === 'GLOBAL') {
+      this.finalizarCalculoTiempo();
+      return;
+    }
+
+    // 1. Disparar la revalidación de TODAS las filas (ejecuta validarFila en cada una)
+    this.tiempos.controls.forEach((control) => {
       control.updateValueAndValidity({ emitEvent: false });
     });
 
-    const tiempoControl = this.tiempos.at(index) as FormGroup;
+    // 2. Recalcular el campo 'tiempo' de cada fila según el resultado de validarFila
+    this.tiempos.controls.forEach((control) => {
+      const fg = control as FormGroup;
+      const inicioVal = fg.get('inicio')?.value;
+      const finVal = fg.get('fin')?.value;
 
-    // 2. Si la fila es válida, calculamos minutos, si no, es 0
-    if (tiempoControl.valid && this.tipoSeleccionado !== 'MES' && this.tipoSeleccionado !== 'GLOBAL') {
-      const [hI, mI] = tiempoControl.get('inicio')?.value.split(':').map(Number);
-      const [hF, mF] = tiempoControl.get('fin')?.value.split(':').map(Number);
-      const total = (hF * 60 + mF) - (hI * 60 + mI);
-      tiempoControl.get('tiempo')?.setValue(total, { emitEvent: false });
-    } else if (tiempoControl.invalid) {
-      tiempoControl.get('tiempo')?.setValue(0, { emitEvent: false });
-    } else {
+      if (!inicioVal || !finVal) {
+        fg.get('tiempo')?.setValue(0, { emitEvent: false });
+        return;
+      }
 
-    }
+      if (fg.errors?.['inicioMayor'] || fg.errors?.['solapamiento']) {
+        fg.get('tiempo')?.setValue(0, { emitEvent: false });
+        fg.get('inicio')?.markAsTouched();
+        fg.get('fin')?.markAsTouched();
+      } else {
+        const [hI, mI] = inicioVal.split(':').map(Number);
+        const [hF, mF] = finVal.split(':').map(Number);
+        const total = (hF * 60 + mF) - (hI * 60 + mI);
+        fg.get('tiempo')?.setValue(total > 0 ? total : 0, { emitEvent: false });
+      }
+    });
+
+    this.finalizarCalculoTiempo();
+  }
+
+  private finalizarCalculoTiempo(): void {
     if (this.tiempos.value.length) {
       this.actualizarTiempoUtilizado();
     } else {
-      this.calcularSaldo()
+      this.calcularSaldo();
     }
     this.cdRef.detectChanges();
   }
 
-  private ejecutarValidacionFila(index: number) {
-    const tiempoControl = this.tiempos.at(index) as FormGroup;
-    const inicio = tiempoControl.get('inicio')?.value;
-    const fin = tiempoControl.get('fin')?.value;
-
-    if (!inicio || !fin) {
-      tiempoControl.setErrors(null);
-      return;
-    }
-
-    const [hI, mI] = inicio.split(':').map(Number);
-    const [hF, mF] = fin.split(':').map(Number);
-    const minI = hI * 60 + mI;
-    const minF = hF * 60 + mF;
-
-    let errores: any = null;
-
-    if (minI >= minF) {
-      errores = { inicioMayor: true };
-    } else if (this.haySolapamientoHorario(inicio, fin, index)) {
-      errores = { solapamiento: true };
-    }
-    // EL CAMBIO CLAVE: setTimeout
-    setTimeout(() => {
-      tiempoControl.setErrors(errores, { emitEvent: false });
-
-      if (errores) {
-        tiempoControl.get('tiempo')?.setValue(0, { emitEvent: false });
-        tiempoControl.get('inicio')?.markAsDirty();
-        tiempoControl.get('inicio')?.markAsTouched();
-        tiempoControl.get('fin')?.markAsDirty();
-        tiempoControl.get('fin')?.markAsTouched();
-      } else {
-        tiempoControl.get('tiempo')?.setValue(minF - minI, { emitEvent: false });
-      }
-      this.cdRef.detectChanges();
-    });
-  }
 
   actualizarTiempoUtilizado(cambio = true) {
     let totalMinutos = 0;
@@ -1867,264 +1915,9 @@ export class EquiposHerramientasComponent implements OnInit {
     }
   }
 
-  // async guardarActualizarCambiosDesagregado(cambio = false) {
-  //   if (!this.equipoEditado) {
-  //     this.toaster.info(
-  //       'Ningun cambio realizado',
-  //       '',
-  //       {
-  //         closeButton: false,
-  //         positionClass: 'toast-bottom-right',
-  //         timeOut: 4000,
-  //       }
-  //     );
-  //     return
-  //   }
-  //   try {
-  //     console.log('this.equipoEditado', this.equipoEditado)
-  //     console.log('this.tiempos', this.tiempos)
-  //     if (this.tiempos.invalid) {
-  //       if (!cambio) {
-  //         this.tiempos.markAllAsTouched()
-  //         this.toaster.error(
-  //           'Datos horas laborados incorrecto',
-  //           'Error',
-  //           {
-  //             closeButton: false,
-  //             positionClass: 'toast-bottom-right',
-  //             timeOut: 4000,
-  //           }
-  //         );
-  //       } else {
-  //         this.equipoEditado = false
-  //       }
-  //       return
-  //     }
-  //     this.mostrar_carga_todo = true
-  //     const fila = this.tablaPlanilla[this.selFilPlan]
-  //     const data = this.formDesagregado.getRawValue()
-  //     const horas_detalle_Array = this.tiempos.value.map(ele => (ele.inicio || ele.fechaInicio) + '|' + (ele.fin || ele.fechaFin) + '|' + ele.tiempo);
-  //     const horas_detalle = horas_detalle_Array.join('/')
-  //     let diaSeleccionado = null
-  //     let row = null
-  //     if (fila.tipo == 'H-M' || fila.tipo == 'DIA') {
-  //       diaSeleccionado = this.calendarioFiltrado.dias[this.celdaSel[1]]
-  //       row = this.tablaPlanilla[this.celdaSel[0]]
-  //     } else if (fila.tipo == 'MES') {
-  //       diaSeleccionado = this.calendarioFiltrado.dias[0]
-  //       row = this.tablaPlanilla[this.selFilPlan]
-  //     } else {
-  //       diaSeleccionado = this.calendario[0].dias[0]
-  //       row = this.tablaPlanilla[this.selFilPlan]
-  //     }
-  //     if ((horas_detalle || data.horas_dia)) {
-  //       if (data.id_desagregado) {
-  //         const obj = {
-  //           id_desagregado: data.id_desagregado,
-  //           id_proyecto: this.id_proyecto,
-  //           id_equipo: row.id_equipo,
-  //           fecha: diaSeleccionado.fecha,
-  //           id_proveedor: null,
-  //           horas_dia: data.horas_dia,
-  //           minutos_dia: data.minutos_dia,
-  //           costo_dia: data.coste_dia,
-  //           horas_detalle: horas_detalle,
-  //           observaciones: data.observaciones == null ? '' : data.observaciones,
-  //         }
-  //         console.log('objac', obj)
-  //         const resp = await this.equiposServiciosService.actualizarDesagregadoEquipo(obj)
-  //         console.log('resp', resp)
-  //         if (resp[0]?.mensaje == '1') {
-  //           // Actualizar la celda en la tabla
-  //           if (fila.tipo == 'H-M' || fila.tipo == 'DIA') {
-  //             this.tablaPlanilla[this.celdaSel[0]].planilla[this.celdaSel[1]] = obj
-  //           } else if (fila.tipo == 'MES') {
-  //             this.tablaPlanilla[this.selFilPlan].valorMensual = obj
-  //             const arrayMes = await this.evaluarGlobalMes(obj?.horas_detalle, 'MES')
-  //             this.tablaPlanilla[this.selFilPlan].arrayMes = arrayMes
-  //             const total = arrayMes.reduce((acc, ele) => acc + (Number(ele) || 0), 0)
-  //             this.tablaPlanilla[this.selFilPlan].total_hm = total
-  //             this.tablaPlanilla[this.selFilPlan].parcial = total * this.tablaPlanilla[this.selFilPlan].precio_unitario
-  //           } else {
-  //             this.tablaPlanilla[this.selFilPlan].valorGlobal = obj
-  //             const valorGlobal = obj
-  //             const arrayMes = await this.evaluarGlobalMes(valorGlobal?.horas_detalle, 'GLOBAL')
-  //             this.tablaPlanilla[this.selFilPlan].valorGlobal = valorGlobal
-  //             this.tablaPlanilla[this.selFilPlan].arrayMes = arrayMes
-  //             const total = arrayMes.reduce((acc, ele) => acc + (Number(ele) || 0), 0)
-  //             this.tablaPlanilla[this.selFilPlan].total_hm = total
-  //             this.tablaPlanilla[this.selFilPlan].parcial = total * this.tablaPlanilla[this.selFilPlan].precio_unitario
-  //           }
 
-
-  //           // Actualizar el elemento en el array desagregadosCompleto
-  //           const array = this.tablaPlanilla[this.selFilPlan].desagregadosCompleto
-  //           const indice = array.findIndex(ele => ele.id_desagregado === obj.id_desagregado) // CORREGIDO: ===
-  //           if (indice !== -1) {
-  //             array[indice] = obj
-  //             // CORREGIDO: Asignar el array completo, no solo un elemento
-  //             this.tablaPlanilla[this.selFilPlan].desagregadosCompleto = array
-  //           }
-  //           if (horas_detalle) {
-  //             this.actualizarTiempoUtilizado(false);
-  //           } else {
-  //             this.calcularSaldo()
-  //           }
-
-  //           this.equipoEditado = false
-  //           this.toaster.success(
-  //             'Se realizo con exito',
-  //             'Éxito',
-  //             {
-  //               closeButton: false,
-  //               positionClass: 'toast-bottom-right',
-  //               timeOut: 4000,
-  //             }
-  //           );
-  //         } else {
-  //           SwalService.error()
-  //         }
-  //       } else {
-  //         const obj = {
-  //           id_proyecto: this.id_proyecto,
-  //           id_equipo: row.id_equipo,
-  //           fecha: diaSeleccionado.fecha,
-  //           // 🟢 Si es cadena vacía, pásalo a null para que .NET no falle al parsear int?
-  //           id_proveedor: null,
-  //           horas_dia: data.horas_dia,
-  //           minutos_dia: data.minutos_dia,
-  //           costo_dia: data.coste_dia,
-  //           horas_detalle: horas_detalle,
-  //           observaciones: data.observaciones ?? null
-  //         };
-  //         console.log('objg', obj)
-  //         const resp = await this.equiposServiciosService.guardarDesagregadoEquipo(obj)
-  //         console.log('resp', resp)
-  //         if (resp[0]?.id_desagregado) {
-  //           obj['id_desagregado'] = resp[0].id_desagregado
-
-  //           if (fila.tipo == 'H-M' || fila.tipo == 'DIA') {
-  //             this.tablaPlanilla[this.celdaSel[0]].planilla[this.celdaSel[1]] = obj
-  //             this.tablaPlanilla[this.celdaSel[0]].desagregadosCompleto.push(obj)
-  //             if (horas_detalle) {
-  //               this.actualizarTiempoUtilizado();
-  //             } else {
-  //               this.calcularSaldo()
-  //             }
-  //           } else if (fila.tipo == 'MES') {
-  //             this.tablaPlanilla[this.selFilPlan].valorMensual = obj
-  //             const arrayMes = await this.evaluarGlobalMes(obj?.horas_detalle, 'MES')
-  //             this.tablaPlanilla[this.selFilPlan].arrayMes = arrayMes
-  //             const total = arrayMes.reduce((acc, ele) => acc + (Number(ele) || 0), 0)
-  //             this.tablaPlanilla[this.selFilPlan].total_hm = total
-  //             this.tablaPlanilla[this.selFilPlan].parcial = total * this.tablaPlanilla[this.selFilPlan].precio_unitario
-  //             this.tablaPlanilla[this.selFilPlan].desagregadosCompleto.push(obj)
-  //           } else {
-  //             this.tablaPlanilla[this.selFilPlan].valorGlobal = obj
-  //             const valorGlobal = obj
-  //             const arrayMes = await this.evaluarGlobalMes(valorGlobal?.horas_detalle, 'GLOBAL')
-  //             this.tablaPlanilla[this.selFilPlan].valorGlobal = valorGlobal
-  //             this.tablaPlanilla[this.selFilPlan].arrayMes = arrayMes
-  //             const total = arrayMes.reduce((acc, ele) => acc + (Number(ele) || 0), 0)
-  //             this.tablaPlanilla[this.selFilPlan].total_hm = total
-  //             this.tablaPlanilla[this.selFilPlan].parcial = total * this.tablaPlanilla[this.selFilPlan].precio_unitario
-  //             this.tablaPlanilla[this.selFilPlan].desagregadosCompleto.push(obj)
-  //           }
-
-  //           this.id_desagregado.setValue(resp[0].id_desagregado)
-  //           this.equipoEditado = false
-  //           this.toaster.success(
-  //             'Se realizo con exito',
-  //             'Éxito',
-  //             {
-  //               closeButton: false,
-  //               positionClass: 'toast-bottom-right',
-  //               timeOut: 4000,
-  //             }
-  //           );
-  //         } else {
-  //           SwalService.error()
-  //         }
-  //       }
-  //     } else {
-  //       const obj = {
-  //         id_desagregado: this.id_desagregado.value
-  //       }
-  //       console.log('elim', obj)
-  //       const resp = await this.equiposServiciosService.eliminarDesagregadoEquipo(obj)
-  //       console.log('resp', resp)
-  //       if (resp[0].mensaje == '1') {
-  //         while (this.tiempos.value.length) {
-  //           this.tiempos.removeAt(0);
-  //         }
-
-  //         if (fila.tipo == 'H-M' || fila.tipo == 'DIA') {
-  //           this.tablaPlanilla[this.celdaSel[0]].planilla[this.celdaSel[1]] = null
-  //           this.tablaPlanilla[this.celdaSel[0]].desagregadosCompleto =
-  //             this.tablaPlanilla[this.celdaSel[0]].desagregadosCompleto.filter(
-  //               item => item.id_desagregado !== this.id_desagregado.value
-  //             );
-  //           let total = 0
-  //           // this.tablaPlanilla[this.selFilPlan].desagregadosCompleto.map(ele => ele.horas_dia + total)
-  //           this.tablaPlanilla[this.selFilPlan]?.desagregadosCompleto.forEach(ele => {
-  //             total += Number(ele.horas_dia);
-  //           });
-  //           this.tiempo_utilizado.setValue(total)
-  //         } else if (fila.tipo == 'MES') {
-  //           this.tablaPlanilla[this.selFilPlan].valorMensual = null
-  //           this.tablaPlanilla[this.selFilPlan].valorGlobal = null
-  //           const arrayMes = await this.evaluarGlobalMes('', 'MES')
-  //           this.tablaPlanilla[this.selFilPlan].arrayMes = arrayMes
-  //           const total = arrayMes.reduce((acc, ele) => acc + (Number(ele) || 0), 0)
-  //           this.tablaPlanilla[this.selFilPlan].total_hm = total
-  //           this.tablaPlanilla[this.selFilPlan].parcial = total * this.tablaPlanilla[this.selFilPlan].precio_unitario
-  //           this.tablaPlanilla[this.selFilPlan].desagregadosCompleto = []
-  //           this.tiempo_utilizado.setValue(total)
-  //         } else {
-  //           this.tablaPlanilla[this.selFilPlan].valorMensual = null
-  //           this.tablaPlanilla[this.selFilPlan].valorGlobal = null
-
-  //           const arrayMes = await this.evaluarGlobalMes('', 'GLOBAL')
-  //           this.tablaPlanilla[this.selFilPlan].arrayMes = arrayMes
-  //           const total = arrayMes.reduce((acc, ele) => acc + (Number(ele) || 0), 0)
-  //           this.tablaPlanilla[this.selFilPlan].total_hm = total
-  //           this.tablaPlanilla[this.selFilPlan].parcial = total * this.tablaPlanilla[this.selFilPlan].precio_unitario
-  //           this.tablaPlanilla[this.selFilPlan].desagregadosCompleto = []
-  //           this.tiempo_utilizado.setValue(total)
-  //         }
-
-
-  //         this.id_desagregado.setValue('')
-
-  //         const saldo = this.tiempo_programado.value - 0
-  //         this.saldo_utilizar.setValue(saldo)
-  //         this.minutos_dia.setValue('')
-  //         this.horas_dia.setValue('')
-  //         this.observaciones.setValue('')
-  //         this.coste_dia.setValue('')
-  //         this.equipoEditado = false
-  //         this.toaster.success(
-  //           'Se realizo con exito',
-  //           'Éxito',
-  //           {
-  //             closeButton: false,
-  //             positionClass: 'toast-bottom-right',
-  //             timeOut: 4000,
-  //           }
-  //         );
-  //       }
-  //     }
-  //     this.mostrar_carga_todo = false
-
-  //   } catch (error) {
-  //     this.mostrar_carga_todo = false
-  //     console.log(error)
-  //     SwalService.error()
-  //   }
-  // }
 
   async guardarActualizarCambiosDesagregado(cambio = false): Promise<boolean | void> {
-
 
     if (!this.equipoEditado) {
       this.toaster.info('Ningún cambio realizado', '', {
@@ -2142,7 +1935,18 @@ export class EquiposHerramientasComponent implements OnInit {
       if (this.tiempos.invalid) {
         if (!cambio) {
           this.tiempos.markAllAsTouched();
-          this.toaster.error('Datos horas laborados incorrectos', 'Error', {
+
+          const hayInicioMayor = this.tiempos.controls.some(c => c.errors?.['inicioMayor']);
+          const haySolapamiento = this.tiempos.controls.some(c => c.errors?.['solapamiento']);
+
+          let mensaje = 'Datos horas laborados incorrectos';
+          if (hayInicioMayor) {
+            mensaje = 'La hora fin debe ser mayor a la hora inicio en algún registro.';
+          } else if (haySolapamiento) {
+            mensaje = 'Existen horarios que se solapan entre sí. Corrija antes de guardar.';
+          }
+
+          this.toaster.error(mensaje, 'Error', {
             closeButton: false,
             positionClass: 'toast-bottom-right',
             timeOut: 4000,
@@ -2175,9 +1979,9 @@ export class EquiposHerramientasComponent implements OnInit {
 
       this.mostrar_carga_todo = true;
 
-      // Detalle de horas formateado (inicio|fin|tiempo/...)
+      // Detalle de horas formateado (inicio|fin|tiempo|idPartida/...)
       const horasDetalleArray = this.tiempos.value.map(
-        (ele: any) => `${ele.inicio || ele.fechaInicio || ''}|${ele.fin || ele.fechaFin || ''}|${ele.tiempo || ''}`
+        (ele: any) => `${ele.inicio || ele.fechaInicio || ''}|${ele.fin || ele.fechaFin || ''}|${ele.tiempo || ''}|${ele.idPartida ?? ''}`
       );
       const horasDetalle = horasDetalleArray.join('/');
 
@@ -2210,7 +2014,7 @@ export class EquiposHerramientasComponent implements OnInit {
           // ==========================================
           // A. ACTUALIZACIÓN DE REGISTRO
           // ==========================================
-          const obj = {
+          const obj: any = {
             id_desagregado: data.id_desagregado,
             id_proyecto: this.id_proyecto,
             id_equipo: targetRow.id_equipo,
@@ -2222,6 +2026,15 @@ export class EquiposHerramientasComponent implements OnInit {
             horas_detalle: horasDetalle,
             observaciones: data.observaciones ?? '',
           };
+
+          // NUEVO: sincronizar vínculos de partida ANTES de guardar,
+          // para obtener el string reg_actividades a persistir
+          const regActividades = await this.sincronizarRegistrosActividades(
+            data.id_desagregado,
+            targetRow,
+            fechaPayload
+          );
+          obj.reg_actividades = regActividades;
 
           const resp = await this.equiposServiciosService.actualizarDesagregadoEquipo(obj);
 
@@ -2274,7 +2087,6 @@ export class EquiposHerramientasComponent implements OnInit {
 
               rowClonada.desagregadosCompleto.forEach((item: any) => {
                 if (item.horas_detalle && item.horas_detalle.trim() !== '') {
-                  // 1. Separar cada rango registrado (ej: "2024-11-01|2024-11-02|2")
                   const rangos = item.horas_detalle.split('/');
 
                   rangos.forEach((rangoStr: string) => {
@@ -2283,20 +2095,16 @@ export class EquiposHerramientasComponent implements OnInit {
                       const fInicio = new Date(partes[0] + 'T00:00:00');
                       const fFin = new Date(partes[1] + 'T00:00:00');
 
-                      // 2. Mapear cada día del calendario filtrado
                       this.calendarioFiltrado?.dias?.forEach((diaCal: any, idxDia: number) => {
                         const fDiaCal = new Date(diaCal.fecha.split('T')[0] + 'T00:00:00');
 
-                        // Comprobar si el día actual cae dentro del rango [fInicio, fFin]
                         if (fDiaCal >= fInicio && fDiaCal <= fFin) {
-                          // Asigna 1 (o la marca requerida para cada día del rango en la matriz)
                           arrayMesGlobal[idxDia] = 1;
                         }
                       });
                     }
                   });
                 } else {
-                  // Si no tiene horas_detalle pero sí una fecha individual
                   const fechaItemStr = (item.fechaRegistroGlobal || item.fecha || '').split('T')[0];
                   const idxDia = this.calendarioFiltrado?.dias?.findIndex(
                     (d: any) => (d.fecha || '').split('T')[0] === fechaItemStr
@@ -2311,7 +2119,6 @@ export class EquiposHerramientasComponent implements OnInit {
               rowClonada.arrayMes = arrayMesGlobal;
             }
 
-            // Asignar objeto completamente clonado a la tabla
             this.tablaPlanilla[targetIndex] = rowClonada;
 
             if (!esGlobal) {
@@ -2330,7 +2137,7 @@ export class EquiposHerramientasComponent implements OnInit {
           // ==========================================
           // B. CREACIÓN DE REGISTRO
           // ==========================================
-          const obj = {
+          const obj: any = {
             id_proyecto: this.id_proyecto,
             id_equipo: targetRow.id_equipo,
             fecha: fechaPayload,
@@ -2345,16 +2152,40 @@ export class EquiposHerramientasComponent implements OnInit {
           const resp = await this.equiposServiciosService.guardarDesagregadoEquipo(obj);
 
           if (resp[0]?.id_desagregado) {
+            const idDesagregadoNuevo = resp[0].id_desagregado;
+
+            // NUEVO: sincronizar vínculos de partida ahora que ya existe id_desagregado
+            const regActividades = await this.sincronizarRegistrosActividades(
+              idDesagregadoNuevo,
+              targetRow,
+              fechaPayload
+            );
+
+            // Persistir reg_actividades en el registro recién creado
+            await this.equiposServiciosService.actualizarDesagregadoEquipo({
+              id_desagregado: idDesagregadoNuevo,
+              id_proyecto: this.id_proyecto,
+              id_equipo: targetRow.id_equipo,
+              fecha: fechaPayload,
+              id_proveedor: null,
+              horas_dia: obj.horas_dia,
+              minutos_dia: obj.minutos_dia,
+              costo_dia: obj.costo_dia,
+              horas_detalle: obj.horas_detalle,
+              observaciones: obj.observaciones,
+              reg_actividades: regActividades
+            });
+
             const nuevoObj = {
               ...obj,
-              id_desagregado: resp[0].id_desagregado,
+              id_desagregado: idDesagregadoNuevo,
+              reg_actividades: regActividades,
               fechaRegistroGlobal: data.fechaRegistroGlobal,
               costo_dia: Number(data.coste_dia) || 0,
               horas_dia: Number(data.horas_dia) || 0
             };
             const rowClonada = { ...targetRow };
 
-            // Usar targetRow.tipo para garantizar consistencia con el índice destino
             const tipoFilaTarget = targetRow.tipo || fila.tipo;
 
             if (tipoFilaTarget === 'H-M' || tipoFilaTarget === 'DIA') {
@@ -2400,7 +2231,6 @@ export class EquiposHerramientasComponent implements OnInit {
               ];
               rowClonada.desagregadosCompleto = nuevaColeccion;
 
-              // Evaluamos la colección completa contemplando tanto horas_detalle (rangos) como fechas puntuales
               rowClonada.desagregadosCompleto.forEach((item: any) => {
                 if (item.horas_detalle && item.horas_detalle.trim() !== '') {
                   const rangos = item.horas_detalle.split('/');
@@ -2434,7 +2264,7 @@ export class EquiposHerramientasComponent implements OnInit {
               this.tablaPlanilla[targetIndex] = rowClonada;
             }
 
-            this.id_desagregado.setValue(resp[0].id_desagregado, { emitEvent: false });
+            this.id_desagregado.setValue(idDesagregadoNuevo, { emitEvent: false });
             this.notificarExito();
           } else {
             SwalService.error();
@@ -2451,6 +2281,9 @@ export class EquiposHerramientasComponent implements OnInit {
           this.equipoEditado = false;
           return;
         }
+
+        // NUEVO: eliminar los registros vinculados en top_registro_monto_actividades
+        await this.eliminarTodosRegistrosActividades(idDesagregado, targetRow, fechaPayload);
 
         const resp = await this.equiposServiciosService.eliminarDesagregadoEquipo({
           id_desagregado: idDesagregado,
@@ -2489,7 +2322,6 @@ export class EquiposHerramientasComponent implements OnInit {
             this.tablaPlanilla[targetIndex] = rowClonada;
             this.tiempo_utilizado.setValue(total, { emitEvent: false });
           } else {
-            // Eliminación Tipo GLOBAL
             rowClonada.valorMensual = null;
             rowClonada.valorGlobal = null;
 
@@ -2509,7 +2341,6 @@ export class EquiposHerramientasComponent implements OnInit {
             this.saldo_utilizar.setValue(saldo, { emitEvent: false });
           }
 
-          // Reseteo del formulario
           this.minutos_dia.setValue('', { emitEvent: false });
           this.horas_dia.setValue('', { emitEvent: false });
           this.observaciones.setValue('', { emitEvent: false });
@@ -2522,7 +2353,6 @@ export class EquiposHerramientasComponent implements OnInit {
         }
       }
 
-      // Forzar detección de cambios en Angular reasignando la tabla
       this.tablaPlanilla = [...this.tablaPlanilla];
       this.mostrar_carga_todo = false;
     } catch (error) {
@@ -3099,6 +2929,7 @@ export class EquiposHerramientasComponent implements OnInit {
     } else {
       this.calcularSaldo();
     }
+    console.log('this.tiempos', this.tiempos)
   }
 
   private limpiarCamposDesagregado() {
@@ -3386,8 +3217,6 @@ export class EquiposHerramientasComponent implements OnInit {
     return '';
   }
 
-
-
   validarFechasPeriodo(index: number) {
     const tiempoGroup = this.tiempos.at(index) as FormGroup;
     const ctrlIni = tiempoGroup.get('fechaInicio');
@@ -3519,18 +3348,22 @@ export class EquiposHerramientasComponent implements OnInit {
       case 'MES':
       case 'GLOBAL':
         nuevoGrupo = this.fb.group({
-          fechaInicio: ['', Validators.required],
-          fechaFin: ['', Validators.required],
-          tiempo: [0]
-        }, { validators: [this.validarFila.bind(this)] }); // <-- Validador de grupo
+          inicio: ['', Validators.required],
+          fin: ['', Validators.required],
+          tiempo: [0],
+          idPartida: [''],
+          idRegActividad: ['']        // <-- nuevo
+        }, { validators: [this.validarFila.bind(this)] });
         break;
 
-      default: // H-M y DIA
+      default:
         nuevoGrupo = this.fb.group({
           inicio: ['', Validators.required],
           fin: ['', Validators.required],
-          tiempo: [0]
-        }, { validators: [this.validarFila.bind(this)] }); // <-- Validador de grupo
+          tiempo: [0],
+          idPartida: [''],
+          idRegActividad: ['']        // <-- nuevo
+        }, { validators: [this.validarFila.bind(this)] });
     }
 
     this.tiempos.push(nuevoGrupo);
@@ -3538,6 +3371,7 @@ export class EquiposHerramientasComponent implements OnInit {
     if (this.tiempos.value.length) {
       this.observaciones.enable()
     }
+    console.log('this.tiempos', this.tiempos)
   }
 
   validarFila(group: AbstractControl): ValidationErrors | null {
@@ -3845,9 +3679,66 @@ export class EquiposHerramientasComponent implements OnInit {
     return (control.invalid && haSidoTocado) || (tieneErrorGrupo && haSidoTocado);
   }
 
+  // async eliminarDesagregado() {
+  //   try {
+  //     // 1. Obtener fila e ID
+  //     const idxFila = this.celdaSel?.[0] ?? this.selFilPlan;
+  //     const filaActual = this.tablaPlanilla?.[idxFila];
+  //     const idEliminar = this.id_desagregado.value;
+
+  //     if (!filaActual || !idEliminar) {
+  //       console.warn('No hay registro o desagregado seleccionado para eliminar.');
+  //       return;
+  //     }
+
+  //     const sw = await SwalService.confirm('¿Estás seguro?', 'Se eliminará el registro seleccionado');
+  //     if (!sw.isConfirmed) return;
+
+  //     this.mostrar_carga_todo = true;
+
+  //     const obj = { id_desagregado: idEliminar };
+  //     const resp = await this.equiposServiciosService.eliminarDesagregadoEquipo(obj);
+
+  //     if (resp[0]?.mensaje == '1') {
+  //       // 2. Limpiar FormArray de tiempos
+  //       while (this.tiempos.value.length) {
+  //         this.tiempos.removeAt(0, { emitEvent: false });
+  //       }
+
+  //       // 3. RECARGAR Y SINCRONIZAR CON LA BASE DE DATOS Y LA TABLA
+  //       const desagregadosActualizados = await this.listarDesagregadosEquipos();
+  //       await this.filtrarPlanillaEquiposServicios(desagregadosActualizados);
+
+  //       // 4. Limpiar campos del formulario
+  //       this.id_desagregado.setValue('', { emitEvent: false });
+  //       this.tiempo_utilizado.setValue(0, { emitEvent: false });
+  //       this.saldo_utilizar.setValue(this.tiempo_programado.value || 0, { emitEvent: false });
+  //       this.minutos_dia.setValue('', { emitEvent: false });
+  //       this.horas_dia.setValue('', { emitEvent: false });
+  //       this.observaciones.setValue('', { emitEvent: false });
+  //       this.coste_dia.setValue('', { emitEvent: false });
+  //       if (this.fechaRegistroGlobal) this.fechaRegistroGlobal.setValue('', { emitEvent: false });
+
+  //       this.equipoEditado = false;
+
+  //       this.toaster.success('Se eliminó con éxito', 'Éxito', {
+  //         closeButton: false,
+  //         positionClass: 'toast-bottom-right',
+  //         timeOut: 4000,
+  //       });
+  //     } else {
+  //       SwalService.error();
+  //     }
+  //   } catch (error) {
+  //     console.error('Error en eliminarDesagregado:', error);
+  //     SwalService.error();
+  //   } finally {
+  //     this.mostrar_carga_todo = false;
+  //   }
+  // }
+
   async eliminarDesagregado() {
     try {
-      // 1. Obtener fila e ID
       const idxFila = this.celdaSel?.[0] ?? this.selFilPlan;
       const filaActual = this.tablaPlanilla?.[idxFila];
       const idEliminar = this.id_desagregado.value;
@@ -3861,6 +3752,19 @@ export class EquiposHerramientasComponent implements OnInit {
       if (!sw.isConfirmed) return;
 
       this.mostrar_carga_todo = true;
+
+      // NUEVO: eliminar primero los registros vinculados en top_registro_monto_actividades
+      let diaSeleccionado = null;
+      if (filaActual.tipo === 'H-M' || filaActual.tipo === 'DIA') {
+        diaSeleccionado = this.calendarioFiltrado?.dias?.[this.celdaSel?.[1]];
+      } else if (filaActual.tipo === 'MES') {
+        diaSeleccionado = this.calendarioFiltrado?.dias?.[0];
+      }
+      const fechaPayload = filaActual.tipo === 'GLOBAL'
+        ? this.formDesagregado.get('fechaRegistroGlobal')?.value
+        : diaSeleccionado?.fecha;
+
+      await this.eliminarTodosRegistrosActividades(idEliminar, filaActual, fechaPayload);
 
       const obj = { id_desagregado: idEliminar };
       const resp = await this.equiposServiciosService.eliminarDesagregadoEquipo(obj);
@@ -4178,7 +4082,6 @@ export class EquiposHerramientasComponent implements OnInit {
     }
   }
 
-
   esFechaGlobalRegistrada(row: any, diaCalendario: any): boolean {
     if (!row || !diaCalendario || !row.desagregadosCompleto) return false;
 
@@ -4190,5 +4093,318 @@ export class EquiposHerramientasComponent implements OnInit {
     });
   }
 
+  async cargarPresupuesto() {
+    const obj = {
+      id_proyecto: this.id_proyecto
+    };
 
+    try {
+      const resp = await this.RecursosHumanosService.listarPresupuestoProyecto(obj);
+
+      if (resp && resp.length > 0) {
+        this.listaPresupuesto = resp.map((item: any) => ({
+          ...item,
+          seleccionado: false,
+          disabled: !item.unidad   // <-- deshabilitado si no tiene unidad
+        }));
+      } else {
+        this.listaPresupuesto = [];
+      }
+    } catch (error) {
+      console.error('Error al cargar presupuesto:', error);
+      this.listaPresupuesto = [];
+    }
+  }
+  async abrirModalVincularPartida(idx: number): Promise<void> {
+    this.mostrar_carga_todo = true
+    this.vinculandoTodasFilas = false;
+    this.idxTiempoVinculando = idx;
+
+    if (!this.listaPresupuesto.length) {
+      await this.cargarPresupuesto();
+    }
+
+    const idActual = this.tiempos.at(idx).get('idPartida')?.value;
+    this.partidaSeleccionada = idActual
+      ? this.listaPresupuesto.find(p => String(p.indice) === String(idActual)) || null
+      : null;
+    this.mostrar_carga_todo = false
+    this.modalPartida.show();
+  }
+
+  cerrarModalVincularPartida(): void {
+    this.modalPartida.hide();   // <-- antes era .close()
+    this.idxTiempoVinculando = null;
+    this.partidaSeleccionada = null;
+    this.vinculandoTodasFilas = false;
+  }
+
+
+  guardarVinculoPartida(): void {
+    if (!this.partidaSeleccionada) return;
+
+    if (this.vinculandoTodasFilas) {
+      // Vincular TODAS las filas actuales al mismo índice de partida
+      this.tiempos.controls.forEach((fg: any) => {
+        fg.get('idPartida')?.setValue(this.partidaSeleccionada.indice);
+        fg.markAsDirty();
+      });
+      this.equipoEditado = true;
+      this.cerrarModalVincularPartida();
+      return;
+    }
+
+    if (this.idxTiempoVinculando === null) return;
+    const control = this.tiempos.at(this.idxTiempoVinculando).get('idPartida');
+    control?.setValue(this.partidaSeleccionada.indice);
+    control?.markAsDirty();
+    this.equipoEditado = true;
+
+    this.cerrarModalVincularPartida();
+  }
+
+  async quitarVinculoPartida(idx: number): Promise<void> {
+    const control = this.tiempos.at(idx) as FormGroup;
+    const idRegActividad = control.get('idRegActividad')?.value;
+
+    const ok = await this.eliminarRegistroActividadSiEsUltimo(idRegActividad, idx);
+    if (!ok) return;
+
+    control.get('idPartida')?.setValue('');
+    control.get('idRegActividad')?.setValue('');
+    control.markAsDirty();
+    this.equipoEditado = true;
+  }
+
+  buscarPartida = (term: string, item: any): boolean => {
+    const texto = (term || '').toLowerCase();
+    return (item.item || '').toString().toLowerCase().includes(texto)
+      || (item.descripcion || '').toString().toLowerCase().includes(texto);
+  }
+
+  private calcularMontoFilaEquipo(tiempoValue: any): number {
+    const tiempo = Number(tiempoValue?.tiempo) || 0;
+
+    if (this.tipoSeleccionado === 'H-M') {
+      return Number((tiempo / 60).toFixed(5));
+    }
+    if (this.tipoSeleccionado === 'DIA') {
+      return tiempo > 0 ? 1 : 0;
+    }
+    // MES / GLOBAL: 'tiempo' representa días del periodo
+    return tiempo;
+  }
+
+  private async sincronizarRegistrosActividades(
+    idDesagregado: number,
+    targetRow: any,
+    fechaPayload: string
+  ): Promise<string> {
+
+    const controles = this.tiempos.controls as FormGroup[];
+    const regActividadesPorFila: string[] = new Array(controles.length).fill('');
+
+    // ==========================================
+    // 1. Agrupar filas por idPartida
+    // ==========================================
+    const grupos = new Map<string, { indices: number[], montoTotal: number, idRegExistentes: Set<number> }>();
+
+    controles.forEach((fg, idx) => {
+      const val = fg.value;
+      const idPartida = val.idPartida ? String(Number(val.idPartida)) : null;
+      if (!idPartida) return;
+
+      const monto = this.calcularMontoFilaEquipo(val);
+      const idRegExistente = val.idRegActividad ? Number(val.idRegActividad) : 0;
+
+      if (!grupos.has(idPartida)) {
+        grupos.set(idPartida, { indices: [], montoTotal: 0, idRegExistentes: new Set() });
+      }
+      const g = grupos.get(idPartida)!;
+      g.indices.push(idx);
+      g.montoTotal += monto;
+      if (idRegExistente) g.idRegExistentes.add(idRegExistente);
+    });
+
+    // ==========================================
+    // 2. Procesar cada grupo -> UN solo registro por índice de partida
+    // ==========================================
+    for (const [idPartidaStr, grupo] of grupos.entries()) {
+      const idPartida = Number(idPartidaStr);
+      const idsExistentes = Array.from(grupo.idRegExistentes);
+      const idRegMaestro = idsExistentes.length ? idsExistentes[0] : 0;
+
+      const payload: any = {
+        accion: idRegMaestro ? 'ACTUALIZAR' : 'CREAR',
+        id_reg: idRegMaestro || 0,
+        indice: idPartida,
+        tipo: 2,
+        fecha: fechaPayload,
+        monto_registro: grupo.montoTotal,        // <-- acumulado de todas las filas del grupo
+        id_equipo: targetRow.id_equipo,
+        id_desagregado: idDesagregado,
+        id_proyecto: this.id_proyecto
+      };
+
+      const res = await this.equiposServiciosService.guardarMovimientoSaldo(payload);
+      const dataRes = Array.isArray(res) && res.length > 0 ? res[0] : res;
+      const idRegFinal = dataRes?.id_reg || idRegMaestro;
+
+      // Si el grupo traía más de un id_reg distinto (filas que antes eran independientes
+      // y ahora se fusionan en el mismo índice), eliminar los sobrantes
+      for (const idSobrante of idsExistentes) {
+        if (idSobrante !== idRegFinal) {
+          await this.equiposServiciosService.guardarMovimientoSaldo({
+            accion: 'ELIMINAR',
+            id_reg: idSobrante,
+            indice: 0,
+            tipo: 2,
+            fecha: fechaPayload,
+            monto_registro: 0,
+            id_equipo: targetRow.id_equipo,
+            id_desagregado: idDesagregado,
+            id_proyecto: this.id_proyecto
+          });
+        }
+      }
+
+      // Asignar el mismo id_reg a TODAS las filas del grupo
+      grupo.indices.forEach(idx => {
+        controles[idx].get('idRegActividad')?.setValue(idRegFinal, { emitEvent: false });
+        regActividadesPorFila[idx] = idRegFinal ? String(idRegFinal) : '';
+      });
+    }
+
+    // ==========================================
+    // 3. Filas sin partida vinculada: si antes tenían un registro, eliminarlo
+    // ==========================================
+    for (let idx = 0; idx < controles.length; idx++) {
+      const fg = controles[idx];
+      const val = fg.value;
+      const idPartida = val.idPartida ? Number(val.idPartida) : null;
+      if (idPartida) continue; // ya se procesó en el paso 2
+
+      const idRegExistente = val.idRegActividad ? Number(val.idRegActividad) : 0;
+      if (idRegExistente) {
+        await this.equiposServiciosService.guardarMovimientoSaldo({
+          accion: 'ELIMINAR',
+          id_reg: idRegExistente,
+          indice: 0,
+          tipo: 2,
+          fecha: fechaPayload,
+          monto_registro: 0,
+          id_equipo: targetRow.id_equipo,
+          id_desagregado: idDesagregado,
+          id_proyecto: this.id_proyecto
+        });
+        fg.get('idRegActividad')?.setValue('', { emitEvent: false });
+      }
+      regActividadesPorFila[idx] = '';
+    }
+
+    return regActividadesPorFila.join('/');
+  }
+
+  private async eliminarTodosRegistrosActividades(idDesagregado: number, targetRow: any, fechaPayload: string): Promise<void> {
+    for (const control of this.tiempos.controls) {
+      const idRegExistente = (control as FormGroup).get('idRegActividad')?.value;
+      if (idRegExistente) {
+        await this.equiposServiciosService.guardarMovimientoSaldo({
+          accion: 'ELIMINAR',
+          id_reg: Number(idRegExistente),
+          indice: 0,
+          tipo: 2,
+          fecha: fechaPayload,
+          monto_registro: 0,
+          id_equipo: targetRow.id_equipo,
+          id_desagregado: idDesagregado,
+          id_proyecto: this.id_proyecto
+        });
+      }
+    }
+  }
+
+
+
+  get todasFilasValidasParaVincular(): boolean {
+    if (!this.tiempos.length) return false;
+
+    return this.tiempos.controls.every((fg: any) => {
+      if (this.tipoSeleccionado === 'H-M' || this.tipoSeleccionado === 'DIA') {
+        return !!fg.get('inicio')?.value && !!fg.get('fin')?.value && fg.valid;
+      } else {
+        return !!fg.get('fechaInicio')?.value && !!fg.get('fechaFin')?.value && fg.valid;
+      }
+    });
+  }
+  async abrirModalVincularTodas(): Promise<void> {
+    if (!this.todasFilasValidasParaVincular) return;
+    this.mostrar_carga_todo = true
+    if (!this.listaPresupuesto.length) {
+      await this.cargarPresupuesto();
+    }
+
+    this.vinculandoTodasFilas = true;
+    this.idxTiempoVinculando = null;
+    this.partidaSeleccionada = null;
+    this.mostrar_carga_todo = false
+    this.modalPartida.show();
+  }
+
+  private contarOtrasFilasConMismoRegistro(idRegActividad: any, idxExcluir: number): number {
+    return this.tiempos.controls.filter((fg: any, i: number) => {
+      if (i === idxExcluir) return false;
+      return String(fg.get('idRegActividad')?.value || '') === String(idRegActividad);
+    }).length;
+  }
+
+  private async eliminarRegistroActividadSiEsUltimo(idRegActividad: any, idxExcluir: number): Promise<boolean> {
+    if (!idRegActividad) return true; // nada que eliminar en BD
+
+    const otrasFilas = this.contarOtrasFilasConMismoRegistro(idRegActividad, idxExcluir);
+    if (otrasFilas > 0) {
+      // Otra fila sigue usando este mismo registro -> NO se elimina en BD
+      return true;
+    }
+
+    // Es la última fila que referencia este id_reg -> eliminar en BD
+    const fila = this.tablaPlanilla[this.selFilPlan];
+    let targetIndex = this.selFilPlan;
+    let diaSeleccionado = null;
+
+    if (fila.tipo === 'H-M' || fila.tipo === 'DIA') {
+      targetIndex = this.celdaSel[0];
+      diaSeleccionado = this.calendarioFiltrado?.dias?.[this.celdaSel[1]];
+    } else if (fila.tipo === 'MES') {
+      diaSeleccionado = this.calendarioFiltrado?.dias?.[0];
+    }
+
+    const targetRow = this.tablaPlanilla[targetIndex];
+    const fechaPayload = fila.tipo === 'GLOBAL'
+      ? this.formDesagregado.get('fechaRegistroGlobal')?.value
+      : diaSeleccionado?.fecha;
+    const idDesagregado = this.id_desagregado.value;
+
+    try {
+      this.mostrar_carga_todo = true;
+      await this.equiposServiciosService.guardarMovimientoSaldo({
+        accion: 'ELIMINAR',
+        id_reg: Number(idRegActividad),
+        indice: 0,
+        tipo: 2,
+        fecha: fechaPayload,
+        monto_registro: 0,
+        id_equipo: targetRow.id_equipo,
+        id_desagregado: idDesagregado || 0,
+        id_proyecto: this.id_proyecto
+      });
+      this.mostrar_carga_todo = false;
+      return true;
+    } catch (error) {
+      console.error('Error al eliminar registro de actividad vinculado:', error);
+      SwalService.error();
+      this.mostrar_carga_todo = false;
+      return false;
+    }
+  }
 }

@@ -1189,6 +1189,8 @@ export class InsumosPorPartidaComponent implements OnInit {
           this.equiposServiciosService.listadoDesagregadoEquipo(objDesagregado),
           this.equiposServiciosService.listarRegistroMontoActividades(objRegistrosBD)
         ]);
+        console.log('resDesagregado', resDesagregado)
+        console.log('resRegistrosBD', resRegistrosBD)
         this.procesarDataParaModal(resDesagregado);
 
         // Vinculamos los registros obtenidos de top_registro_monto_actividades a los equipos
@@ -1211,6 +1213,8 @@ export class InsumosPorPartidaComponent implements OnInit {
           this.subcontratosService.listadoDesagregadoSubcontrato(objDesagregado),
           this.equiposServiciosService.listarRegistroMontoActividades(objRegistrosBD)
         ]);
+        console.log('resDesagregado', resDesagregado)
+        console.log('resRegistrosBD', resRegistrosBD)
         this.procesarDataParaModal(resDesagregado);
         // Vinculamos los registros obtenidos de top_registro_monto_actividades a los equipos
         const listadoRegistros = Array.isArray(resRegistrosBD) ? resRegistrosBD : [];
@@ -1218,6 +1222,7 @@ export class InsumosPorPartidaComponent implements OnInit {
       }
       this.busquedaMod = '';
       this.modalRegistroSaldo.show();
+      console.log(' this.listadoAgrupado', this.listadoAgrupado)
       this.mostrar_carga_todo = false;
     } catch (error) {
       console.error(error);
@@ -1226,100 +1231,208 @@ export class InsumosPorPartidaComponent implements OnInit {
     }
   }
 
-  calcularSaldo(equipo: any): number {
-    const limiteMaximo = Number(equipo.horas_dia) || 0;
+  private calcularAporteParaPartida(curr: any, idPartidaSel: any): {
+    horasDiaPartida: number,
+    minutosDiaPartida: number,
+    tieneDetalleVinculado: boolean
+  } {
+    const horasDetalle = curr.horas_detalle;
 
-    if (limiteMaximo === 0) return 0;
-    if (!equipo.registros || !Array.isArray(equipo.registros) || equipo.registros.length === 0) {
-      return limiteMaximo;
+    // Sin detalle (registro sin horas_detalle, ej. tipo GLOBAL sin desglose):
+    // se mantiene el comportamiento anterior, tal cual estaba.
+    if (!horasDetalle) {
+      return {
+        horasDiaPartida: Number(curr.horas_dia) || 0,
+        minutosDiaPartida: Number(curr.minutos_dia) || 0,
+        tieneDetalleVinculado: false
+      };
     }
 
-    // Sumar TODOS los registros consumidos sin importar la partida
-    const totalConsumido = equipo.registros.reduce((acc: number, curr: any) => {
-      return acc + (Number(curr.monto_registro) || 0);
-    }, 0);
+    const segmentos = horasDetalle.split('/');
+    let minutosPartida = 0;
+    let huboSegmentoConPartida = false;
+    const idSelStr = (idPartidaSel ?? '').toString().trim();
 
-    const saldo = limiteMaximo - totalConsumido;
-    return saldo < 0 ? 0 : saldo;
-  }
+    segmentos.forEach((seg: string) => {
+      const partes = seg.split('|');
+      if (partes.length < 3) return;
 
-  asignarRegistrosAEquipos(listadoRegistrosBD: any[], esSubcontrato: boolean = false) {
-    const idPartidaSel = this.datasourcePri[this.filaSel]?.indice;
-    const fechaActual = this.diaSeleccionado?.fecha;
-    const esTipo3 = this.tipoSel == 3;
+      const tiempoSeg = Number(partes[2]) || 0;
+      const idPartidaSeg = (partes[3] ?? '').toString().trim();
 
-    if (!this.listadoAgrupado || !Array.isArray(this.listadoAgrupado)) return;
+      if (idPartidaSeg !== '') {
+        huboSegmentoConPartida = true;
+      }
 
-    // Determinar dinámicamente el nombre de la propiedad clave según la entidad
-    const campoId = esSubcontrato ? 'id_subcontrato' : 'id_equipo';
-
-    // 1. PRIMER NIVEL: Iterar las Cabeceras Principal
-    this.listadoAgrupado.forEach((cabecera: any) => {
-      if (cabecera && Array.isArray(cabecera.subcabeceras)) {
-
-        // 2. SEGUNDO NIVEL: Iterar las Subcabeceras
-        cabecera.subcabeceras.forEach((sub: any) => {
-          if (sub && Array.isArray(sub.equipos)) {
-
-            // 3. TERCER NIVEL: Iterar los Equipos / Materiales / Subcontratos
-            sub.equipos.forEach((eq: any) => {
-
-              // Asignar a eq.registros los registros correspondientes
-              // En asignarRegistrosAEquipos:
-
-              eq.registros = (listadoRegistrosBD || []).filter((r: any) => {
-                const coincideTipo = Number(r.tipo) === Number(this.tipoSel);
-
-                if (esTipo3) {
-                  return coincideTipo &&
-                    Number(r.idregmov) === Number(eq.idregmov) &&
-                    Number(r.nrosalida) === Number(eq.nrosalida) &&
-                    Number(r.idsalida) === Number(eq.idsalida) &&
-                    Number(r.id_registro) === Number(eq.id_registro);
-                } else {
-                  // 1. Obtener los IDs del registro BD
-                  const idRegistroBD = r[campoId] ?? r.id_equipo;
-                  const idDesagregadoBD = r.id_desagregado;
-
-                  // 2. Obtener los IDs del ítem en la lista (equipos / subcontratos)
-                  const idItemLista = eq[campoId] ?? eq.id_equipo;
-                  const idDesagregadoLista = eq.id_registro_desagregado ?? eq.id_desagregado;
-
-                  // 3. Comparación priorizando ID Desagregado o ID principal
-                  const coincideId = Number(idRegistroBD) === Number(idItemLista);
-                  const coincideDesagregado = idDesagregadoBD && idDesagregadoLista
-                    ? Number(idDesagregadoBD) === Number(idDesagregadoLista)
-                    : true;
-
-                  return coincideTipo && coincideId && coincideDesagregado;
-                }
-              });
-
-              // Asignar a regDia SOLO si coincide la FECHA y el ÍNDICE de la partida seleccionada
-              const regDia = eq.registros.find((r: any) => {
-                const fechaBD = r.fecha ? r.fecha.toString().split('T')[0] : '';
-                const coincideIndicePartida = Number(r.indice) === Number(idPartidaSel);
-                const coincideFecha = fechaBD === fechaActual;
-
-                return coincideFecha && coincideIndicePartida;
-              });
-
-              // Asignación individual para el input / día actual de la partida seleccionada
-              if (regDia) {
-                eq.registro_dia = regDia;
-                eq.monto_input = regDia.monto_registro;
-              } else {
-                eq.registro_dia = null;
-                eq.monto_input = null;
-              }
-            });
-          }
-        });
+      if (idPartidaSeg === idSelStr) {
+        minutosPartida += tiempoSeg;
       }
     });
 
-    // Copia de respaldo para filtros o búsquedas
-    this.listadoAgrupadoOriginal = JSON.parse(JSON.stringify(this.listadoAgrupado));
+    // Registros viejos: ningún segmento tiene idPartida (formato de 3 campos).
+    // Se respeta el comportamiento actual: se toma el total del día completo.
+    if (!huboSegmentoConPartida) {
+      return {
+        horasDiaPartida: Number(curr.horas_dia) || 0,
+        minutosDiaPartida: Number(curr.minutos_dia) || 0,
+        tieneDetalleVinculado: false
+      };
+    }
+
+    const esHM = (curr.unidad || '').toUpperCase() === 'HM';
+    const horasDiaPartida = esHM
+      ? Number((minutosPartida / 60).toFixed(5))
+      : (minutosPartida > 0 ? 1 : 0);
+
+    return {
+      horasDiaPartida,
+      minutosDiaPartida: minutosPartida,
+      tieneDetalleVinculado: true
+    };
+  }
+
+  // calcularSaldo(equipo: any): number {
+  //   const limiteMaximo = Number(equipo.horas_dia) || 0;
+
+  //   if (limiteMaximo === 0) return 0;
+  //   if (!equipo.registros || !Array.isArray(equipo.registros) || equipo.registros.length === 0) {
+  //     return limiteMaximo;
+  //   }
+
+  //   // Sumar TODOS los registros consumidos sin importar la partida
+  //   const totalConsumido = equipo.registros.reduce((acc: number, curr: any) => {
+  //     return acc + (Number(curr.monto_registro) || 0);
+  //   }, 0);
+
+  //   const saldo = limiteMaximo - totalConsumido;
+  //   return saldo < 0 ? 0 : saldo;
+  // }
+
+  calcularSaldo(eq: any): number {
+    const ingresado = Number(eq.horas_dia) || 0;
+
+    const totalConsumido = (eq.registros || []).reduce(
+      (acc: number, r: any) => acc + (Number(r.monto_registro) || 0),
+      0
+    );
+
+    const saldo = ingresado - totalConsumido;
+    return Number(saldo.toFixed(4));
+  }
+
+  // asignarRegistrosAEquipos(listadoRegistrosBD: any[], esSubcontrato: boolean = false) {
+  //   const idPartidaSel = this.datasourcePri[this.filaSel]?.indice;
+  //   const fechaActual = this.diaSeleccionado?.fecha;
+  //   const esTipo3 = this.tipoSel == 3;
+
+  //   if (!this.listadoAgrupado || !Array.isArray(this.listadoAgrupado)) return;
+
+  //   // Determinar dinámicamente el nombre de la propiedad clave según la entidad
+  //   const campoId = esSubcontrato ? 'id_subcontrato' : 'id_equipo';
+
+  //   // 1. PRIMER NIVEL: Iterar las Cabeceras Principal
+  //   this.listadoAgrupado.forEach((cabecera: any) => {
+  //     if (cabecera && Array.isArray(cabecera.subcabeceras)) {
+
+  //       // 2. SEGUNDO NIVEL: Iterar las Subcabeceras
+  //       cabecera.subcabeceras.forEach((sub: any) => {
+  //         if (sub && Array.isArray(sub.equipos)) {
+
+  //           // 3. TERCER NIVEL: Iterar los Equipos / Materiales / Subcontratos
+  //           sub.equipos.forEach((eq: any) => {
+
+  //             // Asignar a eq.registros los registros correspondientes
+  //             // En asignarRegistrosAEquipos:
+
+  //             eq.registros = (listadoRegistrosBD || []).filter((r: any) => {
+  //               const coincideTipo = Number(r.tipo) === Number(this.tipoSel);
+
+  //               if (esTipo3) {
+  //                 return coincideTipo &&
+  //                   Number(r.idregmov) === Number(eq.idregmov) &&
+  //                   Number(r.nrosalida) === Number(eq.nrosalida) &&
+  //                   Number(r.idsalida) === Number(eq.idsalida) &&
+  //                   Number(r.id_registro) === Number(eq.id_registro);
+  //               } else {
+  //                 // 1. Obtener los IDs del registro BD
+  //                 const idRegistroBD = r[campoId] ?? r.id_equipo;
+  //                 const idDesagregadoBD = r.id_desagregado;
+
+  //                 // 2. Obtener los IDs del ítem en la lista (equipos / subcontratos)
+  //                 const idItemLista = eq[campoId] ?? eq.id_equipo;
+  //                 const idDesagregadoLista = eq.id_registro_desagregado ?? eq.id_desagregado;
+
+  //                 // 3. Comparación priorizando ID Desagregado o ID principal
+  //                 const coincideId = Number(idRegistroBD) === Number(idItemLista);
+  //                 const coincideDesagregado = idDesagregadoBD && idDesagregadoLista
+  //                   ? Number(idDesagregadoBD) === Number(idDesagregadoLista)
+  //                   : true;
+
+  //                 return coincideTipo && coincideId && coincideDesagregado;
+  //               }
+  //             });
+
+  //             // Asignar a regDia SOLO si coincide la FECHA y el ÍNDICE de la partida seleccionada
+  //             const regDia = eq.registros.find((r: any) => {
+  //               const fechaBD = r.fecha ? r.fecha.toString().split('T')[0] : '';
+  //               const coincideIndicePartida = Number(r.indice) === Number(idPartidaSel);
+  //               const coincideFecha = fechaBD === fechaActual;
+
+  //               return coincideFecha && coincideIndicePartida;
+  //             });
+
+  //             // Asignación individual para el input / día actual de la partida seleccionada
+  //             if (regDia) {
+  //               eq.registro_dia = regDia;
+  //               eq.monto_input = regDia.monto_registro;
+  //             } else {
+  //               eq.registro_dia = null;
+  //               eq.monto_input = null;
+  //             }
+  //           });
+  //         }
+  //       });
+  //     }
+  //   });
+
+  //   // Copia de respaldo para filtros o búsquedas
+  //   this.listadoAgrupadoOriginal = JSON.parse(JSON.stringify(this.listadoAgrupado));
+  // }
+
+  asignarRegistrosAEquipos(listadoRegistros: any[], esSubcontrato = false): void {
+    const fechaSeleccionada = this.diaSeleccionado?.fecha
+      ? this.diaSeleccionado.fecha.toString().split('T')[0]
+      : null;
+
+    const partidaSeleccionada = this.datasourcePri[this.filaSel];
+    const idPartidaSel = partidaSeleccionada?.indice ?? null;
+
+    this.listadoAgrupado.forEach((cabecera: any) => {
+      cabecera.subcabeceras.forEach((sub: any) => {
+        sub.equipos.forEach((eq: any) => {
+          const idEntidad = esSubcontrato ? eq.id_subcontrato : eq.id_equipo;
+
+          // Todos los registros de este equipo/subcontrato en la fecha seleccionada,
+          // SIN filtrar por partida (para poder sumar el consumo total y calcular el saldo real)
+          const registrosDelDia = listadoRegistros.filter((r: any) => {
+            const fechaReg = r.fecha ? r.fecha.toString().split('T')[0] : null;
+            return r.id_equipo === idEntidad && fechaReg === fechaSeleccionada;
+          });
+
+          eq.registros = registrosDelDia;
+
+          // El registro ÚNICO correspondiente a la partida actualmente seleccionada
+          const registroPartidaActual = registrosDelDia.find(
+            (r: any) => Number(r.indice) === Number(idPartidaSel)
+          ) || null;
+
+          eq.registro_dia = registroPartidaActual;
+          eq.monto_input = registroPartidaActual
+            ? Number(Number(registroPartidaActual.monto_registro).toFixed(4))
+            : null;
+        });
+      });
+    });
   }
 
   async cerrarModal() {
@@ -1345,6 +1458,61 @@ export class InsumosPorPartidaComponent implements OnInit {
   }
 
 
+  // procesarDataParaModal(dataPlana: any[]) {
+  //   const esSubcontrato = this.tipoSel == 4;
+
+  //   const resultado = dataPlana.reduce((acc, curr) => {
+  //     let cabecera = acc.find((c: any) => c.id_registro_cabecera === curr.id_registro_cabecera);
+  //     if (!cabecera) {
+  //       cabecera = {
+  //         id_registro_cabecera: curr.id_registro_cabecera,
+  //         detalle_registro_cabecera: curr.detalle_registro_cabecera,
+  //         subcabeceras: []
+  //       };
+  //       acc.push(cabecera);
+  //     }
+
+  //     let subcabecera = cabecera.subcabeceras.find((s: any) => s.idgrupo_cabecera === curr.idgrupo_cabecera);
+  //     if (!subcabecera) {
+  //       subcabecera = {
+  //         idgrupo_cabecera: curr.idgrupo_cabecera,
+  //         descripcion_agrupains: curr.descripcion_agrupains,
+  //         equipos: []
+  //       };
+  //       cabecera.subcabeceras.push(subcabecera);
+  //     }
+
+  //     // Evaluación del ID dinámico según sea Subcontrato (tipoSel == 4) o Equipo
+  //     const idEntidad = esSubcontrato ? curr.id_subcontrato : curr.id_equipo;
+
+  //     if (idEntidad !== null && idEntidad !== undefined) {
+  //       subcabecera.equipos.push({
+  //         // Mantiene ambas propiedades para compatibilidad de binding en HTML
+  //         id_equipo: curr.id_equipo,
+  //         id_subcontrato: curr.id_subcontrato,
+  //         unidad: curr.unidad,
+  //         placa: curr.placa,
+  //         descripcion_equipo: curr.descripcion_equipo || curr.descripcion_subcontrato,
+  //         id_registro_desagregado: curr.id_registro_desagregado,
+  //         horas_dia: curr.horas_dia,
+  //         minutos_dia: curr.minutos_dia,
+  //         costo_dia: curr.costo_dia,
+  //         horas_detalle: curr.horas_detalle,
+  //         observaciones: curr.observaciones,
+  //         descripcion_completa: curr.descripcion_completa,
+  //         registros: [],
+  //         registro_dia: null
+  //       });
+  //     }
+
+  //     return acc;
+  //   }, []);
+
+  //   // Guardamos ambas referencias
+  //   this.listadoAgrupadoOriginal = JSON.parse(JSON.stringify(resultado));
+  //   this.listadoAgrupado = resultado;
+  // }
+
   procesarDataParaModal(dataPlana: any[]) {
     const esSubcontrato = this.tipoSel == 4;
 
@@ -1369,33 +1537,47 @@ export class InsumosPorPartidaComponent implements OnInit {
         cabecera.subcabeceras.push(subcabecera);
       }
 
-      // Evaluación del ID dinámico según sea Subcontrato (tipoSel == 4) o Equipo
       const idEntidad = esSubcontrato ? curr.id_subcontrato : curr.id_equipo;
 
       if (idEntidad !== null && idEntidad !== undefined) {
-        subcabecera.equipos.push({
-          // Mantiene ambas propiedades para compatibilidad de binding en HTML
-          id_equipo: curr.id_equipo,
-          id_subcontrato: curr.id_subcontrato,
-          unidad: curr.unidad,
-          placa: curr.placa,
-          descripcion_equipo: curr.descripcion_equipo || curr.descripcion_subcontrato,
-          id_registro_desagregado: curr.id_registro_desagregado,
-          horas_dia: curr.horas_dia,
-          minutos_dia: curr.minutos_dia,
-          costo_dia: curr.costo_dia,
-          horas_detalle: curr.horas_detalle,
-          observaciones: curr.observaciones,
-          descripcion_completa: curr.descripcion_completa,
-          registros: [],
-          registro_dia: null
-        });
+        // Si ya existe una entrada para el mismo equipo/subcontrato en este día
+        // (por ejemplo, más de un id_desagregado para el mismo equipo en la misma fecha),
+        // se ACUMULA horas_dia en vez de crear una fila duplicada.
+        const existente = subcabecera.equipos.find((e: any) =>
+          esSubcontrato ? e.id_subcontrato === idEntidad : e.id_equipo === idEntidad
+        );
+
+        const horasDiaCurr = Number((Number(curr.horas_dia) || 0).toFixed(4));
+
+        if (existente) {
+          existente.horas_dia = Number((existente.horas_dia + horasDiaCurr).toFixed(4));
+          existente.id_registro_desagregado = curr.id_registro_desagregado;
+          existente.horas_detalle = curr.horas_detalle;
+          existente.reg_actividades = curr.reg_actividades;   // <-- agregar esta línea
+        } else {
+          subcabecera.equipos.push({
+            id_equipo: curr.id_equipo,
+            id_subcontrato: curr.id_subcontrato,
+            unidad: curr.unidad,
+            placa: curr.placa,
+            descripcion_equipo: curr.descripcion_equipo || curr.descripcion_subcontrato,
+            id_registro_desagregado: curr.id_registro_desagregado,
+            horas_dia: horasDiaCurr,
+            minutos_dia: curr.minutos_dia,
+            costo_dia: curr.costo_dia,
+            horas_detalle: curr.horas_detalle,
+            reg_actividades: curr.reg_actividades,   // <-- necesario
+            observaciones: curr.observaciones,
+            descripcion_completa: curr.descripcion_completa,
+            registros: [],
+            registro_dia: null
+          });
+        }
       }
 
       return acc;
     }, []);
 
-    // Guardamos ambas referencias
     this.listadoAgrupadoOriginal = JSON.parse(JSON.stringify(resultado));
     this.listadoAgrupado = resultado;
   }
@@ -1555,9 +1737,11 @@ export class InsumosPorPartidaComponent implements OnInit {
     const esTipo3 = this.tipoSel == 3;
     // CASO 1: ELIMINAR
     if ((nuevoMonto === null || nuevoMonto === 0) && equipo.registro_dia?.id_reg) {
+      const idRegAEliminar = equipo.registro_dia.id_reg;
+
       const payload: any = {
         accion: 'ELIMINAR',
-        id_reg: equipo.registro_dia.id_reg,
+        id_reg: idRegAEliminar,
         indice: idPartidaSel,
         tipo: this.tipoSel || 2,
         fecha: fechaActual || '',
@@ -1574,14 +1758,11 @@ export class InsumosPorPartidaComponent implements OnInit {
         payload.id_equipo = 0;
         payload.id_desagregado = 0;
       } else {
-        // Para Tipo 4 (Subcontratos) toma id_subcontrato; para Tipo 1 y 2 toma id_equipo
         const idEntidad = (this.tipoSel == 4) ? equipo.id_subcontrato : equipo.id_equipo;
 
-        // Se asigna al campo 'id_equipo' del payload
         payload.id_equipo = idEntidad || 0;
         payload.id_desagregado = equipo.id_registro_desagregado || 0;
 
-        // Reseteo de campos de Tipo 3
         payload.idregmov = 0;
         payload.nrosalida = 0;
         payload.idsalida = 0;
@@ -1594,9 +1775,13 @@ export class InsumosPorPartidaComponent implements OnInit {
       equipo.registro_dia = null;
       equipo.monto_input = null;
 
+      // NUEVO: sincronizar reg_actividades en la tabla padre (equipo/subcontrato)
+      if (!esTipo3) {
+        await this.actualizarRegActividadesTrasEliminar(equipo, idRegAEliminar);
+      }
+
       this.listadoAgrupadoOriginal = JSON.parse(JSON.stringify(this.listadoAgrupado));
 
-      // FLAG EN TRUE
       this.seHicieronCambiosModal = true;
       return;
     }
@@ -1623,11 +1808,9 @@ export class InsumosPorPartidaComponent implements OnInit {
       payload.id_equipo = 0;
       payload.id_desagregado = 0;
     } else {
-      // Si es tipo 4 toma id_subcontrato, de lo contrario toma id_equipo
       payload.id_equipo = (this.tipoSel == 4 ? equipo.id_subcontrato : equipo.id_equipo) || 0;
       payload.id_desagregado = equipo.id_registro_desagregado || 0;
 
-      // Limpieza de propiedades del Tipo 3
       payload.idregmov = 0;
       payload.nrosalida = 0;
       payload.idsalida = 0;
@@ -1648,7 +1831,6 @@ export class InsumosPorPartidaComponent implements OnInit {
 
       this.listadoAgrupadoOriginal = JSON.parse(JSON.stringify(this.listadoAgrupado));
 
-      // FLAG EN TRUE
       this.seHicieronCambiosModal = true;
     }
   }
@@ -1932,11 +2114,12 @@ export class InsumosPorPartidaComponent implements OnInit {
     const esTipo3 = this.tipoSel == 3;
 
     try {
-      // Ejecutamos las peticiones de eliminación secuencialmente
       for (const equipo of listaAEliminar) {
+        const idRegAEliminar = equipo.registro_dia.id_reg;
+
         const payload: any = {
           accion: 'ELIMINAR',
-          id_reg: equipo.registro_dia.id_reg,
+          id_reg: idRegAEliminar,
           indice: idPartidaSel,
           tipo: this.tipoSel || 2,
           fecha: fechaActual || '',
@@ -1970,20 +2153,25 @@ export class InsumosPorPartidaComponent implements OnInit {
           equipo.registro_dia = null;
           equipo.monto_input = null;
           equipo.seleccionado = false;
+
+          // NUEVO: sincronizar reg_actividades en la tabla padre (equipo/subcontrato)
+          if (!esTipo3) {
+            await this.actualizarRegActividadesTrasEliminar(equipo, idRegAEliminar);
+          }
         } catch (error) {
           console.error('Error al eliminar registro:', equipo, error);
         }
       }
 
-      // Actualizamos copias de seguridad y flags
       this.listadoAgrupadoOriginal = JSON.parse(JSON.stringify(this.listadoAgrupado));
       this.seHicieronCambiosModal = true;
       this.seleccionarTodos = false;
-      this.modoSeleccion = false; // Desactivamos el modo selección
+      this.modoSeleccion = false;
     } finally {
       this.mostrar_carga_todo = false;
     }
   }
+
   async eliminarSeleccionados() {
     const seleccionados = this.obtenerTodosEquiposValidos().filter(eq => eq.seleccionado);
 
@@ -1997,6 +2185,7 @@ export class InsumosPorPartidaComponent implements OnInit {
       await this.ejecutarEliminacionMasiva(seleccionados);
     }
   }
+
   async limpiarTodoDia() {
     const todosConRegistro = this.obtenerTodosEquiposValidos();
 
@@ -2007,6 +2196,86 @@ export class InsumosPorPartidaComponent implements OnInit {
     const sw = await SwalService.confirm('¿Estás seguro?', 'Se limpiarán TODOS los registros del día.');
     if (sw.isConfirmed) {
       await this.ejecutarEliminacionMasiva(todosConRegistro);
+    }
+  }
+
+  private async actualizarRegActividadesTrasEliminar(equipo: any, idRegEliminado: number): Promise<void> {
+    if (!equipo.reg_actividades || !equipo.id_registro_desagregado) return;
+
+    const segmentosReg = equipo.reg_actividades.split('/');
+    const huboCoincidencia = segmentosReg.some((s: string) => s === String(idRegEliminado));
+
+    if (!huboCoincidencia) return; // este id_reg no está referenciado en esta fila, nada que hacer
+
+    // 1. Limpiar reg_actividades (igual que antes)
+    const nuevosSegmentosReg = segmentosReg.map((s: string) =>
+      s === String(idRegEliminado) ? '' : s
+    );
+    const nuevoRegActividades = nuevosSegmentosReg.join('/');
+
+    // 2. NUEVO: limpiar el idPartida correspondiente en horas_detalle, en la MISMA posición
+    let nuevoHorasDetalle = equipo.horas_detalle;
+    if (equipo.horas_detalle) {
+      const segmentosDetalle = equipo.horas_detalle.split('/');
+
+      const nuevosSegmentosDetalle = segmentosDetalle.map((seg: string, idx: number) => {
+        // Solo tocar el segmento en la MISMA posición donde reg_actividades tenía el id_reg eliminado
+        if (segmentosReg[idx] !== String(idRegEliminado)) return seg;
+
+        const partes = seg.split('|');
+        if (partes.length < 3) return seg; // formato inesperado, no tocar
+
+        // Reconstruir el segmento sin el 4to campo (idPartida), preservando los otros 3
+        // Funciona tanto para Equipos (inicio|fin|tiempo|idPartida)
+        // como para Subcontratos (cantidad|pu|parcial|idPartida)
+        return `${partes[0]}|${partes[1]}|${partes[2]}|`;
+      });
+
+      nuevoHorasDetalle = nuevosSegmentosDetalle.join('/');
+    }
+
+    const fechaActual = this.diaSeleccionado?.fecha;
+
+    try {
+      if (this.tipoSel == 4) {
+        // SUBCONTRATOS
+        const obj = {
+          id_desagregado: equipo.id_registro_desagregado,
+          id_proyecto: this.id_proyecto,
+          id_subcontrato: equipo.id_subcontrato,
+          fecha: fechaActual,
+          id_proveedor: null,
+          horas_dia: equipo.horas_dia,
+          minutos_dia: equipo.minutos_dia,
+          costo_dia: equipo.costo_dia,
+          horas_detalle: nuevoHorasDetalle,       // <-- ahora limpio
+          observaciones: equipo.observaciones,
+          reg_actividades: nuevoRegActividades
+        };
+        await this.subcontratosService.actualizarDesagregadoSubcontrato(obj);
+      } else if (this.tipoSel == 2) {
+        // EQUIPOS
+        const obj = {
+          id_desagregado: equipo.id_registro_desagregado,
+          id_proyecto: this.id_proyecto,
+          id_equipo: equipo.id_equipo,
+          fecha: fechaActual,
+          id_proveedor: null,
+          horas_dia: equipo.horas_dia,
+          minutos_dia: equipo.minutos_dia,
+          costo_dia: equipo.costo_dia,
+          horas_detalle: nuevoHorasDetalle,       // <-- ahora limpio
+          observaciones: equipo.observaciones,
+          reg_actividades: nuevoRegActividades
+        };
+        await this.equiposServiciosService.actualizarDesagregadoEquipo(obj);
+      }
+
+      // Reflejar los cambios en memoria del modal
+      equipo.reg_actividades = nuevoRegActividades;
+      equipo.horas_detalle = nuevoHorasDetalle;
+    } catch (error) {
+      console.error('Error al actualizar reg_actividades/horas_detalle tras eliminar:', error);
     }
   }
 }
