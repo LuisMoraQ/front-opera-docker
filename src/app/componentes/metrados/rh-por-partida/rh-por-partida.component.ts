@@ -311,6 +311,8 @@ export class RhPorPartidaComponent implements OnInit {
     if (this.subvista !== ind) {
       this.mostrar_carga_todo = true
       this.subvista = ind
+      this.modoAgrupar = false
+      this.modoVincularPersonal = false
       if (ind == 1) {
 
       } else if (ind == 2) {
@@ -396,7 +398,8 @@ export class RhPorPartidaComponent implements OnInit {
 
     if (this.diaSeleccionado) {
       this.mostrar_carga_todo = true;
-
+      this.modoAgrupar = false
+      this.modoVincularPersonal = false
       try {
         const usuarios: Usuario[] = await this.listarRegistrosAsistencia(this.diaSeleccionado.fecha);
         const cuadrillas: CuadrillaBD[] = await this.listarCuadrillaFechaOMayor(this.diaSeleccionado.fecha);

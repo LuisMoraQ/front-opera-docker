@@ -627,7 +627,8 @@
                             </ng-container>
 
                             <ng-container *ngIf="tab.get('menu_proyecto_seleccionado').value == 3">
-                              <app-metradosdiarios [tabproyecto]="tab"></app-metradosdiarios>
+                              <!-- <app-metradosdiarios [tabproyecto]="tab"></app-metradosdiarios> -->
+                              <app-metrado-mensual [tabproyecto]="tab"></app-metrado-mensual>
                             </ng-container>
 
                             <ng-container *ngIf="tab.get('menu_proyecto_seleccionado').value == 4">

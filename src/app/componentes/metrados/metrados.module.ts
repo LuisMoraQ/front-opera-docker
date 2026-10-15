@@ -22,6 +22,7 @@ import { MetradosdiariosComponent } from './metradosdiarios/metradosdiarios.comp
 import { RegistroActividadesComponent } from './registro-actividades/registro-actividades.component';
 import { InsumosPorPartidaComponent } from './insumos-por-partida/insumos-por-partida.component';
 import { RhPorPartidaComponent } from './rh-por-partida/rh-por-partida.component';
+import { MetradoMensualComponent } from './metrado-mensual/metrado-mensual.component';
 
 
 @NgModule({
@@ -29,7 +30,8 @@ import { RhPorPartidaComponent } from './rh-por-partida/rh-por-partida.component
     MetradosdiariosComponent,
     RegistroActividadesComponent,
     InsumosPorPartidaComponent,
-    RhPorPartidaComponent
+    RhPorPartidaComponent,
+    MetradoMensualComponent
   ],
   imports: [
     CommonModule,
@@ -54,6 +56,6 @@ import { RhPorPartidaComponent } from './rh-por-partida/rh-por-partida.component
     PintarfilapreModule,
     
   ],
-  exports: [MetradosdiariosComponent, RegistroActividadesComponent, InsumosPorPartidaComponent, RhPorPartidaComponent]
+  exports: [MetradosdiariosComponent, RegistroActividadesComponent, InsumosPorPartidaComponent, RhPorPartidaComponent, MetradoMensualComponent]
 })
 export class MetradosModule { }

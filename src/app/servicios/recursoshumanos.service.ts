@@ -3,7 +3,7 @@ import { Injectable } from '@angular/core';
 import { catchError, map } from 'rxjs/operators'
 import { BehaviorSubject, Observable, Subject, throwError } from 'rxjs'
 import { environment } from 'src/environments/environment';
-
+import { ItemMetradoDiario } from '../componentes/metrados/metrado-mensual/metrado-mensual.component';
 @Injectable({
     providedIn: 'root'
 })
@@ -1760,6 +1760,132 @@ export class RecursosHumanosService {
             )
             .toPromise();
     }
+
+    listarMetradoDiarioMes(params: { id_proyecto: any; mes?: string } = { id_proyecto: null }): Promise<any> {
+        let formData: FormData = new FormData();
+
+        Object.entries(params).forEach(([key, value]) => {
+            if (value !== null && value !== undefined && value !== '') {
+                formData.append(key, value.toString());
+            }
+        });
+
+        const url = this.enviUrl + '/api/recursoshumanos/listarMetradoDiarioMes';
+        return this.http.post<any>(url, formData).pipe(
+            map(res => {
+                if (!res) {
+                    throw new Error('Respuesta vacía del servidor');
+                }
+                return res;
+            }),
+            catchError(err => throwError(() => err))
+        ).toPromise();
+    }
+
+    guardarMetradoDiario(params: {
+        id_proyecto: number;
+        indice: number;
+        fecha: string;
+        filas_serializadas: string;
+    }): Promise<any> {
+
+        console.log('=== ENVIANDO AL BACKEND ===');
+        console.log('filas_serializadas:', params.filas_serializadas);
+        console.log('Cantidad de filas:', params.filas_serializadas.split('|').length);
+        console.log('Primera fila:', params.filas_serializadas.split('|')[0]);
+        const formData = new FormData();
+        formData.append('id_proyecto', String(params.id_proyecto));
+        formData.append('indice', String(params.indice));
+        formData.append('fecha', params.fecha);
+        formData.append('filas_serializadas', params.filas_serializadas);
+
+        const url = this.enviUrl + '/api/recursoshumanos/guardarMetradoDiario';
+
+        return this.http.post<any>(url, formData)
+            .pipe(
+                map(res => {
+                    if (!res) throw new Error('Respuesta vacía del servidor');
+                    return res;
+                }),
+                catchError(err => throwError(err))
+            )
+            .toPromise();
+    }
+
+    listarMetradoDiarioPartida(params: {
+        id_proyecto: number;
+        indice: number;
+        indice_titulo: number;   // 🆕
+        item_titulo: string;     // 🆕
+        fecha: string;
+    }): Promise<{ filas: ItemMetradoDiario[]; partidas: any[]; plantilla: any[] }> {
+
+        const formData = new FormData();
+        formData.append('id_proyecto', String(params.id_proyecto));
+        formData.append('indice', String(params.indice));
+        formData.append('indice_titulo', String(params.indice_titulo));   // 🆕
+        formData.append('item_titulo', params.item_titulo);             // 🆕
+        formData.append('fecha', params.fecha);
+
+        const url = this.enviUrl + '/api/recursoshumanos/listarMetradoDiarioPartida';
+
+        return this.http.post<{ filas: ItemMetradoDiario[]; partidas: any[]; plantilla: any[] }>(url, formData)
+            .pipe(
+                map(res => {
+                    if (!res) throw new Error('Respuesta vacía del servidor');
+                    return res;
+                }),
+                catchError(err => throwError(err))
+            )
+            .toPromise();
+    }
+
+    listarMetradoDiarioDetalleMes(params: {
+        id_proyecto: number;
+        mes?: string;
+    }): Promise<any> {
+
+        const formData = new FormData();
+        formData.append('id_proyecto', String(params.id_proyecto));
+        if (params.mes) formData.append('mes', params.mes);
+
+        const url = this.enviUrl + '/api/recursoshumanos/listarMetradoDiarioDetalleMes';
+
+        return this.http.post<any>(url, formData)
+            .pipe(
+                map(res => {
+                    if (!res) throw new Error('Respuesta vacía del servidor');
+                    return res;
+                }),
+                catchError(err => throwError(() => err))
+            )
+            .toPromise();
+    }
+
+    estadoRegistroMetrados(params: {
+        id_proyecto: number;
+    }): Promise<{
+        resumen: any;
+        meses: any[];
+        totales: any;
+    }> {
+        const formData = new FormData();
+        formData.append('id_proyecto', String(params.id_proyecto));
+
+        const url = this.enviUrl + '/api/recursoshumanos/estadoRegistroMetrados';
+
+        return this.http.post<any>(url, formData)
+            .pipe(
+                map(res => {
+                    if (!res) throw new Error('Respuesta vacía del servidor');
+                    return res;
+                }),
+                catchError(err => throwError(() => err))
+            )
+            .toPromise();
+    }
 }
+
+
 
 

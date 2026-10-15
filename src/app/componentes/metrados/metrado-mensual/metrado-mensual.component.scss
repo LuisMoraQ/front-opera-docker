@@ -1,0 +1,337 @@
+/* ========================================================================= */
+/* 1. ESTRUCTURA DEL CONTENEDOR Y SCROLLBAR (SLIDER / SCROLL DINÁMICO)       */
+/* ========================================================================= */
+
+.tabla-contenedor-dinamico {
+  width: 100%;
+  display: block;
+  overflow: auto !important;
+  /* Mantiene activa la barra de scroll horizontal y vertical */
+  transition: max-height 0.3s ease-in-out, height 0.3s ease-in-out;
+}
+
+/* Estado DESACTIVADO: Ocupa la altura vertical disponible */
+.tabla-altura-pantalla-completa {
+  height: calc(100vh - 240px) !important;
+  max-height: calc(100vh - 240px) !important;
+}
+
+/* Modo compacto cuando activarDiario es TRUE */
+.tabla-altura-compacta {
+  height: 270px !important;
+  max-height: 270px !important;
+}
+
+/* Contenedor de tablas inferiores */
+.contenedor-diarios-inferior {
+  position: relative;
+  z-index: 1;
+  margin-top: 15px;
+  height: calc(100vh - 480px);
+  min-height: 300px;
+}
+
+
+/* ========================================================================= */
+/* 2. AJUSTE DE ALTURA EXACTA A 24PX PARA FILAS Y CELDAS (SIN ROMPER HEADER) */
+/* ========================================================================= */
+
+/* Aplicar 24px estricto SOLO a las filas del cuerpo (tbody) */
+:host ::ng-deep .tabla-contenedor-dinamico table tbody tr {
+  height: 24px !important;
+  max-height: 24px !important;
+}
+
+/* Reducción de padding y line-height en celdas para respetar los 24px */
+:host ::ng-deep .tabla-contenedor-dinamico table tbody td {
+  height: 24px !important;
+  max-height: 24px !important;
+  padding-top: 0px !important;
+  padding-bottom: 0px !important;
+  padding-left: 4px !important;
+  padding-right: 4px !important;
+  line-height: 24px !important;
+  font-size: 11px !important;
+  vertical-align: middle !important;
+  white-space: nowrap !important;
+  box-sizing: border-box !important;
+}
+
+/* Evitar que divs internos o iconos rompan el alto de 24px */
+:host ::ng-deep .tabla-contenedor-dinamico table tbody td div,
+:host ::ng-deep .tabla-contenedor-dinamico table tbody td span {
+  line-height: 24px !important;
+  max-height: 24px !important;
+  vertical-align: middle !important;
+}
+
+/* Respetar el header sticky sin aplastar las celdas con rowspan */
+:host ::ng-deep .tabla-contenedor-dinamico table thead th {
+  padding-top: 2px !important;
+  padding-bottom: 2px !important;
+  vertical-align: middle !important;
+}
+
+.celda-dia-activa {
+  background-color: #04e704 !important;
+}
+
+/* Resaltado azul claro tipo hoja de cálculo para la fila seleccionada */
+.celda-activa-excel {
+  background-color: #c6e2ff !important;
+}
+
+/* Configuración de la tabla fija con Scroll Horizontal real */
+.tabla-fija-excel {
+  table-layout: fixed !important;
+  width: max-content !important;
+  /* Fuerza a la tabla a tomar la suma de todos sus px */
+  min-width: 100% !important;
+}
+
+/* Reglas de visibilidad para ENCABEZADOS (thead) */
+.tabla-fija-excel thead th,
+.tabla-fija-excel thead td {
+  overflow: visible !important;
+  text-overflow: clip !important;
+  white-space: nowrap !important;
+  font-size: 11px !important;
+  padding: 2px 2px !important;
+  box-sizing: border-box !important;
+}
+
+/* Reglas de visibilidad para EL CUERPO (tbody) */
+.tabla-fija-excel tbody td {
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  box-sizing: border-box !important;
+  padding: 0 !important;
+}
+
+.tabla-fija-excel tbody td input {
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+.b-select,
+.c-select,
+.d-select,
+.e-select,
+.f-select,
+.g-select {
+  background-color: #ffe0b3 !important;
+  /* naranja claro */
+}
+
+
+tr.celda-activa-excel td.b-select {
+  background-color: #ffcccc !important;
+}
+
+/* detalle1 */
+tr.celda-activa-excel td.c-select {
+  background-color: #d9f2d9 !important;
+}
+
+/* cantidad */
+tr.celda-activa-excel td.d-select {
+  background-color: #cce5ff !important;
+}
+
+/* n_veces */
+tr.celda-activa-excel td.e-select {
+  background-color: #e0ccff !important;
+}
+
+/* longitud */
+tr.celda-activa-excel td.f-select {
+  background-color: #ffd9b3 !important;
+}
+
+/* ancho */
+tr.celda-activa-excel td.g-select {
+  background-color: #ffcce0 !important;
+}
+
+/* alto */
+
+.formula-preview {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1px;
+  white-space: nowrap;
+}
+
+
+.formula-preview:hover {
+  background-color: #e9ecef !important;
+}
+
+.formula-preview span {
+  font-family: 'Courier New', monospace;
+}
+
+.celda-seleccionada {
+  background-color: #ffcc80 !important;
+  /* naranja claro */
+  outline: 1px solid #e65100;
+  /* borde naranja oscuro */
+}
+
+tr.celda-activa-excel td.celda-seleccionada,
+td.celda-seleccionada {
+  background-color: #ffcc80 !important;
+  outline: 1px solid #e65100 !important;
+}
+
+// ============================================
+// ESTILOS POR TIPO DE FILA
+// ============================================
+
+// Título (tipo 3) → rojo, negrita, subrayado
+tr.fila-titulo {
+  color: #d32f2f;
+  font-weight: bold;
+
+  td {
+    text-decoration: underline;
+    text-decoration-color: #d32f2f;
+    text-underline-offset: 3px;
+
+    // Los inputs heredan color y no heredan subrayado
+    input {
+      color: inherit;
+      font-weight: inherit;
+      text-decoration: none;
+    }
+  }
+}
+
+// Metrado (tipo 1) → azul oscuro, negrita
+tr.fila-metrado {
+  color: #0d47a1;
+  font-weight: bold;
+
+  td input {
+    color: inherit;
+    font-weight: inherit;
+  }
+}
+
+// Submetrado (tipo 2) → gris oscuro, normal
+tr.fila-submetrado {
+  color: #333333;
+  font-weight: normal;
+
+  td input {
+    color: inherit;
+    font-weight: inherit;
+  }
+}
+
+// Placeholder hereda el color (opcional)
+tr.fila-titulo input::placeholder,
+tr.fila-metrado input::placeholder,
+tr.fila-submetrado input::placeholder {
+  color: inherit;
+  opacity: 0.6;
+}
+
+/* Columnas fijas (sticky) */
+.sticky-col-1 {
+  position: sticky !important;
+  left: 0 !important;
+  z-index: 4;
+  background-color: #ffffff;
+  box-shadow: 2px 0 4px -2px rgba(0, 0, 0, 0.15);
+}
+
+.sticky-col-2 {
+  position: sticky !important;
+  left: 320px !important;
+  /* ancho de la primera columna */
+  z-index: 4;
+  background-color: #ffffff;
+  box-shadow: 2px 0 4px -2px rgba(0, 0, 0, 0.15);
+}
+
+/* En el thead, respetar el z-index del sticky-top */
+thead .sticky-col-1,
+thead .sticky-col-2 {
+  z-index: 6 !important;
+  background-color: #004b98 !important;
+  /* mismo azul del header */
+  color: #ffffff !important;
+}
+
+tr.fila-titulo {
+  color: #d32f2f;
+  font-weight: bold;
+}
+
+tr.fila-metrado {
+  color: #0d47a1;
+  font-weight: bold;
+
+  td input {
+    color: inherit;
+    font-weight: inherit;
+  }
+}
+
+tr.fila-submetrado {
+  color: #333333;
+  font-weight: normal;
+
+  td input {
+    color: inherit;
+    font-weight: inherit;
+  }
+}
+
+.text-muted {
+  color: #6c757d !important;
+}
+
+/* Filas detalle con indentación visual clara */
+tr.fila-detalle {
+  background-color: #f7f9fc;
+  font-size: 11px;
+
+  td {
+    height: 20px !important;
+    max-height: 20px !important;
+    line-height: 20px !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+  }
+
+  &:hover {
+    background-color: #eef4fb;
+  }
+}
+
+/* Títulos internos de detalle */
+tr.fila-detalle.fila-titulo {
+  background-color: #fef9e7;
+  color: #b8860b;
+  font-weight: 600;
+  font-size: 12px;
+}
+
+/* Línea guía vertical (opcional pero elegante) */
+tr.fila-detalle td:first-child {
+  position: relative;
+
+  &::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background-color: #d0d7de;
+  }
+}
