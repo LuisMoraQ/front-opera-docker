@@ -270,36 +270,80 @@ export class InsumosPorPartidaComponent implements OnInit {
     }
   }
 
-  calcularAcumuladosJerarquicos(data: any[]): any[] {
-    // Mapa para guardar la suma acumulada de las partidas hijas por item (ej. '1.1.1' -> 1375)
-    const acumuladosMap = new Map<string, number>();
+  // calcularAcumuladosJerarquicos(data: any[]): any[] {
+  //   // Mapa para guardar la suma acumulada de las partidas hijas por item (ej. '1.1.1' -> 1375)
+  //   const acumuladosMap = new Map<string, number>();
 
-    // Recorremos de atrás hacia adelante (de las partidas hojas hacia los títulos)
+  //   // Recorremos de atrás hacia adelante (de las partidas hojas hacia los títulos)
+  //   for (let i = data.length - 1; i >= 0; i--) {
+  //     const fila = data[i];
+  //     const item = fila.item; // ej: "1.1.1.1"
+
+  //     // Si tiene unidad definida (partida hoja)
+  //     if (fila.unidad && fila.unidad.trim() !== '') {
+  //       // Mantiene el valor tal cual viene (null o número)
+  //       const parcialHoja = fila.parcial;
+
+  //       // Si tiene un número válido mayor a 0, lo sumamos al acumulador del padre
+  //       if (parcialHoja !== null && parcialHoja !== undefined && Number(parcialHoja) > 0) {
+  //         this.sumarAlPadre(acumuladosMap, item, Number(parcialHoja));
+  //       }
+  //     } else {
+  //       // Si es Título / Subtítulo (sin unidad):
+  //       // Verifica si existe algún valor acumulado registrado por sus hijos en el mapa
+  //       if (acumuladosMap.has(item)) {
+  //         const sumaHijos = acumuladosMap.get(item)!;
+  //         fila.parcial = sumaHijos;
+
+  //         // Propagamos la suma acumulada del subtítulo hacia su padre directo
+  //         this.sumarAlPadre(acumuladosMap, item, sumaHijos);
+  //       } else {
+  //         // Si ningún hijo tuvo datos, se asigna explícitamente null
+  //         fila.parcial = null;
+  //       }
+  //     }
+  //   }
+
+  //   return data;
+  // }
+
+  calcularAcumuladosJerarquicos(data: any[]): any[] {
+    // Mapas separados para cada métrica
+    const acumuladosParcial = new Map<string, number>();
+    const acumuladosMetrado = new Map<string, number>();
+
     for (let i = data.length - 1; i >= 0; i--) {
       const fila = data[i];
-      const item = fila.item; // ej: "1.1.1.1"
+      const item = fila.item;
 
-      // Si tiene unidad definida (partida hoja)
       if (fila.unidad && fila.unidad.trim() !== '') {
-        // Mantiene el valor tal cual viene (null o número)
+        // ─── PARTIDA HOJA ───
         const parcialHoja = fila.parcial;
-
-        // Si tiene un número válido mayor a 0, lo sumamos al acumulador del padre
         if (parcialHoja !== null && parcialHoja !== undefined && Number(parcialHoja) > 0) {
-          this.sumarAlPadre(acumuladosMap, item, Number(parcialHoja));
+          this.sumarAlPadre(acumuladosParcial, item, Number(parcialHoja));
         }
-      } else {
-        // Si es Título / Subtítulo (sin unidad):
-        // Verifica si existe algún valor acumulado registrado por sus hijos en el mapa
-        if (acumuladosMap.has(item)) {
-          const sumaHijos = acumuladosMap.get(item)!;
-          fila.parcial = sumaHijos;
 
-          // Propagamos la suma acumulada del subtítulo hacia su padre directo
-          this.sumarAlPadre(acumuladosMap, item, sumaHijos);
+        const metradoHoja = fila.metrado_diario_total;
+        if (metradoHoja !== null && metradoHoja !== undefined && Number(metradoHoja) > 0) {
+          this.sumarAlPadre(acumuladosMetrado, item, Number(metradoHoja));
+        }
+
+      } else {
+        // ─── TÍTULO / SUBTÍTULO ───
+        if (acumuladosParcial.has(item)) {
+          const suma = acumuladosParcial.get(item)!;
+          fila.parcial = suma;
+          this.sumarAlPadre(acumuladosParcial, item, suma);
         } else {
-          // Si ningún hijo tuvo datos, se asigna explícitamente null
           fila.parcial = null;
+        }
+
+        if (acumuladosMetrado.has(item)) {
+          const suma = acumuladosMetrado.get(item)!;
+          fila.metrado_diario_total = suma;
+          this.sumarAlPadre(acumuladosMetrado, item, suma);
+        } else {
+          fila.metrado_diario_total = null;
         }
       }
     }

@@ -1884,6 +1884,73 @@ export class RecursosHumanosService {
             )
             .toPromise();
     }
+
+    // ============================================================================
+    // LISTAR ESTADOS DE MESES
+    // ============================================================================
+    listarEstadosMesesMetrado(params: { id_proyecto: number }): Promise<{ estados: Record<string, any> }> {
+        const formData = new FormData();
+        formData.append('id_proyecto', String(params.id_proyecto));
+
+        const url = this.enviUrl + '/api/recursoshumanos/listarEstadosMesesMetrado';
+
+        return this.http.post<{ estados: Record<string, any> }>(url, formData)
+            .pipe(
+                map(res => {
+                    if (!res) throw new Error('Respuesta vacía del servidor');
+                    return res;
+                }),
+                catchError(err => throwError(() => err))
+            )
+            .toPromise();
+    }
+
+    // ============================================================================
+    // APROBAR MES
+    // ============================================================================
+    aprobarMesMetrado(params: { id_proyecto: number; mes: string; id_usuario: number; })
+        : Promise<{ ok: boolean; mensaje: string }> {
+
+        const formData = new FormData();
+        formData.append('id_proyecto', String(params.id_proyecto));
+        formData.append('mes', params.mes);
+        formData.append('id_usuario', String(params.id_usuario));
+
+        const url = this.enviUrl + '/api/recursoshumanos/aprobarMesMetrado';
+
+        return this.http.post<{ ok: boolean; mensaje: string }>(url, formData)
+            .pipe(
+                map(res => {
+                    if (!res) throw new Error('Respuesta vacía del servidor');
+                    return res;
+                }),
+                catchError(err => throwError(() => err))
+            )
+            .toPromise();
+    }
+
+    // ============================================================================
+    // REVERTIR MES
+    // ============================================================================
+    revertirMesMetrado(params: { id_proyecto: number; mes: string; })
+        : Promise<{ ok: boolean; mensaje: string }> {
+
+        const formData = new FormData();
+        formData.append('id_proyecto', String(params.id_proyecto));
+        formData.append('mes', params.mes);
+
+        const url = this.enviUrl + '/api/recursoshumanos/revertirMesMetrado';
+
+        return this.http.post<{ ok: boolean; mensaje: string }>(url, formData)
+            .pipe(
+                map(res => {
+                    if (!res) throw new Error('Respuesta vacía del servidor');
+                    return res;
+                }),
+                catchError(err => throwError(() => err))
+            )
+            .toPromise();
+    }
 }
 
 

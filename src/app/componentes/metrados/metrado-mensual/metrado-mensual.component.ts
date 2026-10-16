@@ -347,12 +347,20 @@ export class MetradoMensualComponent implements OnInit, OnDestroy {
   porcentajesDesembolso: any[] = [];
   listaInsumos = []
   valorPlanificadoPorMes: Record<string, number> = {};
+  // Splitter  (5/12 ≈ 41.67%  |  7/12 ≈ 58.33%)
+  anchoIzquierda: number = 41.67;
+  anchoDerecha: number = 58.33;
+  private arrastrando = false;
+  private anchoInicial = 0;
+  private xInicial = 0;
+  estadosMeses: Record<string, any> = {};
   constructor(private _EncriptadorService: EncriptadorService, public formsService: FormsService, private principalService: PrincipalService, private cdr: ChangeDetectorRef, private sanitizer: DomSanitizer, private equiposServiciosService: EquiposServiciosService, private RecursosHumanosService: RecursosHumanosService, private toaster: ToastrService,) { }
 
   async ngOnInit() {
     try {
       this.mostrar_carga_todo = true
       await this.cargarCalendario()
+      await this.cargarEstadosMeses();
       this.pintar()
       this.inicializarColaGuardado();
       this.mostrar_carga_todo = false
@@ -408,11 +416,8 @@ export class MetradoMensualComponent implements OnInit, OnDestroy {
   }
 
   async onPasteInput(event: ClipboardEvent, fila: number, columna: string) {
-    console.log('=== onPasteInput ===');
-    console.log('fila:', fila, 'columna:', columna);
-    console.log('target:', event.target);
-    console.log('clipboardData:', event.clipboardData);
 
+    if (this.soloLectura) { event.preventDefault(); return; }
     // Si el foco está en el input de fórmula, no interferir
     const target = event.target as HTMLElement | null;
     if (target?.id === 'inputFormulaMet') return;
@@ -424,7 +429,6 @@ export class MetradoMensualComponent implements OnInit, OnDestroy {
     this.metradoSeleccionado = this.filaExcelSel;
 
     const texto = event.clipboardData?.getData('text/plain') ?? '';
-    console.log('texto pegado:', JSON.stringify(texto));
     if (!texto) return;
 
     // Detectar si es matriz (Excel) o texto plano
@@ -607,8 +611,6 @@ export class MetradoMensualComponent implements OnInit, OnDestroy {
     element.target.parentElement.blur();
   }
   async cambioVista(ind: any) {
-    console.log('════════════════════════════════════════');
-    console.log('cambioVista →', ind, '| subvista anterior:', this.subvista);
     this.subvista = ind;
     this.mostrar_carga_todo = true;
 
@@ -617,42 +619,27 @@ export class MetradoMensualComponent implements OnInit, OnDestroy {
       // SUBVISTA 2: METRADO DESAGREGADO
       // ══════════════════════════════════════════════
       if (ind === 2) {
-        console.log('[cambioVista-2] partidasDetalle.length:', this.partidasDetalle?.length);
 
-        if (!this.partidasDetalle?.length) {
-          console.log('[cambioVista-2] Cargando cargarCalendarioDetalle...');
-          await this.cargarCalendarioDetalle();
-          console.log('[cambioVista-2] partidasDetalle DESPUÉS:', this.partidasDetalle?.length);
-        } else {
-          console.log('[cambioVista-2] Ya hay datos, saltando...');
-        }
+        // if (!this.partidasDetalle?.length) {
+        await this.cargarCalendarioDetalle();
+        // } else {
+        //   console.log('[cambioVista-2] Ya hay datos, saltando...');
+        // }
       }
 
       // ══════════════════════════════════════════════
       // SUBVISTA 3: RESUMEN DE METRADOS
       // ══════════════════════════════════════════════
       if (ind === 3) {
-        // 🆕 SIEMPRE recargar el cronograma si aún no existe el mapa
-        const mapaVacio = Object.keys(this.valorPlanificadoPorMes ?? {}).length === 0;
-
-        console.log('[cambioVista-3] valorPlanificadoPorMes ANTES:', this.valorPlanificadoPorMes);
-
-        if (mapaVacio || !this.mesesHeader?.length) {
-          console.log('[cambioVista-3] Cargando CronogramaValorizado...');
-          await this.CronogramaValorizado();
-          console.log('[cambioVista-3] valorPlanificadoPorMes DESPUÉS:', this.valorPlanificadoPorMes);
-        }
-
-        // 🆕 SIEMPRE recargar el estado de registro (para reflejar cambios de la subvista 1)
-        console.log('[cambioVista-3] Cargando cargarEstadoRegistroMetrados...');
-        await this.cargarEstadoRegistroMetrados();
+        await this.cargarEstadosMeses();              // 🆕 Primero los estados
+        await this.CronogramaValorizado();
+        await this.cargarEstadoRegistroMetrados();    // ✅ Ya los usará
       }
     } catch (error) {
       console.error('❌ Error en cambioVista:', error);
       SwalService.error();
     } finally {
       this.mostrar_carga_todo = false;
-      console.log('════════════════════════════════════════');
     }
   }
 
@@ -703,7 +690,6 @@ export class MetradoMensualComponent implements OnInit, OnDestroy {
   async seleccionarDia(row: any, dia: any, indexFila: number, indiceReal: number) {
     this.mostrar_carga_todo = true;
     const titulo_sel = this.obtenerTituloRaiz(row, indexFila);
-    console.log('titulo_sel', titulo_sel);
 
     try {
       // 1) Flush de guardado pendiente
@@ -743,7 +729,6 @@ export class MetradoMensualComponent implements OnInit, OnDestroy {
         item_titulo: titulo_sel?.item ?? '',
         fecha: fecha,
       });
-      console.log('resp', resp);
 
       // 7) RS2: partidas de la planilla + props UI
       this.partidasPlanilla = (resp?.partidas ?? []).map((p: any) => ({
@@ -831,7 +816,6 @@ export class MetradoMensualComponent implements OnInit, OnDestroy {
         id_proyecto: this.id_proyecto
       });
 
-      console.log('Respuesta completa backend:', resp);
 
       if (resp) {
         // 1. Asignar Mes Seleccionado y Lista de Meses
@@ -854,7 +838,6 @@ export class MetradoMensualComponent implements OnInit, OnDestroy {
           };
         });
 
-        console.log('this.partidas', this.partidas);
       }
 
     } catch (error) {
@@ -894,7 +877,7 @@ export class MetradoMensualComponent implements OnInit, OnDestroy {
           };
         });
       }
-
+      await this.cargarEstadosMeses();
       this.mostrar_carga_todo = false;
     } catch (error) {
       this.mostrar_carga_todo = false;
@@ -902,6 +885,7 @@ export class MetradoMensualComponent implements OnInit, OnDestroy {
       console.error(error);
     }
   }
+
   cargarDatosDia(registrosBD: ItemMetradoDiario[] = []) {
     this.listaMetradosDiarios = [...registrosBD];
 
@@ -1284,6 +1268,7 @@ export class MetradoMensualComponent implements OnInit, OnDestroy {
   }
 
   onKeyDown(event: KeyboardEvent, filaIdx: number, colNombre: string) {
+    if (this.soloLectura) return;
     // Solo bloquear Ctrl+flechas (navegación); dejar pasar Ctrl+C, Ctrl+V, Ctrl+X, Ctrl+A, etc.
     if (event.ctrlKey || event.metaKey) {
       const key = event.key.toLowerCase();
@@ -1404,6 +1389,9 @@ export class MetradoMensualComponent implements OnInit, OnDestroy {
   }
 
   toggleFilaHijos(parentIdx: number) {
+
+    if (this.soloLectura) return;
+
     const parent = this.listaMetradosDiarios[parentIdx];
     if (!parent || (parent.tipo !== 1 && parent.tipo !== 3)) return;
 
@@ -1686,6 +1674,7 @@ export class MetradoMensualComponent implements OnInit, OnDestroy {
   }
 
   onFilaBlur(event: FocusEvent, item: ItemMetradoDiario) {
+    if (this.soloLectura) return;
     const fila = event.currentTarget as HTMLElement;
     const next = event.relatedTarget as HTMLElement | null;
 
@@ -1822,6 +1811,7 @@ export class MetradoMensualComponent implements OnInit, OnDestroy {
   }
 
   activarEdicionFormula() {
+    if (this.soloLectura) return;
     if (!this.esFilaFormulaEditable()) return;
     // this.formulaTemporal = this.metradoSeleccionado?.formula ?? 'B*C*D*E*F*G*H';
     this.formulaTemporal = this.metradoSeleccionado?.formula ?? 'B*C*D*E*F*G';
@@ -1969,6 +1959,7 @@ export class MetradoMensualComponent implements OnInit, OnDestroy {
   }
 
   solicitarGuardado() {
+    if (this.soloLectura) return;
     this.hayCambiosSinGuardar = true;
 
     if (this.guardando) {
@@ -2003,9 +1994,11 @@ export class MetradoMensualComponent implements OnInit, OnDestroy {
   }
 
   async ngOnDestroy() {
+    this.onSplitterMouseUp();
     this.cancelarFocusPendiente();
     this.subGuardar?.unsubscribe();
     await this.flushGuardado();
+
   }
 
   private construirPayload(): { payload: any; filasEnviadas: ItemMetradoDiario[] } {
@@ -2704,27 +2697,20 @@ export class MetradoMensualComponent implements OnInit, OnDestroy {
     }
   }
 
-  // Cuando el usuario hace mousedown en un <td> de celda editable
   onCeldaMouseDown(event: MouseEvent, fila: number, columna: string) {
-    // 1) Cancelar cualquier focus pendiente (evita saltos)
-    this.cancelarFocusPendiente();
+    if (this.soloLectura) return;
 
-    // 2) Actualizar selección de celda (para pegar celdas)
+    this.cancelarFocusPendiente();
     this.ultimaCeldaSeleccionada = columna;
     this.idxSeleccionado = fila;
     this.filaExcelSel = this.listaMetradosDiarios[fila] ?? null;
     this.metradoSeleccionado = this.filaExcelSel;
 
-    // 3) Selección matricial (para copiar/pegar rango)
     this.seleccionarCelda(fila, columna);
-
-    // 4) Si NO es modo "copiadoCeldas", dejar que el navegador haga focus
-    //    normal en el <input>. Si quieres forzarlo, descomenta:
-    // event.preventDefault();
-    // this.focarInput(fila, columna, false);
   }
 
   onFilaMouseDown(fila: number, item: ItemMetradoDiario) {
+    if (this.soloLectura) return;
     this.cancelarFocusPendiente();
     this.idxSeleccionado = fila;
     this.filaExcelSel = item;
@@ -3147,12 +3133,14 @@ export class MetradoMensualComponent implements OnInit, OnDestroy {
   }
 
   onFilaMouseDownPlanilla(fila: number, item: any): void {
+    if (this.soloLectura) return;
     this.idxSeleccionadoPlanilla = fila;
   }
 
   onCeldaMouseDownPlanilla(event: MouseEvent, fila: number, columna: string): void {
-    this.cancelarFocusPendiente();
+    if (this.soloLectura) return;
 
+    this.cancelarFocusPendiente();
     this.idxSeleccionadoPlanilla = fila;
 
     if (!this.copiadoCeldasPlanilla) return;
@@ -3172,11 +3160,9 @@ export class MetradoMensualComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // Reiniciar selección
     this.celdaInicioPlanilla = { fila, columna };
     this.celdaFinPlanilla = null;
   }
-
   esCeldaEnRangoPlanilla(fila: number, columna: string): boolean {
     if (!this.copiadoCeldasPlanilla) return false;
     if (!this.celdaInicioPlanilla) return false;
@@ -3206,6 +3192,7 @@ export class MetradoMensualComponent implements OnInit, OnDestroy {
   }
 
   copiarFraccionTablaPlanilla(): void {
+    if (this.soloLectura) return;
     this.copiadoCeldasPlanilla = true;
     this.celdaInicioPlanilla = null;
     this.celdaFinPlanilla = null;
@@ -3219,6 +3206,8 @@ export class MetradoMensualComponent implements OnInit, OnDestroy {
   }
 
   guardarSeleccionadosCeldasPlanilla(): void {
+    if (this.soloLectura) return;
+
     if (!this.celdaInicioPlanilla || !this.celdaFinPlanilla) {
       this.toaster.error('Selecciona celda inicio y fin', '', { timeOut: 2000 });
       return;
@@ -3287,23 +3276,20 @@ export class MetradoMensualComponent implements OnInit, OnDestroy {
   }
 
   toggleFilaPlanilla(row: any, indexFila: number): void {
-    if (!row.esPadre) return;   // solo agrupadores pueden contraer
+    if (this.soloLectura) return;
+
+    if (!row.esPadre) return;
 
     row.expandido = !row.expandido;
     const ocultar = !row.expandido;
-
     const nivelPadre = row.nivel ?? 0;
 
     for (let i = indexFila + 1; i < this.partidasPlanilla.length; i++) {
       const hijo = this.partidasPlanilla[i];
       const nivelHijo = hijo.nivel ?? 0;
-
-      // Si llegamos a un hermano o superior → detener
       if (nivelHijo <= nivelPadre) break;
-
-      // Ocultar/mostrar solo hijos directos y descendientes
       hijo.oculto = ocultar;
-      if (ocultar) hijo.expandido = false;   // contraer también los nietos
+      if (ocultar) hijo.expandido = false;
     }
   }
 
@@ -3328,15 +3314,15 @@ export class MetradoMensualComponent implements OnInit, OnDestroy {
       });
 
       if (resp) {
-        this.mesSeleccionadoDetalle = resp.mes_seleccionado;
         this.listaMesesProyectoDetalle = resp.meses_proyecto || [];
         this.cabeceraDiasDetalle = resp.calendario_cabecera || [];
 
-        this.partidasDetalle = (resp.partidas || []).map((p: any) => ({
-          ...p,
-          expandido: true,
-          visible: true
-        }));
+        // 🔑 SIEMPRE arrancar en el PRIMER mes de la lista
+        const primerMes = this.listaMesesProyectoDetalle[0]?.codigo ?? 'TODOS';
+        this.mesSeleccionadoDetalle = primerMes;
+
+        // 🔑 Cargar los datos filtrados por ese primer mes
+        await this.onChangeMesDetalle(primerMes);
       }
     } catch (error) {
       console.error('Error cargando detalle:', error);
@@ -3345,19 +3331,25 @@ export class MetradoMensualComponent implements OnInit, OnDestroy {
   }
 
   async onChangeMesDetalle(nuevoMes: string): Promise<void> {
-    if (!nuevoMes) return;
+    // 🆕 'TODOS' → enviar null al backend (sin filtro de mes)
+    const mesFiltro = (nuevoMes === 'TODOS' || nuevoMes === '' || nuevoMes == null)
+      ? null
+      : nuevoMes;
 
     try {
       this.mostrar_carga_todo = true;
 
       const resp = await this.RecursosHumanosService.listarMetradoDiarioDetalleMes({
         id_proyecto: this.id_proyecto,
-        mes: nuevoMes
+        mes: mesFiltro ?? undefined
       });
 
       if (resp) {
-        this.mesSeleccionadoDetalle = resp.mes_seleccionado;
+        // ⚠️ NO sobrescribir `mesSeleccionadoDetalle` con el valor del backend,
+        //    porque si es "TODOS" el backend devuelve '' y pisaría el label.
+
         this.cabeceraDiasDetalle = resp.calendario_cabecera || [];
+
         this.partidasDetalle = (resp.partidas || []).map((p: any) => ({
           ...p,
           expandido: true,
@@ -3462,9 +3454,6 @@ export class MetradoMensualComponent implements OnInit, OnDestroy {
     try {
       this.mostrar_carga_todo = true;
 
-      console.group('🚀 cargarEstadoRegistroMetrados');
-      console.log('valorPlanificadoPorMes:', this.valorPlanificadoPorMes);
-      console.log('Keys del mapa:', Object.keys(this.valorPlanificadoPorMes));
 
       // ─────────────────────────────────────────────
       // 1) Validación temprana
@@ -3473,7 +3462,6 @@ export class MetradoMensualComponent implements OnInit, OnDestroy {
       if (!tieneVP) {
         console.warn('⚠️ valorPlanificadoPorMes está VACÍO. Se cargará el cronograma primero.');
         await this.CronogramaValorizado();
-        console.log('valorPlanificadoPorMes después de CronogramaValorizado:', this.valorPlanificadoPorMes);
       }
 
       // ─────────────────────────────────────────────
@@ -3483,7 +3471,6 @@ export class MetradoMensualComponent implements OnInit, OnDestroy {
         id_proyecto: this.id_proyecto
       });
 
-      console.log('respuesta backend:', resp);
 
       if (resp) {
         this.estadoResumen = resp.resumen ?? this.estadoResumen;
@@ -3494,31 +3481,34 @@ export class MetradoMensualComponent implements OnInit, OnDestroy {
         // ─────────────────────────────────────────────
         this.estadoMeses = (resp.meses ?? []).map((m: any) => {
           const vp = this.valorPlanificadoPorMes[m.codigo_mes] ?? 0;
-
-          console.log(
-            `  → Mes ${m.codigo_mes} (${m.label_mes}): VP=${vp}, EV=${m.valor_ejecutado}`
-          );
-
           const ev = Number(m.valor_ejecutado) || 0;
           const avance = vp > 0 ? (ev / vp) * 100 : 0;
           const desviacion = vp - ev;
+
+          // 🔑 Calcular estado real según aprobación
+          let estado: 'APROBADO' | 'EN_PROCESO' | 'SIN_REGISTRO';
+          if (this.esMesAprobado(m.codigo_mes)) {
+            estado = 'APROBADO';
+          } else if (m.ultimo_registro) {
+            estado = 'EN_PROCESO';
+          } else {
+            estado = 'SIN_REGISTRO';
+          }
 
           return {
             ...m,
             valor_planificado: vp,
             avance: avance,
-            desviacion: desviacion
+            desviacion: desviacion,
+            estado: estado   // ✅ estado real basado en aprobación
           };
         });
 
-        console.log('estadoMeses FINAL:', this.estadoMeses);
 
         // ─────────────────────────────────────────────
         // 4) Recalcular totales
         // ─────────────────────────────────────────────
         this.recalcularResumenConVP();
-        console.log('estadoTotales FINAL:', this.estadoTotales);
-        console.log('estadoResumen FINAL:', this.estadoResumen);
       }
 
       console.groupEnd();
@@ -4066,7 +4056,6 @@ export class MetradoMensualComponent implements OnInit, OnDestroy {
       var fini = moment(fecha);
       diasTotales = ffin.diff(fini, 'days') + 1;
     } else {
-      console.log('falta');
     }
     // if (
     //   moment(fecha).format('YYYY-MM-DD') > this.ffLimite ||
@@ -4680,4 +4669,307 @@ export class MetradoMensualComponent implements OnInit, OnDestroy {
   //   }
 
   // }
+
+  onSplitterMouseDown(event: MouseEvent): void {
+    this.arrastrando = true;
+    this.xInicial = event.clientX;
+
+    // Ancho actual del contenedor padre (row) en px
+    const row = (event.target as HTMLElement).parentElement;
+    if (row) {
+      this.anchoInicial = this.anchoIzquierda;
+    }
+
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+
+    // Escuchar en document (no solo en el splitter) para capturar todo el drag
+    document.addEventListener('mousemove', this.onSplitterMouseMove);
+    document.addEventListener('mouseup', this.onSplitterMouseUp);
+  }
+
+  private onSplitterMouseMove = (event: MouseEvent): void => {
+    if (!this.arrastrando) return;
+
+    const row = document.querySelector('.contenedor-diarios-inferior');
+    if (!row) return;
+
+    const anchoTotal = (row as HTMLElement).offsetWidth;
+    const delta = event.clientX - this.xInicial;
+    const deltaPct = (delta / anchoTotal) * 100;
+
+    // 🆕 Mínimos: 20% para cada lado
+    const MIN = 20;
+    const MAX = 80;
+
+    let nuevoIzq = this.anchoInicial + deltaPct;
+    if (nuevoIzq < MIN) nuevoIzq = MIN;
+    if (nuevoIzq > MAX) nuevoIzq = MAX;
+
+    this.anchoIzquierda = nuevoIzq;
+    this.anchoDerecha = 100 - nuevoIzq;
+  };
+
+  private onSplitterMouseUp = (): void => {
+    this.arrastrando = false;
+    document.body.style.cursor = '';
+    document.body.style.userSelect = '';
+    document.removeEventListener('mousemove', this.onSplitterMouseMove);
+    document.removeEventListener('mouseup', this.onSplitterMouseUp);
+  };
+
+  get estadoMesActual(): 'APROBADO' | 'EN_PROCESO' {
+    if (!this.mesSeleccionado) return 'EN_PROCESO';
+    return this.estadosMeses[this.mesSeleccionado] ? 'APROBADO' : 'EN_PROCESO';
+  }
+
+  get soloLectura(): boolean {
+    return this.estadoMesActual === 'APROBADO';
+  }
+
+  // ============================================================
+  // MÉTODOS
+  // ============================================================
+  async cargarEstadosMeses(): Promise<void> {
+    try {
+      const resp = await this.RecursosHumanosService.listarEstadosMesesMetrado({
+        id_proyecto: this.id_proyecto
+      });
+      this.estadosMeses = resp?.estados ?? {};
+    } catch (error) {
+      console.error('Error al cargar estados:', error);
+      this.estadosMeses = {};
+    }
+  }
+
+  puedeAprobarMes(): boolean {
+    if (!this.mesSeleccionado) return false;
+    if (this.estadoMesActual === 'APROBADO') return false;
+
+    const idxActual = this.listaMesesProyecto.findIndex(m => m.codigo === this.mesSeleccionado);
+    if (idxActual < 0) return false;
+
+    for (let i = 0; i < idxActual; i++) {
+      const mesAnt = this.listaMesesProyecto[i].codigo;
+      if (!this.estadosMeses[mesAnt]) return false;
+    }
+    return true;
+  }
+
+  puedeRevertirMes(): boolean {
+    if (!this.mesSeleccionado) return false;
+    if (this.estadoMesActual !== 'APROBADO') return false;
+
+    const idxActual = this.listaMesesProyecto.findIndex(m => m.codigo === this.mesSeleccionado);
+    if (idxActual < 0) return false;
+
+    for (let i = idxActual + 1; i < this.listaMesesProyecto.length; i++) {
+      const mesPost = this.listaMesesProyecto[i].codigo;
+      if (this.estadosMeses[mesPost]) return false;
+    }
+    return true;
+  }
+
+  async aprobarMes(): Promise<void> {
+    if (!this.puedeAprobarMes()) {
+      this.toaster.warning('No se puede aprobar: hay meses anteriores sin aprobar', '', { timeOut: 3000 });
+      return;
+    }
+
+    const confirmar = await SwalService.confirm(
+      `¿Aprobar el mes ${this.mesSeleccionado}? Ya no podrá editarse.`,
+      'Aprobar mes'
+    );
+    if (!confirmar) return;
+
+    try {
+      this.mostrar_carga_todo = true;
+      const idUsuario = this._EncriptadorService.recuperarlocalstory('idusuario');
+
+      const resp = await this.RecursosHumanosService.aprobarMesMetrado({
+        id_proyecto: this.id_proyecto,
+        mes: this.mesSeleccionado,
+        id_usuario: Number(idUsuario) || 0
+      });
+
+      if (resp?.ok) {
+        await this.cargarEstadosMeses();
+        this.toaster.success('Mes aprobado correctamente');
+      } else {
+        this.toaster.error(resp?.mensaje || 'Error al aprobar');
+      }
+    } catch (error) {
+      console.error(error);
+      this.toaster.error('Error al aprobar el mes');
+    } finally {
+      this.mostrar_carga_todo = false;
+    }
+  }
+
+  async revertirMes(): Promise<void> {
+    if (!this.puedeRevertirMes()) {
+      this.toaster.warning('No se puede revertir: existe un mes posterior aprobado', '', { timeOut: 3000 });
+      return;
+    }
+
+    const confirmar = await SwalService.confirm(
+      `¿Revertir el mes ${this.mesSeleccionado} a EN_PROCESO? Podrá editarse nuevamente.`,
+      'Revertir mes'
+    );
+    if (!confirmar) return;
+
+    try {
+      this.mostrar_carga_todo = true;
+
+      const resp = await this.RecursosHumanosService.revertirMesMetrado({
+        id_proyecto: this.id_proyecto,
+        mes: this.mesSeleccionado
+      });
+
+      if (resp?.ok) {
+        await this.cargarEstadosMeses();
+        this.toaster.success('Mes revertido correctamente');
+      } else {
+        this.toaster.error(resp?.mensaje || 'Error al revertir');
+      }
+    } catch (error: any) {
+      console.error(error);
+      const mensaje = error?.error?.mensaje || 'Error al revertir el mes';
+      this.toaster.error(mensaje);
+    } finally {
+      this.mostrar_carga_todo = false;
+    }
+  }
+
+  esMesAprobado(codigoMes: string): boolean {
+    return !!this.estadosMeses[codigoMes];
+  }
+
+  puedeAprobarMesIdx(idx: number): boolean {
+    if (idx < 0 || idx >= this.estadoMeses.length) return false;
+
+    // Si ya está aprobado, no se puede volver a aprobar
+    const mes = this.estadoMeses[idx];
+    if (this.esMesAprobado(mes.codigo_mes)) return false;
+
+    // Todos los meses anteriores deben estar aprobados
+    for (let i = 0; i < idx; i++) {
+      if (!this.esMesAprobado(this.estadoMeses[i].codigo_mes)) return false;
+    }
+    return true;
+  }
+
+  puedeRevertirMesIdx(idx: number): boolean {
+    if (idx < 0 || idx >= this.estadoMeses.length) return false;
+
+    // Debe estar aprobado
+    const mes = this.estadoMeses[idx];
+    if (!this.esMesAprobado(mes.codigo_mes)) return false;
+
+    // No debe haber ningún mes posterior aprobado
+    for (let i = idx + 1; i < this.estadoMeses.length; i++) {
+      if (this.esMesAprobado(this.estadoMeses[i].codigo_mes)) return false;
+    }
+    return true;
+  }
+
+  async aprobarMesDesdeVista3(mes: any, idx: number): Promise<void> {
+    if (!this.puedeAprobarMesIdx(idx)) {
+      this.toaster.warning('No se puede aprobar: hay meses anteriores sin aprobar', '', { timeOut: 3000 });
+      return;
+    }
+
+    const confirmar = await SwalService.confirm(
+      `¿Aprobar el mes ${mes.label_mes}? Ya no podrá editarse.`,
+      'Aprobar mes'
+    );
+    if (!confirmar) return;
+
+    try {
+      this.mostrar_carga_todo = true;
+      const idUsuario = this._EncriptadorService.recuperarlocalstory('idusuario');
+
+      const resp = await this.RecursosHumanosService.aprobarMesMetrado({
+        id_proyecto: this.id_proyecto,
+        mes: mes.codigo_mes,
+        id_usuario: Number(idUsuario) || 0
+      });
+
+      if (resp?.ok) {
+        // Recargar estados de meses y volver a calcular la tabla
+        await this.cargarEstadosMeses();
+        await this.recargarEstadosYRefrescarVista3();
+
+        this.toaster.success(`${mes.label_mes} aprobado correctamente`);
+      } else {
+        this.toaster.error(resp?.mensaje || 'Error al aprobar');
+      }
+    } catch (error) {
+      console.error(error);
+      this.toaster.error('Error al aprobar el mes');
+    } finally {
+      this.mostrar_carga_todo = false;
+    }
+  }
+  async revertirMesDesdeVista3(mes: any, idx: number): Promise<void> {
+    if (!this.puedeRevertirMesIdx(idx)) {
+      this.toaster.warning('No se puede revertir: existe un mes posterior aprobado', '', { timeOut: 3000 });
+      return;
+    }
+
+    const confirmar = await SwalService.confirm(
+      `¿Revertir ${mes.label_mes} a EN_PROCESO? Podrá editarse nuevamente.`,
+      'Revertir mes'
+    );
+    if (!confirmar) return;
+
+    try {
+      this.mostrar_carga_todo = true;
+
+      const resp = await this.RecursosHumanosService.revertirMesMetrado({
+        id_proyecto: this.id_proyecto,
+        mes: mes.codigo_mes
+      });
+
+      if (resp?.ok) {
+        await this.cargarEstadosMeses();
+        await this.recargarEstadosYRefrescarVista3();
+
+        this.toaster.success(`${mes.label_mes} revertido a EN PROCESO`);
+      } else {
+        this.toaster.error(resp?.mensaje || 'Error al revertir');
+      }
+    } catch (error: any) {
+      console.error(error);
+      const mensaje = error?.error?.mensaje || 'Error al revertir el mes';
+      this.toaster.error(mensaje);
+    } finally {
+      this.mostrar_carga_todo = false;
+    }
+  }
+
+  private async recargarEstadosYRefrescarVista3(): Promise<void> {
+    // Recargar la data del backend
+    await this.cargarEstadoRegistroMetrados();
+
+    // Re-marcar el estado de cada fila según `estadosMeses`
+    this.estadoMeses = (this.estadoMeses ?? []).map((m: any) => {   // ✅ .this.estadoMeses (array) → .map
+      const vp = this.valorPlanificadoPorMes[m.codigo_mes] ?? 0;
+      const ev = Number(m.valor_ejecutado) || 0;
+      const avance = vp > 0 ? (ev / vp) * 100 : 0;
+      const desviacion = vp - ev;
+
+      const estado = this.esMesAprobado(m.codigo_mes)
+        ? 'APROBADO'
+        : (m.ultimo_registro ? 'EN_PROCESO' : 'SIN_REGISTRO');
+
+      return {
+        ...m,
+        valor_planificado: vp,
+        avance: avance,
+        desviacion: desviacion,
+        estado: estado
+      };
+    });
+  }
 }

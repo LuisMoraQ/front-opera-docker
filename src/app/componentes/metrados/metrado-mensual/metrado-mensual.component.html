@@ -8,11 +8,11 @@
     </button>
     <button class="btn btn-sm btn-outline-secondary btn-menu-top" type="button" (mouseup)="quitarfoco($event)"
       style="padding: 4px 8px" [ngClass]="{ active: subvista === 2 }" (click)="cambioVista(2)">
-      <i class="fa fa-list"></i>  METRADO DESAGREGADO
+      <i class="fa fa-list"></i> METRADO DESAGREGADO
     </button>
     <button class="btn btn-sm btn-outline-secondary btn-menu-top" type="button" (mouseup)="quitarfoco($event)"
       style="padding: 4px 8px" [ngClass]="{ active: subvista === 3 }" (click)="cambioVista(3)">
-      <i class="fa fa-list"></i>  RESUMEN DE METRADOS
+      <i class="fa fa-list"></i> RESUMEN DE METRADOS
     </button>
     <!-- <button class="btn btn-sm btn-outline-secondary btn-menu-top" type="button" (mouseup)="quitarfoco($event)"
       style="padding: 4px 8px" [ngClass]="{ active: subvista === 4 }" (click)="cambioVista(4)">
@@ -30,6 +30,7 @@
     <!-- BARRA DE CONTROLES E INPUTS SUPERIORES     -->
     <!-- ========================================== -->
     <div class="col-12 d-flex px-0 align-items-center mb-2">
+
       <!-- SELECTOR DE MES / PERÍODO -->
       <mat-form-field appearance="outline" class="mff-reduc col-md-3 col-sm-6 p-0">
         <mat-label>Mes / Período</mat-label>
@@ -40,36 +41,55 @@
         </mat-select>
       </mat-form-field>
 
-      <!-- SWITCH ACTIVAR DIARIO -->
-      <div class="col-md-3 col-sm-6 d-flex align-items-center pl-3">
-        <label class="mb-0 mr-2 font-weight-bold">Activar Diario:</label>
-        <div class="switch switch-primary d-inline m-r-10 mb-3">
-          <input type="checkbox" id="switch-p-1" [(ngModel)]="activarDiario">
-          <label for="switch-p-1" class="cr"></label>
-        </div>
+      <!-- ✅ CHECKBOX: ACTIVAR DIARIO -->
+      <div class="col-md-2 col-sm-6 d-flex align-items-center pl-3">
+        <mat-checkbox [(ngModel)]="activarDiario" color="primary">
+          <span class="font-weight-bold">Activar Diario</span>
+        </mat-checkbox>
       </div>
 
-      <!-- BOTÓN FIJAR COLUMNAS -->
-      <!-- SWITCH FIJAR COLUMNAS -->
-      <div class="col-md-3 col-sm-6 d-flex align-items-center pl-3">
-        <label class="mb-0 mr-2 font-weight-bold">Fijar columnas:</label>
-        <div class="switch switch-primary d-inline m-r-10 mb-3"
-          [ngbTooltip]="columnasFijas ? 'Quitar columnas fijas' : 'Fijar ITEM+DESCRIPCIÓN y UND.'" container="body">
-          <input type="checkbox" id="switch-fijar" [(ngModel)]="columnasFijas">
-          <label for="switch-fijar" class="cr"></label>
-        </div>
+      <!-- ✅ CHECKBOX: FIJAR COLUMNAS -->
+      <div class="col-md-2 col-sm-6 d-flex align-items-center pl-3">
+        <mat-checkbox [(ngModel)]="columnasFijas" color="primary">
+          <span class="font-weight-bold">Fijar columnas</span>
+        </mat-checkbox>
       </div>
 
-      <!-- BOTÓN IMPRIMIR / EXPORTAR -->
-      <!-- <div class="col-md-6 text-right p-0">
-        <button class="btn btn-outline-secondary btn-icon btn-sm" title="Imprimir / Exportar">
-          <i class="icofont icofont-printer fs-5"></i>
-        </button>
-      </div> -->
+      <!-- 🎯 ESTADO DEL MES (AL EXTREMO DERECHO) -->
+      <div class="d-flex align-items-center ml-auto pr-2">
+
+        <label class="mb-0 mr-2 font-weight-bold" style="font-size: 14px;">
+          Estado:
+        </label>
+
+        <!-- Switch -->
+        <div class="switch switch-primary d-inline m-r-10 mb-0"
+          [ngbTooltip]="estadoMesActual === 'APROBADO'
+           ? (puedeRevertirMes() ? 'Clic para revertir a En Proceso' : 'No se puede revertir: hay un mes posterior aprobado')
+           : (puedeAprobarMes() ? 'Clic para aprobar el mes' : 'No se puede aprobar: hay meses anteriores sin aprobar')" container="body">
+          <input type="checkbox" id="switch-aprobar" [checked]="estadoMesActual === 'APROBADO'"
+            [disabled]="estadoMesActual === 'APROBADO' ? !puedeRevertirMes() : !puedeAprobarMes()"
+            (change)="estadoMesActual === 'APROBADO' ? revertirMes() : aprobarMes()">
+          <label for="switch-aprobar" class="cr" style="top: 7px;"></label>
+        </div>
+
+        <!-- Badge -->
+        <span class="badge ml-2" style="font-size: 12px; padding: 5px 10px;" [ngClass]="{
+            'badge-success': estadoMesActual === 'APROBADO',
+            'badge-warning': estadoMesActual === 'EN_PROCESO'
+          }">
+          <!-- <i class="icofont" [ngClass]="{
+           'icofont-check-circled': estadoMesActual === 'APROBADO',
+           'icofont-clock-time':    estadoMesActual === 'EN_PROCESO'
+         }"></i> -->
+          {{ estadoMesActual === 'APROBADO' ? 'APROBADO' : 'EN PROCESO' }}
+        </span>
+      </div>
+
     </div>
 
     <!-- ========================================================================= -->
-    <!-- 1. TABLA PRINCIPAL DE METRADOS (ALTURA DINÁMICA CON SCROLL PROPIO)        -->
+    <!-- 1. TABLA PRINCIPAL DE METRADOS                                             -->
     <!-- ========================================================================= -->
     <div class="col-12 px-0 mb-3">
       <div class="tabla-contenedor-dinamico"
@@ -77,34 +97,31 @@
 
         <table class="table-bordered tab-10 w-100 m-0">
 
-          <!-- CABECERA DE LA TABLA -->
           <thead class="text-center"
             style="position: sticky; top: 0; z-index: 5; background-color: #004b98; color: #ffffff;">
             <tr>
               <th rowspan="2" appAnchocol [ancho]="320" [ngClass]="{
-      'static1h': columnasEstatica,
-      'sticky-col-1': columnasFijas
-    }">
+                  'static1h': columnasEstatica,
+                  'sticky-col-1': columnasFijas
+                }">
                 ITEM Y DESCRIPCIÓN DE PARTIDA
               </th>
 
               <th rowspan="2" appAnchocol [ancho]="55" [ngClass]="{
-      'static2h': columnasEstatica,
-      'sticky-col-2': columnasFijas
-    }">
+                  'static2h': columnasEstatica,
+                  'sticky-col-2': columnasFijas
+                }">
                 UND.
               </th>
               <th rowspan="2" appAnchocol [ancho]="90">METRADO PRESUP.</th>
               <th rowspan="2" appAnchocol [ancho]="90">METRADO ANTERIOR</th>
 
-              <!-- DÍAS DEL MES DINÁMICOS -->
               <ng-container *ngIf="cabeceraDias?.length">
                 <th [colSpan]="cabeceraDias.length" class="mes-header text-white" style="background-color: #004b98;">
                   AVANCE DIARIO - {{ mesSeleccionado }}
                 </th>
               </ng-container>
 
-              <!-- RESUMEN DE SALDOS -->
               <th rowspan="2" appAnchocol [ancho]="90">METRADO MES</th>
               <th rowspan="2" appAnchocol [ancho]="90">ACUMULADO</th>
               <th rowspan="2" appAnchocol [ancho]="90">SALDO</th>
@@ -121,7 +138,6 @@
             </tr>
           </thead>
 
-          <!-- CUERPO DE DATOS -->
           <tbody>
             <ng-container *ngIf="partidas && partidas.length > 0; else elseTemplate">
               <tr *ngFor="let row of partidas; let i = index" appPintarfilapre [tipo]="titulo1"
@@ -129,13 +145,11 @@
                 [partida]="row.unidad != ''" [ngClass]="{'highlight3': selFilPlan === i}" [hidden]="!row.visible">
 
                 <td class="text-left px-2" [ngClass]="{
-      'static1': columnasEstatica,
-      'bg-white': !row.esPadre && columnasEstatica,
-      'sticky-col-1': columnasFijas
-    }">
+                    'static1': columnasEstatica,
+                    'bg-white': !row.esPadre && columnasEstatica,
+                    'sticky-col-1': columnasFijas
+                  }">
                   <div class="d-flex align-items-center" [style.padding-left.px]="getPaddingLeft(row.item)">
-
-                    <!-- 🆕 TOGGLE: solo si NO tiene unidad (títulos/subtítulos) -->
                     <span class="mr-1 d-inline-block text-center" style="width: 16px; min-width: 16px; cursor: pointer;"
                       [style.visibility]="esTituloSinUnidad(row) ? 'visible' : 'hidden'"
                       (click)="esTituloSinUnidad(row) && toggleFila(row); $event.stopPropagation()">
@@ -150,15 +164,16 @@
                     </span>
                   </div>
                 </td>
+
                 <td class="text-center" [ngClass]="{ 'sticky-col-2': columnasFijas }">{{ row.unidad }}</td>
                 <td class="text-right px-1">{{ row.metrado_presupuesto | number:'1.2-2' }}</td>
                 <td class="text-right px-1 text-muted">{{ row.metrado_anterior | number:'1.2-2' }}</td>
 
-                <!-- MATRIZ DE DÍAS SELECCIONABLES -->
+                <!-- MATRIZ DE DÍAS: solo clickeable si NO está aprobado -->
                 <td *ngFor="let dia of cabeceraDias" class="text-right px-1 font-monospace celda-dia-hover" [ngClass]="{
-                    'celda-dia-activa': selFilPlan === i && diaSeleccionado === dia.numero_dia,
-                    'no-laborable bg-light': dia.nombre_dia === 'DO' && (selFilPlan !== i || diaSeleccionado !== dia.numero_dia)
-                  }" (click)="seleccionarDia(row, dia, i, row.indice)" style="cursor: pointer;">
+      'celda-dia-activa': selFilPlan === i && diaSeleccionado === dia.numero_dia,
+      'no-laborable bg-light': dia.nombre_dia === 'DO' && (selFilPlan !== i || diaSeleccionado !== dia.numero_dia)
+    }" style="cursor: pointer;" (click)="seleccionarDia(row, dia, i, row.indice)">
                   <span *ngIf="row.dias && row.dias[dia.numero_dia] > 0">
                     {{ row.dias[dia.numero_dia] | number:'1.2-2' }}
                   </span>
@@ -186,27 +201,31 @@
       </div>
     </div>
 
-    <!-- ========================================================================= -->
-    <!-- 2. TABLAS INFERIORES PRINCIPALES (SOLO SI 'activarDiario' ES TRUE)        -->
-    <!-- ========================================================================= -->
-    <div class="row mx-0 contenedor-diarios-inferior" *ngIf="activarDiario">
+    <div class="d-flex contenedor-diarios-inferior mx-0" *ngIf="activarDiario" style="flex-wrap: nowrap; gap: 0;">
 
-      <!-- TABLA IZQUIERDA: PLANILLA DE METRADO EJECUTADO EXPEDIENTE TÉCNICO -->
-      <div class="col-lg-5 col-12 pl-0 pr-lg-2 pr-0 mb-3" style="height: 380px;">
+      <!-- ══════════════════════════════════════════════════════════ -->
+      <!-- TABLA IZQUIERDA: PLANILLA                                  -->
+      <!-- ══════════════════════════════════════════════════════════ -->
+      <div class="mb-3" [style.flex]="'0 0 ' + anchoIzquierda + '%'" [style.max-width]="anchoIzquierda + '%'"
+        style="height: 380px; overflow: hidden;">
         <div class="card border rounded-0 shadow-sm h-100 m-0">
+
           <div class="card-header bg-primary text-white p-1 d-flex align-items-center justify-content-between">
-            <span class="font-weight-bold">PLANILLA DE METRADO EJECUTADO EXPEDIENTE TÉCNICO</span>
+            <span class="font-weight-bold text-truncate"
+              style="font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+              PLANILLA DE METRADO EJECUTADO EXPEDIENTE TÉCNICO
+            </span>
 
             <div class="btn-group btn-group-sm">
               <button class="btn btn-mini btn-outline-light text-white" (click)="copiarFraccionTablaPlanilla()"
-                *ngIf="!copiadoCeldasPlanilla" [disabled]="!partidasPlanilla?.length" container="body" type="button"
-                [ngbTooltip]="'Seleccionar celdas específicas'" (mouseup)="quitarfoco($event)">
+                *ngIf="!copiadoCeldasPlanilla" [disabled]="soloLectura || !partidasPlanilla?.length" container="body"
+                type="button" [ngbTooltip]="'Seleccionar celdas específicas'" (mouseup)="quitarfoco($event)">
                 <i class="fa fa-th icono-but"></i>
               </button>
 
               <button class="btn btn-mini btn-outline-light text-white"
                 (click)="guardarSeleccionadosCeldasPlanilla(); copiadoCeldasPlanilla = false"
-                *ngIf="copiadoCeldasPlanilla" container="body" type="button"
+                *ngIf="copiadoCeldasPlanilla" [disabled]="soloLectura" container="body" type="button"
                 [ngbTooltip]="'Copiar celdas seleccionadas'" (mouseup)="quitarfoco($event)">
                 <i class="fa icofont-ui-copy icono-but"></i>
               </button>
@@ -218,6 +237,7 @@
               </button>
             </div>
           </div>
+
           <div class="card-body p-0 overflow-auto" style="height: calc(100% - 40px);">
             <table class="table-bordered m-0 tab-10">
               <thead class="bg-light text-center" style="position: sticky; top: 0; z-index: 2;">
@@ -233,18 +253,16 @@
               <tbody>
                 <tr *ngFor="let det of partidasPlanilla; let idx = index; trackBy: trackByFilaPlanilla"
                   [hidden]="det.oculto" [ngClass]="{
-        'celda-activa-excel': idxSeleccionadoPlanilla === idx,
-        'fila-titulo': det.esPadre,
-        'fila-metrado': !det.esPadre
-      }" (mousedown)="onFilaMouseDownPlanilla(idx, det)">
+                'celda-activa-excel': idxSeleccionadoPlanilla === idx,
+                'fila-titulo': det.esPadre,
+                'fila-metrado': !det.esPadre
+              }" (mousedown)="onFilaMouseDownPlanilla(idx, det)">
 
-                  <!-- NRO -->
                   <td class="text-center align-middle bg-light text-secondary font-weight-bold p-0 border"
                     style="width: 32px; min-width: 32px;">
                     <span class="small">{{ idx + 1 }}</span>
                   </td>
 
-                  <!-- TOGGLE -->
                   <td class="text-center align-middle bg-light p-0 border" style="width: 22px; min-width: 22px;">
                     <span *ngIf="det.esPadre" class="d-inline-block cursor-pointer font-weight-bold"
                       style="font-size: 13px;"
@@ -254,13 +272,12 @@
                     </span>
                   </td>
 
-                  <!-- COLUMNAS DINÁMICAS -->
                   <td *ngFor="let col of columnasPlantilla" class="p-0 border" [ngClass]="{
-          'celda-seleccionada': esCeldaEnRangoPlanilla(idx, col.key),
-          'text-left':  col.key === 'descripcion',
-          'text-right': col.key !== 'descripcion',
-          'font-weight-bold text-danger': col.key === 'descripcion'
-        }" (mousedown)="onCeldaMouseDownPlanilla($event, idx, col.key)">
+                'celda-seleccionada': esCeldaEnRangoPlanilla(idx, col.key),
+                'text-left':  col.key === 'descripcion',
+                'text-right': col.key !== 'descripcion',
+                'font-weight-bold text-danger': col.key === 'descripcion'
+              }" (mousedown)="onCeldaMouseDownPlanilla($event, idx, col.key)">
                     <span class="d-block px-1"
                       [style.padding-left.px]="col.key === 'descripcion' ? getPaddingLeftPlanilla(det.item) : 0">
                       {{ getValorCelda(det, col.key) }}
@@ -279,16 +296,18 @@
         </div>
       </div>
 
+      <!-- SPLITTER -->
+      <div class="splitter-vertical" (mousedown)="onSplitterMouseDown($event)" title="Arrastra para redimensionar">
+      </div>
 
-      <!-- TABLA DERECHA: METRADOS DIARIOS -->
-      <div class="col-lg-7 col-12 pr-0 pl-lg-2 pl-0 mb-3" style="height: 380px;">
+      <!-- ══════════════════════════════════════════════════════════ -->
+      <!-- TABLA DERECHA: HOJA DE METRADO                             -->
+      <!-- ══════════════════════════════════════════════════════════ -->
+      <div class="mb-3" [style.flex]="'0 0 ' + anchoDerecha + '%'" [style.max-width]="anchoDerecha + '%'"
+        style="height: 380px; overflow: hidden;">
         <div class="card border rounded-0 shadow-sm h-100 m-0">
 
           <div class="card-header bg-primary text-white p-1 d-flex align-items-center justify-content-between">
-
-            <!-- ================================================= -->
-            <!-- IZQUIERDA: BOTONERA DE ACCIONES (scroll horizontal) -->
-            <!-- ================================================= -->
             <div id="divbut" class="hidescroll d-flex align-items-center">
               <div #box2 class="d-flex align-items-center">
                 <span *ngIf="scrollbut" class="icscrol-l3 cursor-pointer mr-1" (click)="rigthDivBut2()">
@@ -297,80 +316,81 @@
 
                 <div id="divbut2" class="d-flex align-items-center" [ngClass]="{ 'overflow-botones': scrollbut }">
 
-                  <!-- BOTONERA 1: MANTENIMIENTO Y JERARQUÍA -->
+                  <!-- BOTONERA 1 -->
                   <div class="btn-group d-inline-flex mr-2">
                     <button class="btn btn-mini btn-group-mini btn-outline-light text-white"
                       (click)="agregarFilaSel(false)" ngbTooltip="Agregar fila vacía" container="body"
-                      (mouseup)="quitarfoco($event)" [disabled]="!filaExcelSel || estadodia == 2">
+                      (mouseup)="quitarfoco($event)" [disabled]="soloLectura || !filaExcelSel || estadodia == 2">
                       <i class="fa fa-plus icono-but"></i>
                     </button>
 
                     <button class="btn btn-mini btn-group-mini btn-outline-light text-white btn-gru-multiple"
                       [ngbPopover]="popOptions3" type="button" #p3="ngbPopover" [autoClose]="'outside'" container="body"
                       [placement]="['bottom', 'auto']" ngbTooltip="Agregar múltiples filas vacías" (click)="cantFil = 1"
-                      (mouseup)="quitarfoco($event)" [disabled]="!filaExcelSel || estadodia == 2">
+                      (mouseup)="quitarfoco($event)" [disabled]="soloLectura || !filaExcelSel || estadodia == 2">
                       <i class="fa fa-caret-down icono-but"></i>
                     </button>
 
                     <button type="button" class="btn btn-mini btn-group-mini btn-outline-light text-white"
                       (click)="moverArriba()" container="body" ngbTooltip="Mover Arriba (CTRL + ⬆)"
                       (mouseup)="quitarfoco($event)"
-                      [disabled]="!filaExcelSel || idxSeleccionado <= 0 || estadodia == 2 || copiadoCeldas">
+                      [disabled]="soloLectura || !filaExcelSel || idxSeleccionado <= 0 || estadodia == 2 || copiadoCeldas">
                       <i class="icofont icofont-arrow-up icono-but"></i>
                     </button>
 
                     <button type="button" class="btn btn-mini btn-group-mini btn-outline-light text-white"
                       (click)="moverAbajo()" ngbTooltip="Mover Abajo (CTRL + ⬇)" container="body"
                       (mouseup)="quitarfoco($event)"
-                      [disabled]="!filaExcelSel || idxSeleccionado >= listaMetradosDiarios.length - 1 || estadodia == 2 || copiadoCeldas">
+                      [disabled]="soloLectura || !filaExcelSel || idxSeleccionado >= listaMetradosDiarios.length - 1 || estadodia == 2 || copiadoCeldas">
                       <i class="icofont icofont-arrow-down icono-but"></i>
                     </button>
 
                     <button class="btn btn-mini btn-group-mini btn-outline-light text-white"
                       (click)="subirNivelfila(null)" container="body" type="button"
                       [ngbTooltip]="'Subir de Nivel (CTRL + ⬅)'" (mouseup)="quitarfoco($event)"
-                      [disabled]="!filaExcelSel || metradoSeleccionado?.tipo === 3 || estadodia == 2 || copiadoCeldas">
+                      [disabled]="soloLectura || !filaExcelSel || metradoSeleccionado?.tipo === 3 || estadodia == 2 || copiadoCeldas">
                       <i class="icofont icofont-arrow-left icono-but"></i>
                     </button>
 
                     <button class="btn btn-mini btn-group-mini btn-outline-light text-white" (click)="bajarNivel(null)"
                       container="body" type="button" [ngbTooltip]="'Bajar de nivel (CTRL + ➡)'"
                       (mouseup)="quitarfoco($event)"
-                      [disabled]="!filaExcelSel || metradoSeleccionado?.tipo === 2 || estadodia == 2 || copiadoCeldas">
+                      [disabled]="soloLectura || !filaExcelSel || metradoSeleccionado?.tipo === 2 || estadodia == 2 || copiadoCeldas">
                       <i class="icofont icofont-arrow-right icono-but"></i>
                     </button>
 
                     <button class="btn btn-mini btn-group-mini btn-outline-light text-white" (click)="copiarFila()"
                       container="body" type="button" [ngbTooltip]="'Copiar Fila'" (mouseup)="quitarfoco($event)"
-                      [disabled]="!filaExcelSel || estadodia == 2 || copiadoCeldas">
+                      [disabled]="soloLectura || !filaExcelSel || estadodia == 2 || copiadoCeldas">
                       <i class="icofont-copy icono-but pos-r-3"></i>
                     </button>
 
                     <button class="btn btn-mini btn-group-mini btn-outline-light text-white" (click)="eliminarRow()"
                       ngbTooltip="Eliminar Fila" type="button" (mouseup)="quitarfoco($event)" container="body"
-                      [disabled]="!filaExcelSel || estadodia == 2 || copiadoCeldas">
+                      [disabled]="soloLectura || !filaExcelSel || estadodia == 2 || copiadoCeldas">
                       <i class="fa fa-trash icono-but"></i>
                     </button>
 
                     <button class="btn btn-mini btn-group-mini btn-outline-light text-white" (click)="limpiarTabla()"
                       ngbTooltip="Limpiar tabla" type="button" (mouseup)="quitarfoco($event)" container="body"
-                      [disabled]=" estadodia == 2 || copiadoCeldas">
+                      [disabled]="soloLectura || estadodia == 2 || copiadoCeldas">
                       <i class="icofont-delete-alt icono-but pos-r-3"></i>
                     </button>
                   </div>
 
-                  <!-- BOTONERA 2: SELECCIÓN MÚLTIPLE Y CELDAS -->
+                  <!-- BOTONERA 2 -->
                   <div class="btn-group d-inline-flex">
                     <button class="btn btn-mini btn-group-mini btn-outline-light text-white"
                       (click)="habilitadoCopiar ? copiarFilaMultiple() : habilitarMultiple()" container="body"
                       type="button" [ngbTooltip]="habilitadoCopiar ? 'Copiar Seleccionados' : 'Seleccionar Múltiple'"
-                      (mouseup)="quitarfoco($event)" [disabled]="!filaExcelSel || copiadoCeldas || estadodia == 2">
+                      (mouseup)="quitarfoco($event)"
+                      [disabled]="soloLectura || !filaExcelSel || copiadoCeldas || estadodia == 2">
                       <i class="icono-but"
                         [ngClass]="{ 'fa fa-check-square-o': !habilitadoCopiar, 'icofont-ui-copy': habilitadoCopiar }"></i>
                     </button>
 
                     <button class="btn btn-mini btn-group-mini btn-outline-light text-white"
-                      (click)="copiarFraccionTabla()" [disabled]="!filaExcelSel || estadodia == 2"
+                      (click)="copiarFraccionTabla()" [disabled]="soloLectura || !filaExcelSel || estadodia == 2"
                       *ngIf="!copiadoCeldas" container="body" type="button"
                       [ngbTooltip]="'Seleccionar celdas específicas'" (mouseup)="quitarfoco($event)">
                       <i class="fa fa-th icono-but"></i>
@@ -378,20 +398,20 @@
 
                     <button class="btn btn-mini btn-group-mini btn-outline-light text-white"
                       (click)="guardarSeleccionadosCeldas(); copiadoCeldas = false" *ngIf="copiadoCeldas"
-                      container="body" type="button" [ngbTooltip]="'Copiar celdas seleccionadas'"
-                      (mouseup)="quitarfoco($event)" [disabled]="estadodia == 2">
+                      [disabled]="soloLectura" container="body" type="button"
+                      [ngbTooltip]="'Copiar celdas seleccionadas'" (mouseup)="quitarfoco($event)">
                       <i class="fa icofont-ui-copy icono-but"></i>
                     </button>
 
                     <button class="btn btn-mini btn-group-mini btn-outline-light text-white" (click)="pegarCopiados()"
                       container="body" type="button" [ngbTooltip]="'Pegar Seleccionados'" (mouseup)="quitarfoco($event)"
-                      [disabled]="(!arrayCopiadosMetrado?.length && !celdasCopiadosMetrado?.length && !arrayCortados?.length) || estadodia == 2 || copiadoCeldas">
+                      [disabled]="soloLectura || (!arrayCopiadosMetrado?.length && !celdasCopiadosMetrado?.length && !arrayCortados?.length) || estadodia == 2 || copiadoCeldas">
                       <i class="icofont-copy-invert icono-but pos-r-3"></i>
                     </button>
 
                     <button class="btn btn-mini btn-group-mini btn-outline-light text-white"
                       (click)="cortarSeleccionados()" container="body" type="button"
-                      [disabled]="(!filaExcelSel && !habilitadoCopiar) || estadodia == 2 || copiadoCeldas"
+                      [disabled]="soloLectura || (!filaExcelSel && !habilitadoCopiar) || estadodia == 2 || copiadoCeldas"
                       [ngbTooltip]="'Cortar'" (mouseup)="quitarfoco($event)">
                       <i class="icofont icofont-ui-cut icono-but"></i>
                     </button>
@@ -411,26 +431,22 @@
               </div>
             </div>
 
-            <!-- ========================================================= -->
-            <!-- DERECHA: BOTONES TABLA + BARRA fx (siempre visibles)      -->
-            <!-- ========================================================= -->
+            <!-- DERECHA: BOTONES TABLA + BARRA fx -->
             <div class="d-flex align-items-center ml-auto pl-2">
-
-              <!-- ✅ BOTONES DE COPIAR/PEGAR TABLA COMPLETA (SIEMPRE A LA DERECHA) -->
               <div class="btn-group d-inline-flex mr-2">
                 <button class="btn btn-mini btn-group-mini btn-outline-light text-white" (click)="copiarTablaCompleta()"
                   container="body" type="button" ngbTooltip="Copiar toda la tabla del día actual"
                   (mouseup)="quitarfoco($event)"
-                  [disabled]="!listaMetradosDiarios?.length || copiadoCeldas || estadodia == 2">
+                  [disabled]="soloLectura || !listaMetradosDiarios?.length || copiadoCeldas || estadodia == 2">
                   <i class="fa fa-clipboard icono-but"></i>
                 </button>
 
                 <button class="btn btn-mini btn-group-mini btn-outline-light text-white"
                   [ngClass]="{ 'bg-warning text-dark': (tablaCopiada?.length ?? 0) > 0 }" (click)="pegarTablaCompleta()"
                   container="body" type="button" [ngbTooltip]="(tablaCopiada?.length ?? 0) > 0
-          ? 'Pegar tabla copiada (' + tablaCopiada.length + ' filas) - reemplaza todo el día'
-          : 'No hay tabla copiada'" (mouseup)="quitarfoco($event)"
-                  [disabled]="!(tablaCopiada?.length) || selFilPlanIndice < 0 || !diaSeleccionado || copiadoCeldas || estadodia == 2">
+                ? 'Pegar tabla copiada (' + tablaCopiada.length + ' filas) - reemplaza todo el día'
+                : 'No hay tabla copiada'" (mouseup)="quitarfoco($event)"
+                  [disabled]="soloLectura || !(tablaCopiada?.length) || selFilPlanIndice < 0 || !diaSeleccionado || copiadoCeldas || estadodia == 2">
                   <i class="fa fa-paste icono-but"></i>
                 </button>
 
@@ -441,13 +457,12 @@
                 </button>
               </div>
 
-              <!-- BARRA fx: -->
               <span class="font-weight-bold mr-1 text-white small">fx:</span>
 
-              <!-- MODO TEXTO -->
               <div *ngIf="!habEditFormula" class="formula-preview font-monospace"
-                style="font-size: 11px; padding: 2px 6px; background: #f8f9fa; border-radius: 3px; min-width: 140px; height: 22px; display: inline-flex; align-items: center; cursor: text;"
-                (click)="activarEdicionFormula()">
+                style="font-size: 11px; padding: 2px 6px; background: #f8f9fa; border-radius: 3px; min-width: 140px; height: 22px; display: inline-flex; align-items: center;"
+                [style.cursor]="soloLectura ? 'not-allowed' : 'text'"
+                [style.pointer-events]="soloLectura ? 'none' : 'auto'" (click)="activarEdicionFormula()">
                 <ng-container *ngFor="let ch of formulaChars()">
                   <span *ngIf="COLORES_LETRAS[ch]; else normal" [style.color]="COLORES_LETRAS[ch]"
                     style="font-weight:bold; margin-top: 0;">{{ ch }}</span>
@@ -457,7 +472,6 @@
                 </ng-container>
               </div>
 
-              <!-- MODO INPUT -->
               <input *ngIf="habEditFormula" #inputFx type="text"
                 class="form-control form-control-sm bg-light border-0 py-0 px-2 fw-bold text-dark font-monospace"
                 style="height: 22px; font-size: 11px; width: 140px;" [value]="formulaTemporal"
@@ -467,39 +481,31 @@
 
               <div class="btn-group btn-group-sm ml-1">
                 <button class="btn btn-xs btn-light py-0 px-1 text-secondary" title="Recalcular"
-                  (click)="recalcularTotalesYJerarquia(); solicitarGuardado()">
+                  [disabled]="soloLectura" (click)="recalcularTotalesYJerarquia(); solicitarGuardado()">
                   <i class="icofont icofont-refresh"></i>
                 </button>
                 <button class="btn btn-xs btn-light py-0 px-1 text-secondary" title="Copiar Fórmula"
-                  (click)="copiarFormula()">
+                  [disabled]="soloLectura" (click)="copiarFormula()">
                   <i class="icofont icofont-copy"></i>
                 </button>
               </div>
             </div>
           </div>
-          <!-- ============================== -->
-          <!-- TÍTULO "TABLA HOJA DE METRADO" -->
-          <!-- ============================== -->
+
           <div class="bg-light text-center font-weight-bold py-1 border-bottom small">
             TABLA HOJA DE METRADO
             <span class="badge bg-success ml-1" *ngIf="metradoSeleccionado">SISTEMA</span>
+            <span class="badge bg-danger ml-1" *ngIf="soloLectura">APROBADO - SOLO LECTURA</span>
           </div>
 
-          <!-- ============================== -->
-          <!-- CUERPO DE LA TABLA             -->
-          <!-- ============================== -->
           <div class="card-body p-0 overflow-auto" style="height: calc(100% - 65px);">
             <table class="table table-bordered table-sm m-0 tab-10 table-grid-excel tabla-fija-excel">
               <thead class="bg-primary text-white text-center sticky-top" style="z-index: 5;">
-
-                <!-- FILA 1: NOMBRES DE COLUMNAS -->
                 <tr>
-
                   <th class="align-middle border-white" style="width: 32px; min-width: 32px;">NRO</th>
                   <th class="align-middle border-white p-0" style="width: 22px; min-width: 22px;"></th>
                   <th class="align-middle border-white" style="width: 250px; min-width: 250px;">DESCRIPCION</th>
                   <th class="align-middle border-white" style="width: 110px; min-width: 110px;">DETALLE 1</th>
-                  <!-- <th class="align-middle border-white" style="width: 110px; min-width: 110px;">DETALLE 2</th> -->
                   <th class="align-middle border-white" style="width: 70px; min-width: 70px;">CANTIDAD</th>
                   <th class="align-middle border-white" style="width: 70px; min-width: 70px;"># VECES</th>
                   <th class="align-middle border-white" style="width: 70px; min-width: 70px;">LONGITUD</th>
@@ -509,7 +515,6 @@
                   <th class="align-middle border-white" style="width: 90px; min-width: 90px;">SUB TOTAL</th>
                 </tr>
 
-                <!-- FILA 2: LETRAS DE REFERENCIA -->
                 <tr class="bg-light text-dark font-weight-bold text-center border-bottom">
                   <td class="p-0 border" style="width: 32px;">
                     <mat-checkbox *ngIf="habilitadoCopiar" [(ngModel)]="todosCheck" (change)="cambioCheckboxTodos()"
@@ -517,32 +522,28 @@
                     </mat-checkbox>
                   </td>
                   <td class="p-0 border" style="width: 22px; min-width: 22px;"></td>
-
                   <td class="p-0 border" style="width: 250px; min-width: 250px;">A</td>
                   <td class="p-0 border" style="width: 110px; min-width: 110px;">B</td>
-                  <!-- C (detalle2) eliminada -->
-                  <td class="p-0 border" style="width: 70px; min-width: 70px;">C</td> <!-- cantidad -->
-                  <td class="p-0 border" style="width: 70px; min-width: 70px;">D</td> <!-- n_veces -->
-                  <td class="p-0 border" style="width: 70px; min-width: 70px;">E</td> <!-- longitud -->
-                  <td class="p-0 border" style="width: 70px; min-width: 70px;">F</td> <!-- ancho -->
-                  <td class="p-0 border" style="width: 70px; min-width: 70px;">G</td> <!-- alto -->
-                  <td class="p-0 border" style="width: 90px; min-width: 90px;">-</td> <!-- parcial (referencial) -->
+                  <td class="p-0 border" style="width: 70px; min-width: 70px;">C</td>
+                  <td class="p-0 border" style="width: 70px; min-width: 70px;">D</td>
+                  <td class="p-0 border" style="width: 70px; min-width: 70px;">E</td>
+                  <td class="p-0 border" style="width: 70px; min-width: 70px;">F</td>
+                  <td class="p-0 border" style="width: 70px; min-width: 70px;">G</td>
                   <td class="p-0 border" style="width: 90px; min-width: 90px;">-</td>
+                  <td class="p-0 border" style="width: 90px; min-width: 90px;">-</td>
+                </tr>
               </thead>
 
               <tbody>
                 <tr *ngFor="let item of listaMetradosDiarios; let idx = index; trackBy: trackByFila"
                   [hidden]="item.oculto" (focusout)="onFilaBlur($event, item)" [ngClass]="{
-        'celda-activa-excel': idxSeleccionado === idx,
-        'fila-titulo': item.tipo === 3,
-        'fila-metrado': item.tipo === 1,
-        'fila-submetrado': item.tipo === 2,
-        'text-muted': item.tipo === 4
-      }" (mousedown)="onFilaMouseDown(idx, item)">
+                'celda-activa-excel': idxSeleccionado === idx,
+                'fila-titulo': item.tipo === 3,
+                'fila-metrado': item.tipo === 1,
+                'fila-submetrado': item.tipo === 2,
+                'text-muted': item.tipo === 4
+              }" (mousedown)="onFilaMouseDown(idx, item)">
 
-
-
-                  <!-- Nro / Checkbox -->
                   <td class="text-center align-middle bg-light text-secondary font-weight-bold p-0 border"
                     style="width: 32px; min-width: 32px;">
                     <span class="small" *ngIf="!habilitadoCopiar">{{ idx + 1 }}</span>
@@ -551,134 +552,114 @@
                       class="mb-custom">
                     </mat-checkbox>
                   </td>
-                  <!-- Toggle -->
+
                   <td class="text-center align-middle bg-light p-0 border" style="width: 22px; min-width: 22px;">
                     <span *ngIf="item.tipo === 3" class="d-inline-block cursor-pointer font-weight-bold"
                       style="font-size: 13px;"
-                      (mousedown)="toggleFilaHijos(idx); $event.stopPropagation(); $event.preventDefault()">
+                      (mousedown)="soloLectura ? null : (toggleFilaHijos(idx)); $event.stopPropagation(); $event.preventDefault()">
                       <i class="icofont"
                         [ngClass]="item.expandido ? 'icofont-minus text-danger' : 'icofont-plus text-primary'"></i>
                     </span>
                     <span *ngIf="item.tipo === 1" class="d-inline-block cursor-pointer"
-                      (mousedown)="toggleFilaHijos(idx); $event.stopPropagation(); $event.preventDefault()">
+                      (mousedown)="soloLectura ? null : (toggleFilaHijos(idx)); $event.stopPropagation(); $event.preventDefault()">
                       <i class="icofont"
                         [ngClass]="item.expandido ? 'icofont-caret-down text-danger' : 'icofont-caret-right text-primary'"></i>
                     </span>
                   </td>
 
-                  <!-- DESCRIPCIÓN -->
                   <td class="p-0 border" style="width: 250px; min-width: 250px;"
-                    (mousedown)="onCeldaMouseDown($event, idx, 'descripcion')"
+                    (mousedown)="soloLectura ? null : onCeldaMouseDown($event, idx, 'descripcion')"
                     [ngClass]="{ 'celda-seleccionada': esCeldaEnRango(idx, 'descripcion') }">
                     <input autocomplete="off" [id]="'input-' + idx + '-descripcion'" type="text"
                       class="form-control form-control-sm border-0 h-100 px-1 bg-transparent"
                       [style.padding-left.px]="item.tipo === 2 ? 22 : (item.tipo === 1 ? 12 : 4)"
-                      [(ngModel)]="item.descripcion" (keydown)="onKeyDown($event, idx, 'descripcion')"
+                      [disabled]="soloLectura" [(ngModel)]="item.descripcion"
+                      (keydown)="onKeyDown($event, idx, 'descripcion')"
                       (paste)="onPasteInput($event, idx, 'descripcion')" (focus)="onInputFocus('descripcion')" />
                   </td>
 
-                  <!-- DETALLE 1 -->
-                  <td class="p-0 border" style="width: 110px;" (mousedown)="onCeldaMouseDown($event, idx, 'detalle1')"
-                    [ngClass]="{
-          'celda-seleccionada': esCeldaEnRango(idx, 'detalle1'),
-          'b-select': idx === idxSeleccionado && pintarCelda('B')
-        }">
+                  <td class="p-0 border" style="width: 110px;"
+                    (mousedown)="soloLectura ? null : onCeldaMouseDown($event, idx, 'detalle1')" [ngClass]="{
+                  'celda-seleccionada': esCeldaEnRango(idx, 'detalle1'),
+                  'b-select': idx === idxSeleccionado && pintarCelda('B')
+                }">
                     <input autocomplete="off" [id]="'input-' + idx + '-detalle1'" type="text"
-                      class="form-control form-control-sm border-0 h-100 px-1 bg-transparent"
+                      class="form-control form-control-sm border-0 h-100 px-1 bg-transparent" [disabled]="soloLectura"
                       [(ngModel)]="item.detalle1" (keydown)="onKeyDown($event, idx, 'detalle1')"
                       (paste)="onPasteInput($event, idx, 'detalle1')" (focus)="onInputFocus('detalle1')" />
                   </td>
 
-                  <!-- DETALLE 2 -->
-                  <!-- <td class="p-0 border" style="width: 110px;" (mousedown)="onCeldaMouseDown($event, idx, 'detalle2')"
-                    [ngClass]="{
-          'celda-seleccionada': esCeldaEnRango(idx, 'detalle2'),
-          'c-select': idx === idxSeleccionado && pintarCelda('C')
-        }">
-                    <input autocomplete="off" [id]="'input-' + idx + '-detalle2'" type="text"
-                      class="form-control form-control-sm border-0 h-100 px-1 bg-transparent"
-                      [(ngModel)]="item.detalle2" (keydown)="onKeyDown($event, idx, 'detalle2')"
-                      (paste)="onPasteInput($event, idx, 'detalle2')" (focus)="onInputFocus('detalle2')" />
-                  </td> -->
-
-                  <!-- CANTIDAD -->
-                  <td class="p-0 border" style="width: 70px;" (mousedown)="onCeldaMouseDown($event, idx, 'cantidad')"
-                    [ngClass]="{
-    'celda-seleccionada': esCeldaEnRango(idx, 'cantidad'),
-    'c-select': idx === idxSeleccionado && pintarCelda('C')
-  }">
+                  <td class="p-0 border" style="width: 70px;"
+                    (mousedown)="soloLectura ? null : onCeldaMouseDown($event, idx, 'cantidad')" [ngClass]="{
+                  'celda-seleccionada': esCeldaEnRango(idx, 'cantidad'),
+                  'c-select': idx === idxSeleccionado && pintarCelda('C')
+                }">
                     <input autocomplete="off" [id]="'input-' + idx + '-cantidad'" type="text"
                       class="form-control form-control-sm border-0 text-right h-100 px-1 bg-transparent"
-                      [disabled]="item.tipo === 3 || item.tipo === 4" [(ngModel)]="item.cantidad"
+                      [disabled]="soloLectura || item.tipo === 3 || item.tipo === 4" [(ngModel)]="item.cantidad"
                       (keydown)="onKeyDown($event, idx, 'cantidad')" (paste)="onPasteInput($event, idx, 'cantidad')"
                       (focus)="onInputFocus('cantidad')" />
                   </td>
 
-                  <!-- N_VECES -->
-                  <td class="p-0 border" style="width: 70px;" (mousedown)="onCeldaMouseDown($event, idx, 'n_veces')"
-                    [ngClass]="{
-    'celda-seleccionada': esCeldaEnRango(idx, 'n_veces'),
-    'd-select': idx === idxSeleccionado && pintarCelda('D')
-  }">
+                  <td class="p-0 border" style="width: 70px;"
+                    (mousedown)="soloLectura ? null : onCeldaMouseDown($event, idx, 'n_veces')" [ngClass]="{
+                  'celda-seleccionada': esCeldaEnRango(idx, 'n_veces'),
+                  'd-select': idx === idxSeleccionado && pintarCelda('D')
+                }">
                     <input autocomplete="off" [id]="'input-' + idx + '-n_veces'" type="text"
                       class="form-control form-control-sm border-0 text-right h-100 px-1 bg-transparent"
-                      [disabled]="item.tipo === 3 || item.tipo === 4" [(ngModel)]="item.n_veces"
+                      [disabled]="soloLectura || item.tipo === 3 || item.tipo === 4" [(ngModel)]="item.n_veces"
                       (keydown)="onKeyDown($event, idx, 'n_veces')" (paste)="onPasteInput($event, idx, 'n_veces')"
                       (focus)="onInputFocus('n_veces')" />
                   </td>
 
-                  <!-- LONGITUD -->
-                  <td class="p-0 border" style="width: 70px;" (mousedown)="onCeldaMouseDown($event, idx, 'longitud')"
-                    [ngClass]="{
-    'celda-seleccionada': esCeldaEnRango(idx, 'longitud'),
-    'e-select': idx === idxSeleccionado && pintarCelda('E')
-  }">
+                  <td class="p-0 border" style="width: 70px;"
+                    (mousedown)="soloLectura ? null : onCeldaMouseDown($event, idx, 'longitud')" [ngClass]="{
+                  'celda-seleccionada': esCeldaEnRango(idx, 'longitud'),
+                  'e-select': idx === idxSeleccionado && pintarCelda('E')
+                }">
                     <input autocomplete="off" [id]="'input-' + idx + '-longitud'" type="text"
                       class="form-control form-control-sm border-0 text-right h-100 px-1 bg-transparent"
-                      [disabled]="item.tipo === 3 || item.tipo === 4" [(ngModel)]="item.longitud"
+                      [disabled]="soloLectura || item.tipo === 3 || item.tipo === 4" [(ngModel)]="item.longitud"
                       (keydown)="onKeyDown($event, idx, 'longitud')" (paste)="onPasteInput($event, idx, 'longitud')"
                       (focus)="onInputFocus('longitud')" />
                   </td>
 
-                  <!-- ANCHO -->
-                  <td class="p-0 border" style="width: 70px;" (mousedown)="onCeldaMouseDown($event, idx, 'ancho')"
-                    [ngClass]="{
-    'celda-seleccionada': esCeldaEnRango(idx, 'ancho'),
-    'f-select': idx === idxSeleccionado && pintarCelda('F')
-  }">
+                  <td class="p-0 border" style="width: 70px;"
+                    (mousedown)="soloLectura ? null : onCeldaMouseDown($event, idx, 'ancho')" [ngClass]="{
+                  'celda-seleccionada': esCeldaEnRango(idx, 'ancho'),
+                  'f-select': idx === idxSeleccionado && pintarCelda('F')
+                }">
                     <input autocomplete="off" [id]="'input-' + idx + '-ancho'" type="text"
                       class="form-control form-control-sm border-0 text-right h-100 px-1 bg-transparent"
-                      [disabled]="item.tipo === 3 || item.tipo === 4" [(ngModel)]="item.ancho"
+                      [disabled]="soloLectura || item.tipo === 3 || item.tipo === 4" [(ngModel)]="item.ancho"
                       (keydown)="onKeyDown($event, idx, 'ancho')" (paste)="onPasteInput($event, idx, 'ancho')"
                       (focus)="onInputFocus('ancho')" />
                   </td>
 
-                  <!-- ALTO -->
-                  <td class="p-0 border" style="width: 70px;" (mousedown)="onCeldaMouseDown($event, idx, 'alto')"
-                    [ngClass]="{
-    'celda-seleccionada': esCeldaEnRango(idx, 'alto'),
-    'g-select': idx === idxSeleccionado && pintarCelda('G')
-  }">
+                  <td class="p-0 border" style="width: 70px;"
+                    (mousedown)="soloLectura ? null : onCeldaMouseDown($event, idx, 'alto')" [ngClass]="{
+                  'celda-seleccionada': esCeldaEnRango(idx, 'alto'),
+                  'g-select': idx === idxSeleccionado && pintarCelda('G')
+                }">
                     <input autocomplete="off" [id]="'input-' + idx + '-alto'" type="text"
                       class="form-control form-control-sm border-0 text-right h-100 px-1 bg-transparent"
-                      [disabled]="item.tipo === 3 || item.tipo === 4" [(ngModel)]="item.alto"
+                      [disabled]="soloLectura || item.tipo === 3 || item.tipo === 4" [(ngModel)]="item.alto"
                       (keydown)="onKeyDown($event, idx, 'alto')" (paste)="onPasteInput($event, idx, 'alto')"
                       (focus)="onInputFocus('alto')" />
                   </td>
 
-                  <!-- PARCIAL -->
                   <td class="text-right align-middle px-1 border font-monospace" style="width: 90px; min-width: 90px;">
                     <span *ngIf="item.tipo === 1 || item.tipo === 2">{{ item.subtotal | number:'1.2-4' }}</span>
                   </td>
 
-                  <!-- SUB TOTAL -->
                   <td class="text-right align-middle px-1 border font-weight-bold font-monospace"
                     style="width: 90px; min-width: 90px;">
                     <span *ngIf="item.tipo === 1">{{ item.total | number:'1.2-4' }}</span>
                   </td>
                 </tr>
               </tbody>
-              <!-- PIE STICKY TOTAL -->
+
               <tfoot class="bg-light font-weight-bold sticky-bottom"
                 style="position: sticky; bottom: 0; z-index: 5; background-color: #e2f0d9 !important;">
                 <tr>
@@ -694,7 +675,6 @@
               </tfoot>
             </table>
           </div>
-
         </div>
       </div>
     </div>
@@ -711,7 +691,13 @@
     <div class="col-12 d-flex px-0 align-items-center mb-2">
       <mat-form-field appearance="outline" class="mff-reduc col-md-3 col-sm-6 p-0">
         <mat-label>Mes / Período</mat-label>
-        <mat-select [(ngModel)]="mesSeleccionadoDetalle" (selectionChange)="onChangeMesDetalle(mesSeleccionadoDetalle)">
+        <mat-select [(ngModel)]="mesSeleccionadoDetalle" (selectionChange)="onChangeMesDetalle($event.value)">
+
+          <!-- 🆕 OPCIÓN TODOS -->
+          <mat-option value="TODOS">
+            <b>TODOS (sin filtro de mes)</b>
+          </mat-option>
+
           <mat-option *ngFor="let mes of listaMesesProyectoDetalle" [value]="mes.codigo">
             {{ mes.label }}
           </mat-option>
@@ -827,7 +813,7 @@
       <div class="col-md-2 mb-2">
         <div class="card shadow-sm border-0 p-2 h-100">
           <div class="d-flex align-items-center">
-            <i class="icofont icofont-list text-primary" style="font-size: 32px; margin-right: 10px;"></i>
+            <i class="icocont icofont-list text-primary" style="font-size: 32px; margin-right: 10px;"></i>
             <div>
               <small class="text-muted d-block">Total de Partidas</small>
               <b style="font-size: 22px;">{{ estadoResumen.total_partidas }}</b>
@@ -920,21 +906,11 @@
     <div class="card shadow-sm border-0 mb-3"
       style="flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; overflow: hidden;">
 
-      <!-- Header de la card -->
       <div class="card-header bg-white border-bottom d-flex justify-content-between align-items-center"
         style="flex-shrink: 0;">
         <b class="text-dark">Estado de Registro de Metrados</b>
-        <!-- <div>
-          <button class="btn btn-sm btn-outline-secondary mr-1" type="button">
-            <i class="icofont icofont-download"></i> Exportar
-          </button>
-          <button class="btn btn-sm btn-outline-secondary" type="button">
-            <i class="icofont icofont-table"></i> Columnas
-          </button>
-        </div> -->
       </div>
 
-      <!-- Contenedor con overflow interno -->
       <div class="table-responsive" style="flex: 1 1 auto; overflow-y: auto; overflow-x: auto; min-height: 0;">
         <table class="tab-10 table-hover table-bordered m-0 text-center">
           <thead style="background-color: #001f5c; color: #fff; font-size: 12px;
@@ -949,6 +925,7 @@
               <th colspan="2" class="align-middle">Periodo de Ejecución</th>
               <th rowspan="2" class="align-middle">Último Registro</th>
               <th rowspan="2" class="align-middle">Estado de Registro</th>
+              <th rowspan="2" class="align-middle">Acciones</th> <!-- 🆕 -->
             </tr>
             <tr>
               <th>Inicio</th>
@@ -987,23 +964,46 @@
               <td class="text-center">{{ m.ultimo_registro || '—' }}</td>
               <td class="text-center">
                 <span class="badge" [ngClass]="{
-                        'badge-success':   m.estado === 'APROBADO',
-                        'badge-warning':   m.estado === 'EN_PROCESO',
-                        'badge-secondary': m.estado === 'SIN_REGISTRO'
-                      }">
-                  <i class="icofont" [ngClass]="{
-                       'icofont-check-circled': m.estado === 'APROBADO',
-                       'icofont-warning':       m.estado === 'EN_PROCESO',
-                       'icofont-eye-blocked':   m.estado === 'SIN_REGISTRO'
-                     }"></i>
+          'badge-success':   m.estado === 'APROBADO',
+          'badge-warning':   m.estado === 'EN_PROCESO',
+          'badge-secondary': m.estado === 'SIN_REGISTRO'
+        }">
+                  <i class="fa" [ngClass]="{
+         'fa-check-circle':   m.estado === 'APROBADO',
+         'fa-exclamation-triangle': m.estado === 'EN_PROCESO',
+         'fa-eye-slash':      m.estado === 'SIN_REGISTRO'
+       }"></i>
                   {{ m.estado === 'APROBADO' ? 'Aprobado' :
                   m.estado === 'EN_PROCESO' ? 'En Proceso' : 'Sin Registro' }}
                 </span>
               </td>
+
+              <!-- 🆕 COLUMNA ACCIONES -->
+              <td class="text-center">
+                <div class="btn-group btn-group-sm">
+
+                  <!-- APROBAR: solo si el mes NO está aprobado -->
+                  <button class="btn btn-sm btn-mini2 btn-outline-success" *ngIf="!esMesAprobado(m.codigo_mes)"
+                    [disabled]="!puedeAprobarMesIdx(i)" [ngbTooltip]="!puedeAprobarMesIdx(i)
+                            ? 'Hay meses anteriores sin aprobar'
+                            : 'Aprobar ' + m.label_mes" container="body" (click)="aprobarMesDesdeVista3(m, i)">
+                    <i class="fa fa-check"></i>
+                  </button>
+
+                  <!-- REVERTIR: solo si el mes está aprobado -->
+                  <button class="btn btn-sm btn-mini2 btn-outline-warning" *ngIf="esMesAprobado(m.codigo_mes)"
+                    [disabled]="!puedeRevertirMesIdx(i)" [ngbTooltip]="!puedeRevertirMesIdx(i)
+                            ? 'Hay un mes posterior aprobado'
+                            : 'Revertir ' + m.label_mes" container="body" (click)="revertirMesDesdeVista3(m, i)">
+                    <i class="fa fa-undo"></i>
+                  </button>
+
+                </div>
+              </td>
             </tr>
 
             <tr *ngIf="!estadoMeses?.length">
-              <td colspan="10" class="text-muted py-4">
+              <td colspan="11" class="text-muted py-4">
                 <i class="icofont icofont-exclamation-circle fs-3 d-block mb-2"></i>
                 No hay datos para mostrar.
               </td>

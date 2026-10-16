@@ -167,10 +167,10 @@
                                 <td appAnchocol [ancho]="90" [ngClass]="{'highlight': filaSel == indice}"
                                     appPintarfilapre [tipo]="titulo1" [color]="titulo1color" [letra]="titulo1letra"
                                     [item]="row.item" [separador]="'.'" [partida]="row.unidad!=''?true:false">
-                                    <ng-container *ng>
-                                        {{row.cantidad | number: mask_parcial }}
+                                    <ng-container
+                                        *ngIf="row.metrado_diario_total !== null && row.metrado_diario_total !== undefined">
+                                        {{ row.metrado_diario_total | number: mask_parcial }}
                                     </ng-container>
-                                    
                                 </td>
                                 <!-- <td appAnchocol [ancho]="90" [ngClass]="{'highlight': filaSel == indice}"
                                     appPintarfilapre [tipo]="titulo1" [color]="titulo1color" [letra]="titulo1letra"
@@ -607,8 +607,8 @@
                 </button>
 
                 <!-- Botón Limpiar Todo (Original) -->
-                <button type="button" class="btn btn-mini btn-outline-primary" title="Limpiar todo el día" *ngIf="!modoSeleccion"
-                    (click)="limpiarTodoDia()" (mouseup)="quitarfoco($event);">
+                <button type="button" class="btn btn-mini btn-outline-primary" title="Limpiar todo el día"
+                    *ngIf="!modoSeleccion" (click)="limpiarTodoDia()" (mouseup)="quitarfoco($event);">
                     <i class="icofont icofont-trash icono-but"></i>
                 </button>
             </div>
